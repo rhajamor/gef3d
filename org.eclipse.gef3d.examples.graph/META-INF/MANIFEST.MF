@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GEF3D Graph Editor Sample
+Bundle-SymbolicName: org.eclipse.gef3d.examples.graph;singleton:=true
+Bundle-Version: 0.8.1
+Bundle-Vendor: Eclipse.org
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.gef3d,
+ org.eclipse.gef,
+ org.eclipse.draw3d,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.gef3d.ext
+Eclipse-LazyStart: true
+Bundle-Activator: org.eclipse.gef3d.examples.graph.Activator

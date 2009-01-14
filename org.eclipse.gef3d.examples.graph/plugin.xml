@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.gef3d.examples.graph.editor.GraphEditorMulti2_5D"
+            contributorClass="org.eclipse.gef3d.examples.graph.editor.actions.GraphEditorActionBarContributor"
+            extensions="multiGraphSample"
+            icon="icons/graphMulti.gif"
+            id="org.eclipse.gef3d.samples.graph.editor.GraphEditorMultiDia3D"
+            name="Multiple Graphs in Dia2D Mode Sample">
+      </editor>
+      <editor
+            class="org.eclipse.gef3d.examples.graph.editor.GraphEditor3D"
+            extensions="graphSample"
+            id="org.eclipse.gef3d.samples.graph.editor.GraphEditor"
+            icon="icons/graph3d.gif"
+            name="GEFOGL Graph Sample"
+            contributorClass="org.eclipse.gef3d.examples.graph.editor.actions.GraphEditorActionBarContributor"
+            >
+      </editor>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.gef3d.examples.graph.editor.GraphEditor2_5D"
+            extensions="graphSampleDia"
+            id="org.eclipse.gef3d.samples.graph.editor.GraphEditorDia3D"
+            icon="icons/graph2.5d.gif"
+            name="GEFOGL Graph Sample"
+            contributorClass="org.eclipse.gef3d.examples.graph.editor.actions.GraphEditorActionBarContributor"
+            >
+      </editor>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.gef3d.examples.graph.editor.GraphEditor2D"
+            extensions="graphSample2D"
+            id="org.eclipse.gef3d.samples.graph.editor.GraphEditor2D"
+            icon="icons/graph2d.gif"
+            contributorClass="org.eclipse.gef3d.examples.graph.editor.actions.GraphEditorActionBarContributor"
+            name="GEF Graph Sample">
+      </editor>
+   </extension>
+
+</plugin>
