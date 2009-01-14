@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." name="gef3d.source" default="build_srczip">
+	<property name="version" value="0.8.1" />
+
+	<property name="draw3d" value="org.eclipse.draw3d" />
+	<property name="draw3d.geometry" value="org.eclipse.draw3d.geometry" />
+	<property name="draw3d.lwjgl" value="org.eclipse.draw3d.lwjgl" />
+	<property name="draw3d.test" value="org.eclipse.draw3d.test" />
+	<property name="gef3d" value="org.eclipse.gef3d" />
+	<property name="gef3d.ext" value="org.eclipse.gef3d.ext" />
+	<property name="gef3d.gmf" value="org.eclipse.gef3d.gmf" />
+	<property name="gef3d.examples.graph" value="org.eclipse.gef3d.examples.graph" />
+	
+
+	<target name="build_srczip">
+		<mkdir dir="src/${draw3d}_${version}" />
+		<zip destfile="src/${draw3d}_${version}/src.zip" basedir="../${draw3d}/src/java" />
+		<mkdir dir="src/${draw3d.geometry}_${version}" />
+		<zip destfile="src/${draw3d.geometry}_${version}/src.zip" basedir="../${draw3d.lwjgl}/src/java" />
+		<mkdir dir="src/${draw3d.lwjgl}_${version}" />
+		<zip destfile="src/${draw3d.lwjgl}_${version}/src.zip" basedir="../${draw3d.lwjgl}/src/java" />
+		<mkdir dir="src/${draw3d.test}_${version}" />
+		<zip destfile="src/${draw3d.test}_${version}/src.zip" basedir="../${draw3d.test}/src/java" />
+		<mkdir dir="src/${gef3d}_${version}" />
+		<zip destfile="src/${gef3d}_${version}/src.zip" basedir="../${gef3d}/src/java" />
+		<mkdir dir="src/${gef3d.ext}_${version}" />
+		<zip destfile="src/${gef3d.ext}_${version}/src.zip" basedir="../${gef3d.ext}/src/java" />
+		<mkdir dir="src/${gef3d.gmf}_${version}" />
+		<zip destfile="src/${gef3d.gmf}_${version}/src.zip" basedir="../${gef3d.gmf}/src/java" />
+		<mkdir dir="src/${gef3d.examples.graph}_${version}" />
+		<zip destfile="src/${gef3d.examples.graph}_${version}/src.zip" basedir="../${gef3d.examples.graph}/src/java" />
+	</target>
+	
+	<target name="clean">
+		<delete dir="src" />
+		<mkdir dir="src" />
+	</target>
+
+</project>
