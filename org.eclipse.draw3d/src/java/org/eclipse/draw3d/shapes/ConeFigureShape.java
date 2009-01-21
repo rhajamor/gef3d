@@ -16,6 +16,8 @@ import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Matrix4fImpl;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.geometryext.Position3D;
+import org.eclipse.draw3d.geometryext.Position3DImpl;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.graphics3d.Graphics3DUtil;
@@ -182,11 +184,14 @@ public class ConeFigureShape extends AbstractModelShape {
 	@Override
 	protected void setup() {
 
-		TMP_M4.set(m_figure.getLocationMatrix());
-		TMP_V3.set(0, 0, -HEIGHT);
-
-		Math3D.translate(TMP_V3, TMP_M4, TMP_M4);
-
-		setModelMatrix(TMP_M4);
+//		TMP_M4.set(m_figure.getLocationMatrix());
+//		TMP_V3.set(0, 0, -HEIGHT);
+//		Math3D.translate(TMP_V3, TMP_M4, TMP_M4);
+//		setModelMatrix(TMP_M4);
+	
+		Position3D pos = new Position3DImpl(null);
+		pos.setLocation3D(new Vector3fImpl(0,0,-HEIGHT));
+		setPosition(pos);
+		
 	}
 }

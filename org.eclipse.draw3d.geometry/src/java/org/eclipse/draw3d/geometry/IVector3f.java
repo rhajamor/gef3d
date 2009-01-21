@@ -41,6 +41,11 @@ public interface IVector3f extends Serializable, Cloneable {
 	 * A vector that points in the direction of the positive Z axis.
 	 */
 	public final static IVector3f Z_AXIS = new Vector3fImpl(0, 0, 1);
+	
+	/**
+	 * A vector (1,1,1).
+	 */
+	public final static IVector3f UNITVEC3f = new Vector3fImpl(1, 1, 1);
 
 	/**
 	 * Number format of a single entry value of vectors or matrices.

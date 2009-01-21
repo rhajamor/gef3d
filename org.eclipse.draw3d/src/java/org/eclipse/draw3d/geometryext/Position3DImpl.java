@@ -41,12 +41,10 @@ public class Position3DImpl extends AbstractPosition3D {
 	private BoundingBoxImpl bounds3D;
 
 	/**
-	 * @param i_host, must not be null
+	 * @param i_host, may be null
 	 */
 	public Position3DImpl(IHost3D i_host) {
-		if (i_host == null) // parameter precondition
-			throw new NullPointerException("i_host must not be null");
-
+		
 		host = i_host;
 		bounds3D = new BoundingBoxImpl();
 	}
@@ -97,7 +95,7 @@ public class Position3DImpl extends AbstractPosition3D {
 
 		invalidateMatrices();
 
-		host.positionChanged(EnumSet.of(PositionHint.location), delta);
+		firePositionChanged(PositionHint.location, delta);
 
 	}
 
@@ -135,6 +133,9 @@ public class Position3DImpl extends AbstractPosition3D {
 		
 		invalidateMatrices();
 
-		host.positionChanged(EnumSet.of(PositionHint.size), delta);
+		firePositionChanged(PositionHint.size, delta);
 	}
+	
+
+	
 }

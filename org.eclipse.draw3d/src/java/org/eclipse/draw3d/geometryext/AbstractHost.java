@@ -16,34 +16,42 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometryext.IPosition3D.PositionHint;
 
 /**
- * Host (or context) of a position. The {@link IPosition3D} is a kind of 
- * policy, the {@link IHost3D} is its context. Also, the host observes its
- * position and is notified when it changes.
+ * Basic host implementation, can be used by other classes as base class.
  *
  * @author 	Jens von Pilgrim
  * @version	$Revision$
  * @since 	Jan 21, 2009
  */
-public interface IHost3D {
+public abstract class AbstractHost implements IHost3D {
 	
-	/**
-	 * Returns the position of this 3D object. This may return null.
-	 * @return
-	 */
-	public Position3D getPosition3D();
+	protected IHost3D parent;
 	
-	/**
-	 * Returns the parent of this object, that is the parent according to
-	 * a scene graph. This is usually the parent figure.
-	 * @return
-	 */
-	public IHost3D getParentHost3D();
+	
 
 	/**
-	 * Called by host's position when upated.
-	 * @param hint
-	 * @param delta the delta of the changed property (new-old)
+	 * @param i_parent
 	 */
-    public void positionChanged(EnumSet<PositionHint> hint, IVector3f delta);
+	public AbstractHost(IHost3D i_parent) {
+		super();
+		parent = i_parent;
+	}
+
+
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.geometryext.IHost3D#getParentHost3D()
+	 */
+	public IHost3D getParentHost3D() {
+		return parent;
+	}
+
 	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.geometryext.IHost3D#positionChanged(java.util.EnumSet, org.eclipse.draw3d.geometry.IVector3f)
+	 */
+	public void positionChanged(EnumSet<PositionHint> i_hint, IVector3f i_delta) {
+		
+	}
+
 }

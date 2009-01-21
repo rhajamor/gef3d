@@ -40,7 +40,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 	private SyncedBounds3D bounds3D;
 
 	/**
-	 * @param i_syncHost, must not be null
+	 * @param i_syncHost, must not be null here!
 	 */
 	public SynchronizedPosition3DImpl(SyncHost3D i_syncHost) {
 		if (i_syncHost == null) // parameter precondition
@@ -102,7 +102,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 
 		invalidateMatrices();
 
-		host.positionChanged(EnumSet.of(PositionHint.location), delta);
+		firePositionChanged(PositionHint.location, delta);
 
 	}
 
@@ -142,7 +142,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 
 		invalidateMatrices();
 
-		host.positionChanged(EnumSet.of(PositionHint.size), delta);
+		firePositionChanged(PositionHint.size, delta);
 	}
 
 }

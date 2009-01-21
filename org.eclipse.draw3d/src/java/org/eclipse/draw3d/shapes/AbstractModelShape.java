@@ -15,6 +15,7 @@ import java.nio.FloatBuffer;
 
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometryext.Position3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.util.BufferUtils;
@@ -28,7 +29,9 @@ import org.eclipse.draw3d.util.BufferUtils;
  */
 public abstract class AbstractModelShape implements Shape {
 
-	private FloatBuffer m_modelMatrixBuffer;
+	private Position3D position3D = null;
+	
+	private Object cachedRawPosition;
 
 	private boolean m_useModelMatrix = false;
 
@@ -48,8 +51,15 @@ public abstract class AbstractModelShape implements Shape {
 
 		try {
 			if (m_useModelMatrix) {
-				m_modelMatrixBuffer.rewind();
-				g3d.glMultMatrix(m_modelMatrixBuffer);
+
+				
+				if (! g3d.isPositionRawCompatible(cachedRawPosition)) {
+					cachedRawPosition = g3d.createRawPosition(position3D);
+				}
+				g3d.setPosition(cachedRawPosition);
+				
+//				cachedRawPosition.rewind();				
+//				g3d.glMultMatrix(cachedRawPosition);
 			}
 
 			performRender();
@@ -74,26 +84,34 @@ public abstract class AbstractModelShape implements Shape {
 	}
 
 	/**
-	 * Sets the model matrix for this shape. If the specified model matrix is
-	 * <code>null</code>, the identity matrix is used as the model matrix.
+	 * Sets the position of this shape. 
 	 * 
-	 * @param i_modelMatrix the model matrix
+	 * @param io_positionAsRef the position, this parameter is directly set and
+	 * not copied here
 	 */
-	public void setModelMatrix(IMatrix4f i_modelMatrix) {
+	public void setPosition(Position3D io_positionAsRef) {
 
-		if (i_modelMatrix == null) {
+		cachedRawPosition = null; 
+		
+		if (io_positionAsRef == null) {
 			m_useModelMatrix = false;
 			return;
 		}
 
-		if (m_modelMatrixBuffer == null)
-			m_modelMatrixBuffer = BufferUtils.createFloatBuffer(16);
-		else
-			m_modelMatrixBuffer.rewind();
-
-		i_modelMatrix.toBufferRowMajor(m_modelMatrixBuffer);
+//		if (cachedRawPosition == null)
+//			cachedRawPosition = BufferUtils.createFloatBuffer(16);
+//		else
+//			cachedRawPosition.rewind();
+//
+//		i_modelMatrix.toBufferRowMajor(cachedRawPosition);
+		position3D = io_positionAsRef;
 		m_useModelMatrix = true;
 	}
+	// was:
+//	  Sets the model matrix for this shape. If the specified model matrix is
+//	  <code>null</code>, the identity matrix is used as the model matrix.
+//	public void setModelMatrix(IMatrix4f i_modelMatrix) {
+
 
 	/**
 	 * {@inheritDoc}
@@ -110,7 +128,7 @@ public abstract class AbstractModelShape implements Shape {
 
 		builder.append(className);
 		builder.append("[modelMatrix: ");
-		builder.append(m_modelMatrixBuffer);
+		builder.append(cachedRawPosition);
 		builder.append("]");
 
 		return builder.toString();

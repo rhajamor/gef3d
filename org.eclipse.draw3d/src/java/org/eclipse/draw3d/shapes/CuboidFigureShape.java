@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometryext.Position3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.ColorProvider;
 import org.eclipse.swt.graphics.Color;
@@ -64,17 +65,18 @@ public class CuboidFigureShape implements Shape {
 		RenderContext renderContext = RenderContext.getContext();
 
 		int alpha = m_figure.getAlpha();
-		IMatrix4f modelMatrix = m_figure.getModelMatrix();
+//		IMatrix4f modelMatrix = m_figure.getModelMatrix();
+		Position3D position3D = m_figure.getPosition3D();
 
 		if (renderContext.getMode().isPaint()) {
 			Color color = m_figure.getForegroundColor();
 			m_wiredCube.setColor(color, alpha);
-			m_wiredCube.setModelMatrix(modelMatrix);
+			m_wiredCube.setPosition(position3D);
 
 			m_wiredCube.render();
 		}
 
-		m_solidCube.setModelMatrix(modelMatrix);
+		m_solidCube.setPosition(position3D);
 
 		if (renderContext.getMode().isPaint()) {
 			Graphics3D g3d = RenderContext.getContext().getGraphics3D();

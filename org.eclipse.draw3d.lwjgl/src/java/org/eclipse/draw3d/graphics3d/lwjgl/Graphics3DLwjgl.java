@@ -14,6 +14,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw3d.geometryext.IPosition3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
@@ -24,6 +25,7 @@ import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
 import org.eclipse.draw3d.graphics3d.lwjgl.texture.LwjglTextureFbo;
 import org.eclipse.draw3d.graphics3d.lwjgl.texture.LwjglTextureManager;
+import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
@@ -32,6 +34,9 @@ import org.lwjgl.opengl.GLContext;
 /**
  * Graphics3DLwjgl is the implementor of the Graphics3D interface for the LWJGL
  * renderer.
+ * 
+ * <h3>OpenGL Notes</h3>
+ * glMultMatrix(FloatBuffer) is replaced with setPosition(Object).
  * 
  * @author Matthias Thiele
  * @version $Revision$
@@ -56,23 +61,57 @@ public class Graphics3DLwjgl implements Graphics3D {
 	public Graphics3DLwjgl() {
 		super();
 	}
-	
-	
-	
 
 	// Constants for controlling draw behavior *********************************
 
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setGLCanvas(org.eclipse.swt.opengl.GLCanvas)
 	 */
 	public void setGLCanvas(GLCanvas i_canvas) {
 		m_context = i_canvas;
-		
+
 	}
 
+	/*
+	 * Abstracted methods
+	 */
 
+	/**
+	 * This concrete implementation returns a FloatBuffer of the model matrix of
+	 * the given position. The buffer is not rewound.
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#createRawPosition(org.eclipse.draw3d.geometryext.IPosition3D)
+	 */
+	public Object createRawPosition(IPosition3D i_position3D) {
+		FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
+		i_position3D.getModelMatrix().toBufferRowMajor(buffer);
+		return buffer;
+	}
 
+	/**
+	 * Returns true if the object is an instance of FloatBuffer. The size of the
+	 * buffer is not checked.
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#isPositionRawCompatible(java.lang.Object)
+	 */
+	public boolean isPositionRawCompatible(Object i_theRawPosition) {
+		return (i_theRawPosition instanceof FloatBuffer);
+	}
+
+	/**
+	 * Sets the position, the given raw position is expected to be a
+	 * FloatBuffer (size=16).
+	 * 
+	 * @throws ClassCastException if given object is not an instance of
+	 *             FLoatBuffer.
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#setPosition(java.lang.Object)
+	 */
+	public void setPosition(Object i_theRawPosition) {
+		((FloatBuffer)i_theRawPosition).rewind();
+		org.lwjgl.opengl.GL11.glMultMatrix((FloatBuffer) i_theRawPosition);
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -202,15 +241,6 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 */
 	public void glLineStipple(int factor, short pattern) {
 		org.lwjgl.opengl.GL11.glLineStipple(factor, pattern);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glMultMatrix(java.nio.FloatBuffer)
-	 */
-	public void glMultMatrix(FloatBuffer m) {
-		org.lwjgl.opengl.GL11.glMultMatrix(m);
 	}
 
 	/**
@@ -616,4 +646,5 @@ public class Graphics3DLwjgl implements Graphics3D {
 		org.lwjgl.util.glu.GLU.gluUnProject(winx, winy, winz, modelMatrix,
 				projMatrix, viewport, obj_pos);
 	}
+
 }

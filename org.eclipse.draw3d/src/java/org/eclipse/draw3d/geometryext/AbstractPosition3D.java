@@ -24,13 +24,15 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.geometryext.IPosition3D.MatrixState;
 import org.eclipse.draw3d.geometryext.IPosition3D.PositionHint;
 
+import quicktime.streaming.SettingsDialog;
+
 /**
- * Abstract implementation of {@link Position3D}, this implementation is 
- * the base class for 2D-bounds synchronized and independent implementations.
- *
- * @author 	Jens von Pilgrim
- * @version	$Revision$
- * @since 	Jan 21, 2009
+ * Abstract implementation of {@link Position3D}, this implementation is the
+ * base class for 2D-bounds synchronized and independent implementations.
+ * 
+ * @author Jens von Pilgrim
+ * @version $Revision$
+ * @since Jan 21, 2009
  */
 public abstract class AbstractPosition3D implements Position3D {
 
@@ -74,7 +76,17 @@ public abstract class AbstractPosition3D implements Position3D {
 		updatingBounds = false;
 	}
 
-	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometryext.Position3D#setPosition(org.eclipse.draw3d.geometryext.IPosition3D)
+	 */
+	public void setPosition(IPosition3D i_source) {
+		setRotation3D(i_source.getRotation3D());
+		setSize3D(i_source.getSize3D());
+		setLocation3D(i_source.getLocation3D());
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -83,8 +95,6 @@ public abstract class AbstractPosition3D implements Position3D {
 	public IVector3f getRotation3D() {
 		return rotation;
 	}
-	
-	
 
 	/**
 	 * {@inheritDoc}
@@ -104,7 +114,7 @@ public abstract class AbstractPosition3D implements Position3D {
 		rotation.set(i_rotation);
 		invalidateMatrices();
 
-		getHost().positionChanged(EnumSet.of(PositionHint.rotation), delta);
+		firePositionChanged(PositionHint.rotation, delta);
 	}
 
 	/**
@@ -113,10 +123,13 @@ public abstract class AbstractPosition3D implements Position3D {
 	 * @see org.eclipse.draw3d.geometryext.IPosition3D#getMatrixState()
 	 */
 	public MatrixState getMatrixState() {
-		IHost3D parent = getHost().getParentHost3D();
-		if (parent != null
-				&& parent.getPosition3D().getMatrixState() == MatrixState.INVALID) {
-			invalidateMatrices();
+		if (getHost() != null) {
+			IHost3D parent = getHost().getParentHost3D();
+			if (parent != null
+					&& parent.getPosition3D() != null
+					&& parent.getPosition3D().getMatrixState() == MatrixState.INVALID) {
+				invalidateMatrices();
+			}
 		}
 		return matrixState;
 	}
@@ -214,5 +227,16 @@ public abstract class AbstractPosition3D implements Position3D {
 		modelMatrix.set(locationMatrix);
 		IVector3f size = getSize3D();
 		Math3D.scale(size, modelMatrix, modelMatrix);
+	}
+
+	/**
+	 * Notifies host if present.
+	 * 
+	 * @param hint
+	 * @param delta
+	 */
+	protected void firePositionChanged(PositionHint hint, IVector3f delta) {
+		if (getHost() != null)
+			getHost().positionChanged(EnumSet.of(hint), delta);
 	}
 }

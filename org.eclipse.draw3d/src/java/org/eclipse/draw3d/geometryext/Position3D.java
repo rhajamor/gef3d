@@ -22,6 +22,12 @@ import org.eclipse.draw3d.geometry.IVector3f;
  */
 public interface Position3D extends IPosition3D {
 	
+	/**
+	 * Sets this position by copying location, scale, and rotation from
+	 * given source.
+	 * @param source
+	 */
+	public void setPosition(IPosition3D source);
 	
 	/**
 	 * Sets the location of this IFigure.

@@ -16,6 +16,7 @@ import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometryext.Position3D;
 import org.eclipse.draw3d.picking.ColorProvider;
 import org.eclipse.draw3d.shapes.SolidCube;
 import org.eclipse.draw3d.shapes.WiredCube;
@@ -145,12 +146,13 @@ public class MoveHandle3D extends AbstractHandle3D {
 		RenderContext renderContext = RenderContext.getContext();
 
 		int alpha = getAlpha();
-		IMatrix4f modelMatrix = getModelMatrix();
+//		IMatrix4f modelMatrix = getModelMatrix();
+		Position3D position3D = getPosition3D();
 
 		if (renderContext.getMode().isPaint()) {
 			Color color = getForegroundColor();
 			wiredcube.setColor(color, alpha);
-			wiredcube.setModelMatrix(modelMatrix);
+			wiredcube.setPosition(position3D);
 			wiredcube.render();
 
 			// solidcube.setModelMatrix(modelMatrix);
@@ -163,7 +165,7 @@ public class MoveHandle3D extends AbstractHandle3D {
 			// only for picking
 			int color = renderContext.getColor(this);
 			if (color != ColorProvider.IGNORE) {
-				solidcube.setModelMatrix(modelMatrix);
+				solidcube.setPosition(position3D);
 				solidcube.setColor(color, 255);
 				solidcube.setTexture(null);
 				solidcube.render();
