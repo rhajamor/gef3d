@@ -25,7 +25,6 @@ import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
-
 /**
  * GraphFigure3D There should really be more documentation here.
  * 
@@ -59,7 +58,10 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 		// f.setSize3D(new Vector3f(400, 300, 60));
 		// }
 
-		bounds3D.setDepth(150);
+		Vector3fImpl size = new Vector3fImpl(getPosition3D().getSize3D());
+		size.setZ(150);
+		getPosition3D().setSize3D(size);
+		// was: bounds3D.setDepth(150);
 
 		float rotX = (float) Math.toRadians(30);
 		float rotY = (float) Math.toRadians(0);

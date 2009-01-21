@@ -10,8 +10,10 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ConnectionLayer;
@@ -30,7 +32,14 @@ import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Transformable;
+import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.geometryext.IHost3D;
+import org.eclipse.draw3d.geometryext.IPosition3D;
 import org.eclipse.draw3d.geometryext.Plane;
+import org.eclipse.draw3d.geometryext.Position3D;
+import org.eclipse.draw3d.geometryext.Position3DImpl;
+import org.eclipse.draw3d.geometryext.IPosition3D.MatrixState;
+import org.eclipse.draw3d.geometryext.IPosition3D.PositionHint;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.util.ColorConverter;
@@ -76,10 +85,57 @@ public class LightweightSystem3D extends LightweightSystem implements
 
 		private final Figure3DHelper helper;
 
+		// the position of the root is the universe.. the root is the universe
+		private Position3DImpl universe;
+
 		/**
 		 * Creates and initializes a 3D new root figure.
 		 */
 		RootFigure3D() {
+			universe = new Position3DImpl(this) {
+
+				/** 
+				 * {@inheritDoc}
+				 * @see org.eclipse.draw3d.geometryext.AbstractPosition3D#invalidateMatrices()
+				 */
+				@Override
+				public void invalidateMatrices() {
+					// this is not possible!
+				}
+
+				/** 
+				 * {@inheritDoc}
+				 * @see org.eclipse.draw3d.geometryext.Position3DImpl#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
+				 */
+				@Override
+				public void setLocation3D(IVector3f i_point) {
+					
+
+				}
+
+				/** 
+				 * {@inheritDoc}
+				 * @see org.eclipse.draw3d.geometryext.Position3DImpl#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
+				 */
+				@Override
+				public void setSize3D(IVector3f i_size) {
+				}
+
+				/** 
+				 * {@inheritDoc}
+				 * @see org.eclipse.draw3d.geometryext.AbstractPosition3D#setRotation3D(org.eclipse.draw3d.geometry.IVector3f)
+				 */
+				@Override
+				public void setRotation3D(IVector3f i_rotation) {
+				}
+				
+				
+				
+				
+			};
+			universe.setSize3D(new Vector3fImpl(Float.MAX_VALUE,
+					Float.MAX_VALUE, Float.MAX_VALUE));
+
 			helper = new Figure3DHelper(new Figure3DFriend(this) {
 
 				@Override
@@ -544,6 +600,39 @@ public class LightweightSystem3D extends LightweightSystem implements
 		 */
 		public void transformToRelative(Transformable i_transformable) {
 			// nothing to do
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.geometryext.IHost3D#getParentHost3D()
+		 */
+		public IHost3D getParentHost3D() {
+			return getAncestor3D();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.geometryext.IHost3D#getPosition3D()
+		 */
+		public Position3D getPosition3D() {
+			return universe;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.geometryext.IHost3D#positionChanged(java.util.EnumSet,
+		 *      org.eclipse.draw3d.geometry.IVector3f)
+		 */
+		public void positionChanged(EnumSet<PositionHint> i_hint,
+				IVector3f i_delta) {
+			if (log.isLoggable(Level.WARNING)) {
+				log
+						.warning("positionChanged on root figure, this must not happen"); //$NON-NLS-1$
+			}
+
 		}
 
 	} // end of inner class RootFigure3D

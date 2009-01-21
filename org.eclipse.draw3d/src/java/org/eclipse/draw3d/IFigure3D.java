@@ -18,6 +18,8 @@ import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometryext.Plane;
+import org.eclipse.draw3d.geometryext.SyncHost3D;
+import org.eclipse.draw3d.geometryext.IPosition3D.MatrixState;
 
 /**
  * 3D extension of GEF's IFigure interface.
@@ -26,28 +28,9 @@ import org.eclipse.draw3d.geometryext.Plane;
  * @version $Revision$
  * @since 24.10.2007
  */
-public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable {
+public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHost3D {
 
-	/**
-	 * Defines the state of the internal matrices.
-	 * 
-	 * @author Jens von Pilgrim
-	 * @version $Revision$
-	 * @since 23.11.2007
-	 * @see $HeadURL:
-	 *      https://gorgo.fernuni-hagen.de/OpenglGEF/trunk/org.eclipse.draw3d
-	 *      /src/java/de/feu/draw3d/IFigure3D.java $
-	 */
-	public enum MatrixState {
-		/**
-		 * Matrices are invalid and need to be recalculated.
-		 */
-		INVALID,
-		/**
-		 * Matrices are valid.
-		 */
-		VALID;
-	}
+	
 
 	/**
 	 * Returns the alpha value of this figure.
