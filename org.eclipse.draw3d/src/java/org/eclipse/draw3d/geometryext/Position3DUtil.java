@@ -26,6 +26,35 @@ import org.eclipse.draw3d.geometry.Transformable;
  * @since Jan 21, 2009
  */
 public class Position3DUtil {
+	
+	
+	/**
+	 * Creates a relative position, i.e. position is part of a glyph hierarchy
+	 * and uses the parents position to calculate its absolute position. 
+	 * Note that this creates a new host, which has the given host as
+	 * parent. If you have a "real" host, such as a figure, simply use
+	 * the constructor in {@link Position3DImpl#Position3DImpl(IHost3D)}.
+	 * @param parent must not be null
+	 * @return relative position
+	 * @see Host3D
+	 */
+	public static Position3D createRelativePosition(IHost3D parent) {
+		if (parent == null) // parameter precondition
+			throw new NullPointerException("parent must not be null");
+		
+		return new Host3D(parent).getPosition3D();
+	}
+	
+	/**
+	 * Creates an absolute position, i.e. the position has no parent and
+	 * its location, size and rotation are not relative to another position.
+	 * @return
+	 * @see Position3DImpl#Position3DImpl()
+	 */
+	public static Position3D createAbsolutePosition() {
+		return new Position3DImpl();
+	}
+	
 
 	/**
 	 * Transforms the given transformable from this figure's parent's
@@ -119,7 +148,8 @@ public class Position3DUtil {
 	 */
 	public static IMatrix4f getParentLocationMatrix(IPosition3D position3D) {
 		IMatrix4f parentLocationMatrix = null;
-		if (position3D.getHost().getParentHost3D() != null
+		if ( // position3D.getHost() != null && // must be null, this is only a precaution
+				position3D.getHost().getParentHost3D() != null
 				&& position3D.getHost().getParentHost3D().getPosition3D() != null) {
 			parentLocationMatrix = position3D.getHost().getParentHost3D()
 					.getPosition3D().getLocationMatrix();

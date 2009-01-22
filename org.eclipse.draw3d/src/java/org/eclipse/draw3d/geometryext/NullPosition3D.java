@@ -16,8 +16,19 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
 
 /**
- * NullPosition3D
- * There should really be more documentation here.
+ * NullPosition3D can be used to create a dummy parent position, for example
+ * if the host hierarchy requires invisible elements such as containers.
+ * <p>
+ * The following values are set, this class is immutable:
+ * <ul>
+ * 	<li>Location: (0,0,0)</li>
+ *  <li>Size: (1,1,1)</li>
+ *  <li>Rotation: (0,0,0)</li>
+ * </ul>
+ * That is, the transformation matrix created is the identity matrix.
+ * </p>
+ * 
+ * 
  *
  * @author 	Jens von Pilgrim
  * @version	$Revision$

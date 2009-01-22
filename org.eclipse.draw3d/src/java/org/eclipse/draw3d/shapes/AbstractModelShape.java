@@ -112,6 +112,15 @@ public abstract class AbstractModelShape implements Shape {
 //	  <code>null</code>, the identity matrix is used as the model matrix.
 //	public void setModelMatrix(IMatrix4f i_modelMatrix) {
 
+	
+	/**
+	 * returns the position of this shape, may be null
+	 */
+	public Position3D getPosition3D() {
+		return position3D;
+	}
+	
+	
 
 	/**
 	 * {@inheritDoc}

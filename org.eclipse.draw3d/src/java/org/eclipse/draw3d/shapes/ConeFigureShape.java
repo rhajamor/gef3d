@@ -10,17 +10,19 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Matrix4fImpl;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.geometryext.Position3D;
-import org.eclipse.draw3d.geometryext.Position3DImpl;
+import org.eclipse.draw3d.geometryext.Position3DUtil;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
-import org.eclipse.draw3d.graphics3d.Graphics3DUtil;
 import org.eclipse.draw3d.picking.ColorProvider;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.swt.graphics.Color;
@@ -28,12 +30,17 @@ import org.eclipse.swt.graphics.Color;
 /**
  * Renders a model matrix as a cone.
  *
- * @todo Disk and Cylinder are not defined yet (were defined in LWJGL)
+ * @todo Disk and Cylinder are not defined yet (were defined in LWJGL),
+ * thus this class is not working yet!
  * @author Kristian Duske
  * @version $Revision$
  * @since 19.05.2008
  */
 public class ConeFigureShape extends AbstractModelShape {
+	/**
+	 * Logger for this class
+	 */
+	private static final Logger log = Logger.getLogger(ConeFigureShape.class.getName());
 
 	private static final String DL_SOLID = "solid_cone";
 
@@ -58,6 +65,8 @@ public class ConeFigureShape extends AbstractModelShape {
 	private final IFigure3D m_figure;
 
 	private boolean m_solid = true;
+	
+	private static boolean WARN_ONCE = true;
 
 	/**
 	 * Creates a new shape for the given figure.
@@ -66,6 +75,12 @@ public class ConeFigureShape extends AbstractModelShape {
 	 * @throws NullPointerException if the given figure is <code>null</code>
 	 */
 	public ConeFigureShape(IFigure3D i_figure) {
+		
+		if (WARN_ONCE && log.isLoggable(Level.WARNING)) {
+			log.warning("Cone figure is not working yet, since disc and cylinder are not implemented.");
+			WARN_ONCE = false;
+		}
+		
 
 		if (i_figure == null)
 			throw new NullPointerException("i_figure must not be null");
@@ -137,6 +152,8 @@ public class ConeFigureShape extends AbstractModelShape {
 	@Override
 	protected void performRender() {
 
+		
+
 		RenderContext renderContext = RenderContext.getContext();
 		DisplayListManager displayListManager = renderContext
 				.getDisplayListManager();
@@ -189,9 +206,23 @@ public class ConeFigureShape extends AbstractModelShape {
 //		Math3D.translate(TMP_V3, TMP_M4, TMP_M4);
 //		setModelMatrix(TMP_M4);
 	
-		Position3D pos = new Position3DImpl(null);
-		pos.setLocation3D(new Vector3fImpl(0,0,-HEIGHT));
+		if (m_figure==null) {
+			setPosition(null);
+			return;
+		}
+		
+		Position3D pos = Position3DUtil.createRelativePosition(m_figure.getParentHost3D());
+		pos.setLocation3D(m_figure.getPosition3D().getLocation3D());
+		pos.setRotation3D(m_figure.getPosition3D().getRotation3D());
+		pos.setSize3D(IVector3f.UNITVEC3f);
+		Vector3fImpl v = new Vector3fImpl(pos.getLocation3D());
+		v.z -= HEIGHT;
+		pos.setLocation3D(v);
+		
+		
 		setPosition(pos);
 		
 	}
+
+	
 }

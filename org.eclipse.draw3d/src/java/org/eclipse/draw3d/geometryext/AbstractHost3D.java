@@ -22,7 +22,7 @@ import org.eclipse.draw3d.geometryext.IPosition3D.PositionHint;
  * @version	$Revision$
  * @since 	Jan 21, 2009
  */
-public abstract class AbstractHost implements IHost3D {
+public abstract class AbstractHost3D implements IHost3D {
 	
 	protected IHost3D parent;
 	
@@ -31,7 +31,7 @@ public abstract class AbstractHost implements IHost3D {
 	/**
 	 * @param i_parent
 	 */
-	public AbstractHost(IHost3D i_parent) {
+	public AbstractHost3D(IHost3D i_parent) {
 		super();
 		parent = i_parent;
 	}

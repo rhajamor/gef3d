@@ -18,12 +18,6 @@ import org.eclipse.draw3d.geometry.Vector3f;
 
 /**
  * Stores location, size, and rotation of an 3D object. 
- * 
- * @author Jens von Pilgrim
- * @version $Revision$
- * @since Jan 21, 2009
- */
-/**
  * Immutable triple of position properties for 3D objects, that is location,
  * size (scale), and rotation. These three properties can be combined in a so
  * called transformation matrix, which can then be passed to OpenGL or renderes
@@ -32,6 +26,12 @@ import org.eclipse.draw3d.geometry.Vector3f;
  * This interface and its subinterfaces and implementations were created in 
  * order to resolve the problem stated in bug 261775.
  * </p>
+ * <p>
+ * Every Position is expected to have a host, i.e. @link{#getHost()} must not
+ * return null. If you do not have a host (e.g. you only need a temporary 
+ * position of the position is absolute), you can use
+ * {@link Position3DImpl#Position3DImpl()} in order to create a position
+ * with a dummy host.</p> 
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -73,7 +73,7 @@ public interface IPosition3D {
 	/**
 	 * Returns the host (or context) of this position
 	 * 
-	 * @return
+	 * @return returns the host, must not be null
 	 */
 	public IHost3D getHost();
 

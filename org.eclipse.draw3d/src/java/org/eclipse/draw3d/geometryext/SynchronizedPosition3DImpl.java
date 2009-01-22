@@ -123,10 +123,10 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 	public void setSize3D(IVector3f i_size) {
 		if (i_size == null) // parameter precondition
 			throw new NullPointerException("i_size must not be null");
-		if (i_size.getX() < 0 || i_size.getY() < 0 || i_size.getZ() < 0) // parameter
-			// precondition
-			throw new IllegalArgumentException(
-					"no value of given vector must be less 0, , was " + i_size);
+//		if (i_size.getX() < 0 || i_size.getY() < 0 || i_size.getZ() < 0) // parameter
+//			// precondition
+//			throw new IllegalArgumentException(
+//					"no value of given vector must be less 0, , was " + i_size);
 
 		IVector3f size3D = getSize3D();
 

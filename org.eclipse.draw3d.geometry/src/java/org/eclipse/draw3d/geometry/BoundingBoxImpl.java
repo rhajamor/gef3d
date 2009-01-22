@@ -30,12 +30,28 @@ public class BoundingBoxImpl implements BoundingBox {
 	 */
 	public Vector3fImpl m_size;
 
+	
 	/**
 	 * The standard constructor.
+	 * 
+	 * Location and size are both set to (0,0,0). If you want to create
+	 * a unit box, use 
 	 */
 	public BoundingBoxImpl() {
 		this.m_position = new Vector3fImpl();
 		this.m_size = new Vector3fImpl();
+	}
+	
+	
+	/**
+	 * Creates a bounding box, if bCreateUnitBox is true, its size is set to
+	 * the unit vector, i.e. (1,1,1), otherwise the size is set to (0,0,0).
+	 * <p>
+	 * @param bCreateUnitBox if set to true, size is set to (1,1,1)
+	 */
+	public BoundingBoxImpl(boolean bCreateUnitBox) {
+		this.m_position = new Vector3fImpl();
+		this.m_size = new Vector3fImpl(1,1,1);
 	}
 
 	/**

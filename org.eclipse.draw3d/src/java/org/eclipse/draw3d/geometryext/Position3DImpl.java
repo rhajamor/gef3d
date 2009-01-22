@@ -34,19 +34,47 @@ import org.eclipse.draw3d.geometryext.IPosition3D.PositionHint;
  * @since Jan 21, 2009
  */
 public class Position3DImpl extends AbstractPosition3D {
-	
-	
-	
+
 	private IHost3D host;
+
 	private BoundingBoxImpl bounds3D;
 
 	/**
-	 * @param i_host, may be null
+	 * @param i_host, must not be null
 	 */
 	public Position3DImpl(IHost3D i_host) {
-		
+		if (i_host == null) // parameter precondition
+			throw new NullPointerException(
+					"i_host must not be null, use empty constructor instead");
+
 		host = i_host;
 		bounds3D = new BoundingBoxImpl();
+	}
+
+	/**
+	 * Creates a position with a dummy host, i.e. {@link #getHost()} will no
+	 * return null. <strong>It is recommend to use
+	 * {@link Position3DUtil#createAbsolutePosition()} which creates an
+	 * instance of this class, since this makes the purpose clear.</strong>
+	 */
+	public Position3DImpl() {
+		bounds3D = new BoundingBoxImpl();
+		host = new AbstractHost3D(null) {
+			public Position3D getPosition3D() {
+				return Position3DImpl.this;
+			}
+
+			/**
+			 * {@inheritDoc}
+			 * 
+			 * @see java.lang.Object#toString()
+			 */
+			@Override
+			public String toString() {
+				return "no host, absolute position";
+			}
+
+		};
 	}
 
 	/**
@@ -91,7 +119,7 @@ public class Position3DImpl extends AbstractPosition3D {
 		Vector3fImpl delta = new Vector3fImpl();
 		Math3D.sub(i_point, getLocation3D(), delta);
 
-		bounds3D.setLocation(i_point.getX(), i_point.getY(),i_point.getZ());
+		bounds3D.setLocation(i_point.getX(), i_point.getY(), i_point.getZ());
 
 		invalidateMatrices();
 
@@ -116,10 +144,10 @@ public class Position3DImpl extends AbstractPosition3D {
 	public void setSize3D(IVector3f i_size) {
 		if (i_size == null) // parameter precondition
 			throw new NullPointerException("i_size must not be null");
-		if (i_size.getX() < 0 || i_size.getY() < 0 || i_size.getZ() < 0) // parameter
-			// precondition
-			throw new IllegalArgumentException(
-					"no value of given vector must be less 0, , was " + i_size);
+//		if (i_size.getX() < 0 || i_size.getY() < 0 || i_size.getZ() < 0) // parameter
+//			// precondition
+//			throw new IllegalArgumentException(
+//					"no value of given vector must be less 0, , was " + i_size);
 
 		IVector3f size3D = getSize3D();
 
@@ -130,12 +158,10 @@ public class Position3DImpl extends AbstractPosition3D {
 		Math3D.sub(i_size, size3D, delta);
 
 		bounds3D.setSize(i_size);
-		
+
 		invalidateMatrices();
 
 		firePositionChanged(PositionHint.size, delta);
 	}
-	
 
-	
 }

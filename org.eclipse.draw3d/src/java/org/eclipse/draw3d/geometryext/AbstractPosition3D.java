@@ -195,6 +195,17 @@ public abstract class AbstractPosition3D implements Position3D {
 	}
 
 	/**
+	 * Recalculates the model matrix. Make sure that
+	 * {@link #recalculateLocationMatrix()} has been called before calling this
+	 * method.
+	 */
+	private void recalculateModelMatrix() {
+		modelMatrix.set(locationMatrix);
+		IVector3f size = getSize3D();
+		Math3D.scale(size, modelMatrix, modelMatrix);
+	}
+
+	/**
 	 * Rotates serially the given matrix by angles defined in rotation vector.
 	 * First, the matrix is rotated around the x axis by the x value of the
 	 * vector, then around the y axis by the y value and so on.
@@ -219,17 +230,6 @@ public abstract class AbstractPosition3D implements Position3D {
 	}
 
 	/**
-	 * Recalculates the model matrix. Make sure that
-	 * {@link #recalculateLocationMatrix()} has been called before calling this
-	 * method.
-	 */
-	private void recalculateModelMatrix() {
-		modelMatrix.set(locationMatrix);
-		IVector3f size = getSize3D();
-		Math3D.scale(size, modelMatrix, modelMatrix);
-	}
-
-	/**
 	 * Notifies host if present.
 	 * 
 	 * @param hint
@@ -239,4 +239,20 @@ public abstract class AbstractPosition3D implements Position3D {
 		if (getHost() != null)
 			getHost().positionChanged(EnumSet.of(hint), delta);
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		result.append("l=").append(getLocation3D());
+		result.append(", s=").append(getSize3D());
+		result.append(", r=").append(getRotation3D());
+		result.append(", host=").append(getHost());
+		return result.toString();
+	}
+
 }
