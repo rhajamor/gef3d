@@ -12,8 +12,6 @@ package org.eclipse.draw3d.geometryext;
 
 import java.util.EnumSet;
 
-import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
@@ -21,10 +19,6 @@ import org.eclipse.draw3d.geometry.Matrix4f;
 import org.eclipse.draw3d.geometry.Matrix4fImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.geometryext.IPosition3D.MatrixState;
-import org.eclipse.draw3d.geometryext.IPosition3D.PositionHint;
-
-import quicktime.streaming.SettingsDialog;
 
 /**
  * Abstract implementation of {@link Position3D}, this implementation is the
