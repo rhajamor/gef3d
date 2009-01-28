@@ -11,25 +11,17 @@
  ******************************************************************************/
 package org.eclipse.gef3d.tools;
 
-import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.UpdateManager;
-import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.draw3d.PickingUpdateManager3D;
-import org.eclipse.draw3d.picking.ColorPicker;
-import org.eclipse.gef.EditPart;
-import org.eclipse.gef.EditPartViewer;
-import org.eclipse.gef.GraphicalEditPart;
-import org.eclipse.gef.Handle;
-import org.eclipse.gef.Request;
-import org.eclipse.gef.RootEditPart;
-import org.eclipse.gef.tools.DragEditPartsTracker;
-import org.eclipse.gef3d.handles.FeedbackFigure3D;
-import org.eclipse.gef3d.requests.ChangeBounds3DRequest;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IVector3f;
-
+import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.gef.EditPart;
+import org.eclipse.gef.Request;
+import org.eclipse.gef.tools.DragEditPartsTracker;
+import org.eclipse.gef3d.requests.ChangeBounds3DRequest;
 
 /**
  * DragEditPartsTracker3D There should really be more documentation here.
@@ -43,15 +35,19 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 	/**
 	 * Logger for this class
 	 */
+	@SuppressWarnings("unused")
 	private static final Logger log = Logger
 			.getLogger(DragEditPartsTracker3D.class.getName());
 
-	protected TrackState m_trackState;
+	private TrackState m_trackState;
 
 	/**
-	 * @param i_sourceEditPart
+	 * Creates a new tracker for the given source edit part.
+	 * 
+	 * @param i_sourceEditPart the source edit part
 	 */
 	public DragEditPartsTracker3D(EditPart i_sourceEditPart) {
+
 		super(i_sourceEditPart);
 	}
 
@@ -62,40 +58,65 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 	 */
 	@Override
 	protected Request createTargetRequest() {
+
 		if (isCloneActive())
 			return new ChangeBounds3DRequest(REQ_CLONE);
 		else
 			return new ChangeBounds3DRequest(REQ_MOVE);
 	}
 
-	private ColorPicker getSnapshotPicker() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#getDragMoveDelta()
+	 */
+	@Override
+	protected Dimension getDragMoveDelta() {
 
-		ColorPicker picker = Tracker3DHelper.getPicker(getCurrentViewer());
-		if (picker == null)
-			throw new IllegalStateException("no color picker available");
+		return new Dimension(getTrackState().getMoveDelta2D());
+	}
 
-		picker.ignoreType(FeedbackFigure3D.class);
-		picker.ignoreType(Handle.class);
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#getLocation()
+	 */
+	@Override
+	protected Point getLocation() {
 
-		EditPartViewer viewer = getCurrentViewer();
-		List<?> selectedEditParts = viewer.getSelectedEditParts();
+		return new Point(getTrackState().getLocation2D());
+	}
 
-		for (Object object : selectedEditParts) {
-			if (object instanceof GraphicalEditPart) {
-				GraphicalEditPart editPart = (GraphicalEditPart) object;
-				IFigure figure = editPart.getFigure();
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#getStartLocation()
+	 */
+	@Override
+	protected Point getStartLocation() {
 
-				if (figure instanceof IFigure3D) {
-					IFigure3D figure3D = (IFigure3D) figure;
-					picker.ignoreFigure(figure3D);
-				}
-			}
+		return new Point(getTrackState().getStartLocation2D());
+	}
+
+	/**
+	 * Returns the current dragstate. If the drag has just begun, a new
+	 * trackstate will be created.
+	 * 
+	 * @return
+	 */
+	protected TrackState getTrackState() {
+
+		Point location = getCurrentInput().getMouseLocation();
+		if (m_trackState == null) {
+			if (log.isLoggable(Level.FINER))
+				log.finer("creating track state");
+
+			m_trackState = Tracker3DHelper.getTrackState(location,
+					getCurrentViewer());
 		}
 
-		ColorPicker snapshot = picker.createSnapshot();
-		picker.clearIgnored();
-
-		return snapshot;
+		m_trackState.setScreenLocation(getCurrentInput().getMouseLocation());
+		return m_trackState;
 	}
 
 	/**
@@ -108,20 +129,24 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 
 		super.performDrag();
 		m_trackState = null;
+		Tracker3DHelper.getPicker(getCurrentViewer()).clearIgnored();
+
+		if (log.isLoggable(Level.FINER))
+			log.finer("drag finished");
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef.tools.SelectEditPartTracker#setSourceEditPart(org.eclipse.gef.EditPart)
+	 * @see org.eclipse.gef.tools.DragEditPartsTracker#setTargetEditPart(org.eclipse.gef.EditPart)
 	 */
 	@Override
-	protected void setSourceEditPart(EditPart i_part) {
+	protected void setTargetEditPart(EditPart i_editpart) {
 
-		super.setSourceEditPart(i_part);
+		if (i_editpart != getTargetEditPart() && log.isLoggable(Level.FINER))
+			log.finer("new target edit part: " + i_editpart);
 
-		if (i_part != getSourceEditPart())
-			m_trackState = null;
+		super.setTargetEditPart(i_editpart);
 	}
 
 	/**
@@ -131,6 +156,10 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 	 */
 	@Override
 	protected void updateTargetRequest() {
+
+		if (log.isLoggable(Level.FINER))
+			log.finer("updating target request");
+
 		// behave like 2D version
 		super.updateTargetRequest();
 
@@ -138,17 +167,9 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 		Request request1 = getTargetRequest();
 		if (request1 instanceof ChangeBounds3DRequest) {
 
-			repairStartLocation();
 			ChangeBounds3DRequest req3D = (ChangeBounds3DRequest) request1;
+			IVector3f delta = new Vector3fImpl(getTrackState().getMoveDelta3D());
 
-			if (m_trackState == null) {
-				ColorPicker snapshot = getSnapshotPicker();
-				m_trackState = new TrackState(getStartLocation(), snapshot);
-			}
-
-			m_trackState.setLocation(getLocation());
-			IVector3f delta = m_trackState.getMoveDelta3D(null);
-			
 			// TODO handle modifier keys for constrained movement
 			// constrains the move to dx=0, dy=0, or dx=dy if shift is depressed
 			// if (getCurrentInput().isShiftKeyDown()) {
@@ -202,5 +223,29 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 			// }
 
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.TargetingTool#updateTargetUnderMouse()
+	 */
+	@Override
+	protected boolean updateTargetUnderMouse() {
+
+		if (log.isLoggable(Level.FINER))
+			log.finer("updating target under mouse");
+
+		if (!isTargetLocked()) {
+			EditPart editPart = getCurrentViewer().findObjectAtExcluding(
+					getCurrentInput().getMouseLocation(), getExclusionSet(),
+					getTargetingConditional());
+			if (editPart != null)
+				editPart = editPart.getTargetEditPart(getTargetRequest());
+			boolean changed = getTargetEditPart() != editPart;
+			setTargetEditPart(editPart);
+			return changed;
+		} else
+			return false;
 	}
 }

@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.gef3d.handles;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ColorConstants;
@@ -24,7 +23,6 @@ import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.handles.SquareHandle;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
-
 
 /**
  * CubeHandle is the 3D version of {@link SquareHandle}.
@@ -52,8 +50,6 @@ public abstract class CubeHandle extends AbstractHandle3D  {
 	private TransparencyAdapter m_supershape = new TransparencyAdapter(this,
 			new CuboidFigureShape(this));
 
-
-	
 	/**
 	 * Null constructor
 	 */
@@ -90,9 +86,6 @@ public abstract class CubeHandle extends AbstractHandle3D  {
 	 * Initializes the handle.
 	 */
 	protected void init() {
-		if (log.isLoggable(Level.INFO)) {
-			log.info("CubeHandler initialized."); //$NON-NLS-1$
-		}
 
 		setPreferredSize3D(new Vector3fImpl(DEFAULT_HANDLE_SIZE,
 				DEFAULT_HANDLE_SIZE, DEFAULT_HANDLE_SIZE));
@@ -148,7 +141,6 @@ public abstract class CubeHandle extends AbstractHandle3D  {
 		// nothing to do
 	}
 
-	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -165,5 +157,4 @@ public abstract class CubeHandle extends AbstractHandle3D  {
 		}
 	}
 
-	
 }

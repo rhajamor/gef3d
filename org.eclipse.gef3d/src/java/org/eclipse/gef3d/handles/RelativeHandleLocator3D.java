@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.gef3d.handles;
 
+import java.util.logging.Logger;
+
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.Figure3DHelper;
@@ -56,13 +58,15 @@ public class RelativeHandleLocator3D extends RelativeLocator3D {
 			else
 				return ((IFigure3D) referenceFig).getBounds3D();
 		} else {
-			// do not call super method here, since this method may be 
+			// do not call super method here, since this method may be
 			// overridden causing infinite calls or inconsistent behavior
 			// with 3D version
-			Rectangle rect = (referenceFig instanceof HandleBounds)
-				?  ((HandleBounds)referenceFig).getHandleBounds()
-						: referenceFig.getBounds();
-				
+			Rectangle rect = (referenceFig instanceof HandleBounds) ? ((HandleBounds) referenceFig)
+					.getHandleBounds()
+					: referenceFig.getBounds();
+
+			referenceFig.translateToAbsolute(rect);
+
 			return Figure3DHelper.convertBoundsToBounds3D(referenceFig, rect);
 		}
 	}

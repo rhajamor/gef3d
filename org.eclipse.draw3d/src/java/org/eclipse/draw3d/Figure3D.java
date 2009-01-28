@@ -23,27 +23,22 @@ import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw2d.geometry.Translatable;
+import org.eclipse.draw3d.geometry.IBoundingBox;
+import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Transformable;
+import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.geometryext.IHost3D;
-import org.eclipse.draw3d.geometryext.IPosition3D;
 import org.eclipse.draw3d.geometryext.Plane;
 import org.eclipse.draw3d.geometryext.Position3D;
 import org.eclipse.draw3d.geometryext.Position3DUtil;
-import org.eclipse.draw3d.geometryext.SyncedBounds3D;
 import org.eclipse.draw3d.geometryext.SyncedVector3f;
 import org.eclipse.draw3d.geometryext.SynchronizedPosition3DImpl;
 import org.eclipse.draw3d.geometryext.IPosition3D.MatrixState;
 import org.eclipse.draw3d.geometryext.IPosition3D.PositionHint;
-import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.util.CoordinateConverter;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.draw3d.geometry.IBoundingBox;
-import org.eclipse.draw3d.geometry.IMatrix4f;
-import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Matrix4f;
-import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Matrix4fImpl;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 /**
  * 3D version of GEF's Figure. This class extends Figure and can be used instead
@@ -67,20 +62,6 @@ public class Figure3D extends Figure implements IFigure3D {
 
 	private static final Vector3fImpl TMP_V3_3 = new Vector3fImpl();
 
-	SynchronizedPosition3DImpl position3D;
-
-	// private MatrixState matrixState;
-	// private transient Matrix4fImpl locationMatrix = new Matrix4fImpl();
-	// private transient Matrix4fImpl modelMatrix = new Matrix4fImpl();
-	// protected SyncedBounds3D bounds3D;
-	// protected Vector3f rotation;
-
-	/**
-	 * Boolean semaphore used by {@link #syncSize()} and {@link #syncSize3D()}
-	 * to avoid infinite loop.
-	 */
-	protected boolean updatingBounds = false;
-
 	/**
 	 * The texture needs to be invalidated every time a child is moved so that
 	 * the changes are drawn on the screen.
@@ -91,6 +72,12 @@ public class Figure3D extends Figure implements IFigure3D {
 			repaint2DComponents = true;
 		}
 	};
+
+	// private MatrixState matrixState;
+	// private transient Matrix4fImpl locationMatrix = new Matrix4fImpl();
+	// private transient Matrix4fImpl modelMatrix = new Matrix4fImpl();
+	// protected SyncedBounds3D bounds3D;
+	// protected Vector3f rotation;
 
 	/**
 	 * The connection layer for his figure's 2D children.
@@ -114,6 +101,8 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	protected int m_alpha = 255;
 
+	SynchronizedPosition3DImpl position3D;
+
 	/**
 	 * The preferred 3D size of this figure. The preferred 3D size is
 	 * synchronized with the preferred 2D size. preferredSize object is created
@@ -129,6 +118,12 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * In
 	 */
 	protected boolean repaint2DComponents = true;
+
+	/**
+	 * Boolean semaphore used by {@link #syncSize()} and {@link #syncSize3D()}
+	 * to avoid infinite loop.
+	 */
+	protected boolean updatingBounds = false;
 
 	/**
 	 * 
@@ -200,21 +195,6 @@ public class Figure3D extends Figure implements IFigure3D {
 		return Figure3DHelper.getAncestor3D(getParent());
 	}
 
-	// /**
-	// * Returns the object matrix of this figure's closest 3D ancestor. If this
-	// * figure does not have any 3D ancestors, the identity matrix is returned.
-	// *
-	// * @return the ancestor's object matrix
-	// */
-	// protected IMatrix4f getAncestorLocationMatrix() {
-	//
-	// IFigure3D fig = getAncestor3D();
-	// if (fig == null)
-	// return IMatrix4f.IDENTITY;
-	//
-	// return fig.getLocationMatrix();
-	// }
-
 	// Overriding setBounds instead and update bounds in setSize3D/setLocatoin3D
 	//	
 	/**
@@ -241,6 +221,21 @@ public class Figure3D extends Figure implements IFigure3D {
 	public IBoundingBox getBounds3D() {
 		return position3D.getBounds3D();
 	}
+
+	// /**
+	// * Returns the object matrix of this figure's closest 3D ancestor. If this
+	// * figure does not have any 3D ancestors, the identity matrix is returned.
+	// *
+	// * @return the ancestor's object matrix
+	// */
+	// protected IMatrix4f getAncestorLocationMatrix() {
+	//
+	// IFigure3D fig = getAncestor3D();
+	// if (fig == null)
+	// return IMatrix4f.IDENTITY;
+	//
+	// return fig.getLocationMatrix();
+	// }
 
 	/**
 	 * {@inheritDoc}
@@ -286,6 +281,78 @@ public class Figure3D extends Figure implements IFigure3D {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#getLocation3D()
+	 * @deprecated use {@link Position3D#getLocation3D()
+	 *             getPosition3D().getLocation3D()}
+	 */
+	public IVector3f getLocation3D() {
+		return position3D.getLocation3D();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure2DHost3D#getLocation3D(org.eclipse.draw2d.geometry.Point)
+	 */
+	public IVector3f getLocation3D(Point i_point2D) {
+		return CoordinateConverter.surfaceToWorld(i_point2D.x, i_point2D.y,
+				this, null);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#getLocationMatrix()
+	 * @deprecated use {@link Position3D#getLocationMatrix()
+	 *             getPosition3D().getLocationMatrix()}
+	 */
+	public IMatrix4f getLocationMatrix() {
+		return position3D.getLocationMatrix();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#getMatrixState()
+	 * @deprecated use {@link Position3D#getMatrixState()
+	 *             getPosition3D().getMatrixState()}
+	 */
+	public MatrixState getMatrixState() {
+		return position3D.getMatrixState();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#getModelMatrix()
+	 * @deprecated use {@link Position3D#getModelMatrix()
+	 *             getPosition3D().getModelMatrix()}
+	 */
+	public IMatrix4f getModelMatrix() {
+		return position3D.getModelMatrix();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometryext.IHost3D#getParentHost3D()
+	 */
+	public IHost3D getParentHost3D() {
+		return getAncestor3D();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometryext.IHost3D#getPosition3D()
+	 */
+	public Position3D getPosition3D() {
+		return position3D;
+	}
+
+	/**
 	 * Returns preferred 3D size, this size is synchronized with 2D dimension.
 	 * Actually the returned vector is a synchronized version of the 2D object.
 	 * {@inheritDoc}
@@ -306,38 +373,6 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getLocation3D()
-	 * @deprecated use {@link Position3D#getLocation3D()
-	 *             getPosition3D().getLocation3D()}
-	 */
-	public IVector3f getLocation3D() {
-		return position3D.getLocation3D();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
-	 * @deprecated use {@link Position3D#setLocation3D(IVector3f)
-	 *             getPosition3D().setLocation3D(point3D)}
-	 */
-	public void setLocation3D(IVector3f i_point) {
-		position3D.setLocation3D(i_point);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure2DHost3D#getLocation3D(org.eclipse.draw2d.geometry.Point)
-	 */
-	public IVector3f getLocation3D(Point i_point2D) {
-		return CoordinateConverter.surfaceToWorld(i_point2D.x, i_point2D.y,
-				this, null);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.draw3d.IFigure3D#getRotation3D()
 	 * @deprecated use {@link Position3D#getRotation3D()
 	 *             getPosition3D().getRotation3D()}
@@ -349,68 +384,12 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#setRotation3D(org.eclipse.draw3d.geometry.IVector3f)
-	 * @deprecated use {@link Position3D#setRotation3D(IVector3f)
-	 *             getPosition3D().setRotation3D(rotation)}
-	 */
-	public void setRotation3D(IVector3f i_rotation) {
-		position3D.setRotation3D(i_rotation);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.draw3d.IFigure3D#getSize3D()
 	 * @deprecated use {@link Position3D#getSize3D()
 	 *             getPosition3D().getSize3D()}
 	 */
 	public IVector3f getSize3D() {
 		return position3D.getSize3D();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @param i_size new size, must not be null, no value must be less 0
-	 * @see org.eclipse.draw3d.IFigure3D#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
-	 * @deprecated use {@link Position3D#setSize3D(IVector3f)
-	 *             getPosition3D().setSize3D(size)}
-	 */
-	public void setSize3D(IVector3f i_size) {
-		position3D.setSize3D(i_size);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getLocationMatrix()
-	 * @deprecated use {@link Position3D#getLocationMatrix()
-	 *             getPosition3D().getLocationMatrix()}
-	 */
-	public IMatrix4f getLocationMatrix() {
-		return position3D.getLocationMatrix();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getModelMatrix()
-	 * @deprecated use {@link Position3D#getModelMatrix()
-	 *             getPosition3D().getModelMatrix()}
-	 */
-	public IMatrix4f getModelMatrix() {
-		return position3D.getModelMatrix();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getMatrixState()
-	 * @deprecated use {@link Position3D#getMatrixState()
-	 *             getPosition3D().getMatrixState()}
-	 */
-	public MatrixState getMatrixState() {
-		return position3D.getMatrixState();
 	}
 
 	/**
@@ -527,6 +506,40 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.geometryext.IHost3D#positionChanged(java.util.EnumSet,
+	 *      org.eclipse.draw3d.geometry.IVector3f)
+	 */
+	public void positionChanged(EnumSet<PositionHint> i_hint, IVector3f delta) {
+
+		boolean bFigureMoved = false;
+
+		if (i_hint.contains(PositionHint.size)) { // from old setSize3D method
+			if (!(delta.getX() == 0 && delta.getY() == 0)
+					&& (delta.getZ() != 0)) {
+				invalidate();
+				bFigureMoved = true;
+			}
+		}
+		if (i_hint.contains(PositionHint.rotation)) { // from old setRotation3D
+			bFigureMoved = true;
+		}
+		if (i_hint.contains(PositionHint.location)) { // from old setLocation3D
+			if (!(delta.getX() == 0 && delta.getY() == 0)
+					&& (delta.getZ() != 0)) {
+				bFigureMoved = true;
+			}
+		}
+
+		if (bFigureMoved) {
+			fireFigureMoved();
+			repaint();
+		}
+
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.IFigure3D#postrender()
 	 */
 	public void postrender() {
@@ -575,6 +588,17 @@ public class Figure3D extends Figure implements IFigure3D {
 
 	/**
 	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
+	 * @deprecated use {@link Position3D#setLocation3D(IVector3f)
+	 *             getPosition3D().setLocation3D(point3D)}
+	 */
+	public void setLocation3D(IVector3f i_point) {
+		position3D.setLocation3D(i_point);
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * <p>
 	 * Internal note: preferredSize object is created lazily if it has not been
 	 * created before
@@ -601,6 +625,29 @@ public class Figure3D extends Figure implements IFigure3D {
 				.setVector3fAsDimension(i_preferredSize3D);
 		setPreferredSize(size);
 
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#setRotation3D(org.eclipse.draw3d.geometry.IVector3f)
+	 * @deprecated use {@link Position3D#setRotation3D(IVector3f)
+	 *             getPosition3D().setRotation3D(rotation)}
+	 */
+	public void setRotation3D(IVector3f i_rotation) {
+		position3D.setRotation3D(i_rotation);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @param i_size new size, must not be null, no value must be less 0
+	 * @see org.eclipse.draw3d.IFigure3D#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
+	 * @deprecated use {@link Position3D#setSize3D(IVector3f)
+	 *             getPosition3D().setSize3D(size)}
+	 */
+	public void setSize3D(IVector3f i_size) {
+		position3D.setSize3D(i_size);
 	}
 
 	/**
@@ -660,6 +707,28 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Figure#translateFromParent(org.eclipse.draw2d.geometry.Translatable)
+	 */
+	@Override
+	public void translateFromParent(Translatable i_t) {
+
+		// do nothing
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Figure#translateToParent(org.eclipse.draw2d.geometry.Translatable)
+	 */
+	@Override
+	public void translateToParent(Translatable i_t) {
+
+		// do nothing
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Figure#useLocalCoordinates()
 	 */
 	@Override
@@ -679,57 +748,5 @@ public class Figure3D extends Figure implements IFigure3D {
 	public void validate() {
 		super.validate();
 		repaint2DComponents = true;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.geometryext.IHost3D#getParentHost3D()
-	 */
-	public IHost3D getParentHost3D() {
-		return getAncestor3D();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.geometryext.IHost3D#getPosition3D()
-	 */
-	public Position3D getPosition3D() {
-		return position3D;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.geometryext.IHost3D#positionChanged(java.util.EnumSet,
-	 *      org.eclipse.draw3d.geometry.IVector3f)
-	 */
-	public void positionChanged(EnumSet<PositionHint> i_hint, IVector3f delta) {
-
-		boolean bFigureMoved = false;
-
-		if (i_hint.contains(PositionHint.size)) { // from old setSize3D method
-			if (!(delta.getX() == 0 && delta.getY() == 0)
-					&& (delta.getZ() != 0)) {
-				invalidate();
-				bFigureMoved = true;
-			}
-		}
-		if (i_hint.contains(PositionHint.rotation)) { // from old setRotation3D
-			bFigureMoved = true;
-		}
-		if (i_hint.contains(PositionHint.location)) { // from old setLocation3D
-			if (!(delta.getX() == 0 && delta.getY() == 0)
-					&& (delta.getZ() != 0)) {
-				bFigureMoved = true;
-			}
-		}
-
-		if (bFigureMoved) {
-			fireFigureMoved();
-			repaint();
-		}
-
 	}
 }

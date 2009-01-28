@@ -10,13 +10,13 @@
  ******************************************************************************/
 package org.eclipse.gef3d.editpolicies;
 
+import static org.eclipse.draw2d.PositionConstants.*;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.PositionConstants;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
@@ -82,65 +82,46 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 			int directions = getResizeDirections();
 
 			List<Handle> list = new ArrayList<Handle>();
+			GraphicalEditPart host = (GraphicalEditPart) getHost();
 
 			if (directions == 0)
-				nonResizableHF.addHandles((GraphicalEditPart) getHost(), list);
+				nonResizableHF.addHandles(host, list);
 			else if (directions != -1) {
-				moveHF.addHandles((GraphicalEditPart) getHost(), list);
-				if ((directions & PositionConstants.EAST) != 0)
-					resizableHF.addHandle((GraphicalEditPart) getHost(), list,
-							PositionConstants.EAST);
+				moveHF.addHandles(host, list);
+				if ((directions & EAST) != 0)
+					resizableHF.addHandle(host, list, EAST);
 				else
-					nonResizableHF.addHandle((GraphicalEditPart) getHost(),
-							list, PositionConstants.EAST);
-				if ((directions & PositionConstants.SOUTH_EAST) == PositionConstants.SOUTH_EAST)
-					resizableHF.addHandle((GraphicalEditPart) getHost(), list,
-							PositionConstants.SOUTH_EAST);
+					nonResizableHF.addHandle(host, list, EAST);
+				if ((directions & SOUTH_EAST) == SOUTH_EAST)
+					resizableHF.addHandle(host, list, SOUTH_EAST);
 				else
-					nonResizableHF.addHandle((GraphicalEditPart) getHost(),
-							list, PositionConstants.SOUTH_EAST);
-				if ((directions & PositionConstants.SOUTH) != 0)
-					resizableHF.addHandle((GraphicalEditPart) getHost(), list,
-							PositionConstants.SOUTH);
+					nonResizableHF.addHandle(host, list, SOUTH_EAST);
+				if ((directions & SOUTH) != 0)
+					resizableHF.addHandle(host, list, SOUTH);
 				else
-					nonResizableHF.addHandle((GraphicalEditPart) getHost(),
-							list, PositionConstants.SOUTH);
-				if ((directions & PositionConstants.SOUTH_WEST) == PositionConstants.SOUTH_WEST)
-					resizableHF.addHandle((GraphicalEditPart) getHost(), list,
-							PositionConstants.SOUTH_WEST);
+					nonResizableHF.addHandle(host, list, SOUTH);
+				if ((directions & SOUTH_WEST) == SOUTH_WEST)
+					resizableHF.addHandle(host, list, SOUTH_WEST);
 				else
-					nonResizableHF.addHandle((GraphicalEditPart) getHost(),
-							list, PositionConstants.SOUTH_WEST);
-				if ((directions & PositionConstants.WEST) != 0)
-					resizableHF.addHandle((GraphicalEditPart) getHost(), list,
-							PositionConstants.WEST);
+					nonResizableHF.addHandle(host, list, SOUTH_WEST);
+				if ((directions & WEST) != 0)
+					resizableHF.addHandle(host, list, WEST);
 				else
-					nonResizableHF.addHandle((GraphicalEditPart) getHost(),
-							list, PositionConstants.WEST);
-				if ((directions & PositionConstants.NORTH_WEST) == PositionConstants.NORTH_WEST)
-					resizableHF.addHandle((GraphicalEditPart) getHost(), list,
-							PositionConstants.NORTH_WEST);
+					nonResizableHF.addHandle(host, list, WEST);
+				if ((directions & NORTH_WEST) == NORTH_WEST)
+					resizableHF.addHandle(host, list, NORTH_WEST);
 				else
-					nonResizableHF.addHandle((GraphicalEditPart) getHost(),
-							list, PositionConstants.NORTH_WEST);
-				if ((directions & PositionConstants.NORTH) != 0)
-					resizableHF.addHandle((GraphicalEditPart) getHost(), list,
-							PositionConstants.NORTH);
+					nonResizableHF.addHandle(host, list, NORTH_WEST);
+				if ((directions & NORTH) != 0)
+					resizableHF.addHandle(host, list, NORTH);
 				else
-					nonResizableHF.addHandle((GraphicalEditPart) getHost(),
-							list, PositionConstants.NORTH);
-				if ((directions & PositionConstants.NORTH_EAST) == PositionConstants.NORTH_EAST)
-					resizableHF.addHandle((GraphicalEditPart) getHost(), list,
-							PositionConstants.NORTH_EAST);
+					nonResizableHF.addHandle(host, list, NORTH);
+				if ((directions & NORTH_EAST) == NORTH_EAST)
+					resizableHF.addHandle(host, list, NORTH_EAST);
 				else
-					nonResizableHF.addHandle((GraphicalEditPart) getHost(),
-							list, PositionConstants.NORTH_EAST);
+					nonResizableHF.addHandle(host, list, NORTH_EAST);
 			} else
-				resizableHF.addHandles((GraphicalEditPart) getHost(), list);
-
-			if (log.isLoggable(Level.INFO)) {
-				log.info("createSelectionHandles():" + list); //$NON-NLS-1$
-			}
+				resizableHF.addHandles(host, list);
 
 			return list;
 		}
@@ -222,6 +203,8 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 			} else {
 				rect = ref.getBounds();
 			}
+
+			ref.translateToAbsolute(rect);
 
 			bounds3D.set(Figure3DHelper.convertBoundsToBounds3D(ref, rect, 1));
 			bounds3D.translate(0, 0, -1);

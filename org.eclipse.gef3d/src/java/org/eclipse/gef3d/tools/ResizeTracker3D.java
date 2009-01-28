@@ -11,25 +11,24 @@
  ******************************************************************************/
 package org.eclipse.gef3d.tools;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.PositionConstants;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.requests.ChangeBoundsRequest;
 import org.eclipse.gef.tools.ResizeTracker;
 import org.eclipse.gef3d.requests.ChangeBounds3DRequest;
-import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
-
 
 /**
  * Extends original version adding 3D functionality.
  * 
  * @todo SnapToHelper and constraint modification not implemented yet.
- * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Mar 31, 2008
@@ -40,6 +39,8 @@ public class ResizeTracker3D extends ResizeTracker {
 	 */
 	private static final Logger log = Logger.getLogger(ResizeTracker3D.class
 			.getName());
+
+	protected TrackState m_trackState;
 
 	/**
 	 * Workaround, this attribute is private in ResizeTracker and mirrored here
@@ -52,6 +53,7 @@ public class ResizeTracker3D extends ResizeTracker {
 	 * @param i_direction
 	 */
 	public ResizeTracker3D(GraphicalEditPart i_owner, int i_direction) {
+
 		super(i_owner, i_direction);
 		owner = i_owner;
 	}
@@ -67,7 +69,7 @@ public class ResizeTracker3D extends ResizeTracker {
 	 */
 	@Override
 	protected Request createSourceRequest() {
-		
+
 		ChangeBounds3DRequest request;
 		request = new ChangeBounds3DRequest(REQ_RESIZE);
 		request.setResizeDirection(getResizeDirection());
@@ -77,10 +79,73 @@ public class ResizeTracker3D extends ResizeTracker {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#getLocation()
+	 */
+	@Override
+	protected Point getLocation() {
+
+		return new Point(getTrackState().getLocation2D());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#getStartLocation()
+	 */
+	@Override
+	protected Point getStartLocation() {
+
+		return new Point(getTrackState().getStartLocation2D());
+	}
+
+	/**
+	 * Returns the current dragstate. If the drag has just begun, a new
+	 * trackstate will be created.
+	 * 
+	 * @return
+	 */
+	protected TrackState getTrackState() {
+
+		Point location = getCurrentInput().getMouseLocation();
+		if (m_trackState == null) {
+			if (log.isLoggable(Level.FINE))
+				log.fine("creating track state");
+
+			m_trackState = Tracker3DHelper.getTrackState(location,
+					getCurrentViewer());
+		}
+
+		m_trackState.setScreenLocation(getCurrentInput().getMouseLocation());
+		return m_trackState;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.SimpleDragTracker#performDrag()
+	 */
+	@Override
+	protected void performDrag() {
+
+		super.performDrag();
+		m_trackState = null;
+		Tracker3DHelper.getPicker(getCurrentViewer()).clearIgnored();
+
+		if (log.isLoggable(Level.FINE))
+			log.fine("resize finished");
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.gef.tools.ResizeTracker#updateSourceRequest()
 	 */
 	@Override
 	protected void updateSourceRequest() {
+
+		if (log.isLoggable(Level.FINE))
+			log.fine("updating source request");
+
 		// first, behave just like a 2D tracker
 		super.updateSourceRequest();
 
@@ -90,12 +155,9 @@ public class ResizeTracker3D extends ResizeTracker {
 			// and here we add 3D features:
 			ChangeBounds3DRequest req3D = (ChangeBounds3DRequest) request;
 
-			ColorPicker picker = Tracker3DHelper.getPicker(getCurrentViewer());
-			TrackState trackState = new TrackState(getStartLocation(), picker);
-			trackState.setLocation(getLocation());
-			
-			Vector3f d = trackState.getMoveDelta3D(null);
-			IVector3f location = trackState.getLocation3D();
+			Vector3f moveDelta3D = getTrackState().getMoveDelta3D();
+			IVector3f location3D = new Vector3fImpl(getTrackState()
+					.getLocation3D());
 
 			Vector3fImpl moveDelta = new Vector3fImpl();
 			Vector3fImpl resizeDelta = new Vector3fImpl();
@@ -108,18 +170,18 @@ public class ResizeTracker3D extends ResizeTracker {
 			 * owner.getFigure().getBounds().width; float ratio = 1; if
 			 * (origWidth != 0 && origHeight != 0) ratio = ((float) origHeight /
 			 * (float) origWidth); if (getResizeDirection() ==
-			 * PositionConstants.SOUTH_EAST) { if (d.height > (d.width * ratio))
+			 * PositionConstants.SOUTH_EAST) { if (d.height > (d.width ratio))
 			 * d.width = (int) (d.height / ratio); else d.height = (int)
-			 * (d.width * ratio); } else if (getResizeDirection() ==
-			 * PositionConstants.NORTH_WEST) { if (d.height < (d.width * ratio))
+			 * (d.width ratio); } else if (getResizeDirection() ==
+			 * PositionConstants.NORTH_WEST) { if (d.height < (d.width ratio))
 			 * d.width = (int) (d.height / ratio); else d.height = (int)
-			 * (d.width * ratio); } else if (getResizeDirection() ==
-			 * PositionConstants.NORTH_EAST) { if (-(d.height) > (d.width *
+			 * (d.width ratio); } else if (getResizeDirection() ==
+			 * PositionConstants.NORTH_EAST) { if (-(d.height) > (d.width
 			 * ratio)) d.width = -(int) (d.height / ratio); else d.height =
-			 * -(int) (d.width * ratio); } else if (getResizeDirection() ==
-			 * PositionConstants.SOUTH_WEST) { if (-(d.height) < (d.width *
+			 * -(int) (d.width ratio); } else if (getResizeDirection() ==
+			 * PositionConstants.SOUTH_WEST) { if (-(d.height) < (d.width
 			 * ratio)) d.width = -(int) (d.height / ratio); else d.height =
-			 * -(int) (d.width * ratio); } } else
+			 * -(int) (d.width ratio); } } else
 			 * request.setConstrainedResize(false);
 			 */
 
@@ -127,40 +189,39 @@ public class ResizeTracker3D extends ResizeTracker {
 			// GEF:
 			// request.setCenteredResize(getCurrentInput().isModKeyDown(SWT.MOD1));
 			// replaced height with y and width with x in the following lines:
-			
 			if ((getResizeDirection() & PositionConstants.NORTH) != 0) {
 				if (getCurrentInput().isControlKeyDown()) {
-					resizeDelta.y -= d.getY();
+					resizeDelta.y -= moveDelta3D.getY();
 				}
-				moveDelta.y += d.getY();
-				resizeDelta.y -= d.getY();
+				moveDelta.y += moveDelta3D.getY();
+				resizeDelta.y -= moveDelta3D.getY();
 			}
 			if ((getResizeDirection() & PositionConstants.SOUTH) != 0) {
 				if (getCurrentInput().isControlKeyDown()) {
-					moveDelta.y -= d.getY();
-					resizeDelta.y += d.getY();
+					moveDelta.y -= moveDelta3D.getY();
+					resizeDelta.y += moveDelta3D.getY();
 				}
-				resizeDelta.y += d.getY();
+				resizeDelta.y += moveDelta3D.getY();
 			}
 			if ((getResizeDirection() & PositionConstants.WEST) != 0) {
 				if (getCurrentInput().isControlKeyDown()) {
-					resizeDelta.x -= d.getX();
+					resizeDelta.x -= moveDelta3D.getX();
 				}
-				moveDelta.x += d.getX();
-				resizeDelta.x -= d.getX();
+				moveDelta.x += moveDelta3D.getX();
+				resizeDelta.x -= moveDelta3D.getX();
 			}
 			if ((getResizeDirection() & PositionConstants.EAST) != 0) {
 				if (getCurrentInput().isControlKeyDown()) {
-					moveDelta.x -= d.getX();
-					resizeDelta.x += d.getX();
+					moveDelta.x -= moveDelta3D.getX();
+					resizeDelta.x += moveDelta3D.getX();
 				}
-				resizeDelta.x += d.getX();
+				resizeDelta.x += moveDelta3D.getX();
 			}
 
 			// call 3D setters (instead of2d)
 			req3D.setMoveDelta3D(moveDelta);
 			req3D.setSizeDelta3D(resizeDelta);
-			req3D.setLocation3D(location);
+			req3D.setLocation3D(location3D);
 
 			/*
 			 * already set in super call: GEF:
@@ -194,5 +255,4 @@ public class ResizeTracker3D extends ResizeTracker {
 					.warning("3D coordinates of request not set, wrong type: " + request); //$NON-NLS-1$
 		}
 	}
-
 }

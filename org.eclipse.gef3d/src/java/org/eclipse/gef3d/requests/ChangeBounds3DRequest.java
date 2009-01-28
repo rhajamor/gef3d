@@ -13,7 +13,6 @@ package org.eclipse.gef3d.requests;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.gef.requests.ChangeBoundsRequest;
 
-
 /**
  * ChangeBounds3DRequest There should really be more documentation here.
  * 
@@ -28,12 +27,6 @@ public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 	IVector3f moveDelta3D = IVector3f.NULLVEC3f;
 
 	IVector3f location3D = IVector3f.NULLVEC3f;
-
-	/**
-	 * 
-	 */
-	public ChangeBounds3DRequest() {
-	}
 
 	/**
 	 * @param i_type

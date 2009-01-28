@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Connection;
@@ -347,6 +348,29 @@ public class Figure3DHelper {
 		}
 	}
 
+	private void logSearch(int indent, IFigure i_figure, TreeSearch i_search,
+			StringBuilder io_result) {
+
+		if (i_search.prune(i_figure)) {
+			for (int i = 0; i < indent; i++)
+				io_result.append("  ");
+			io_result.append(i_figure.getClass().getName());
+			io_result.append("(PRUNED)\n");
+			return;
+		}
+
+		if (!i_search.accept(i_figure)) {
+			for (int i = 0; i < indent; i++)
+				io_result.append("  ");
+			io_result.append(i_figure.getClass().getName());
+			io_result.append("(IGNORE)\n");
+		}
+
+		List<IFigure> children = i_figure.getChildren();
+		for (IFigure child : children)
+			logSearch(indent + 1, child, i_search, io_result);
+	}
+
 	/**
 	 * @param i_x
 	 * @param i_y
@@ -356,19 +380,22 @@ public class Figure3DHelper {
 	 */
 	public IFigure findFigureAt(int i_x, int i_y, TreeSearch i_search) {
 
-		IFigure figure = null;
-
-		UpdateManager updateManager = m_figuresFriend.figure.getUpdateManager();
-		if (updateManager instanceof PickingUpdateManager3D) {
-			PickingUpdateManager3D pickingManager = (PickingUpdateManager3D) updateManager;
-			ColorPicker picker = pickingManager.getPicker();
-
-			figure = picker.getFigure2D(i_x, i_y);
-			if (figure == null)
-				figure = picker.getFigure3D(i_x, i_y);
+		if (log.isLoggable(Level.FINEST)) {
+			StringBuilder str = new StringBuilder(
+					"Ignored figures for search in " + m_figuresFriend.figure
+							+ ":\n");
+			logSearch(1, m_figuresFriend.figure, i_search, str);
+			log.finest(str.toString());
 		}
 
-		return figure;
+		UpdateManager updateManager = m_figuresFriend.figure.getUpdateManager();
+		if (!(updateManager instanceof PickingUpdateManager3D))
+			return null;
+
+		PickingUpdateManager3D pickingManager = (PickingUpdateManager3D) updateManager;
+		ColorPicker picker = pickingManager.getPicker();
+
+		return picker.getFigure(i_x, i_y, i_search);
 	}
 
 	/**
@@ -492,24 +519,19 @@ public class Figure3DHelper {
 						bounds.width, bounds.height, figure.getAlpha(), figure
 								.getBackgroundColor());
 
-/*
-				if (!textureManager.contains(figure)) {
-					textureManager.createTexture(figure, bounds.width,
-							bounds.height);
-				} else {
-					textureManager.resizeTexture(figure, bounds.width,
-							bounds.height);
-				}
-
-				textureManager.activateTexture(figure);
-				textureManager.clearTexture(figure,
-						figure.getBackgroundColor(), figure.getAlpha());
-
-				Graphics textureGraphics = textureManager.getGraphics();
-				Graphics textureGraphics = g3d.activateGraphics2D(figure,
-						bounds.width, bounds.height, figure.getAlpha(), figure
-								.getBackgroundColor());
-*/
+				/*
+				 * if (!textureManager.contains(figure)) {
+				 * textureManager.createTexture(figure, bounds.width,
+				 * bounds.height); } else { textureManager.resizeTexture(figure,
+				 * bounds.width, bounds.height); }
+				 * textureManager.activateTexture(figure);
+				 * textureManager.clearTexture(figure,
+				 * figure.getBackgroundColor(), figure.getAlpha()); Graphics
+				 * textureGraphics = textureManager.getGraphics(); Graphics
+				 * textureGraphics = g3d.activateGraphics2D(figure,
+				 * bounds.width, bounds.height, figure.getAlpha(), figure
+				 * .getBackgroundColor());
+				 */
 
 				Font font = i_graphics.getFont();
 				textureGraphics.setFont(font);

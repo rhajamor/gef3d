@@ -34,7 +34,6 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.geometryext.IHost3D;
-import org.eclipse.draw3d.geometryext.IPosition3D;
 import org.eclipse.draw3d.geometryext.Plane;
 import org.eclipse.draw3d.geometryext.Position3D;
 import org.eclipse.draw3d.geometryext.Position3DImpl;
@@ -94,8 +93,9 @@ public class LightweightSystem3D extends LightweightSystem implements
 		RootFigure3D() {
 			universe = new Position3DImpl(this) {
 
-				/** 
+				/**
 				 * {@inheritDoc}
+				 * 
 				 * @see org.eclipse.draw3d.geometryext.AbstractPosition3D#invalidateMatrices()
 				 */
 				@Override
@@ -103,35 +103,34 @@ public class LightweightSystem3D extends LightweightSystem implements
 					// this is not possible!
 				}
 
-				/** 
+				/**
 				 * {@inheritDoc}
+				 * 
 				 * @see org.eclipse.draw3d.geometryext.Position3DImpl#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
 				 */
 				@Override
 				public void setLocation3D(IVector3f i_point) {
-					
 
 				}
 
-				/** 
+				/**
 				 * {@inheritDoc}
+				 * 
 				 * @see org.eclipse.draw3d.geometryext.Position3DImpl#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
 				 */
 				@Override
 				public void setSize3D(IVector3f i_size) {
 				}
 
-				/** 
+				/**
 				 * {@inheritDoc}
+				 * 
 				 * @see org.eclipse.draw3d.geometryext.AbstractPosition3D#setRotation3D(org.eclipse.draw3d.geometry.IVector3f)
 				 */
 				@Override
 				public void setRotation3D(IVector3f i_rotation) {
 				}
-				
-				
-				
-				
+
 			};
 			universe.setSize3D(new Vector3fImpl(Float.MAX_VALUE,
 					Float.MAX_VALUE, Float.MAX_VALUE));
@@ -224,12 +223,8 @@ public class LightweightSystem3D extends LightweightSystem implements
 		 */
 		@Override
 		public IFigure findFigureAt(int i_x, int i_y, TreeSearch i_search) {
-			IFigure fig = helper.findFigureAt(i_x, i_y, i_search);
 
-			if (fig == null) {
-				return this;
-			}
-			return fig;
+			return helper.findFigureAt(i_x, i_y, i_search);
 		}
 
 		/**

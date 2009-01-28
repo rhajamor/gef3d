@@ -11,17 +11,18 @@
  ******************************************************************************/
 package org.eclipse.draw3d.picking;
 
-import static org.eclipse.draw3d.util.CoordinateConverter.screenToFigure;
-import static org.eclipse.draw3d.util.CoordinateConverter.screenToWorld;
+import static org.eclipse.draw3d.util.CoordinateConverter.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderMode;
 import org.eclipse.draw3d.camera.ICamera;
@@ -77,6 +78,7 @@ import org.eclipse.swt.opengl.GLCanvas;
  */
 public class ColorPicker {
 
+	@SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(ColorPicker.class
 			.getName());
 
@@ -122,13 +124,6 @@ public class ColorPicker {
 		m_pickingBuffers = new OffscreenBuffers();
 	}
 
-	private ColorPicker(FigureManager i_figureManager,
-			PickingBuffers i_pickingBuffers) {
-
-		m_figureManager = i_figureManager;
-		m_pickingBuffers = i_pickingBuffers;
-	}
-
 	/**
 	 * Clears the ignored figures and types.
 	 */
@@ -137,33 +132,10 @@ public class ColorPicker {
 		if (m_disposed)
 			throw new IllegalStateException("color picker is disposed");
 
-		m_valid = !m_figureManager.clearIgnored() && m_valid;
-	}
-
-	/**
-	 * Creates a snapshot of this color picker.
-	 * 
-	 * @return a snapshot of this color picker
-	 */
-	public ColorPicker createSnapshot() {
-
-		if (m_disposed)
-			throw new IllegalStateException("color picker is disposed");
-
-		validate();
-
-		PickingBuffers snapshotBuffers = m_pickingBuffers.createSnapshot();
-		FigureManager snapshotFigures = m_figureManager.createSnapshot();
-
-		ColorPicker snapshot = new ColorPicker(snapshotFigures, snapshotBuffers);
-		snapshot.setCamera(m_camera);
-		snapshot.setCanvas(m_canvas);
-		snapshot.setRootFigure(m_rootFigure);
-
 		if (log.isLoggable(Level.FINE))
-			log.fine("created snapshot of color buffer " + this);
+			log.fine("clearing all ignored figures and types");
 
-		return snapshot;
+		m_valid = !m_figureManager.clearIgnored() && m_valid;
 	}
 
 	/**
@@ -263,35 +235,70 @@ public class ColorPicker {
 	}
 
 	/**
-	 * Returns the foremost 2D figure at the given screen coordinates.
+	 * Returns the figure at the given screen coordinates or <code>null</code>
+	 * if no figure can be found at the given coordinates that satisfies the
+	 * given tree search.
 	 * 
-	 * @param i_x the screen X coordinate
-	 * @param i_y the screen Y coordinate
-	 * @return the 2D figure at the given coordinates or <code>null</code> if
-	 *         there is not 2D figure at the given coordinates
-	 * @throws IllegalStateException if this figure picker is invalid
+	 * @param i_x the X screen coordinate
+	 * @param i_y the Y screen coordinate
+	 * @param i_search the tree search
+	 * @return the figure at the given coordinates or <code>null</code>
 	 */
-	public IFigure getFigure2D(int i_x, int i_y) {
+	public IFigure getFigure(int i_x, int i_y, TreeSearch i_search) {
 
-		IFigure3D host = getFigure3D(i_x, i_y);
-		if (host == null)
+		IFigure3D figure3D = getFigure3D(i_x, i_y);
+		if (figure3D == null)
 			return null;
 
-		float depth = getDepth(i_x, i_y);
+		if (i_search != null) {
+			IFigure currentFigure = figure3D;
+			do {
+				if (i_search.prune(currentFigure))
+					return null;
 
-		Point coords = Point.SINGLETON;
-		CoordinateConverter.screenToSurface(i_x, i_y, depth, host, coords);
-
-		int x = coords.x;
-		int y = coords.y;
-
-		Collection<IFigure> children2D = host.getChildren2D();
-		for (IFigure child : children2D) {
-			IFigure pick = child.findFigureAt(x, y);
-
-			if (pick != null)
-				return pick;
+				currentFigure = currentFigure.getParent();
+			} while (currentFigure != null);
 		}
+
+		List<IFigure> children2D = figure3D.getChildren2D();
+		if (!children2D.isEmpty()) {
+			float depth = getDepth(i_x, i_y);
+
+			Point coords = Point.SINGLETON;
+			CoordinateConverter.screenToSurface(i_x, i_y, depth, figure3D,
+					coords);
+
+			int sX = coords.x;
+			int sY = coords.y;
+			for (IFigure child2D : children2D) {
+				IFigure result = null;
+				if (i_search != null) {
+					if (i_search.prune(child2D))
+						continue;
+
+					result = child2D.findFigureAt(sX, sY, i_search);
+				} else {
+					result = child2D.findFigureAt(sX, sY);
+				}
+
+				if (result != null)
+					return result;
+			}
+		}
+
+		// now we have only found a 3D figure, and we must check whether it
+		// is accepted by the search
+
+		if (i_search == null)
+			return figure3D;
+
+		IFigure currentFigure = figure3D;
+		do {
+			if (i_search.accept(currentFigure))
+				return currentFigure;
+
+			currentFigure = currentFigure.getParent();
+		} while (currentFigure != null);
 
 		return null;
 	}
@@ -355,29 +362,30 @@ public class ColorPicker {
 
 		validate();
 
-		if (o_result == null)
-			o_result = new Vector3fImpl();
+		Vector3f result = o_result;
+		if (result == null)
+			result = new Vector3fImpl();
 
 		IFigure3D figure = getFigure3D(i_x, i_y);
 		if (figure != null) {
 			float depth = getDepth(i_x, i_y);
-			screenToWorld(i_x, i_y, depth, o_result);
+			screenToWorld(i_x, i_y, depth, result);
 
 			updateVirtualPlane(i_x, i_y);
 		} else if (m_lastFigure != null) {
 			m_camera.getPosition(TMP_V3_1);
 			screenToWorld(i_x, i_y, 0, TMP_V3_2);
 
-			m_virtualPlane.intersectionWithRay(TMP_V3_1, TMP_V3_2, o_result);
+			m_virtualPlane.intersectionWithRay(TMP_V3_1, TMP_V3_2, result);
 		} else {
-			screenToWorld(i_x, i_y, STD_DEPTH, o_result);
+			screenToWorld(i_x, i_y, STD_DEPTH, result);
 		}
 
-		return o_result;
+		return result;
 	}
 
 	/**
-	 * Ignore the given figure.
+	 * Ignore the given figure and all its children.
 	 * 
 	 * @param i_figure the figure to ignore
 	 * @throws NullPointerException if the given figure is <code>null</code>
@@ -391,10 +399,14 @@ public class ColorPicker {
 			throw new IllegalStateException("color picker is disposed");
 
 		m_valid = !m_figureManager.ignoreFigure(i_figure) && m_valid;
+
+		if (log.isLoggable(Level.FINE))
+			log.fine("ignoring " + i_figure + " and all children");
 	}
 
 	/**
-	 * Ignores figures that are an instance of the given type.
+	 * Ignore any figure that is an instance of the given type including the
+	 * figures children.
 	 * 
 	 * @param i_type the type to ignore
 	 * @throws NullPointerException if the given class is <code>null</code>
@@ -408,6 +420,9 @@ public class ColorPicker {
 			throw new IllegalStateException("color picker is disposed");
 
 		m_valid = !m_figureManager.ignoreType(i_type) && m_valid;
+
+		if (log.isLoggable(Level.FINE))
+			log.fine("ignoring " + i_type + " and all children");
 	}
 
 	/**
@@ -434,7 +449,27 @@ public class ColorPicker {
 		if (m_disposed)
 			throw new IllegalStateException("color picker is disposed");
 
-		return m_figureManager.isIgnored(i_figure);
+		IFigure3D currentFigure = i_figure;
+		do {
+			if (m_figureManager.isIgnored(currentFigure)) {
+				if (log.isLoggable(Level.FINE)) {
+					StringBuilder message = new StringBuilder();
+					message.append(i_figure);
+					message.append(" is ignored");
+					if (i_figure != currentFigure) {
+						message.append(" because of ancestor ");
+						message.append(currentFigure);
+					}
+
+					log.fine(message.toString());
+				}
+				return true;
+			}
+
+			currentFigure = Figure3DHelper.getAncestor3D(currentFigure);
+		} while (currentFigure != null);
+
+		return false;
 	}
 
 	/**

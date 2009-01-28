@@ -210,8 +210,7 @@ public class DispatchingConnectionLayerHelper {
 				return null;
 			}
 		} else {
-			log
-					.severe("IFigure, boolean - 2D connections with different 3D ancestors... - exception: " + null); //$NON-NLS-1$
+			log.severe("2D connections with different 3D ancestors");
 
 			throw new IllegalArgumentException(
 					"Connection's anchors have different 3D ancestors");
