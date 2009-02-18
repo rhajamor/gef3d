@@ -26,7 +26,6 @@ import org.eclipse.swt.opengl.GLCanvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-
 /**
  * Creates GLCanvas, RootEditPart, and LightweightSystem. Here, 3D versions of
  * these objects are created.
@@ -37,7 +36,7 @@ import org.eclipse.swt.widgets.Control;
  */
 public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 		IScene, IFigureFactoryProvider {
-	
+
 	protected IFigureFactory m_FigureFactory = null;
 
 	/**
@@ -58,7 +57,8 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	@Override
 	public Control createControl(Composite i_composite) {
 
-		final GLCanvas canvas = new Draw3DCanvas(i_composite, SWT.NONE);
+		final GLCanvas canvas = Draw3DCanvas
+				.createCanvas(i_composite, SWT.NONE);
 
 		setControl(canvas);
 		return getControl();
@@ -102,8 +102,8 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	/**
 	 * Returns the 3D lightweight system.
 	 * 
-	 * @return the 3D lightweightsystem or <code>null</code> if the
-	 *         lightweight system is not 3D capable
+	 * @return the 3D lightweightsystem or <code>null</code> if the lightweight
+	 *         system is not 3D capable
 	 */
 	public LightweightSystem3D getLightweightSystem3D() {
 
@@ -212,23 +212,22 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 		lightweightSystem3D.setDrawAxes(i_drawAxes);
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.gef3d.factories.IFigureFactoryProvider#getFigureFactory()
 	 */
 	public IFigureFactory getFigureFactory() {
 		return m_FigureFactory;
 	}
-	
+
 	/**
 	 * Sets the figure factory of this viewer.
+	 * 
 	 * @param i_factory
 	 */
 	public void setFigureFactory(IFigureFactory i_factory) {
 		m_FigureFactory = i_factory;
 	}
-
-		
-	
 
 }

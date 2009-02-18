@@ -15,6 +15,8 @@ import java.util.logging.Logger;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.eclipse.swt.opengl.GLData;
 import org.eclipse.swt.widgets.Composite;
@@ -28,18 +30,6 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class Draw3DCanvas extends GLCanvas {
 
-	private static GLData createGLData() {
-
-		GLData data = new GLData();
-		data.doubleBuffer = true;
-		data.depthSize = 1; // Add this line to force a depth buffer
-		data.sampleBuffers = 1; // enable multisampling (kristian)
-		data.samples = 4; // enable multisampling (kristian)
-
-		return data;
-
-	}
-
 	/**
 	 * Logger for this class
 	 */
@@ -47,13 +37,41 @@ public class Draw3DCanvas extends GLCanvas {
 			.getName());
 
 	/**
+	 * Creates a new draw3D canvas with the given parent and style.
+	 * 
+	 * @param i_parent the parent composite
+	 * @param i_style the style mask
+	 * @return the canvas
+	 */
+	public static Draw3DCanvas createCanvas(Composite i_parent, int i_style) {
+
+		GLData data = new GLData();
+		data.doubleBuffer = true;
+		data.depthSize = 1; // Add this line to force a depth buffer
+		data.sampleBuffers = 1; // enable multisampling (kristian)
+		data.samples = 4; // enable multisampling (kristian)
+
+		try {
+			return new Draw3DCanvas(i_parent, i_style, data);
+		} catch (SWTException ex) {
+			if (ex.code == SWT.ERROR_UNSUPPORTED_DEPTH) {
+				data.sampleBuffers = 0;
+				data.samples = 0;
+				return new Draw3DCanvas(i_parent, i_style, data);
+			}
+
+			throw ex;
+		}
+	}
+
+	/**
 	 * @param i_parent
 	 * @param i_style
 	 * @param i_data
 	 */
-	public Draw3DCanvas(Composite i_parent, int i_style) {
+	protected Draw3DCanvas(Composite i_parent, int i_style, GLData i_data) {
 
-		super(i_parent, i_style, createGLData());
+		super(i_parent, i_style, i_data);
 
 		// Set the default renderer to have one in any case. May be exchanged
 		// later.
