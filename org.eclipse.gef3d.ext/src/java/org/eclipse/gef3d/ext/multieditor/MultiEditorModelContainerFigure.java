@@ -49,10 +49,17 @@ public class MultiEditorModelContainerFigure extends FreeformLayer3D {
 		if (i_figure instanceof IFigure3D) {
 			IFigure3D fig3D = (Figure3D) i_figure;
 
+			//TODO replace with layout manager
 			if (!(fig3D instanceof IInterModelDiagram)) {
 				Vector3fImpl vec = new Vector3fImpl(fig3D.getLocation3D());
 				vec.z += dz;
 				fig3D.setLocation3D(vec);
+				
+//				Vector3fImpl v = new Vector3fImpl();
+//				v.z = (float) (Math.PI/6 *dz/1000);
+//				v.y = (float) (Math.PI/12 *dz/1000);
+//				fig3D.setRotation3D(v);
+				
 				dz += 1000;
 			}
 		}
