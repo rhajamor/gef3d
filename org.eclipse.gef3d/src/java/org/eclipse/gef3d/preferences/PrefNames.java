@@ -7,7 +7,8 @@
  *
  * Contributors:
  *    Kristian Duske - initial API and implementation
- ******************************************************************************/package org.eclipse.gef3d.preferences;
+ ******************************************************************************/
+package org.eclipse.gef3d.preferences;
 
 /**
  * Constants for the GEF 3D preferences.
@@ -83,4 +84,9 @@ public class PrefNames {
 	 * Preference name for the mouse sensitivity value.
 	 */
 	public static final String MOUSE_SENSITIVITY = "mouseSensitivity";
+
+	/**
+	 * Preference name for the modifier key for camera orbit mode.
+	 */
+	public static final String MOD_ORBIT = "cameraOrbitMode";
 }

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Preferences;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
@@ -22,6 +23,7 @@ import org.eclipse.draw2d.UpdateManager;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.camera.ICamera;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.ColorPicker;
 import org.eclipse.draw3d.util.CoordinateConverter;
 import org.eclipse.gef.EditPartViewer;
@@ -39,16 +41,14 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.draw3d.geometry.Vector3f;
-
 
 /**
  * CameraTool moves and rotates a camera of a 3D lighweight system. This tool
  * moves the camera like a first person camera:
  * <ul>
  * <li>Mouse drag -- rorates camera (look)</li>
- * <li>Arrow key -- move camera left/right (strafe) and backward/forward
- * (slide)</li>
+ * <li>Arrow key -- move camera left/right (strafe) and backward/forward (slide)
+ * </li>
  * <li>+/- keys -- moves camera up and down
  * <li>
  * <li>Mouse wheel -- move camera backward/forward
@@ -59,11 +59,11 @@ import org.eclipse.draw3d.geometry.Vector3f;
  * these parameters may be made configurable later.
  * <p>
  * The implementation is a little bit dirty, but it is running quite well, at
- * least under Mac OS X. There's a bug under OS X (see
- * {@link https://bugs.eclipse.org/bugs/show_bug.cgi?id=207298}) which causes
- * all key events to stop when mouse button is pressed. This implementation here
- * doesn't workaround this bug directly, but at least a pressed key is still
- * working after the mouse button is released.
+ * least under Mac OS X. There's a bug under OS X (see {@link https
+ * ://bugs.eclipse.org/bugs/show_bug.cgi?id=207298}) which causes all key events
+ * to stop when mouse button is pressed. This implementation here doesn't
+ * workaround this bug directly, but at least a pressed key is still working
+ * after the mouse button is released.
  * 
  * @author Jens von Pilgrim, Kristian Duske
  * @version $Revision$
@@ -143,6 +143,8 @@ public class CameraTool extends AbstractTool {
 
 	private float wheelspeed = 20;
 
+	private int orbitModifiers;
+
 	/**
 	 * Initializes the default key bindings.
 	 */
@@ -161,6 +163,7 @@ public class CameraTool extends AbstractTool {
 		rollRightKey = getKeySequence('X');
 
 		centerLook = getKeySequence(SWT.ESC);
+		orbitModifiers = SWT.ALT;
 	}
 
 	@Override
@@ -302,7 +305,9 @@ public class CameraTool extends AbstractTool {
 			lastme.setLocation(me);
 
 			orbitCenter = null;
-			if (getCurrentInput().isAltKeyDown()) {
+
+			int modifiers = getModifiers(getCurrentInput());
+			if (modifiers != 0 && modifiers == orbitModifiers) {
 				UpdateManager updateManager = getUpdateManager();
 				if (updateManager == null
 						|| !(updateManager instanceof PickingUpdateManager3D))
@@ -310,7 +315,7 @@ public class CameraTool extends AbstractTool {
 
 				PickingUpdateManager3D pickingManager = (PickingUpdateManager3D) updateManager;
 				ColorPicker picker = pickingManager.getPicker();
-				
+
 				float depth = picker.getDepth(me.x, me.y);
 
 				if (depth < 0.999f) {
@@ -326,6 +331,25 @@ public class CameraTool extends AbstractTool {
 		} else {
 			return super.handleButtonDown(i_button);
 		}
+	}
+
+	private int getModifiers(Input i_currentInput) {
+
+		int modifiers = 0;
+		if (i_currentInput.isShiftKeyDown())
+			modifiers |= SWT.SHIFT;
+
+		if (i_currentInput.isControlKeyDown())
+			modifiers |= SWT.CONTROL;
+
+		if (i_currentInput.isAltKeyDown())
+			modifiers |= SWT.ALT;
+
+		if (Platform.OS_MACOSX.equals(Platform.getOS())
+				&& i_currentInput.isModKeyDown(SWT.MOD1))
+			modifiers |= SWT.MOD1;
+
+		return modifiers;
 	}
 
 	/**
@@ -364,7 +388,9 @@ public class CameraTool extends AbstractTool {
 		float dY = me.y - lastme.y;
 		lastme.setLocation(me);
 
-		if (getCurrentInput().isAltKeyDown() && orbitCenter != null) {
+		int modifiers = getModifiers(getCurrentInput());
+		if (modifiers != 0 && modifiers == orbitModifiers
+				&& orbitCenter != null) {
 			float hAngle = (float) Math.asin(orbitSpeed(dX));
 			float vAngle = (float) Math.asin(orbitSpeed(dY));
 			camera.orbit(orbitCenter, -hAngle, vAngle);
@@ -537,6 +563,7 @@ public class CameraTool extends AbstractTool {
 		rollRightKey = getPrefSequence(PrefNames.KEY_ROLL_RIGHT);
 
 		centerLook = getPrefSequence(PrefNames.KEY_CENTER);
+		orbitModifiers = store.getInt(PrefNames.MOD_ORBIT);
 	}
 
 }

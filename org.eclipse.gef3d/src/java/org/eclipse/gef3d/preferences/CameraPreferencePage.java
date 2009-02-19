@@ -7,18 +7,12 @@
  *
  * Contributors:
  *    Kristian Duske - initial API and implementation
- ******************************************************************************/package org.eclipse.gef3d.preferences;
+ ******************************************************************************/
+package org.eclipse.gef3d.preferences;
 
-import static org.eclipse.gef3d.preferences.PrefNames.KEY_BACKWARD;
-import static org.eclipse.gef3d.preferences.PrefNames.KEY_CENTER;
-import static org.eclipse.gef3d.preferences.PrefNames.KEY_DOWN;
-import static org.eclipse.gef3d.preferences.PrefNames.KEY_FORWARD;
-import static org.eclipse.gef3d.preferences.PrefNames.KEY_LEFT;
-import static org.eclipse.gef3d.preferences.PrefNames.KEY_RIGHT;
-import static org.eclipse.gef3d.preferences.PrefNames.KEY_ROLL_LEFT;
-import static org.eclipse.gef3d.preferences.PrefNames.KEY_ROLL_RIGHT;
-import static org.eclipse.gef3d.preferences.PrefNames.KEY_UP;
+import static org.eclipse.gef3d.preferences.PrefNames.*;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.draw3d.camera.FirstPersonCamera;
 import org.eclipse.draw3d.camera.RestrictedFirstPersonCamera;
 import org.eclipse.gef3d.Activator;
@@ -27,10 +21,10 @@ import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.ScaleFieldEditor;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-
 
 /**
  * Provides the implementation of the camera preferences.
@@ -39,7 +33,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  * @version $Revision$
  * @since 4.3.2008
  * @see $HeadURL:
- * */
+ */
 public class CameraPreferencePage extends FieldEditorPreferencePage implements
 		IWorkbenchPreferencePage {
 
@@ -69,6 +63,7 @@ public class CameraPreferencePage extends FieldEditorPreferencePage implements
 	 * GUI blocks needed to manipulate various types of preferences. Each field
 	 * editor knows how to save and restore itself.
 	 */
+	@Override
 	public void createFieldEditors() {
 
 		Composite parent = getFieldEditorParent();
@@ -104,6 +99,20 @@ public class CameraPreferencePage extends FieldEditorPreferencePage implements
 		addKeyEditor(KEY_ROLL_RIGHT, "Roll right:", 1);
 
 		addKeyEditor(KEY_CENTER, "Center view", 1);
+
+		String[] modOrbitLabels;
+		int[] modOrbitValues;
+		if (Platform.OS_MACOSX.equals(Platform.getOS())) {
+			modOrbitLabels = new String[] { "Shift", "Ctrl", "Alt", "Cmd" };
+			modOrbitValues = new int[] { SWT.SHIFT, SWT.CONTROL, SWT.ALT,
+					SWT.MOD1 };
+		} else {
+			modOrbitLabels = new String[] { "Shift", "Ctrl", "Alt" };
+			modOrbitValues = new int[] { SWT.SHIFT, SWT.CONTROL, SWT.ALT };
+		}
+
+		addField(new BitFieldEditor(PrefNames.MOD_ORBIT, "Orbit key:",
+				modOrbitLabels.length, modOrbitLabels, modOrbitValues, parent));
 	}
 
 	public void init(IWorkbench workbench) {

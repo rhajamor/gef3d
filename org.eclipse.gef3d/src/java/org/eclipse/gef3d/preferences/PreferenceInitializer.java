@@ -7,7 +7,8 @@
  *
  * Contributors:
  *    Kristian Duske - initial API and implementation
- ******************************************************************************/package org.eclipse.gef3d.preferences;
+ ******************************************************************************/
+package org.eclipse.gef3d.preferences;
 
 import static org.eclipse.gef3d.preferences.PrefNames.*;
 
@@ -16,12 +17,10 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.gef3d.Activator;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
-import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
-
 
 /**
  * Initializes the preference store.
@@ -40,6 +39,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		return keySequence.toString();
 	}
 
+	@Override
 	public void initializeDefaultPreferences() {
 
 		Preferences store = Activator.getDefault().getPluginPreferences();
@@ -69,6 +69,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		store.setDefault(KEY_ROLL_RIGHT, getSequence('X'));
 
 		store.setDefault(KEY_CENTER, getSequence(SWT.ESC));
+		store.setDefault(MOD_ORBIT, SWT.ALT);
 	}
 
 }
