@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.eclipse.draw3d.graphics3d.lwjgl.texture.LwjglTextureManager;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 
@@ -28,31 +29,40 @@ import org.eclipse.swt.graphics.FontData;
 public class LwjglFontManager {
 
 	/**
-	 * The font manager instance which is shared between all graphics instances
-	 * created within the same thread.
+	 * The font manager is created by the texture manager 
+	 * ({@link LwjglTextureManager}), this class should not be created by
+	 * other classes.
 	 */
-	private static final ThreadLocal<LwjglFontManager> fontManager = new ThreadLocal<LwjglFontManager>() {
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see java.lang.ThreadLocal#initialValue()
-		 */
-		@Override
-		protected LwjglFontManager initialValue() {
-
-			return new LwjglFontManager();
-		}
-	};
-
-	/**
-	 * Gets the thread's font manager instance.
-	 * 
-	 * @return
-	 */
-	public static LwjglFontManager getFontManager() {
-		return fontManager.get();
+	public LwjglFontManager() {
 	}
-
+	
+	
+//	/**
+//	 * The font manager instance which is shared between all graphics instances
+//	 * created within the same thread.
+//	 */
+//	private static final ThreadLocal<LwjglFontManager> fontManager = new ThreadLocal<LwjglFontManager>() {
+//		/**
+//		 * {@inheritDoc}
+//		 * 
+//		 * @see java.lang.ThreadLocal#initialValue()
+//		 */
+//		@Override
+//		protected LwjglFontManager initialValue() {
+//
+//			return new LwjglFontManager();
+//		}
+//	};
+//
+//	/**
+//	 * Gets the thread's font manager instance.
+//	 * 
+//	 * @return
+//	 */
+//	public static LwjglFontManager getFontManager() {
+//		return fontManager.get();
+//	}
+//
 	/**
 	 * Key for the font map.
 	 * 

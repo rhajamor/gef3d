@@ -10,16 +10,18 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import org.eclipse.draw2d.Graphics;
-import org.eclipse.draw3d.geometryext.IPosition3D;
+import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
-import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBackBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
@@ -33,20 +35,23 @@ import org.lwjgl.opengl.GLContext;
 
 /**
  * Graphics3DLwjgl is the implementor of the Graphics3D interface for the LWJGL
- * renderer.
- * 
- * <h3>OpenGL Notes</h3>
- * glMultMatrix(FloatBuffer) is replaced with setPosition(Object).
+ * renderer. <h3>OpenGL Notes</h3> glMultMatrix(FloatBuffer) is replaced with
+ * setPosition(Object).
  * 
  * @author Matthias Thiele
  * @version $Revision$
  * @since 06.12.2008
  */
 public class Graphics3DLwjgl implements Graphics3D {
+	/**
+	 * Logger for this class
+	 */
+	private static final Logger log = Logger.getLogger(Graphics3DLwjgl.class.getName());
 
 	/**
 	 * The texture manager handles OpenGL texture as GL's mechanism to render 2D
-	 * content.
+	 * content. It is lazily created in
+	 * {@link #activateGraphics2D(Object, int, int, int, Color)}.
 	 */
 	public LwjglTextureManager m_textureManager = null;
 
@@ -60,6 +65,10 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 */
 	public Graphics3DLwjgl() {
 		super();
+
+		if (log.isLoggable(Level.INFO)) {
+			log.info("Graphics3DLwjgl constructor called"); //$NON-NLS-1$
+		}
 	}
 
 	// Constants for controlling draw behavior *********************************
@@ -70,6 +79,11 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setGLCanvas(org.eclipse.swt.opengl.GLCanvas)
 	 */
 	public void setGLCanvas(GLCanvas i_canvas) {
+		if (m_textureManager!=null) {
+			throw new IllegalStateException("Texture manager already initialized, cannot set new canvas");
+		}
+		
+		
 		m_context = i_canvas;
 
 	}
@@ -82,7 +96,7 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 * This concrete implementation returns a FloatBuffer of the model matrix of
 	 * the given position. The buffer is not rewound.
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#createRawPosition(org.eclipse.draw3d.geometryext.IPosition3D)
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#createRawPosition(org.eclipse.draw3d.geometry.IPosition3D)
 	 */
 	public Object createRawPosition(IPosition3D i_position3D) {
 		FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
@@ -101,15 +115,15 @@ public class Graphics3DLwjgl implements Graphics3D {
 	}
 
 	/**
-	 * Sets the position, the given raw position is expected to be a
-	 * FloatBuffer (size=16).
+	 * Sets the position, the given raw position is expected to be a FloatBuffer
+	 * (size=16).
 	 * 
 	 * @throws ClassCastException if given object is not an instance of
 	 *             FLoatBuffer.
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#setPosition(java.lang.Object)
 	 */
 	public void setPosition(Object i_theRawPosition) {
-		((FloatBuffer)i_theRawPosition).rewind();
+		((FloatBuffer) i_theRawPosition).rewind();
 		org.lwjgl.opengl.GL11.glMultMatrix((FloatBuffer) i_theRawPosition);
 	}
 
@@ -519,6 +533,8 @@ public class Graphics3DLwjgl implements Graphics3D {
 
 		if (m_textureManager == null) {
 			m_textureManager = new LwjglTextureManager(m_context);
+		} else if (m_textureManager.isDisposed()) {
+			throw new IllegalStateException("TextureManager is disposed");
 		}
 
 		if (!m_textureManager.contains(i_key)) {
@@ -560,7 +576,6 @@ public class Graphics3DLwjgl implements Graphics3D {
 
 		m_textureManager.dispose();
 
-		LwjglFontManager.getFontManager().dispose();
 	}
 
 	/**

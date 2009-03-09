@@ -553,7 +553,7 @@ public class LwjglGraphics extends Graphics {
 	 * @param i_width the width of this graphics object
 	 * @param i_height the height of this graphics object
 	 */
-	public LwjglGraphics(int i_width, int i_height) {
+	public LwjglGraphics(int i_width, int i_height, LwjglFontManager fontManager) {
 
 		setDimensions(i_width, i_height);
 		initDefaultGraphicsState();
@@ -563,7 +563,7 @@ public class LwjglGraphics extends Graphics {
 		glSetLineStyle();
 		glSetXORMode();
 
-		setFontManager(LwjglFontManager.getFontManager());
+		setFontManager(fontManager);
 	}
 
 	private void checkDisposed() {

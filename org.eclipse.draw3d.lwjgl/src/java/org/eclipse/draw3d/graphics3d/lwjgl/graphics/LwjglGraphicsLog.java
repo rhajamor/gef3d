@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -44,9 +45,9 @@ public class LwjglGraphicsLog extends LwjglGraphics {
 	 * @param i_width
 	 * @param i_height
 	 */
-	public LwjglGraphicsLog(int i_width, int i_height) {
+	public LwjglGraphicsLog(int i_width, int i_height, LwjglFontManager fontManager) {
 
-		super(i_width, i_height);
+		super(i_width, i_height, fontManager);
 
 		log = Logger.getLogger(LwjglGraphicsLog.class.getName());
 		log.setUseParentHandlers(false);

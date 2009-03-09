@@ -13,6 +13,7 @@ package org.eclipse.draw3d.graphics3d.lwjgl.texture;
 import java.nio.IntBuffer;
 
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics;
 import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.ColorConverter;
@@ -138,6 +139,8 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 
 	private int m_width;
 
+	private LwjglFontManager m_fontManager;
+
 	/**
 	 * Creates a new texture. Since using pbuffers involves a context switch, we
 	 * need the main GL context here.
@@ -150,13 +153,14 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 	 *             positive
 	 * @throws NullPointerException if the given context is <code>null</code>
 	 */
-	public LwjglTexturePbuffer(GLCanvas i_context, int i_width, int i_height) {
+	public LwjglTexturePbuffer(GLCanvas i_context, int i_width, int i_height, LwjglFontManager fontManager) {
 
 		if (i_context == null)
 			throw new NullPointerException("i_context must not be null");
 
 		m_context = i_context;
 		setDimensions(i_width, i_height);
+		m_fontManager = fontManager;
 	}
 
 	/**
@@ -173,7 +177,7 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 			if (!m_valid || (m_pBuffer != null && m_pBuffer.isBufferLost())) {
 
 				if (m_graphics == null)
-					m_graphics = new LwjglGraphics(m_width, m_height);
+					m_graphics = new LwjglGraphics(m_width, m_height, m_fontManager);
 				else
 					m_graphics.setDimensions(m_width, m_height);
 

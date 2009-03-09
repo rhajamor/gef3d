@@ -15,6 +15,7 @@ import java.nio.IntBuffer;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics;
 import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.ColorConverter;
@@ -75,6 +76,8 @@ public class LwjglTextureFbo implements LwjglTexture {
 	private boolean m_valid = false;
 
 	private int m_width = -1;
+
+	private LwjglFontManager m_fontManager;
 
 	private static int createFbo() {
 
@@ -176,8 +179,8 @@ public class LwjglTextureFbo implements LwjglTexture {
 	 * @throws IllegalArgumentException if the given width or height is not
 	 *             positive
 	 */
-	public LwjglTextureFbo(int i_width, int i_height) {
-
+	public LwjglTextureFbo(int i_width, int i_height, LwjglFontManager fontManager) {
+		m_fontManager = fontManager;
 		setDimensions(i_width, i_height);
 		m_glFrameBuffer = createFbo();
 	}
@@ -197,7 +200,7 @@ public class LwjglTextureFbo implements LwjglTexture {
 				EXTFramebufferObject.GL_FRAMEBUFFER_EXT, m_glFrameBuffer);
 		if (!m_valid) {
 			if (m_graphics == null)
-				m_graphics = new LwjglGraphics(m_width, m_height);
+				m_graphics = new LwjglGraphics(m_width, m_height, m_fontManager);
 			else
 				m_graphics.setDimensions(m_width, m_height);
 
