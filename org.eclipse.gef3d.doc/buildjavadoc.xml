@@ -67,6 +67,7 @@
 		<path id="srcpath">
 			<pathelement path="../org.eclipse.draw3d/src/java" />
 			<pathelement path="../org.eclipse.draw3d.geometry/src/java" />
+			<pathelement path="../org.eclipse.draw3d.graphics3d/src/java" />
 			<pathelement path="../org.eclipse.draw3d.lwjgl/src/java" />
 			<!-- <pathelement path="../org.eclipse.draw3d.test/src/java" /> -->
 			<pathelement path="../org.eclipse.gef3d/src/java" />

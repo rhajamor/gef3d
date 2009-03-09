@@ -5,6 +5,7 @@
 
 	<property name="draw3d" value="org.eclipse.draw3d" />
 	<property name="draw3d.geometry" value="org.eclipse.draw3d.geometry" />
+	<property name="draw3d.graphics3d" value="org.eclipse.draw3d.graphics3d" />
 	<property name="draw3d.lwjgl" value="org.eclipse.draw3d.lwjgl" />
 	<property name="draw3d.test" value="org.eclipse.draw3d.test" />
 	<property name="gef3d" value="org.eclipse.gef3d" />
@@ -18,6 +19,8 @@
 		<zip destfile="src/${draw3d}_${version}/src.zip" basedir="../${draw3d}/src/java" />
 		<mkdir dir="src/${draw3d.geometry}_${version}" />
 		<zip destfile="src/${draw3d.geometry}_${version}/src.zip" basedir="../${draw3d.lwjgl}/src/java" />
+		<mkdir dir="src/${draw3d.graphics3d}_${version}" />
+		<zip destfile="src/${draw3d.graphics3d}_${version}/src.zip" basedir="../${draw3d.lwjgl}/src/java" />
 		<mkdir dir="src/${draw3d.lwjgl}_${version}" />
 		<zip destfile="src/${draw3d.lwjgl}_${version}/src.zip" basedir="../${draw3d.lwjgl}/src/java" />
 		<mkdir dir="src/${draw3d.test}_${version}" />
