@@ -11,6 +11,7 @@
 package org.eclipse.draw3d.geometryext;
 
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw3d.geometry.IHost3D;
 
 /**
  * SyncHost3D

@@ -17,9 +17,9 @@ import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Transformable;
+import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
 import org.eclipse.draw3d.geometryext.Plane;
 import org.eclipse.draw3d.geometryext.SyncHost3D;
-import org.eclipse.draw3d.geometryext.IPosition3D.MatrixState;
 
 /**
  * 3D extension of GEF's IFigure interface.

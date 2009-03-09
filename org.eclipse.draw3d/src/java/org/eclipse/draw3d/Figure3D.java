@@ -25,18 +25,18 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.geometry.Translatable;
 import org.eclipse.draw3d.geometry.IBoundingBox;
+import org.eclipse.draw3d.geometry.IHost3D;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.geometryext.IHost3D;
+import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
+import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.geometryext.Plane;
-import org.eclipse.draw3d.geometryext.Position3D;
-import org.eclipse.draw3d.geometryext.Position3DUtil;
 import org.eclipse.draw3d.geometryext.SyncedVector3f;
 import org.eclipse.draw3d.geometryext.SynchronizedPosition3DImpl;
-import org.eclipse.draw3d.geometryext.IPosition3D.MatrixState;
-import org.eclipse.draw3d.geometryext.IPosition3D.PositionHint;
 import org.eclipse.draw3d.util.CoordinateConverter;
 import org.eclipse.swt.graphics.Font;
 
@@ -337,7 +337,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometryext.IHost3D#getParentHost3D()
+	 * @see org.eclipse.draw3d.geometry.IHost3D#getParentHost3D()
 	 */
 	public IHost3D getParentHost3D() {
 		return getAncestor3D();
@@ -346,7 +346,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometryext.IHost3D#getPosition3D()
+	 * @see org.eclipse.draw3d.geometry.IHost3D#getPosition3D()
 	 */
 	public Position3D getPosition3D() {
 		return position3D;
@@ -506,7 +506,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometryext.IHost3D#positionChanged(java.util.EnumSet,
+	 * @see org.eclipse.draw3d.geometry.IHost3D#positionChanged(java.util.EnumSet,
 	 *      org.eclipse.draw3d.geometry.IVector3f)
 	 */
 	public void positionChanged(EnumSet<PositionHint> i_hint, IVector3f delta) {

@@ -29,16 +29,16 @@ import org.eclipse.draw3d.camera.FirstPersonCamera;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.camera.ICameraListener;
 import org.eclipse.draw3d.geometry.IBoundingBox;
+import org.eclipse.draw3d.geometry.IHost3D;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.geometry.Position3DImpl;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.geometryext.IHost3D;
+import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
+import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.geometryext.Plane;
-import org.eclipse.draw3d.geometryext.Position3D;
-import org.eclipse.draw3d.geometryext.Position3DImpl;
-import org.eclipse.draw3d.geometryext.IPosition3D.MatrixState;
-import org.eclipse.draw3d.geometryext.IPosition3D.PositionHint;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.util.ColorConverter;
@@ -96,7 +96,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 				/**
 				 * {@inheritDoc}
 				 * 
-				 * @see org.eclipse.draw3d.geometryext.AbstractPosition3D#invalidateMatrices()
+				 * @see org.eclipse.draw3d.geometry.AbstractPosition3D#invalidateMatrices()
 				 */
 				@Override
 				public void invalidateMatrices() {
@@ -106,7 +106,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 				/**
 				 * {@inheritDoc}
 				 * 
-				 * @see org.eclipse.draw3d.geometryext.Position3DImpl#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
+				 * @see org.eclipse.draw3d.geometry.Position3DImpl#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
 				 */
 				@Override
 				public void setLocation3D(IVector3f i_point) {
@@ -116,7 +116,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 				/**
 				 * {@inheritDoc}
 				 * 
-				 * @see org.eclipse.draw3d.geometryext.Position3DImpl#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
+				 * @see org.eclipse.draw3d.geometry.Position3DImpl#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
 				 */
 				@Override
 				public void setSize3D(IVector3f i_size) {
@@ -125,7 +125,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 				/**
 				 * {@inheritDoc}
 				 * 
-				 * @see org.eclipse.draw3d.geometryext.AbstractPosition3D#setRotation3D(org.eclipse.draw3d.geometry.IVector3f)
+				 * @see org.eclipse.draw3d.geometry.AbstractPosition3D#setRotation3D(org.eclipse.draw3d.geometry.IVector3f)
 				 */
 				@Override
 				public void setRotation3D(IVector3f i_rotation) {
@@ -600,7 +600,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 		/**
 		 * {@inheritDoc}
 		 * 
-		 * @see org.eclipse.draw3d.geometryext.IHost3D#getParentHost3D()
+		 * @see org.eclipse.draw3d.geometry.IHost3D#getParentHost3D()
 		 */
 		public IHost3D getParentHost3D() {
 			return getAncestor3D();
@@ -609,7 +609,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 		/**
 		 * {@inheritDoc}
 		 * 
-		 * @see org.eclipse.draw3d.geometryext.IHost3D#getPosition3D()
+		 * @see org.eclipse.draw3d.geometry.IHost3D#getPosition3D()
 		 */
 		public Position3D getPosition3D() {
 			return universe;
@@ -618,7 +618,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 		/**
 		 * {@inheritDoc}
 		 * 
-		 * @see org.eclipse.draw3d.geometryext.IHost3D#positionChanged(java.util.EnumSet,
+		 * @see org.eclipse.draw3d.geometry.IHost3D#positionChanged(java.util.EnumSet,
 		 *      org.eclipse.draw3d.geometry.IVector3f)
 		 */
 		public void positionChanged(EnumSet<PositionHint> i_hint,

@@ -13,16 +13,19 @@ package org.eclipse.draw3d.geometryext;
 import java.util.EnumSet;
 
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw3d.geometry.AbstractPosition3D;
 import org.eclipse.draw3d.geometry.IBoundingBox;
+import org.eclipse.draw3d.geometry.IHost3D;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Matrix4f;
 import org.eclipse.draw3d.geometry.Matrix4fImpl;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.geometryext.IPosition3D.MatrixState;
-import org.eclipse.draw3d.geometryext.IPosition3D.PositionHint;
+import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
+import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 
 /**
  * Mutable implementation of {@link Position3D}, based on a synchronized
@@ -56,7 +59,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometryext.IPosition3D#getHost()
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getHost()
 	 */
 	public IHost3D getHost() {
 		return host;
@@ -65,7 +68,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometryext.IPosition3D#getBounds3D()
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getBounds3D()
 	 */
 	public IBoundingBox getBounds3D() {
 		return bounds3D.getBoundingBox(host.getBounds());
@@ -74,7 +77,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometryext.IPosition3D#getLocation3D()
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getLocation3D()
 	 */
 	public IVector3f getLocation3D() {
 		return bounds3D.getLocation3D(host.getBounds());
@@ -83,7 +86,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometryext.Position3D#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
+	 * @see org.eclipse.draw3d.geometry.Position3D#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
 	 */
 	public void setLocation3D(IVector3f i_point) {
 		if (i_point == null) // parameter precondition
@@ -109,7 +112,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometryext.IPosition3D#getSize3D()
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getSize3D()
 	 */
 	public IVector3f getSize3D() {
 		return bounds3D.getSize3D(host.getBounds());
@@ -118,7 +121,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometryext.Position3D#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
+	 * @see org.eclipse.draw3d.geometry.Position3D#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
 	 */
 	public void setSize3D(IVector3f i_size) {
 		if (i_size == null) // parameter precondition

@@ -15,7 +15,7 @@ import java.nio.FloatBuffer;
 
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
-import org.eclipse.draw3d.geometryext.Position3D;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.util.BufferUtils;
