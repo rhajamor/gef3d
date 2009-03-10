@@ -88,12 +88,8 @@ public class Position3DUtil {
 //		IMatrix4f parentLocationMatrix = getParentLocationMatrix(position3D);
 //		io_transformable.transform(parentLocationMatrix);
 		
-		// this is a hack:
-		Matrix4fImpl m = new Matrix4fImpl(getParentLocationMatrix(position3D));
-		
+		// this is a hack, we should cache this:
 		IVector3f v = position3D.getRotation3D();
-
-		
 		Matrix4fImpl u = new Matrix4fImpl(IMatrix4f.IDENTITY);
 		float yAngle = v.getY();
 		if (yAngle != 0)
@@ -111,7 +107,7 @@ public class Position3DUtil {
 		io_transformable.transform(u);
 		transformToParent(position3D, io_transformable);
 		
-		io_transformable.transform(m);
+		io_transformable.transform(getParentLocationMatrix(position3D));
 		
 		
 		
@@ -153,13 +149,35 @@ public class Position3DUtil {
 	public static void transformToRelative(IPosition3D position3D,
 			Transformable io_transformable) {
 
-		IMatrix4f parentLocationMatrix = getParentLocationMatrix(position3D);
-		Matrix4f inverted = Math3D.invert(parentLocationMatrix, null);
+		Matrix4f inverted = Math3D.invert(getParentLocationMatrix(position3D), null);
 
 		if (inverted == null)
 			throw new IllegalStateException("loation matrix cannot be inverted");
-
+		
 		io_transformable.transform(inverted);
+		
+		
+		// this is a hack, we should cache this:
+		IVector3f v = position3D.getRotation3D();
+		Matrix4fImpl u = new Matrix4fImpl(IMatrix4f.IDENTITY);
+		float xAngle = v.getX();
+		if (xAngle != 0)
+			Math3D.rotate(-xAngle, IVector3f.X_AXIS, u, u);
+		float zAngle = v.getZ();
+		if (zAngle != 0)
+			Math3D.rotate(-zAngle, IVector3f.Z_AXIS, u, u);
+		float yAngle = v.getY();
+		if (yAngle != 0)
+			Math3D.rotate(-yAngle, IVector3f.Y_AXIS, u, u);
+
+
+		transformToParent(position3D, io_transformable);
+		io_transformable.transform(u);
+		transformFromParent(position3D, io_transformable);
+		
+
+
+		
 	}
 
 	/**
