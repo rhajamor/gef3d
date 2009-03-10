@@ -16,7 +16,7 @@ import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
-import org.eclipse.draw3d.geometryext.Position3D;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.picking.ColorProvider;
 import org.eclipse.draw3d.shapes.SolidCube;
 import org.eclipse.draw3d.shapes.WiredCube;
