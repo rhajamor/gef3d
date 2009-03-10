@@ -126,9 +126,18 @@ public class FirstPersonCamera implements ICamera {
 	 * @see org.eclipse.draw3d.camera.ICamera#lookAt(org.eclipse.draw3d.geometry.IVector3f,
 	 *      org.eclipse.draw3d.geometry.IVector3f)
 	 */
-	public void lookAt(IVector3f i_position, IVector3f i_upvector) {
-		// TODO implement lookAt
-		throw new UnsupportedOperationException("lookAt not implemeted yet");
+	public void lookAt(IVector3f i_to, IVector3f i_upvector) {
+		
+		Math3D.sub(i_to, m_position, m_viewDir);
+		Math3D.normalise(m_viewDir, m_viewDir);
+		if (i_upvector!=null)
+			Math3D.normalise(i_upvector, m_up);
+		
+		// p+v=t => v = t-p
+		Math3D.cross(m_up, m_viewDir, m_right);
+		Math3D.normalise(m_right, m_right);
+
+		fireCameraChanged();
 
 	}
 
@@ -156,6 +165,11 @@ public class FirstPersonCamera implements ICamera {
 		fireCameraChanged();
 	}
 
+	/**
+	 * Sets the position of this camera.
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.camera.ICamera#moveTo(float, float, float)
+	 */
 	public void moveTo(float i_x, float i_y, float i_z) {
 
 		m_position.set(i_x, i_y, i_z);
