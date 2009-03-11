@@ -14,8 +14,10 @@ import java.util.List;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.geometry.IBoundingBox;
+import org.eclipse.draw3d.geometry.IHost3D;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
 import org.eclipse.draw3d.geometryext.Plane;
@@ -86,6 +88,7 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 
 	/**
 	 * @return
+	 * @deprecated use {@link IHost3D#getPosition3D()#getLocation3D()} 
 	 */
 	public IVector3f getLocation3D();
 
@@ -123,6 +126,7 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 
 	/**
 	 * @return
+	 * @deprecated use {@link IHost3D#getPosition3D()#getRotation3D()}
 	 */
 	public IVector3f getRotation3D();
 
@@ -131,6 +135,7 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	 * {@link }
 	 * 
 	 * @return
+	 * @deprecated use {@link IHost3D#getPosition3D()#getSize3D()}
 	 */
 	public IVector3f getSize3D();
 
@@ -167,6 +172,7 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	 * Sets the location of this IFigure.
 	 * 
 	 * @param point The new location, this is usually the lower left corner.
+	 * @deprecated use {@link IHost3D#getPosition3D()#setLocation3D(IVector3f)}
 	 */
 	public void setLocation3D(IVector3f point);
 
@@ -183,11 +189,13 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	 * applied in the following order: Y first, then Z and finally X.
 	 * 
 	 * @param rotation
+	 * @deprecated use {@link IHost3D#getPosition3D()#setRotation3D(IVector3f)}
 	 */
 	public void setRotation3D(IVector3f rotation);
 
 	/**
 	 * @param size
+	 * @deprecated use {@link IHost3D#getPosition3D()#setSize3D(IVector3f)}
 	 */
 	public void setSize3D(IVector3f size);
 
