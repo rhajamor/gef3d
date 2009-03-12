@@ -24,6 +24,7 @@ import org.eclipse.draw3d.geometry.Vector3f;
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since 22.10.2007
+ * 
  */
 public abstract class AbstractConnectionAnchor3D extends AbstractConnectionAnchor
 		implements ConnectionAnchor3D {
