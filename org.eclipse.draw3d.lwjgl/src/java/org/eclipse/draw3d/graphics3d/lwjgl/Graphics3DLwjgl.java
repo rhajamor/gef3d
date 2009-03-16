@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl;
 
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,9 +20,11 @@ import java.nio.IntBuffer;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
+import org.eclipse.draw3d.graphics3d.Graphics3DType;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBackBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
@@ -59,6 +62,9 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 * The GL context of this instance.
 	 */
 	public GLCanvas m_context = null;
+	
+	/** Cashed hash code */
+	final int hashCode;
 
 	/**
 	 * Standard constructor.
@@ -66,6 +72,8 @@ public class Graphics3DLwjgl implements Graphics3D {
 	public Graphics3DLwjgl() {
 		super();
 
+		hashCode = super.hashCode();
+		
 		if (log.isLoggable(Level.INFO)) {
 			log.info("Graphics3DLwjgl constructor called"); //$NON-NLS-1$
 		}
@@ -195,9 +203,9 @@ public class Graphics3DLwjgl implements Graphics3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glTexCoord2f(int, int)
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glTexCoord2f(float, float)
 	 */
-	public void glTexCoord2f(int s, int t) {
+	public void glTexCoord2f(float s, float t) {
 		org.lwjgl.opengl.GL11.glTexCoord2f(s, t);
 	}
 
@@ -661,5 +669,69 @@ public class Graphics3DLwjgl implements Graphics3D {
 		org.lwjgl.util.glu.GLU.gluUnProject(winx, winy, winz, modelMatrix,
 				projMatrix, viewport, obj_pos);
 	}
+
+	Properties properties = new Properties();
+
+	/**
+	 * Descriptor of this instance.
+	 */
+	protected Graphics3DDescriptor descriptor;
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getProperty(java.lang.String)
+	 */
+	public String getProperty(String i_key) {
+		return properties.getProperty(i_key);
+	}
+
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setProperty(java.lang.String, java.lang.Object)
+	 */
+	public void setProperty(String key, String value) {
+		properties.setProperty(key, value);
+		
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getDescriptor()
+	 */
+	public Graphics3DDescriptor getDescriptor() {
+		return descriptor;
+	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setDescriptor(org.eclipse.draw3d.graphics3d.Graphics3DDescriptor)
+	 */
+	public void setDescriptor(Graphics3DDescriptor i_graphics3DDescriptor) {
+		descriptor = i_graphics3DDescriptor;
+	}
+
+
+	/** 
+	 * {@inheritDoc}
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return hashCode;
+	}
+
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getID()
+	 */
+	public String getID() {
+		return Graphics3DLwjgl.class.getName();
+	}
+
+
+		
+	
+
 
 }

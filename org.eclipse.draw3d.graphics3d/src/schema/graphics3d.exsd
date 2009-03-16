@@ -10,19 +10,60 @@
       </documentation>
    </annotation>
 
-   <element name="implementationClass">
+   <element name="renderer">
       <complexType>
+         <sequence>
+            <element ref="name"/>
+            <element ref="description"/>
+            <element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The ID of the renderer, usually the same as the class name.
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  The implementing renderer class
                </documentation>
                <appinfo>
                   <meta.attribute kind="java" basedOn=":org.eclipse.draw3d.graphics3d.Graphics3D"/>
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="type" type="string" use="default" value="screen">
+         <attribute name="type" use="default" value="SCREEN">
+            <annotation>
+               <documentation>
+                  The type of the renderer, this is one of the folloowing: SCREEN, EXPORT, or PRINT. If a renderer implementation can be used for multiple purposes, mutliptle definitions are required.
+               </documentation>
+            </annotation>
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="SCREEN">
+                  </enumeration>
+                  <enumeration value="EXPORT">
+                  </enumeration>
+                  <enumeration value="PRINT">
+                  </enumeration>
+               </restriction>
+            </simpleType>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="parameter">
+      <complexType>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="value" type="string" use="required">
             <annotation>
                <documentation>
                   
@@ -30,6 +71,28 @@
             </annotation>
          </attribute>
       </complexType>
+   </element>
+
+   <element name="name" type="string">
+      <annotation>
+         <appinfo>
+            <meta.element translatable="true"/>
+         </appinfo>
+         <documentation>
+            Name of the renderer as displayed to the user.
+         </documentation>
+      </annotation>
+   </element>
+
+   <element name="description" type="string">
+      <annotation>
+         <appinfo>
+            <meta.element translatable="true"/>
+         </appinfo>
+         <documentation>
+            Description of the renderer as displayed to the user.
+         </documentation>
+      </annotation>
    </element>
 
    <annotation>

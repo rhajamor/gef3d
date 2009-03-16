@@ -12,12 +12,15 @@
 package org.eclipse.draw3d;
 
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.graphics3d.Graphics3DRegistry;
 import org.eclipse.draw3d.picking.ColorProvider;
@@ -81,7 +84,7 @@ public class RenderContext {
 
 	private ColorProvider m_colorProvider;
 
-	private DisplayListManager m_displayListManager = null;
+	private final Map<Graphics3D, DisplayListManager> m_displayListManagers;
 
 	private RenderMode m_mode;
 
@@ -101,6 +104,7 @@ public class RenderContext {
 		m_transparentObjects = new TreeSet<TransparentObject>(DEPTH_COMPARATOR);
 		m_superimposedObjects = new TreeSet<TransparentObject>(DEPTH_COMPARATOR);
 
+		m_displayListManagers = new HashMap<Graphics3D, DisplayListManager>();
 	}
 
 	/**
@@ -144,7 +148,7 @@ public class RenderContext {
 		m_mode = RenderMode.PAINT;
 		m_transparentObjects.clear();
 		m_superimposedObjects.clear();
-		m_displayListManager = null;
+		m_displayListManagers.clear();
 		m_camera = null;
 	}
 
@@ -190,11 +194,20 @@ public class RenderContext {
 	 * @throws IllegalStateException if no display list manager is set
 	 */
 	public DisplayListManager getDisplayListManager() {
+		if (getGraphics3D()==null) {
+			throw new IllegalStateException("no graphcis 3D instance set yet");
+		}
+		
+		DisplayListManager manager = m_displayListManagers.get(getGraphics3D());
+//		if (manager == null)
+//			throw new IllegalStateException(
+//					"display list manager was not set for this graphics3D instane");
+		if (manager==null) {
+			manager = new DisplayListManager();
+			m_displayListManagers.put(getGraphics3D(), manager);
+		}
 
-		if (m_displayListManager == null)
-			throw new IllegalStateException("display list manager was not set");
-
-		return m_displayListManager;
+		return manager;
 	}
 
 	/**
@@ -260,20 +273,34 @@ public class RenderContext {
 		m_colorProvider = i_colorProvider;
 	}
 
+//	/**
+//	 * Sets the display list manager.
+//	 * 
+//	 * @param i_displayListManager the display list manager
+//	 * @throws NullPointerException if the given display list manager is
+//	 *             <code>null</code>
+//	 */
+//	public void setDisplayListManager(DisplayListManager i_displayListManager) {
+//		
+//		if (i_displayListManager == null)
+//			throw new NullPointerException(
+//					"i_displayListManager must not be null");
+//
+//		if (getGraphics3D()==null) {
+//			throw new IllegalStateException("no graphics3D intance set yet");
+//		}
+//		
+//		m_displayListManagers.put(getGraphics3D(), i_displayListManager);
+//	}
+	
 	/**
-	 * Sets the display list manager.
-	 * 
-	 * @param i_displayListManager the display list manager
-	 * @throws NullPointerException if the given display list manager is
-	 *             <code>null</code>
+	 * Clears the display manager for the current g3d instance.
 	 */
-	public void setDisplayListManager(DisplayListManager i_displayListManager) {
-
-		if (i_displayListManager == null)
-			throw new NullPointerException(
-					"i_displayListManager must not be null");
-
-		m_displayListManager = i_displayListManager;
+	public void clearDisplayManager() {
+		if (getGraphics3D()==null) {
+			throw new IllegalStateException("no graphics3D intance set yet");
+		}
+		m_displayListManagers.remove(getGraphics3D());
 	}
 
 	/**
@@ -311,9 +338,8 @@ public class RenderContext {
 	 * @param i_context The rendering context.
 	 */
 	public void setDefaultRenderer(GLCanvas i_context) {
-		Graphics3D g3d = Graphics3DRegistry.createGraphics3D(
-				Graphics3DRegistry.G3D_IMPL_DEFAULT, i_context);
-		this.m_g3d = g3d;
+		Graphics3DDescriptor descr = Graphics3DRegistry.getDefaultScreenRenderer();
+		this.m_g3d = descr.createInstance(i_context);
 	}
 
 	/**

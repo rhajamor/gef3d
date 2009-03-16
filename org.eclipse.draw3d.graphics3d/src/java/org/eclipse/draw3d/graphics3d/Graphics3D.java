@@ -23,7 +23,11 @@ import org.eclipse.swt.opengl.GLCanvas;
  * split as well as provides access to renderer specific instances which are
  * hidden behind other interface types. A renderer implementation has only to
  * implement this interface and register at the Graphics3DRegistry to become
- * available
+ * available.
+ * <p>
+ * Note:
+ * Some classes require method {@link #hashCode()} to be implemented efficiently.
+ * </p>
  * 
  * @author Matthias Thiele
  * @version $Revision$
@@ -31,6 +35,19 @@ import org.eclipse.swt.opengl.GLCanvas;
  */
 public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 	
+	
+	/**
+	 * Returns the ID of the Graphics3D instance, e.g. the class name.
+	 * This ID is used internally only and is not presented to the user.
+	 * @return
+	 */
+	public String getID();
+	
+	/**
+	 * Returns the descriptor of this graphics 3D implementation.
+	 * @return
+	 */
+	public Graphics3DDescriptor getDescriptor();
 	
 	/**
 	 * Called by registry after creation of the instance if type is screen.
@@ -108,5 +125,25 @@ public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 	 *         the key obect previously or <code>false</code> otherwise
 	 */
 	public boolean hasGraphics2D(Object i_key);
-
+	
+	/**
+	 * Sets a property. Properties are set during execution and can vary from 
+	 * call to call.
+	 * @param key
+	 * @param value
+	 */
+	public void setProperty(String key, String value);
+	
+	/**
+	 * Returns a property.
+	 * @param key
+	 * @return
+	 */
+	public String getProperty(String key);
+	
+	/**
+	 * @param i_graphics3DDescriptor
+	 */
+	public void setDescriptor(Graphics3DDescriptor i_graphics3DDescriptor);
+	
 }
