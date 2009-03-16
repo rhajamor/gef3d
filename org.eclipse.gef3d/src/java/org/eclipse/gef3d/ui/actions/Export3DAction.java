@@ -10,11 +10,15 @@
  ******************************************************************************/
 package org.eclipse.gef3d.ui.actions;
 
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.Export3DOperation;
+import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DRegistry;
 import org.eclipse.gef.GraphicalViewer;
+import org.eclipse.gef.LayerConstants;
+import org.eclipse.gef.editparts.LayerManager;
 import org.eclipse.gef.ui.actions.WorkbenchPartAction;
 import org.eclipse.gef3d.ui.parts.GraphicalViewer3DImpl;
 import org.eclipse.swt.SWT;
@@ -97,11 +101,20 @@ public class Export3DAction extends WorkbenchPartAction {
 		String strExportFile = fd.open();
 
 		if (strExportFile != null) {
-			GraphicalViewer3DImpl gv = (GraphicalViewer3DImpl) getEditPartViewer();
-
+			GraphicalViewer viewer = getEditPartViewer();
+			LayerManager lm = (LayerManager)viewer.getEditPartRegistry().get(LayerManager.ID);
+	    	IFigure figure = lm.getLayer(LayerConstants.PRINTABLE_LAYERS);
+	    	IFigure3D fig3D;
+	    	if (figure instanceof IFigure3D) {
+	    		fig3D = (IFigure3D) figure;
+	    	} else {
+	    		fig3D = Figure3DHelper.getAncestor3D(figure);
+	    	}
+			
 			Export3DOperation operation = new Export3DOperation(strExportFile,
-					rendererID, (IFigure3D) gv.getLightweightSystem3D()
-							.getRootFigure());
+					rendererID, fig3D);
+//			IFigure3D) gv.getLightweightSystem3D()
+//							.getRootFigure());
 
 			operation.run();
 		}
