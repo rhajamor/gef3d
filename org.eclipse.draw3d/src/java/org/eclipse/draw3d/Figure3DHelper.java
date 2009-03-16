@@ -380,13 +380,13 @@ public class Figure3DHelper {
 	 */
 	public IFigure findFigureAt(int i_x, int i_y, TreeSearch i_search) {
 
-		if (log.isLoggable(Level.FINEST)) {
-			StringBuilder str = new StringBuilder(
-					"Ignored figures for search in " + m_figuresFriend.figure
-							+ ":\n");
-			logSearch(1, m_figuresFriend.figure, i_search, str);
-			log.finest(str.toString());
-		}
+//		if (log.isLoggable(Level.FINEST)) {
+//			StringBuilder str = new StringBuilder(
+//					"Ignored figures for search in " + m_figuresFriend.figure
+//							+ ":\n");
+//			logSearch(1, m_figuresFriend.figure, i_search, str);
+//			log.finest(str.toString());
+//		}
 
 		UpdateManager updateManager = m_figuresFriend.figure.getUpdateManager();
 		if (!(updateManager instanceof PickingUpdateManager3D))
