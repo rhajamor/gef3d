@@ -390,7 +390,8 @@ public class LightweightSystem3D extends LightweightSystem implements
 		public void paint(Graphics i_graphics) {
 
 			RenderContext renderContext = RenderContext.getContext();
-			renderContext.setDisplayListManager(m_displayListManager);
+			// display list not set here, automatically created and set by render context
+//			renderContext.setDisplayListManager(m_displayListManager);
 			renderContext.setCamera(m_camera);
 
 			// ignore the incoming graphics object if it is not a dummy

@@ -446,6 +446,20 @@ public class Figure3D extends Figure implements IFigure3D {
 		position3D.invalidateMatrices();
 		super.invalidate();
 	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * <p>
+	 * Overridden to mark 2D components invalid, too.
+	 * </p>
+	 * 
+	 * @see org.eclipse.draw2d.Figure#invalidateTree()
+	 */
+	@Override
+	public void invalidateTree() {
+		repaint2DComponents = true;
+		super.invalidateTree();
+	}
 
 	/**
 	 * {@inheritDoc}

@@ -31,17 +31,22 @@ public class DisplayListManager {
 	@SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(DisplayListManager.class
 			.getName());
-
+	
+	
 	private static final int RANGE = 10;
 
 	private List<Integer> m_baseIds = new ArrayList<Integer>();
 
+	HashMap<Graphics3D, Map<String, Integer>> displayLists;
+	
+	
 	private Map<String, Integer> m_displayLists = new HashMap<String, Integer>();
 
 	private final boolean m_disposed = false;
 
 	private int m_index = RANGE;
-
+	
+		
 	/**
 	 * Clears all displays lists in this manager.
 	 * 
@@ -180,4 +185,7 @@ public class DisplayListManager {
 
 		return true;
 	}
+
+	
+	
 }
