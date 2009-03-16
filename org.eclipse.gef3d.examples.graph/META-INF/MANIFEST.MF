@@ -11,6 +11,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.draw3d,
  org.eclipse.jface.text,
  org.eclipse.ui.editors,
- org.eclipse.gef3d.ext
+ org.eclipse.gef3d.ext,
+ org.eclipse.draw3d.graphics3d;bundle-version="0.8.1"
 Eclipse-LazyStart: true
 Bundle-Activator: org.eclipse.gef3d.examples.graph.Activator

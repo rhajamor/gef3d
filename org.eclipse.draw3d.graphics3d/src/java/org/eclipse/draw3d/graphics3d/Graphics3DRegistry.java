@@ -45,6 +45,10 @@ public class Graphics3DRegistry {
 			.getName());
 
 	private final static List<Graphics3DDescriptor> descriptors = new Vector<Graphics3DDescriptor>();
+	
+	static {
+		updateDescriptors();
+	}
 
 	// /**
 	// * Identifies the LWJGL-Renderer implementation of Graphics3D.
@@ -63,7 +67,7 @@ public class Graphics3DRegistry {
 	// public static final String G3D_IMPL_DEFAULT = G3D_IMPL_LWJGL;
 
 	public static Graphics3DDescriptor getDefaultScreenRenderer() {
-		updateDescriptors();
+//		updateDescriptors();
 		for (Graphics3DDescriptor descr : descriptors) {
 			if (descr.getType() == Graphics3DType.SCREEN) {
 				return descr;
@@ -78,7 +82,7 @@ public class Graphics3DRegistry {
 	 * @return
 	 */
 	public static Graphics3DDescriptor getRenderer(String i_rendererID) {
-		updateDescriptors();
+//		updateDescriptors();
 		for (Graphics3DDescriptor descr : descriptors) {
 			if (descr.getRendererID().equals(i_rendererID)) {
 				return descr;
@@ -92,7 +96,7 @@ public class Graphics3DRegistry {
 
 	public static List<Graphics3DDescriptor> getRenderersForType(
 			Graphics3DType type) {
-		updateDescriptors();
+//		updateDescriptors();
 		List<Graphics3DDescriptor> result = new ArrayList<Graphics3DDescriptor>();
 		for (Graphics3DDescriptor descr : descriptors) {
 			if (descr.getType() == type) {
@@ -102,78 +106,7 @@ public class Graphics3DRegistry {
 		return result;
 	}
 
-	// /**
-	// * Creates and returns a Graphics3D-Implementation of the specified type.
-	// *
-	// * @param i_strRendererID String identifying the renderer type to create.
-	// * @param i_context The context which the renderer should use, only
-	// required
-	// * for renders of type SCREEN
-	// * @return The created Graphics3D-instance.
-	// */
-	// public static Graphics3D createGraphics3D(String i_strRendererID,
-	// GLCanvas i_context) {
-	// Graphics3D g3d = createRenderer(i_strRendererID);
-	// if (g3d == null) {
-	// throw new IllegalArgumentException("Renderer wit ID="
-	// + i_strRendererID + " not found");
-	// }
-	// if (g3d.getDescriptor().getType() == Graphics3DType.SCREEN)
-	// g3d.setGLCanvas(i_context);
-	//
-	// return g3d;
-	// }
-	//
-	// /**
-	// * Creates the renderer with the given ID. If this renderer is unknown,
-	// null
-	// * is returned.
-	// */
-	// private static Graphics3D createRenderer(String rendererID) {
-	//
-	// IExtensionRegistry registry = Platform.getExtensionRegistry();
-	// IExtensionPoint point = registry
-	// .getExtensionPoint("org.eclipse.draw3d.graphics3d");
-	// if (point == null)
-	// return null;
-	// IExtension[] extensions = point.getExtensions();
-	//
-	// for (IExtension extension : extensions) {
-	// String strContributorName = extension.getContributor().getName();
-	// if (log.isLoggable(Level.INFO)) {
-	// log.info("Extension found: " + extension
-	//						+ ", Contributor: " + strContributorName); //$NON-NLS-1$
-	// }
-	//
-	// IConfigurationElement[] ices = extension.getConfigurationElements();
-	// for (IConfigurationElement element : ices) {
-	// String strID = element.getAttribute("id");
-	// String strClassName = element.getAttribute("class");
-	// String strType = element.getAttribute("type");
-	//
-	// if (log.isLoggable(Level.INFO)) {
-	//					log.info("Class: " + strClassName + ", Type: " + strType); //$NON-NLS-1$
-	// }
-	//
-	// if (rendererID.equals(strID)) {
-	// try {
-	// Bundle bundle = Platform.getBundle(strContributorName);
-	// Class clazz = bundle.loadClass(strClassName);
-	// Graphics3D g3d = (Graphics3D) clazz.newInstance();
-	// return g3d;
-	// } catch (Exception e) {
-	// log.warning("Renderer with id " + rendererID
-	// + " cannot be created, cause: " + e);
-	// }
-	// }
-	// }
-	//
-	// }
-	//
-	// log.warning("Renderer with id " + rendererID + " not found.");
-	// return null;
-	//
-	// }
+	
 
 	private static void updateDescriptors() {
 		descriptors.clear();
