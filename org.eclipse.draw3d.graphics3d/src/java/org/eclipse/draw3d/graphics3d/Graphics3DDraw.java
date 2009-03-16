@@ -229,8 +229,10 @@ public interface Graphics3DDraw {
 	// GL_MODELVIEW_MATRIX
 	// ;
 
-	public static final int PLATFORM_WINDOWS = 3; // org.lwjgl.LWJGLUtil.
-
+	public static final int PLATFORM_LINUX 				= 1;
+	public static final int PLATFORM_MACOSX 			= 2;
+	public static final int PLATFORM_WINDOWS 			= 3;
+	
 	// PLATFORM_WINDOWS;
 
 	public static final int GL_SRC_ALPHA = 0x302; // org.lwjgl.opengl.GL11.
@@ -394,7 +396,7 @@ public interface Graphics3DDraw {
 
 	public abstract void glTexEnvi(int target, int pname, int param);
 
-	public abstract void glTexCoord2f(int s, int t);
+	public abstract void glTexCoord2f(float s, float t);
 
 	public abstract void glPolygonMode(int face, int mode);
 

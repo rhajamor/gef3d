@@ -19,8 +19,7 @@ package org.eclipse.draw3d.graphics3d;
  * @version $Revision$
  * @since 07.11.2008
  */
-public class Graphics3DException extends Exception
-{
+public class Graphics3DException extends RuntimeException {
 	/**
 	 * @see java.io.Serializable
 	 */
@@ -29,8 +28,16 @@ public class Graphics3DException extends Exception
 	/**
 	 * @see java.lang.Exception#Exception(Throwable)
 	 */
-	public Graphics3DException(Throwable cause)
-	{
+	public Graphics3DException(Throwable cause) {
 		super(cause);
 	}
+
+	/**
+	 * @param i_message
+	 */
+	public Graphics3DException(String i_message) {
+		super(i_message);
+	}
+	
+	
 }

@@ -7,7 +7,8 @@ Bundle-Vendor: Eclipse.org
 Require-Bundle: org.eclipse.gef,
  org.eclipse.draw3d,
  org.eclipse.ui,
- org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ org.eclipse.draw3d.graphics3d;bundle-version="0.8.1"
 Export-Package: org.eclipse.gef3d,
  org.eclipse.gef3d.editparts,
  org.eclipse.gef3d.editpolicies,
@@ -16,6 +17,7 @@ Export-Package: org.eclipse.gef3d,
  org.eclipse.gef3d.preferences,
  org.eclipse.gef3d.requests,
  org.eclipse.gef3d.tools,
+ org.eclipse.gef3d.ui.actions,
  org.eclipse.gef3d.ui.parts
 Bundle-Activator: org.eclipse.gef3d.Activator
 Eclipse-LazyStart: true
