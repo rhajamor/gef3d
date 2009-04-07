@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+	<!-- Class --> 
+   <extension point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.gef3d.examples.uml2.clazz.part.UMLDiagramEditor3D"
+            default="false"
+            extensions="umlclass"
+            id="org.eclipse.gef3d.examples.uml2.clazz.part.UMLDiagramEditor3D"
+            name="UML Tools Class Editor 3D">
+      </editor>
+   </extension>
+   
+   <extension point="org.eclipse.gmf.runtime.diagram.ui.editpartProviders">
+      <editpartProvider
+            class="org.eclipse.gef3d.examples.uml2.clazz.providers.UMLEditPartProvider3D">
+         <Priority name="Highest"></Priority>
+      </editpartProvider>
+   </extension>
+   
+   
+   
+   <!-- Activity -->
+   <extension point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.gef3d.examples.uml2.activity.part.UMLDiagramEditor3D"
+            default="false"
+            extensions="umlact"
+            id="org.eclipse.gef3d.examples.uml2.activity.part.UMLDiagramEditor3D"
+            name="UML Tools Activity Editor 3D">
+      </editor>
+   </extension>
+   
+   <extension point="org.eclipse.gmf.runtime.diagram.ui.editpartProviders">
+      <editpartProvider
+            class="org.eclipse.gef3d.examples.uml2.activity.providers.UMLEditPartProvider3D">
+         <Priority name="Highest"></Priority>
+      </editpartProvider>
+   </extension>
+   
+   
+   <!-- Use Case -->
+   <extension point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.gef3d.examples.uml2.usecase.part.UMLDiagramEditor3D"
+            default="false"
+            extensions="umlusc"
+            id="org.eclipse.gef3d.examples.uml2.usecase.part.UMLDiagramEditor3D"
+            name="UML Tools Use-Case Editor 3D">
+      </editor>
+   </extension>
+   
+   <extension point="org.eclipse.gmf.runtime.diagram.ui.editpartProviders">
+      <editpartProvider
+            class="org.eclipse.gef3d.examples.uml2.usecase.providers.UMLEditPartProvider3D">
+         <Priority name="Highest"></Priority>
+      </editpartProvider>
+   </extension>
+   
+   
+   <extension
+         point="org.eclipse.gmf.runtime.diagram.ui.editpolicyProviders">
+      <editpolicyProvider
+            class="org.eclipse.gef3d.examples.uml2.providers.UMLEditPolicyProvider3D">
+         <Priority
+               name="Highest">
+         </Priority>
+      </editpolicyProvider>
+   </extension>
+  
+</plugin>
