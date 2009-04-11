@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.offscreen;
 
+import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.util.ImageConverter;
@@ -38,6 +39,8 @@ public class LwjglOffscreenBufferConfig implements
 
 	private int m_depthDataType;
 
+	private Graphics3D graphics3D;
+
 	/**
 	 * Creates a new buffer configuration. The given bitmask indicates the
 	 * available buffers, while the rest of the arguments configure those
@@ -56,8 +59,9 @@ public class LwjglOffscreenBufferConfig implements
 	 *             match the given buffers or if any of the given configurations
 	 *             is not supported
 	 */
-	public LwjglOffscreenBufferConfig(int i_buffers, int... i_args) {
-
+	public LwjglOffscreenBufferConfig(Graphics3D graphics3D, int i_buffers, int... i_args) {
+		this.graphics3D = graphics3D;
+		
 		if ((i_buffers & ~SUPPORTED_BUFFERS) != 0)
 			throw new IllegalArgumentException("unsupported buffers: "
 					+ i_buffers);
@@ -78,6 +82,14 @@ public class LwjglOffscreenBufferConfig implements
 		}
 
 		m_buffers = i_buffers;
+	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig#getGraphics3D()
+	 */
+	public Graphics3D getGraphics3D() {
+		return graphics3D;
 	}
 
 	private int getArg(int i_index, int[] i_args) {
@@ -150,4 +162,6 @@ public class LwjglOffscreenBufferConfig implements
 
 		return (m_buffers & i_buffer) != 0;
 	}
+
+	
 }

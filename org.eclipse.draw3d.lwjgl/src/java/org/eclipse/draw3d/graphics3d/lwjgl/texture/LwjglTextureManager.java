@@ -169,7 +169,7 @@ public class LwjglTextureManager {
 			throw new NullPointerException("i_key must not be null");
 
 		LwjglTexture lwjglTexture = m_lwjglTextures.get(i_key);
-		if (lwjglTexture != null)
+		if (lwjglTexture != null) 
 			lwjglTexture.dispose();
 
 		if (LwjglTextureFbo.isSuppported()) {

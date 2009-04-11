@@ -36,19 +36,17 @@ import org.lwjgl.opengl.GL11;
  * @version $Revision$
  * @since 06.08.2008
  */
-public class LwjglTextureSwt implements LwjglTexture {
+public class LwjglTextureSwt extends AbstractLwjglTexture {
 
 	private static final IntBuffer INT_BUF = BufferUtils.createIntBuffer(1);
+	
+	protected SWTGraphics m_graphics;
 
 	private int m_clearAlpha;
-
-	private boolean m_disposed = false;
 
 	private GC m_gc;
 
 	private int m_glTexture = 0;
-
-	private Graphics m_graphics;
 
 	private Image m_image;
 
@@ -60,8 +58,6 @@ public class LwjglTextureSwt implements LwjglTexture {
 			0x99, 0x99, 0x99);
 
 	private boolean m_uploadTexture;
-
-	private boolean m_valid = false;
 
 	/**
 	 * Creates a new texture with the given dimensions and alpha value.

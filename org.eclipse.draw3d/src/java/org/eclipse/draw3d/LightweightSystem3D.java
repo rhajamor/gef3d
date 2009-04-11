@@ -151,7 +151,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 
 		private void drawCoordinateAxes() {
 
-			RenderContext renderContext = RenderContext.getContext();
+			RenderContext renderContext = getRenderContext();
 			DisplayListManager displayListManager = renderContext
 					.getDisplayListManager();
 
@@ -164,8 +164,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 						int y = 0;
 						int z = 0;
 
-						Graphics3D g3d = RenderContext.getContext()
-								.getGraphics3D();
+						Graphics3D g3d = getRenderContext().getGraphics3D();
 						// TODO: optimize this, reduce the amount of
 						g3d.glLineWidth(1f);
 
@@ -389,7 +388,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 		@Override
 		public void paint(Graphics i_graphics) {
 
-			RenderContext renderContext = RenderContext.getContext();
+			RenderContext renderContext = getRenderContext();
 			// display list not set here, automatically created and set by render context
 //			renderContext.setDisplayListManager(m_displayListManager);
 			renderContext.setCamera(m_camera);
@@ -401,16 +400,16 @@ public class LightweightSystem3D extends LightweightSystem implements
 
 			try {
 				for (RenderListener listener : m_renderListeners)
-					listener.renderPassStarted();
+					listener.renderPassStarted(renderContext);
 
 				// the root figure needs to paint itself first
-				render();
+				render(renderContext);
 				paintBorder(graphics);
 				paintClientArea(graphics);
-				postrender();
+				postrender(renderContext);
 			} finally {
 				for (RenderListener listener : m_renderListeners)
-					listener.renderPassFinished();
+					listener.renderPassFinished(renderContext);
 
 				renderContext.clear();
 			}
@@ -454,11 +453,9 @@ public class LightweightSystem3D extends LightweightSystem implements
 		 * 
 		 * @see org.eclipse.draw3d.IFigure3D#postrender()
 		 */
-		public void postrender() {
-
-			RenderContext renderContext = RenderContext.getContext();
+		public void postrender(RenderContext renderContext) {
 			renderContext.renderTransparency();
-			Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+			Graphics3D g3d = getRenderContext().getGraphics3D();
 
 			g3d.glFlush();
 		}
@@ -468,15 +465,15 @@ public class LightweightSystem3D extends LightweightSystem implements
 		 * 
 		 * @see org.eclipse.draw3d.Figure3D#render()
 		 */
-		public void render() {
+		public void render(RenderContext renderContext) {
 
 			// if (log.isLoggable(Level.INFO)) {
 			// log.info("render "+ this); //$NON-NLS-1$
 			// }
 
-			m_canvas.setCurrent();
-			RenderContext renderContext = RenderContext.getContext();
-			Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+//			m_canvas.setCurrent(); now in rendercontext.activate
+			renderContext.activate();
+			Graphics3D g3d = getRenderContext().getGraphics3D();
 
 			if (renderContext.getMode().isPaint())
 				g3d.glClearColor(m_clearColor[0], m_clearColor[1],
@@ -485,7 +482,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 			g3d.glClear(Graphics3DDraw.GL_COLOR_BUFFER_BIT
 					| Graphics3DDraw.GL_DEPTH_BUFFER_BIT);
 
-			m_camera.render();
+			m_camera.render(renderContext);
 
 			if (renderContext.getMode().isPaint() && m_drawAxes)
 				drawCoordinateAxes();
@@ -631,6 +628,14 @@ public class LightweightSystem3D extends LightweightSystem implements
 
 		}
 
+		/** 
+		 * {@inheritDoc}
+		 * @see org.eclipse.draw3d.IFigure3D#getRenderContext()
+		 */
+		public RenderContext getRenderContext() {
+			return m_renderContext;
+		}
+
 	} // end of inner class RootFigure3D
 
 	/**
@@ -640,6 +645,8 @@ public class LightweightSystem3D extends LightweightSystem implements
 	private static final Logger log = Logger
 			.getLogger(LightweightSystem3D.class.getName());
 
+	private RenderContext m_renderContext = new RenderContext();
+	
 	private ICamera m_camera;
 
 	/**
@@ -648,8 +655,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 	protected GLCanvas m_canvas;
 
 	private final float[] m_clearColor = new float[] { 0.6f, 0.6f, 0.6f, 1 };
-
-	private DisplayListManager m_displayListManager = new DisplayListManager();
 
 	private boolean m_drawAxes;
 
@@ -798,6 +803,8 @@ public class LightweightSystem3D extends LightweightSystem implements
 	 */
 	@Override
 	public void setControl(Canvas i_canvas) {
+		
+
 
 		if (!(i_canvas instanceof GLCanvas))
 			throw new IllegalArgumentException(
@@ -805,6 +812,8 @@ public class LightweightSystem3D extends LightweightSystem implements
 
 		GLCanvas glCanvas = (GLCanvas) i_canvas;
 
+		m_renderContext.setCanvas(glCanvas);
+		
 		DeferredUpdateManager3D updateManager = (DeferredUpdateManager3D) getUpdateManager();
 		updateManager.setCanvas(glCanvas);
 
@@ -858,12 +867,15 @@ public class LightweightSystem3D extends LightweightSystem implements
 	 */
 	public void widgetDisposed(DisposeEvent i_e) {
 
-		if (m_displayListManager != null) {
-			m_displayListManager.dispose();
-			m_displayListManager = null;
-		}
-
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
-		g3d.dispose();
+		getRenderContext().dispose();
+		
+	}
+	
+	/**
+	 * Returns the render context
+	 * @return
+	 */
+	public RenderContext getRenderContext() {
+		return m_renderContext;
 	}
 }

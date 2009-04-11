@@ -110,7 +110,8 @@ public class ConeFigureShape extends AbstractModelShape {
 //				disk.draw(0, RADIUS, SLICES, LOOPS);
 				
 				// dummy code:
-				Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+				// TODO which g3d to be used, figures g3d or renderers?
+				Graphics3D g3d = m_figure.getRenderContext().getGraphics3D();
 				g3d.glBegin(Graphics3DDraw.GL_QUADS);
 				g3d.glNormal3f(0, 0, -1);
 				g3d.glVertex3f(0, 0, 0);
@@ -131,7 +132,7 @@ public class ConeFigureShape extends AbstractModelShape {
 //
 //				cylinder.draw(RADIUS, 0, HEIGHT, SLICES, SUBDIVS);
 				// dummy code:
-				Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+				Graphics3D g3d = m_figure.getRenderContext().getGraphics3D();
 				g3d.glBegin(Graphics3DDraw.GL_QUADS);
 				g3d.glNormal3f(0, 0, -1);
 				g3d.glVertex3f(0, 0, 0);
@@ -150,15 +151,12 @@ public class ConeFigureShape extends AbstractModelShape {
 	 * @see org.eclipse.draw3d.shapes.AbstractModelShape#performRender()
 	 */
 	@Override
-	protected void performRender() {
+	protected void performRender(RenderContext renderContext) {
 
-		
-
-		RenderContext renderContext = RenderContext.getContext();
 		DisplayListManager displayListManager = renderContext
 				.getDisplayListManager();
 		initDisplayLists(displayListManager);
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		Graphics3D g3d = renderContext.getGraphics3D();
 
 		if (renderContext.getMode().isPaint()) {
 			Color color = m_figure.getForegroundColor();
@@ -199,7 +197,7 @@ public class ConeFigureShape extends AbstractModelShape {
 	 * @see org.eclipse.draw3d.shapes.AbstractModelShape#setup()
 	 */
 	@Override
-	protected void setup() {
+	protected void setup(RenderContext renderContext) {
 
 //		TMP_M4.set(m_figure.getLocationMatrix());
 //		TMP_V3.set(0, 0, -HEIGHT);

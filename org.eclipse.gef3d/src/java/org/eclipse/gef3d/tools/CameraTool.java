@@ -24,6 +24,7 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.ColorPicker;
 import org.eclipse.draw3d.util.CoordinateConverter;
 import org.eclipse.gef.EditPartViewer;
@@ -315,12 +316,13 @@ public class CameraTool extends AbstractTool {
 
 				PickingUpdateManager3D pickingManager = (PickingUpdateManager3D) updateManager;
 				ColorPicker picker = pickingManager.getPicker();
+				Graphics3D g3d = picker.getGraphics3D();
 
 				float depth = picker.getDepth(me.x, me.y);
 
 				if (depth < 0.999f) {
 					orbitCenter = CoordinateConverter.screenToWorld(me.x, me.y,
-							depth, null);
+							depth, g3d, null);
 				}
 			} else {
 				bLook = i_button == lookButton;

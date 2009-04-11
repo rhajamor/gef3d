@@ -60,10 +60,7 @@ public class CuboidFigureShape implements Shape {
 	 * 
 	 * @see org.eclipse.draw3d.shapes.Shape#render()
 	 */
-	public void render() {
-
-		RenderContext renderContext = RenderContext.getContext();
-
+	public void render(RenderContext renderContext) {
 		int alpha = m_figure.getAlpha();
 //		IMatrix4f modelMatrix = m_figure.getModelMatrix();
 		Position3D position3D = m_figure.getPosition3D();
@@ -73,13 +70,13 @@ public class CuboidFigureShape implements Shape {
 			m_wiredCube.setColor(color, alpha);
 			m_wiredCube.setPosition(position3D);
 
-			m_wiredCube.render();
+			m_wiredCube.render(renderContext);
 		}
 
 		m_solidCube.setPosition(position3D);
 
 		if (renderContext.getMode().isPaint()) {
-			Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+			Graphics3D g3d = renderContext.getGraphics3D();
 			if (g3d.hasGraphics2D(m_figure)) {
 				int textureId = g3d.getGraphics2DId(m_figure);
 				m_solidCube.setTexture(textureId);
@@ -90,13 +87,13 @@ public class CuboidFigureShape implements Shape {
 			Color color = m_figure.getBackgroundColor();
 
 			m_solidCube.setColor(color, alpha);
-			m_solidCube.render();
+			m_solidCube.render(renderContext);
 		} else if (renderContext.getMode().isColor()) {
 			int color = renderContext.getColor(m_figure);
 			if (color != ColorProvider.IGNORE) {
 				m_solidCube.setColor(color, 255);
 				m_solidCube.setTexture(null);
-				m_solidCube.render();
+				m_solidCube.render(renderContext);
 			}
 		}
 	}

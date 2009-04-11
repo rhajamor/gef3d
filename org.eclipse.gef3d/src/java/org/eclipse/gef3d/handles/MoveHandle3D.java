@@ -142,10 +142,8 @@ public class MoveHandle3D extends AbstractHandle3D {
 	 * @see org.eclipse.draw3d.Figure3D#postrender()
 	 */
 	@Override
-	public void postrender() {
-		RenderContext renderContext = RenderContext.getContext();
-
-		int alpha = getAlpha();
+	public void postrender(RenderContext renderContext) {
+				int alpha = getAlpha();
 //		IMatrix4f modelMatrix = getModelMatrix();
 		Position3D position3D = getPosition3D();
 
@@ -153,7 +151,7 @@ public class MoveHandle3D extends AbstractHandle3D {
 			Color color = getForegroundColor();
 			wiredcube.setColor(color, alpha);
 			wiredcube.setPosition(position3D);
-			wiredcube.render();
+			wiredcube.render(renderContext);
 
 			// solidcube.setModelMatrix(modelMatrix);
 			// solidcube.setColor(SolidCube.Face.ALL, color, alpha);
@@ -168,18 +166,10 @@ public class MoveHandle3D extends AbstractHandle3D {
 				solidcube.setPosition(position3D);
 				solidcube.setColor(color, 255);
 				solidcube.setTexture(null);
-				solidcube.render();
+				solidcube.render(renderContext);
 			}
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render(org.eclipse.draw3d.RenderContext)
-	 */
-	@Override
-	public void render() {
-	}
 
 }

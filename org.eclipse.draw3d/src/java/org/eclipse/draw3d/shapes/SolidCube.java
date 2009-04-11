@@ -46,25 +46,24 @@ public class SolidCube extends AbstractModelShape {
 
 	private Integer m_textureId;
 
-	private void glSetColor() {
+	private void glSetColor(Graphics3D g3d) {
 
 		float r = m_color[0];
 		float g = m_color[1];
 		float b = m_color[2];
 		float a = m_color[3];
 
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
 		g3d.glColor4f(r, g, b, a);
 	}
 
-	private void initDisplayLists(DisplayListManager i_displayListManager) {
+	private void initDisplayLists(DisplayListManager i_displayListManager,
+			final Graphics3D g3d) {
 
 		if (i_displayListManager.isDisplayList(DL_REST, DL_FRONT, DL_TEXTURE))
 			return;
 
 		Runnable front = new Runnable() {
 			public void run() {
-				Graphics3D g3d = RenderContext.getContext().getGraphics3D();
 				g3d.glBegin(Graphics3DDraw.GL_QUADS);
 				g3d.glNormal3f(0, 0, -1);
 				g3d.glVertex3f(0, 0, 0);
@@ -78,7 +77,6 @@ public class SolidCube extends AbstractModelShape {
 		Runnable texture = new Runnable() {
 
 			public void run() {
-				Graphics3D g3d = RenderContext.getContext().getGraphics3D();
 				g3d.glBegin(Graphics3DDraw.GL_QUADS);
 				g3d.glNormal3f(0, 0, -1);
 				g3d.glTexCoord2f(0, 1);
@@ -106,8 +104,6 @@ public class SolidCube extends AbstractModelShape {
 
 		Runnable rest = new Runnable() {
 			public void run() {
-				Graphics3D g3d = RenderContext.getContext().getGraphics3D();
-
 				g3d.glBegin(Graphics3DDraw.GL_QUADS);
 				// back
 				g3d.glNormal3f(0, 0, 1);
@@ -153,13 +149,13 @@ public class SolidCube extends AbstractModelShape {
 	}
 
 	@Override
-	protected void performRender() {
+	protected void performRender(RenderContext renderContext) {
 
-		RenderContext renderContext = RenderContext.getContext();
 		DisplayListManager displayListManager = renderContext
 				.getDisplayListManager();
-		initDisplayLists(displayListManager);
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		Graphics3D g3d = renderContext.getGraphics3D();
+		initDisplayLists(displayListManager, g3d);
+		
 
 		if (m_textureId != null) {
 			g3d.glColor4f(0, 0, 0, 0);
@@ -172,9 +168,9 @@ public class SolidCube extends AbstractModelShape {
 			displayListManager.executeDisplayList(DL_TEXTURE);
 			g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, 0);
 
-			glSetColor();
+			glSetColor(g3d);
 		} else {
-			glSetColor();
+			glSetColor(g3d);
 			displayListManager.executeDisplayList(DL_FRONT);
 		}
 
@@ -218,8 +214,8 @@ public class SolidCube extends AbstractModelShape {
 	}
 
 	@Override
-	protected void setup() {
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+	protected void setup(RenderContext renderContext) {
+		Graphics3D g3d = renderContext.getGraphics3D();
 		g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
 				Graphics3DDraw.GL_FILL);
 	}

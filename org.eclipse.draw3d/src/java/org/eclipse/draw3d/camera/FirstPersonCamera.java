@@ -11,8 +11,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.camera;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import org.eclipse.draw3d.RenderContext;
@@ -36,7 +34,7 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
  * @version $Revision$
  * @since 19.11.2007
  */
-public class FirstPersonCamera implements ICamera {
+public class FirstPersonCamera extends AbstractCamera {
 
 	@SuppressWarnings("unused")
 	private static Logger log = Logger.getLogger(FirstPersonCamera.class
@@ -52,8 +50,7 @@ public class FirstPersonCamera implements ICamera {
 	 */
 	private final Vector3fImpl TMP_V3 = new Vector3fImpl();
 
-	private final List<ICameraListener> m_listeners = new ArrayList<ICameraListener>(
-			3);
+	
 
 	private final Vector3fImpl m_position = new Vector3fImpl();
 
@@ -74,23 +71,7 @@ public class FirstPersonCamera implements ICamera {
 		reset();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#addCameraListener(org.eclipse.draw3d.camera.ICameraListener)
-	 */
-	public void addCameraListener(ICameraListener i_listener) {
-
-		if (!m_listeners.contains(i_listener))
-			m_listeners.add(i_listener);
-	}
-
-	private void fireCameraChanged() {
-
-		for (ICameraListener listener : m_listeners)
-			listener.cameraChanged();
-	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -200,19 +181,15 @@ public class FirstPersonCamera implements ICamera {
 		fireCameraChanged();
 	}
 
-	/**
+	
+
+	/** 
 	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#removeCameraListener(org.eclipse.draw3d.camera.ICameraListener)
+	 * @see org.eclipse.draw3d.camera.ICamera#render(org.eclipse.draw3d.RenderContext)
 	 */
-	public void removeCameraListener(ICameraListener i_listener) {
+	public void render(RenderContext renderContext) {
 
-		m_listeners.remove(i_listener);
-	}
-
-	public void render() {
-
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		Graphics3D g3d = renderContext.getGraphics3D();
 		g3d.glViewport(0, 0, m_viewportWidth, m_viewportHeight);
 
 		g3d.glMatrixMode(Graphics3DDraw.GL_PROJECTION);

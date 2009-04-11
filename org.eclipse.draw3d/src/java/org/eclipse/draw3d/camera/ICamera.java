@@ -11,6 +11,7 @@
 
 package org.eclipse.draw3d.camera;
 
+import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
@@ -22,6 +23,10 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
  * rotating, or orbiting the camera results in directly modifying the given
  * parameters. In timed mode, the given values are interpreted as velocities. In
  * timed mode, render must be periodically called in order to update the values.
+ * <p>
+ * This interface is not supposed to be implemented directly, instead subclass
+ * {@link AbstractCamera}.
+ * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -34,7 +39,8 @@ public interface ICamera {
 	public static final IVector3f UP_REF = new Vector3fImpl(0, -1, 0);
 
 	public static final IVector3f VIEW_REF = new Vector3fImpl(0, 0, 1);
-
+	
+	
 	/**
 	 * Registers the given listener with this camera. If the listener is already
 	 * registered, it will be registered again.
@@ -110,7 +116,7 @@ public interface ICamera {
 	/**
 	 * Renders the camera.
 	 */
-	public void render();
+	public void render(RenderContext renderContext);
 
 	/**
 	 * Resets the camera to its default position, view direction and up vector.

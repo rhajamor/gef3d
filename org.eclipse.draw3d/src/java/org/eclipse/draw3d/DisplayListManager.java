@@ -19,6 +19,8 @@ import java.util.logging.Logger;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
+
 /**
  * Manages display lists during a render operation in the current GL context.
  * 
@@ -46,7 +48,23 @@ public class DisplayListManager {
 
 	private int m_index = RANGE;
 	
+	
+	private RenderContext m_renderContext;
 		
+	/**
+	 * @param i_renderContext
+	 */
+	public DisplayListManager(RenderContext i_renderContext) {
+		if (i_renderContext == null) // parameter precondition
+			throw new NullPointerException("i_renderContext must not be null");
+		
+		m_renderContext = i_renderContext;
+	}
+	
+	protected RenderContext getRenderContext() {
+		return m_renderContext;
+	}
+
 	/**
 	 * Clears all displays lists in this manager.
 	 * 
@@ -57,7 +75,7 @@ public class DisplayListManager {
 		if (m_disposed)
 			throw new IllegalStateException("display list manager is disposed");
 
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		Graphics3D g3d = getRenderContext().getGraphics3D();
 		for (int baseId : m_baseIds)
 			g3d.glDeleteLists(baseId, RANGE);
 
@@ -93,7 +111,7 @@ public class DisplayListManager {
 		if (id == null)
 			id = getNewId();
 
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		Graphics3D g3d = getRenderContext().getGraphics3D();
 		g3d.glNewList(id, Graphics3DDraw.GL_COMPILE);
 		i_runnable.run();
 		g3d.glEndList();
@@ -138,7 +156,7 @@ public class DisplayListManager {
 			throw new IllegalArgumentException("unknown display list: "
 					+ i_name);
 
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		Graphics3D g3d = getRenderContext().getGraphics3D();
 		g3d.glCallList(id);
 	}
 
@@ -154,7 +172,7 @@ public class DisplayListManager {
 			throw new IllegalStateException("display list manager is disposed");
 
 		if (m_index == RANGE) {
-			Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+			Graphics3D g3d = getRenderContext().getGraphics3D();
 			int baseId = g3d.glGenLists(RANGE);
 			m_baseIds.add(baseId);
 			m_index = 0;

@@ -81,9 +81,8 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 	 * 
 	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth()
 	 */
-	public float getTransparencyDepth() {
+	public float getTransparencyDepth(RenderContext renderContext) {
 
-		RenderContext renderContext = RenderContext.getContext();
 		ICamera camera = renderContext.getCamera();
 
 		getBounds3D().getCenter(TMP_V3);
@@ -96,30 +95,19 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 	 * @see org.eclipse.draw3d.Figure3D#postrender()
 	 */
 	@Override
-	public void postrender() {
-		RenderContext renderContext = RenderContext.getContext();
+	public void postrender(RenderContext renderContext) {
 		renderContext.addTransparentObject(this);
-
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render()
-	 */
-	@Override
-	public void render() {
-
-		// nothing to do
-	}
+	
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.TransparentObject#renderTransparent(org.eclipse.draw3d.RenderContext)
 	 */
-	public void renderTransparent() {
-		m_shape.render();
+	public void renderTransparent(RenderContext renderContext) {
+		m_shape.render(renderContext);
 
 	}
 

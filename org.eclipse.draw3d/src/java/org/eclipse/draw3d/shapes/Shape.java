@@ -11,6 +11,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
+import org.eclipse.draw3d.RenderContext;
+
 /**
  * A shape is a geometric object that can render itself using OpenGL commands.
  * 
@@ -23,5 +25,5 @@ public interface Shape {
 	/**
 	 * Render the shape.
 	 */
-	public void render();
+	public void render(RenderContext renderContext);
 }

@@ -34,9 +34,11 @@ import org.lwjgl.util.glu.GLU;
  * @version $Revision$
  * @since 06.08.2008
  */
-public class LwjglTexturePbuffer implements LwjglTexture {
+public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 
 	private static final IntBuffer INT_BUF = BufferUtils.createIntBuffer(1);
+
+	protected LwjglGraphics m_graphics;
 
 	private static Pbuffer createPBuffer(int i_width, int i_height)
 			throws LWJGLException {
@@ -72,8 +74,9 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 
 	private static void deletePBuffer(Pbuffer i_pBuffer) {
 
-		if (i_pBuffer != null)
+		if (i_pBuffer != null) {
 			i_pBuffer.destroy();
+		}
 	}
 
 	private static void deleteTexture(int i_glTexture) {
@@ -94,13 +97,15 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 	 */
 	public static boolean isSupported(GLCanvas i_context) {
 
-		if (i_context == null)
+		if (i_context == null) {
 			throw new NullPointerException("i_context must not be null");
+		}
 
 		if (Pbuffer.PBUFFER_SUPPORTED == 0
 				|| Pbuffer.RENDER_TEXTURE_SUPPORTED == 0
-				|| Pbuffer.RENDER_TEXTURE_RECTANGLE_SUPPORTED == 0)
+				|| Pbuffer.RENDER_TEXTURE_RECTANGLE_SUPPORTED == 0) {
 			return false;
+		}
 
 		int glTexture = 0;
 		Pbuffer pBuffer = null;
@@ -125,19 +130,13 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 
 	private final GLCanvas m_context;
 
-	private boolean m_disposed = false;
-
 	private int m_glTexture;
-
-	private LwjglGraphics m_graphics;
 
 	private int m_height;
 
-	private Pbuffer m_pBuffer;
-
-	private boolean m_valid = false;
-
 	private int m_width;
+
+	private Pbuffer m_pBuffer;
 
 	private LwjglFontManager m_fontManager;
 
@@ -153,10 +152,12 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 	 *             positive
 	 * @throws NullPointerException if the given context is <code>null</code>
 	 */
-	public LwjglTexturePbuffer(GLCanvas i_context, int i_width, int i_height, LwjglFontManager fontManager) {
+	public LwjglTexturePbuffer(GLCanvas i_context, int i_width, int i_height,
+			LwjglFontManager fontManager) {
 
-		if (i_context == null)
+		if (i_context == null) {
 			throw new NullPointerException("i_context must not be null");
+		}
 
 		m_context = i_context;
 		setDimensions(i_width, i_height);
@@ -170,16 +171,19 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 	 */
 	public void activate() {
 
-		if (m_disposed)
+		if (m_disposed) {
 			throw new IllegalStateException("texture is disposed");
+		}
 
 		try {
 			if (!m_valid || (m_pBuffer != null && m_pBuffer.isBufferLost())) {
 
-				if (m_graphics == null)
-					m_graphics = new LwjglGraphics(m_width, m_height, m_fontManager);
-				else
+				if (m_graphics == null) {
+					m_graphics = new LwjglGraphics(m_width, m_height,
+							m_fontManager);
+				} else {
 					m_graphics.setDimensions(m_width, m_height);
+				}
 
 				deleteTexture(m_glTexture);
 				deletePBuffer(m_pBuffer);
@@ -230,8 +234,9 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 	 */
 	public void clear(Color i_color, int i_alpha) {
 
-		if (i_color == null)
+		if (i_color == null) {
 			throw new NullPointerException("i_color must not be null");
+		}
 
 		float[] color = ColorConverter.toFloatArray(i_color, i_alpha, null);
 		GL11.glClearColor(color[0], color[1], color[2], color[3]);
@@ -245,8 +250,9 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 	 */
 	public void deactivate() {
 
-		if (m_disposed)
+		if (m_disposed) {
 			throw new IllegalStateException("texture is disposed");
+		}
 
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_glTexture);
 		m_pBuffer.bindTexImage(Pbuffer.FRONT_LEFT_BUFFER);
@@ -262,8 +268,9 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 	 */
 	public void dispose() {
 
-		if (m_disposed)
+		if (m_disposed) {
 			return;
+		}
 
 		deleteTexture(m_glTexture);
 		m_glTexture = 0;
@@ -281,14 +288,17 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 	 */
 	public Graphics getGraphics() {
 
-		if (m_disposed)
+		if (m_disposed) {
 			throw new IllegalStateException("texture is disposed");
+		}
 
-		if (!m_valid)
+		if (!m_valid) {
 			throw new IllegalStateException("texture not valid");
+		}
 
-		if (m_graphics == null)
+		if (m_graphics == null) {
 			throw new IllegalStateException("texture not initialized");
+		}
 
 		return m_graphics;
 	}
@@ -300,8 +310,9 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 	 */
 	public int getTextureId() {
 
-		if (m_disposed)
+		if (m_disposed) {
 			throw new IllegalStateException("texture is disposed");
+		}
 
 		return m_glTexture;
 	}
@@ -314,12 +325,14 @@ public class LwjglTexturePbuffer implements LwjglTexture {
 	 */
 	public void setDimensions(int i_width, int i_height) {
 
-		if (m_disposed)
+		if (m_disposed) {
 			throw new IllegalStateException("texture is disposed");
+		}
 
-		if (i_width <= 0 || i_height <= 0)
+		if (i_width <= 0 || i_height <= 0) {
 			throw new IllegalArgumentException(
 					"texture dimensions must not be negative");
+		}
 
 		m_valid = m_valid && m_width == i_width && m_height == i_height;
 

@@ -54,35 +54,21 @@ public class FeedbackFigure3D extends Figure3D implements TransparentObject {
 	 * 
 	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth()
 	 */
-	public float getTransparencyDepth() {
-
-		RenderContext renderContext = RenderContext.getContext();
+	public float getTransparencyDepth(RenderContext renderContext) {
 		ICamera camera = renderContext.getCamera();
 
 		getBounds3D().getCenter(TMP_V3);
 		return camera.getDistance(TMP_V3);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#postrender()
-	 */
-	@Override
-	public void postrender() {
-
-		// nothing to do
-	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.Figure3D#render(org.eclipse.draw3d.RenderContext)
 	 */
 	@Override
-	public void render() {
-
-		RenderContext renderContext = RenderContext.getContext();
+	public void render(RenderContext renderContext) {
 		if (renderContext.getMode().isPaint())
 			renderContext.addTransparentObject(this);
 	}
@@ -92,9 +78,11 @@ public class FeedbackFigure3D extends Figure3D implements TransparentObject {
 	 * 
 	 * @see org.eclipse.draw3d.TransparentObject#renderTransparent(org.eclipse.draw3d.RenderContext)
 	 */
-	public void renderTransparent() {
+	public void renderTransparent(RenderContext renderContext) {
 
-		m_shape.render();
+		m_shape.render(renderContext);
 	}
+
+	
 
 }

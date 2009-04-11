@@ -11,7 +11,12 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.graph.editor;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.eclipse.gef.GraphicalViewer;
+import org.eclipse.gef.ui.actions.ActionRegistry;
+import org.eclipse.gef3d.examples.graph.editor.actions.ActionBuilder;
 import org.eclipse.gef3d.examples.graph.editor.editparts.GraphEditPartFactory;
 import org.eclipse.gef3d.examples.graph.model.Edge;
 import org.eclipse.gef3d.examples.graph.model.Graph;
@@ -30,6 +35,10 @@ import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
  * @since 20.12.2007
  */
 public class GraphEditorMulti2_5D extends GraphEditor2_5D {
+	/**
+	 * Logger for this class
+	 */
+	private static final Logger log = Logger.getLogger(GraphEditorMulti2_5D.class.getName());
 
 	/**
 	 * {@inheritDoc}
@@ -44,6 +53,19 @@ public class GraphEditorMulti2_5D extends GraphEditor2_5D {
 		MultiEditorPartFactory multiFactory = new MultiEditorPartFactory();
 		getGraphicalViewer().setEditPartFactory(multiFactory);
 	}
+	
+	/**
+	 * Creates actions using the {@link ActionBuilder}.
+	 * 
+	 * @see org.eclipse.gef.ui.parts.GraphicalEditor#createActions()
+	 */
+	@Override
+	protected void createActions() {
+		super.createActions();
+		ActionRegistry registry = getActionRegistry();
+		ActionBuilder.buildActions(registry, this);
+
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -53,8 +75,8 @@ public class GraphEditorMulti2_5D extends GraphEditor2_5D {
 	@Override
 	protected void initializeGraphicalViewer() {
 
-		int planes = 20; // max 50
-		int nodesPerPlane = 40; // max: 200;
+		int planes = 10; // max 50
+		int nodesPerPlane = 20; // max: 200;
 		Graph[] graphs = new Graph[planes];
 
 		MultiEditorModelContainer container = new MultiEditorModelContainer();
@@ -76,19 +98,57 @@ public class GraphEditorMulti2_5D extends GraphEditor2_5D {
 
 			graphs[p] = g;
 		}
-
+		
+		
+		
+//		for (int p = 1; p < planes; p++) {
+//			for (int c = 0; c < nodesPerPlane / 2; c++) {
+//				int source = (int) (Math.random() * nodesPerPlane);
+//				int target = (int) (Math.random() * nodesPerPlane);
+//
+//				intermodel.add(new Edge(graphs[p - 1].getVerteces().get(source),
+//						graphs[p].getVerteces().get(target)));
+//			}
+//		}
+		
 		for (int p = 1; p < planes; p++) {
-			for (int c = 0; c < nodesPerPlane / 2; c++) {
-				int source = (int) (Math.random() * nodesPerPlane);
-				int target = (int) (Math.random() * nodesPerPlane);
+			for (int c = 0; c < nodesPerPlane; c+=20 ) {
+				int source = (int) (c);
+				int target = (int) (c);
 
 				intermodel.add(new Edge(graphs[p - 1].getVerteces().get(source),
 						graphs[p].getVerteces().get(target)));
 			}
 		}
 		
-		
 
+		int vPerGraph = graphs[0].getVerteces().size();
+		int ePerGraph = 0; // with 3D edges
+		for (Vertex v: graphs[0].getVerteces()) {
+			ePerGraph += v.getSources().size();
+		}
+		
+		
+		int connections3D = intermodel.getConnections().size();
+
+		if (log.isLoggable(Level.INFO)) {
+			
+			log.info("3D Nodes, " +
+					"3D Edges, " +
+					"2D Nodes per Plane, " +
+					"2D Nodes, " + 
+					"Edges"
+					);
+			log.info( planes
+					+ ", " + connections3D
+					+ ", " + vPerGraph
+					+ ", " + planes * vPerGraph
+					+ ", " + planes * ePerGraph 
+					); //$NON-NLS-1$
+		}
+		
+		
+		
 		viewer.setContents(container);
 	}
 

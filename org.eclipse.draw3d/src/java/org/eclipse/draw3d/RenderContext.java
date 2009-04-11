@@ -20,9 +20,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
-import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
-import org.eclipse.draw3d.graphics3d.Graphics3DRegistry;
 import org.eclipse.draw3d.picking.ColorProvider;
 import org.eclipse.swt.opengl.GLCanvas;
 
@@ -36,19 +34,35 @@ import org.eclipse.swt.opengl.GLCanvas;
  */
 public class RenderContext {
 
-	/**
-	 * 
-	 */
-	private static final Comparator<TransparentObject> DEPTH_COMPARATOR = new Comparator<TransparentObject>() {
+	
+	class DepthComparator implements Comparator<TransparentObject> { 
+	
+		RenderContext renderContext;
+		
+		/**
+		 * @param i_renderContext
+		 */
+		public DepthComparator(RenderContext i_renderContext) {
+			super();
+			renderContext = i_renderContext;
+		}
+
 
 		public int compare(TransparentObject i_o1, TransparentObject i_o2) {
 
-			float depth1 = i_o1.getTransparencyDepth();
-			float depth2 = i_o2.getTransparencyDepth();
+			float depth1 = i_o1.getTransparencyDepth(renderContext);
+			float depth2 = i_o2.getTransparencyDepth(renderContext);
 			// return -1 * Float.compare(depth1, depth2);
 			return Float.compare(depth2, depth1);
 		}
 	};
+	
+	/**
+	 * 
+	 */
+	private final Comparator<TransparentObject> depthComparator = 
+		new DepthComparator(this);
+	
 
 	/**
 	 * Logger for this class
@@ -57,29 +71,7 @@ public class RenderContext {
 	private static final Logger log = Logger.getLogger(RenderContext.class
 			.getName());
 
-	private static ThreadLocal<RenderContext> renderContext = new ThreadLocal<RenderContext>() {
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see java.lang.ThreadLocal#initialValue()
-		 */
-		@Override
-		protected RenderContext initialValue() {
-
-			return new RenderContext();
-		}
-	};
-
-	/**
-	 * Returns the render context specific to the current thread.
-	 * 
-	 * @return the current render context, which is never <code>null</code>
-	 */
-	public static RenderContext getContext() {
-
-		return renderContext.get();
-	}
-
+	
 	private ICamera m_camera;
 
 	private ColorProvider m_colorProvider;
@@ -94,15 +86,19 @@ public class RenderContext {
 
 	private Graphics3D m_g3d = null;
 
+
+	private GLCanvas m_Canvas;
+
 	/**
-	 * Creates a new render context.
+	 * Creates a new render context. The context is created by the
+	 * {@link LightweightSystem3D}.
 	 */
-	private RenderContext() {
+	RenderContext() {
 
 		m_mode = RenderMode.PAINT;
 
-		m_transparentObjects = new TreeSet<TransparentObject>(DEPTH_COMPARATOR);
-		m_superimposedObjects = new TreeSet<TransparentObject>(DEPTH_COMPARATOR);
+		m_transparentObjects = new TreeSet<TransparentObject>(depthComparator);
+		m_superimposedObjects = new TreeSet<TransparentObject>(depthComparator);
 
 		m_displayListManagers = new HashMap<Graphics3D, DisplayListManager>();
 	}
@@ -203,7 +199,7 @@ public class RenderContext {
 //			throw new IllegalStateException(
 //					"display list manager was not set for this graphics3D instane");
 		if (manager==null) {
-			manager = new DisplayListManager();
+			manager = new DisplayListManager(this);
 			m_displayListManagers.put(getGraphics3D(), manager);
 		}
 
@@ -230,18 +226,18 @@ public class RenderContext {
 	public void renderTransparency() {
 
 		for (TransparentObject transparentObject : m_transparentObjects) {
-			transparentObject.renderTransparent();
+			transparentObject.renderTransparent(this);
 		}
 
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
-		// depth test abschalten
+		Graphics3D g3d = getGraphics3D();
+		// disable depth test
 		g3d.glDisable(Graphics3DDraw.GL_DEPTH_TEST);
-		// evtl. face culling ausschalten
+		// maybe disable face culling
 		// GL11.glDisable(GL11.GL_CULL_FACE);
 
 		try {
 			for (TransparentObject transparentObject : m_superimposedObjects) {
-				transparentObject.renderTransparent();
+				transparentObject.renderTransparent(this);
 			}
 		} finally {
 
@@ -329,18 +325,7 @@ public class RenderContext {
 		return this.m_g3d;
 	}
 
-	/**
-	 * Sets the default rendering implementation. Should be used directly on
-	 * startup to initialize the renderer. The renderer can be exchanged
-	 * whenever it makes sense by creating (see Graphics3DRegistry) another
-	 * instance and setting it to this context.
-	 * 
-	 * @param i_context The rendering context.
-	 */
-	public void setDefaultRenderer(GLCanvas i_context) {
-		Graphics3DDescriptor descr = Graphics3DRegistry.getDefaultScreenRenderer();
-		this.m_g3d = descr.createInstance(i_context);
-	}
+	
 
 	/**
 	 * Sets another Graphics3D instance for further rendering within this
@@ -370,5 +355,36 @@ public class RenderContext {
 		builder.append("]");
 
 		return builder.toString();
+	}
+
+	/**
+	 * Disposes all {@link DisplayListManager}, clears display manager map, and
+	 * disposes the current {@link Graphics3D} instance.
+	 * This method is called by the {@link LightweightSystem3D} when the
+	 * widget is disposed.
+	 */
+	public synchronized void dispose() {
+		
+		for (DisplayListManager displayListManager: m_displayListManagers.values()) {
+			displayListManager.dispose();
+		}
+		m_displayListManagers.clear();	
+		
+		m_g3d.dispose();
+	}
+
+	/**
+	 * 
+	 */
+	public void activate() {
+		m_Canvas.setCurrent();
+	}
+
+	/**
+	 * @param i_canvas
+	 */
+	public void setCanvas(GLCanvas i_canvas) {
+		m_Canvas = i_canvas;
+		
 	}
 }

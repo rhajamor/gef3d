@@ -18,7 +18,6 @@ import org.eclipse.draw2d.UpdateManager;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.PickingUpdateManager3D;
-import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
@@ -117,7 +116,9 @@ public class CoordinateConverter {
 	public static Vector3f screenToFigure(int i_sX, int i_sY, float i_d,
 			IFigure3D i_figure, Vector3f io_result) {
 
-		screenToWorld(i_sX, i_sY, i_d, io_result);
+		Graphics3D g3d = i_figure.getRenderContext().getGraphics3D();
+		
+		screenToWorld(i_sX, i_sY, i_d, g3d, io_result);
 		return worldToFigure(io_result.getX(), io_result.getY(), io_result
 				.getZ(), i_figure, io_result);
 	}
@@ -138,7 +139,9 @@ public class CoordinateConverter {
 	public static Point screenToSurface(int i_sX, int i_sY, float i_d,
 			IFigure3D i_figure, Point io_result) {
 
-		screenToWorld(i_sX, i_sY, i_d, TMP_V3);
+		Graphics3D g3d = i_figure.getRenderContext().getGraphics3D();
+		
+		screenToWorld(i_sX, i_sY, i_d,g3d, TMP_V3);
 		return worldToSurface(TMP_V3.x, TMP_V3.y, TMP_V3.z, i_figure, io_result);
 	}
 
@@ -193,15 +196,15 @@ public class CoordinateConverter {
 	 *         coordinates and depth
 	 */
 	public static Vector3f screenToWorld(int i_sX, int i_sY, float i_d,
-			Vector3f io_result) {
-
+			Graphics3D i_graphics3D, Vector3f io_result) {
+	
 		if (io_result == null)
 			io_result = new Vector3fImpl();
 
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
-		g3d.glGetInteger(Graphics3DDraw.GL_VIEWPORT, VIEWPORT);
-		g3d.glGetFloat(Graphics3DDraw.GL_PROJECTION_MATRIX, PROJECTION);
-		g3d.glGetFloat(Graphics3DDraw.GL_MODELVIEW_MATRIX, MODELVIEW);
+		
+		i_graphics3D.glGetInteger(Graphics3DDraw.GL_VIEWPORT, VIEWPORT);
+		i_graphics3D.glGetFloat(Graphics3DDraw.GL_PROJECTION_MATRIX, PROJECTION);
+		i_graphics3D.glGetFloat(Graphics3DDraw.GL_MODELVIEW_MATRIX, MODELVIEW);
 
 		// OpenGL screen coordinates expect the origin to be in the lower left
 		// corner
@@ -209,7 +212,7 @@ public class CoordinateConverter {
 		int invertedY = screenHeight - i_sY;
 
 		RESULT.rewind();
-		g3d.gluUnProject(i_sX, invertedY, i_d, MODELVIEW, PROJECTION, VIEWPORT,
+		i_graphics3D.gluUnProject(i_sX, invertedY, i_d, MODELVIEW, PROJECTION, VIEWPORT,
 				RESULT);
 
 		io_result.set(RESULT.get(), RESULT.get(), RESULT.get());

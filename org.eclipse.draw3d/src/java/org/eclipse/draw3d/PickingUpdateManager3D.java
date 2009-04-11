@@ -15,14 +15,14 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.camera.ICamera;
+import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.ColorPicker;
 import org.eclipse.swt.opengl.GLCanvas;
-
 
 /**
  * Does the actual picking for 3D figures by using a color picker, see
  * {@link ColorPicker}.
- *  
+ * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since 13.12.2007
@@ -34,6 +34,8 @@ public class PickingUpdateManager3D extends DeferredUpdateManager3D {
 			.getLogger(PickingUpdateManager3D.class.getName());
 
 	private ColorPicker m_picker = new ColorPicker();
+
+	protected ICamera m_camera;
 
 	/**
 	 * Indicates whether picking is enabled.
@@ -47,8 +49,8 @@ public class PickingUpdateManager3D extends DeferredUpdateManager3D {
 	 */
 	@Override
 	public void dispose() {
-
-		m_picker.dispose();
+		if (m_picker != null)
+			m_picker.dispose();
 		super.dispose();
 	}
 
@@ -58,7 +60,6 @@ public class PickingUpdateManager3D extends DeferredUpdateManager3D {
 	 * @return the picker
 	 */
 	public ColorPicker getPicker() {
-
 		return m_picker;
 	}
 
@@ -76,7 +77,8 @@ public class PickingUpdateManager3D extends DeferredUpdateManager3D {
 
 		// TODO: this leads to the picking buffer being re-rendered when a
 		// feedback figure is moved, which is unneccessary
-		m_picker.invalidate();
+		if (m_picker != null)
+			m_picker.invalidate();
 	}
 
 	/**
@@ -85,7 +87,7 @@ public class PickingUpdateManager3D extends DeferredUpdateManager3D {
 	 * @param i_camera the camera
 	 */
 	public void setCamera(ICamera i_camera) {
-
+		m_camera = i_camera;
 		m_picker.setCamera(i_camera);
 	}
 
@@ -96,7 +98,6 @@ public class PickingUpdateManager3D extends DeferredUpdateManager3D {
 	 */
 	@Override
 	public void setCanvas(GLCanvas i_canvas) {
-
 		super.setCanvas(i_canvas);
 		m_picker.setCanvas(i_canvas);
 	}
@@ -108,8 +109,8 @@ public class PickingUpdateManager3D extends DeferredUpdateManager3D {
 	 */
 	@Override
 	public void setRoot(IFigure i_figure) {
-
 		super.setRoot(i_figure);
+
 		m_picker.setRootFigure(i_figure);
 	}
 }

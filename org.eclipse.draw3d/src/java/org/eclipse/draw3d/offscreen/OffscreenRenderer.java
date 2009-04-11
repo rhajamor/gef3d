@@ -269,7 +269,7 @@ public class OffscreenRenderer {
 			m_offscreenBuffers = null;
 		}
 
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		Graphics3D g3d = i_bufferConfig.getGraphics3D();
 
 		m_offscreenBuffers = g3d.getGraphics3DOffscreenBuffer(m_height,
 				m_width, m_bufferConfig);

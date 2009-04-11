@@ -10,8 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.camera;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import org.eclipse.draw3d.RenderContext;
@@ -31,7 +29,7 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
  * @version $Revision$
  * @since 19.11.2007
  */
-public class RestrictedFirstPersonCamera implements ICamera {
+public class RestrictedFirstPersonCamera extends AbstractCamera {
 
 	private static final float HALF_PI = (float) Math.PI / 2;
 
@@ -49,9 +47,7 @@ public class RestrictedFirstPersonCamera implements ICamera {
 	 */
 	private final Vector3fImpl TMP_V3 = new Vector3fImpl();
 
-	private final List<ICameraListener> m_listeners = new ArrayList<ICameraListener>(
-			3);
-
+	
 	private final Vector3fImpl m_position = new Vector3fImpl();
 
 	private final Vector3fImpl m_right = new Vector3fImpl();
@@ -71,23 +67,7 @@ public class RestrictedFirstPersonCamera implements ICamera {
 		reset();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#addCameraListener(org.eclipse.draw3d.camera.ICameraListener)
-	 */
-	public void addCameraListener(ICameraListener i_listener) {
-
-		if (!m_listeners.contains(i_listener))
-			m_listeners.add(i_listener);
-	}
-
-	private void fireCameraUpdated() {
-
-		for (ICameraListener listener : m_listeners)
-			listener.cameraChanged();
-	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -150,7 +130,7 @@ public class RestrictedFirstPersonCamera implements ICamera {
 		TMP_V3.scale(i_dUp);
 		Math3D.add(m_position, TMP_V3, m_position);
 
-		fireCameraUpdated();
+		fireCameraChanged();
 	}
 
 	public void moveTo(float i_x, float i_y, float i_z) {
@@ -159,7 +139,7 @@ public class RestrictedFirstPersonCamera implements ICamera {
 		m_position.y = i_y;
 		m_position.z = i_z;
 
-		fireCameraUpdated();
+		fireCameraChanged();
 	}
 
 	/**
@@ -186,7 +166,7 @@ public class RestrictedFirstPersonCamera implements ICamera {
 		Math3D.add(TMP_V3, i_center, m_position);
 
 		rotate(0, i_vAngle, i_hAngle);
-		fireCameraUpdated();
+		fireCameraChanged();
 	}
 
 	private void recalculateVectors() {
@@ -197,19 +177,15 @@ public class RestrictedFirstPersonCamera implements ICamera {
 		Math3D.normalise(m_up, m_up);
 	}
 
-	/**
+	
+
+	/** 
 	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#removeCameraListener(org.eclipse.draw3d.camera.ICameraListener)
+	 * @see org.eclipse.draw3d.camera.ICamera#render(org.eclipse.draw3d.RenderContext)
 	 */
-	public void removeCameraListener(ICameraListener i_listener) {
+	public void render(RenderContext renderContext) {
 
-		m_listeners.remove(i_listener);
-	}
-
-	public void render() {
-
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		Graphics3D g3d = renderContext.getGraphics3D();
 		g3d.glViewport(0, 0, m_viewportWidth, m_viewportHeight);
 
 		g3d.glMatrixMode(Graphics3DDraw.GL_PROJECTION);
@@ -236,7 +212,7 @@ public class RestrictedFirstPersonCamera implements ICamera {
 		m_viewDir.set(0, 0, 1);
 		recalculateVectors();
 
-		fireCameraUpdated();
+		fireCameraChanged();
 	}
 
 	public void rotate(float i_roll, float i_pitch, float i_yaw) {
@@ -256,7 +232,7 @@ public class RestrictedFirstPersonCamera implements ICamera {
 		m_viewDir.transform(TMP_M);
 		recalculateVectors();
 
-		fireCameraUpdated();
+		fireCameraChanged();
 	}
 
 	/**
@@ -269,6 +245,6 @@ public class RestrictedFirstPersonCamera implements ICamera {
 		m_viewportWidth = i_width;
 		m_viewportHeight = i_height;
 
-		fireCameraUpdated();
+		fireCameraChanged();
 	}
 }

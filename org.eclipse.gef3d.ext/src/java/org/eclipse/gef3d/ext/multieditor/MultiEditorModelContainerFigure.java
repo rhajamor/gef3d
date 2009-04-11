@@ -55,7 +55,7 @@ public class MultiEditorModelContainerFigure extends FreeformLayer3D {
 				vec.z += dz;
 				fig3D.setLocation3D(vec);
 				
-//				Vector3fImpl v = new Vector3fImpl();
+				Vector3fImpl v = new Vector3fImpl();
 //				v.z = (float) (Math.PI/6 *dz/1000);
 //				v.y = (float) (Math.PI/12 *dz/1000);
 //				fig3D.setRotation3D(v);
@@ -66,14 +66,4 @@ public class MultiEditorModelContainerFigure extends FreeformLayer3D {
 
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render(org.eclipse.draw3d.RenderContext)
-	 */
-	@Override
-	public void render() {
-
-		// nothing to do
-	}
 }

@@ -108,9 +108,7 @@ public class FpsStatusLineItem extends ContributionItem implements
 	 * 
 	 * @see org.eclipse.draw3d.RenderListener#renderPassFinished()
 	 */
-	public void renderPassFinished() {
-
-		RenderContext renderContext = RenderContext.getContext();
+	public void renderPassFinished(RenderContext renderContext) {
 		if (!renderContext.getMode().isPaint())
 			return;
 
@@ -138,7 +136,7 @@ public class FpsStatusLineItem extends ContributionItem implements
 	 * 
 	 * @see org.eclipse.draw3d.RenderListener#renderPassStarted()
 	 */
-	public void renderPassStarted() {
+	public void renderPassStarted(RenderContext renderContext) {
 
 		// nothing to do
 	}

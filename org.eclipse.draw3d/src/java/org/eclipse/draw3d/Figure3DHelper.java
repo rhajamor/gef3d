@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Connection;
@@ -503,7 +502,9 @@ public class Figure3DHelper {
 		Collection<IFigure> children2D = getChildren2D();
 		if (!children2D.isEmpty()) {
 
-			RenderContext renderContext = RenderContext.getContext();
+			RenderContext renderContext = 
+				m_figuresFriend.figure.getRenderContext();
+				
 
 			boolean repaint2D = renderContext.getMode().isPaint()
 					&& m_figuresFriend.is2DContentDirty();
@@ -512,7 +513,7 @@ public class Figure3DHelper {
 			Graphics graphics = i_graphics;
 			if (repaint2D) {
 
-				Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+				Graphics3D g3d = renderContext.getGraphics3D();
 				Rectangle bounds = figure.getBounds();
 
 				Graphics textureGraphics = g3d.activateGraphics2D(figure,
@@ -570,7 +571,7 @@ public class Figure3DHelper {
 				}
 			} finally {
 				if (repaint2D) {
-					Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+					Graphics3D g3d = renderContext.getGraphics3D();
 					g3d.deactivateGraphics2D();
 				}
 			}
@@ -601,12 +602,13 @@ public class Figure3DHelper {
 	 */
 	public void paintFigure(Graphics i_graphics) {
 
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		RenderContext renderContext = m_figuresFriend.figure.getRenderContext();
+		Graphics3D g3d = renderContext.getGraphics3D();
 		g3d.deactivateGraphics2D();
 
 		IFigure3D figure = m_figuresFriend.figure;
-		figure.render();
-		figure.postrender();
+		figure.render(renderContext);
+		figure.postrender(renderContext);
 	}
 
 	/**

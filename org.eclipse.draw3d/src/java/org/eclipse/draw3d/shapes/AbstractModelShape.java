@@ -40,10 +40,10 @@ public abstract class AbstractModelShape implements Shape {
 	 * 
 	 * @see org.eclipse.draw3d.shapes.Shape#render()
 	 */
-	public final void render() {
+	public final void render(RenderContext renderContext) {
 
-		setup();
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		setup(renderContext);
+		Graphics3D g3d = renderContext.getGraphics3D();
 
 		g3d.glMatrixMode(Graphics3DDraw.GL_MODELVIEW);
 		if (m_useModelMatrix)
@@ -62,7 +62,7 @@ public abstract class AbstractModelShape implements Shape {
 //				g3d.glMultMatrix(cachedRawPosition);
 			}
 
-			performRender();
+			performRender(renderContext);
 		} finally {
 			if (m_useModelMatrix)
 				g3d.glPopMatrix();
@@ -73,13 +73,13 @@ public abstract class AbstractModelShape implements Shape {
 	 * Perform the actual rendering. Extenders of this class must override and
 	 * implement this method.
 	 */
-	protected abstract void performRender();
+	protected abstract void performRender(RenderContext renderContext);
 
 	/**
 	 * Do some setup. Extenders of this class can override and implement this
 	 * method.
 	 */
-	protected void setup() {
+	protected void setup(RenderContext renderContext) {
 		// nothing to setup
 	}
 

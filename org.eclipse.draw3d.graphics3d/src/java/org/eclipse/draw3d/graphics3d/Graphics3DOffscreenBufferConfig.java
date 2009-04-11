@@ -23,6 +23,12 @@ package org.eclipse.draw3d.graphics3d;
  * @since 06.12.2008
  */
 public interface Graphics3DOffscreenBufferConfig {
+	
+	/**
+	 * Returns the {@link Graphics3D} instance
+	 * @return
+	 */
+	Graphics3D getGraphics3D();
 
 	/**
 	 * Returns the number of bytes per pixel of the color buffer.

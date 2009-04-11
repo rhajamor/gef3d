@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw3d.Figure3D;
+import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.SWT;
@@ -34,6 +35,7 @@ public class ConnectedElementFigure extends Figure3D {
 	/**
 	 * Logger for this class
 	 */
+	@SuppressWarnings("unused")
 	private static final Logger log = Logger
 			.getLogger(ConnectedElementFigure.class.getName());
 
@@ -57,21 +59,12 @@ public class ConnectedElementFigure extends Figure3D {
 	 * @see org.eclipse.draw3d.Figure3D#postrender()
 	 */
 	@Override
-	public void postrender() {
+	public void postrender(RenderContext renderContext) {
 
-		m_shape.render();
+		m_shape.render(renderContext);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render()
-	 */
-	@Override
-	public void render() {
-
-		// nothing to do
-	}
+	
 
 	public void setTag(String strTag) {
 		tagLabel.setText(strTag);

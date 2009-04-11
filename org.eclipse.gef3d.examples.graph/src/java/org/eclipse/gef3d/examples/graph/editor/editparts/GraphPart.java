@@ -21,6 +21,7 @@ import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef3d.editparts.AbstractGraphicalEditPartEx;
 import org.eclipse.gef3d.examples.graph.editor.editpolicies.Graph3DLayoutPolicy;
 import org.eclipse.gef3d.examples.graph.model.Graph;
+import org.eclipse.gef3d.examples.graph.model.Vertex;
 
 
 /**
@@ -103,16 +104,33 @@ public class GraphPart extends AbstractGraphicalEditPartEx implements
 
 		int numberOfVertices = ((Graph) getModel()).getVerteces().size();
 
-		if (numberOfVertices > 50) {
-			if (numberOfVertices > 210)
-				fig.setSize(new Dimension(1500, 1300));
-			else
-				fig.setSize(new Dimension(1000, 700));
-		} else {
-			fig.setSize(new Dimension(400, 300));
-		}
+//		if (numberOfVertices > 50) {
+//			if (numberOfVertices > 210)
+//				fig.setSize(new Dimension(1500, 1300));
+//			else
+//				fig.setSize(new Dimension(1000, 700));
+//		} else {
+//			fig.setSize(new Dimension(400, 300));
+//		}
+		fig.setSize(getMaxPosition());
 		
 		super.refreshVisuals();
 	}
 
+	
+	protected Dimension getMaxPosition() {
+		Graph g = (Graph) getModel();
+		Dimension dim = new Dimension(100,100);
+		int f;
+		for (Vertex v: g.getVerteces()) {
+			f = (int) (v.getX()+v.getWidth());
+			if (f>dim.width) dim.width = f;
+			f = (int) (v.getY()+v.getHeight());
+			if (f>dim.height) dim.height = f;
+		}
+		dim.width += 5;
+		dim.height += 5;
+		return dim;
+	}
+	
 }

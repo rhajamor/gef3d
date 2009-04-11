@@ -15,14 +15,15 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw3d.Figure3D;
+import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.SurfaceLayout;
+import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 
 /**
@@ -77,20 +78,9 @@ public class VertexFigure3D extends Figure3D {
 	 * @see org.eclipse.draw3d.Figure3D#postrender()
 	 */
 	@Override
-	public void postrender() {
+	public void postrender(RenderContext renderContext) {
 
-		m_shape.render();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render()
-	 */
-	@Override
-	public void render() {
-
-		// nothing to do
+		m_shape.render(renderContext);
 	}
 
 	// public static int loadImage(String path, int mag_filter, int min_filter)

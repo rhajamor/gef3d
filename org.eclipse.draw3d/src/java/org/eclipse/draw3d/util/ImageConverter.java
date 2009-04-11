@@ -12,7 +12,7 @@ package org.eclipse.draw3d.util;
 
 import java.nio.ByteBuffer;
 
-import org.eclipse.draw3d.RenderContext;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
@@ -91,23 +91,38 @@ public class ImageConverter {
 	/**
 	 * Position of the blue color component in image data buffers.
 	 */
-	private static final int POS_B = (RenderContext.getContext()
-			.getGraphics3D().getPlatform() == Graphics3DDraw.PLATFORM_WINDOWS) ? 0
-			: 3;
+	private static final int POS_B;
+//	= (RenderContext.getContext()
+//			.getGraphics3D().getPlatform() == Graphics3DDraw.PLATFORM_WINDOWS) ? 0
+//			: 3;
 
 	/**
 	 * Position of the green color component in image data buffers.
 	 */
-	private static final int POS_G = (RenderContext.getContext()
-			.getGraphics3D().getPlatform() == Graphics3DDraw.PLATFORM_WINDOWS) ? 1
-			: 2;
+	private static final int POS_G;
+//	= (RenderContext.getContext()
+//			.getGraphics3D().getPlatform() == Graphics3DDraw.PLATFORM_WINDOWS) ? 1
+//			: 2;
 
 	/**
 	 * Position of the red color component in image data buffers.
 	 */
-	private static final int POS_R = (RenderContext.getContext()
-			.getGraphics3D().getPlatform() == Graphics3DDraw.PLATFORM_WINDOWS) ? 2
-			: 1;
+	private static final int POS_R;
+//	= (RenderContext.getContext()
+//			.getGraphics3D().getPlatform() == Graphics3DDraw.PLATFORM_WINDOWS) ? 2
+//			: 1;
+	
+	static {
+		if (Platform.getOS().startsWith("Windows")) {
+			POS_B = 0;
+			POS_G = 1;
+			POS_R = 2;
+		} else {
+			POS_B = 3;
+			POS_G = 2;
+			POS_R = 1;
+		}
+	}
 
 	private static final int R = 0;
 

@@ -58,7 +58,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	public Control createControl(Composite i_composite) {
 
 		final GLCanvas canvas = Draw3DCanvas
-				.createCanvas(i_composite, SWT.NONE);
+				.createCanvas(i_composite, SWT.NONE, getLightweightSystem3D());
 
 		setControl(canvas);
 		return getControl();
@@ -138,6 +138,8 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 		LightweightSystem3D lightweightSystem3D = getLightweightSystem3D();
 		if (lightweightSystem3D == null)
 			return;
+		
+		lightweightSystem3D.getRenderContext().activate();
 
 		UpdateManager updateManager = getUpdateManager();
 		if (updateManager == null)

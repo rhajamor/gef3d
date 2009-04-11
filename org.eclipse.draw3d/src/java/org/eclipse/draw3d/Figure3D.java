@@ -501,7 +501,7 @@ public class Figure3D extends Figure implements IFigure3D {
 
 		helper.paintChildren(i_graphics);
 
-		RenderContext renderContext = RenderContext.getContext();
+		RenderContext renderContext = getRenderContext();
 		if (renderContext.getMode().isPaint())
 			repaint2DComponents = false;
 	}
@@ -551,15 +551,20 @@ public class Figure3D extends Figure implements IFigure3D {
 
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#postrender()
+	/** 
+	 * The default implementation renders nothing.
+	 * @see org.eclipse.draw3d.Renderable#postrender(org.eclipse.draw3d.RenderContext)
 	 */
-	public void postrender() {
-
-		// nothing to do
+	public void postrender(RenderContext renderContext) {
 	}
+	
+	/** 
+	 * The default implementation renders nothing.
+	 * @see org.eclipse.draw3d.Renderable#render(org.eclipse.draw3d.RenderContext)
+	 */
+	public void render(RenderContext renderContext) {
+	}
+
 
 	@Override
 	public void remove(IFigure i_figure) {
@@ -570,16 +575,6 @@ public class Figure3D extends Figure implements IFigure3D {
 		}
 	}
 
-	/**
-	 * {@inheritDoc} Render itself.
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#render()
-	 */
-	public void render() {
-		// default implementation renders nothing ;-)
-		log.warning("Render method should be overridden! This is a " + //
-				this.getClass());
-	}
 
 	/**
 	 * {@inheritDoc}
@@ -762,5 +757,13 @@ public class Figure3D extends Figure implements IFigure3D {
 	public void validate() {
 		super.validate();
 		repaint2DComponents = true;
+	}
+
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.IFigure3D#getRenderContext()
+	 */
+	public RenderContext getRenderContext() {
+		return getAncestor3D().getRenderContext();
 	}
 }

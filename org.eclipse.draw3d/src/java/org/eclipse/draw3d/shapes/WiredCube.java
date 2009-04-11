@@ -31,7 +31,7 @@ public class WiredCube extends AbstractModelShape {
 
 	private final float[] m_color = new float[] { 0, 0, 0, 1 };
 
-	private void initDisplayLists(DisplayListManager i_displayListManager) {
+	private void initDisplayLists(DisplayListManager i_displayListManager, final Graphics3D g3d) {
 
 		if (i_displayListManager.isDisplayList(DL_CUBE))
 			return;
@@ -39,7 +39,6 @@ public class WiredCube extends AbstractModelShape {
 		i_displayListManager.createDisplayList(DL_CUBE, new Runnable() {
 
 			public void run() {
-				Graphics3D g3d = RenderContext.getContext().getGraphics3D();
 				g3d.glBegin(Graphics3DDraw.GL_LINE_LOOP);
 				g3d.glVertex3f(0, 0, 0);
 				g3d.glVertex3f(1, 0, 0);
@@ -69,13 +68,12 @@ public class WiredCube extends AbstractModelShape {
 	}
 
 	@Override
-	protected void performRender() {
+	protected void performRender(RenderContext renderContext) {
 
-		RenderContext renderContext = RenderContext.getContext();
 		DisplayListManager displayListManager = renderContext
 				.getDisplayListManager();
 
-		initDisplayLists(displayListManager);
+		initDisplayLists(displayListManager, renderContext.getGraphics3D());
 		displayListManager.executeDisplayList(DL_CUBE);
 
 	}
@@ -110,13 +108,13 @@ public class WiredCube extends AbstractModelShape {
 	}
 
 	@Override
-	protected void setup() {
+	protected void setup(RenderContext renderContext) {
 
 		float red = m_color[0];
 		float green = m_color[1];
 		float blue = m_color[2];
 		float alpha = m_color[3];
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		Graphics3D g3d = renderContext.getGraphics3D();
 		g3d.glColor4f(red, green, blue, alpha);
 	}
 }

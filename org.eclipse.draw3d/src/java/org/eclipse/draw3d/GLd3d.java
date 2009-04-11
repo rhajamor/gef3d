@@ -40,9 +40,9 @@ public class GLd3d {
 	/**
 	 * @param i_width
 	 */
-	public static int getAlignedWidth(int i_width) {
+	public static int getAlignedWidth(Graphics3D g3d, int i_width) {
 		int unpackAlignment = GLd3d
-				.glGetInteger(Graphics3DDraw.GL_UNPACK_ALIGNMENT);
+				.glGetInteger(g3d, Graphics3DDraw.GL_UNPACK_ALIGNMENT);
 		int alignedWidth = i_width;
 		int rest = alignedWidth % unpackAlignment;
 		if (rest > 0) {
@@ -57,8 +57,7 @@ public class GLd3d {
 	 * 
 	 * @return an array containing the major and minor version in that order
 	 */
-	public static int[] getVersion() {
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+	public static int[] getVersion(Graphics3D g3d) {
 		String versionString = g3d.glGetString(Graphics3DDraw.GL_VERSION);
 		Matcher matcher = VERSION_PATTERN.matcher(versionString);
 
@@ -72,16 +71,13 @@ public class GLd3d {
 		return new int[] { majorVersion, minorVersion };
 	}
 
-	public static float glGetFloat(int pname) {
-
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+	public static float glGetFloat(Graphics3D g3d, int pname) {
 		g3d.glGetFloat(pname, floatBuffer);
 		float value = floatBuffer.get(0);
 		return value;
 	}
 
-	public static int glGetInteger(int pname) {
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+	public static int glGetInteger(Graphics3D g3d, int pname) {
 		g3d.glGetInteger(pname, intBuffer);
 		int value = intBuffer.get(0);
 		return value;

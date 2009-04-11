@@ -15,6 +15,7 @@ import java.nio.FloatBuffer;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.DummyGraphics;
+import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.GLd3d;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.RenderMode;
@@ -135,10 +136,12 @@ public class OffscreenBuffers implements PickingBuffers {
 	public void repaint(final IFigure i_rootFigure,
 			FigureManager i_figureManager, GLCanvas i_canvas) {
 
-		RenderContext renderContext = RenderContext.getContext();
+		RenderContext renderContext = Figure3DHelper
+				.getAncestor3D(i_rootFigure).getRenderContext();
 		renderContext.setMode(RenderMode.COLOR);
+		renderContext.activate(); // set context to current context
 		renderContext.setColorProvider(i_figureManager);
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		Graphics3D g3d = renderContext.getGraphics3D();
 
 		// lazy initialized because now GL is set up
 		if (m_offscreenRenderer == null) {
@@ -153,7 +156,7 @@ public class OffscreenBuffers implements PickingBuffers {
 			m_offscreenRenderer = new OffscreenRenderer(bufferConfig);
 		}
 
-		int width = GLd3d.getAlignedWidth(i_canvas.getSize().x);
+		int width = GLd3d.getAlignedWidth(g3d, i_canvas.getSize().x);
 		int height = i_canvas.getSize().y;
 
 		m_offscreenRenderer.setDimensions(width, height);

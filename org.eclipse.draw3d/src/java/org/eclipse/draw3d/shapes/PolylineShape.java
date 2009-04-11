@@ -12,12 +12,12 @@ package org.eclipse.draw3d.shapes;
 
 import java.util.List;
 
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.util.ColorConverter;
+import org.eclipse.swt.graphics.Color;
 
 /**
  * A polyline shape can be used to render polylines.
@@ -37,7 +37,7 @@ public class PolylineShape implements Shape {
 	 * 
 	 * @see org.eclipse.draw3d.shapes.Shape#render()
 	 */
-	public void render() {
+	public void render(RenderContext renderContext) {
 
 		if (m_points == null || m_points.isEmpty())
 			return;
@@ -46,7 +46,7 @@ public class PolylineShape implements Shape {
 		float green = m_color[1];
 		float blue = m_color[2];
 		float alpha = m_color[3];
-		Graphics3D g3d = RenderContext.getContext().getGraphics3D();
+		Graphics3D g3d = renderContext.getGraphics3D();
 
 		g3d.glColor4f(red, green, blue, alpha);
 

@@ -57,7 +57,8 @@ public class Export3DOperation  {
 	 * renderer to a file.
 	 */
 	public void run() {
-		Graphics3D g3dSave = RenderContext.getContext().getGraphics3D();
+		RenderContext renderContext = rootFigure.getRenderContext();
+		Graphics3D g3dSave =  renderContext.getGraphics3D();
 
 		try {
 			
@@ -65,20 +66,18 @@ public class Export3DOperation  {
 			Graphics3D g3dExport = descr.createInstance(null);
 			g3dExport.setProperty("exportfile", exportfilename);
 
-			RenderContext.getContext().setGraphics3D(g3dExport);
+			renderContext.setGraphics3D(g3dExport);
 			
 			Graphics dummy = createDummyGraphics();
-			RenderContext.getContext().setMode(RenderMode.PAINT); 
+			renderContext.setMode(RenderMode.PAINT); 
 			rootFigure.invalidateTree(); // invalidate everything
 			rootFigure.paint(dummy);
 
-			RenderContext.getContext().setGraphics3D(g3dSave);
-			RenderContext.getContext().setMode(RenderMode.PAINT);
-			RenderContext.getContext().clearDisplayManager();
-		} finally {
 			
-			RenderContext.getContext().setGraphics3D(g3dSave);
-			RenderContext.getContext().setMode(RenderMode.PAINT);
+		} finally {
+			renderContext.setGraphics3D(g3dSave);
+			renderContext.setMode(RenderMode.PAINT);
+			renderContext.clearDisplayManager(); // was in try block only?!
 			
 		}
 	}

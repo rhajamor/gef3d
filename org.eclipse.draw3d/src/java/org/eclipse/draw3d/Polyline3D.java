@@ -177,22 +177,21 @@ public class Polyline3D extends Figure3D {
 	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void render() {
+	public void render(RenderContext renderContext) {
 
 		m_shape.setPoints(points);
 
-		RenderContext renderContext = RenderContext.getContext();
 		if (renderContext.getMode().isPaint()) {
 			Color color = getForegroundColor();
 			int alpha = getAlpha();
 
 			m_shape.setColor(color, alpha);
-			m_shape.render();
+			m_shape.render(renderContext);
 		} else {
 			int color = renderContext.getColor(this);
 			if (color != ColorProvider.IGNORE) {
 				m_shape.setColor(color, 255);
-				m_shape.render();
+				m_shape.render(renderContext);
 			}
 		}
 

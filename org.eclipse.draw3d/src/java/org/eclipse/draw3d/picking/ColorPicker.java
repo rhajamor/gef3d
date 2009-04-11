@@ -11,7 +11,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.picking;
 
-import static org.eclipse.draw3d.util.CoordinateConverter.*;
+import static org.eclipse.draw3d.util.CoordinateConverter.screenToFigure;
+import static org.eclipse.draw3d.util.CoordinateConverter.screenToWorld;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -29,6 +30,7 @@ import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.geometryext.Plane;
+import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.util.CoordinateConverter;
 import org.eclipse.draw3d.util.ImageConverter;
@@ -114,12 +116,12 @@ public class ColorPicker {
 	private boolean m_valid = false;
 
 	private final Plane m_virtualPlane = new Plane();
-
+	
+	
 	/**
 	 * Creates a new instance.
 	 */
 	public ColorPicker() {
-
 		m_figureManager = new FigureManager();
 		m_pickingBuffers = new OffscreenBuffers();
 	}
@@ -149,6 +151,8 @@ public class ColorPicker {
 		m_pickingBuffers.dispose();
 		m_disposed = true;
 	}
+	
+	
 
 	/**
 	 * Dumps the color buffer of this picker.
@@ -365,20 +369,22 @@ public class ColorPicker {
 		Vector3f result = o_result;
 		if (result == null)
 			result = new Vector3fImpl();
+		
+		Graphics3D g3d = getGraphics3D();
 
 		IFigure3D figure = getFigure3D(i_x, i_y);
 		if (figure != null) {
 			float depth = getDepth(i_x, i_y);
-			screenToWorld(i_x, i_y, depth, result);
+			screenToWorld(i_x, i_y, depth, g3d, result);
 
 			updateVirtualPlane(i_x, i_y);
 		} else if (m_lastFigure != null) {
 			m_camera.getPosition(TMP_V3_1);
-			screenToWorld(i_x, i_y, 0, TMP_V3_2);
+			screenToWorld(i_x, i_y, 0, g3d, TMP_V3_2);
 
 			m_virtualPlane.intersectionWithRay(TMP_V3_1, TMP_V3_2, result);
 		} else {
-			screenToWorld(i_x, i_y, STD_DEPTH, result);
+			screenToWorld(i_x, i_y, STD_DEPTH, g3d, result);
 		}
 
 		return result;
@@ -566,5 +572,13 @@ public class ColorPicker {
 
 		m_pickingBuffers.repaint(m_rootFigure, m_figureManager, m_canvas);
 		m_valid = true;
+	}
+
+	/**
+	 * @todo to be removed, hack for camera tool
+	 * @return
+	 */
+	public Graphics3D getGraphics3D() {
+		return ((IFigure3D) m_rootFigure).getRenderContext().getGraphics3D();
 	}
 }

@@ -31,10 +31,11 @@ import org.eclipse.swt.graphics.Cursor;
  * @version $Revision$
  * @since Mar 25, 2008
  */
-public abstract class CubeHandle extends AbstractHandle3D  {
+public abstract class CubeHandle extends AbstractHandle3D {
 	/**
 	 * Logger for this class
 	 */
+	@SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(CubeHandle.class
 			.getName());
 
@@ -131,29 +132,19 @@ public abstract class CubeHandle extends AbstractHandle3D  {
 		return getOwner().getSelected() == EditPart.SELECTED_PRIMARY;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render(org.eclipse.draw3d.RenderContext)
-	 */
-	@Override
-	public void render() {
-		// nothing to do
-	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.Figure3D#postrender()
 	 */
 	@Override
-	public void postrender() {
-		RenderContext renderContext = RenderContext.getContext();
+	public void postrender(RenderContext renderContext) {
 		if (renderContext.getMode().isPaint()) {
 			renderContext.addTransparentObject(m_alphashape);
 			renderContext.addSuperimposedObject(m_supershape);
 		} else {
-			m_alphashape.renderTransparent(); // render for picking
+			m_alphashape.renderTransparent(renderContext); // render for picking
 		}
 	}
 

@@ -28,10 +28,10 @@ import org.eclipse.swt.widgets.Control;
 
 /**
  * 3D diagram graphical viewer.
- *
- * @author  Kristian Duske
- * @version	$Revision$
- * @since 	Apr 7, 2009
+ * 
+ * @author Kristian Duske
+ * @version $Revision$
+ * @since Apr 7, 2009
  */
 public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 		IScene {
@@ -55,7 +55,8 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 	 */
 	public Control createControl3D(Composite i_composite) {
 
-		GLCanvas canvas = Draw3DCanvas.createCanvas(i_composite, SWT.NONE);
+		GLCanvas canvas = Draw3DCanvas.createCanvas(i_composite, SWT.NONE,
+				getLightweightSystem3D());
 
 		setControl(canvas);
 		return getControl();

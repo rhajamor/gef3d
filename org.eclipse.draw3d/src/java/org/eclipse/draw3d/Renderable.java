@@ -34,7 +34,7 @@ public interface Renderable {
 	 * 
 	 * @see #postrender()
 	 */
-	public void render();
+	public void render(RenderContext renderContext);
 
 	/**
 	 * This method is responsible of rendering to the screen. It is called (via
@@ -44,5 +44,5 @@ public interface Renderable {
 	 * 
 	 * @see #render()
 	 */
-	public void postrender();
+	public void postrender(RenderContext renderContext);
 }

@@ -56,9 +56,9 @@ public class GraphEditPartFactory implements EditPartFactory {
 			log.warning("EditPart, No part created for model=" + i_model); 
 		}
 
-		if (log.isLoggable(Level.INFO)) {
-			log.info("Created new part: " + part + " for model " + i_model); //$NON-NLS-1$
-		}
+//		if (log.isLoggable(Level.INFO)) {
+//			log.info("Created new part: " + part + " for model " + i_model); //$NON-NLS-1$
+//		}
 		
 		
 		

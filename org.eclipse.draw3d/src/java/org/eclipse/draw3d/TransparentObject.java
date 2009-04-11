@@ -25,10 +25,10 @@ public interface TransparentObject {
 	 * 
 	 * @return the distance
 	 */
-	public float getTransparencyDepth();
+	public float getTransparencyDepth(RenderContext renderContext);
 
 	/**
 	 * Actually renders the transparent object.
 	 */
-	public void renderTransparent();
+	public void renderTransparent(RenderContext renderContext);
 }

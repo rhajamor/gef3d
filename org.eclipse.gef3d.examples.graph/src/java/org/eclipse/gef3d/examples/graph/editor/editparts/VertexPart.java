@@ -140,9 +140,9 @@ public class VertexPart extends AbstractGraphicalNodeEditPart implements
 		fig.setLocation(p);
 		fig.setSize(Math.round(v.getWidth()), Math.round(v.getHeight()));
 
-		if (log.isLoggable(Level.INFO)) {
-			log.info("Updating figure for model " + v); //$NON-NLS-1$
-		}
+//		if (log.isLoggable(Level.INFO)) {
+//			log.info("Updating figure for model " + v); //$NON-NLS-1$
+//		}
 		
 		
 		

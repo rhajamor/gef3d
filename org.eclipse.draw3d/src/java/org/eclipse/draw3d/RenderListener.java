@@ -24,7 +24,7 @@ public interface RenderListener {
 	 * Called once a render pass was finished. It is guaranteed that the render
 	 * context is still valid when this method is called.
 	 */
-	public void renderPassFinished();
+	public void renderPassFinished(RenderContext renderContext);
 
 	/**
 	 * Called once a render pass was started. It is guaranteed that a render
@@ -32,5 +32,5 @@ public interface RenderListener {
 	 * 
 	 * @see RenderContext
 	 */
-	public void renderPassStarted();
+	public void renderPassStarted(RenderContext renderContext);
 }

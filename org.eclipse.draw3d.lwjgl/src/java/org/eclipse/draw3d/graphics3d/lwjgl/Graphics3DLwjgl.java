@@ -621,7 +621,7 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 */
 	public Graphics3DOffscreenBufferConfig getGraphics3DOffscreenBufferConfig(
 			int i_buffers, int... i_args) {
-		return new LwjglOffscreenBufferConfig(i_buffers, i_args);
+		return new LwjglOffscreenBufferConfig(this, i_buffers, i_args);
 	}
 
 	/**

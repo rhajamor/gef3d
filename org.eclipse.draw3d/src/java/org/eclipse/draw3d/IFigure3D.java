@@ -33,6 +33,14 @@ import org.eclipse.draw3d.geometryext.SyncHost3D;
 public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHost3D {
 
 	
+	/**
+	 * Returns the render context, usually by calling the 3D ancestor in the
+	 * figure tree. The render context is assumed to be contained in the 
+	 * {@link LightweightSystem3D}, its root figure returns the context. 
+	 * @return
+	 */
+	public RenderContext getRenderContext();
+	
 
 	/**
 	 * Returns the alpha value of this figure.

@@ -50,15 +50,6 @@ public class IntermodelContainerFigure extends Figure3D implements
 		return connectionLayer;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Polyline3D#render(org.eclipse.draw3d.RenderMode)
-	 */
-	@Override
-	public void render() {
-
-		// nothing to do
-	}
+	
 
 }

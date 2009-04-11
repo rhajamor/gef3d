@@ -14,6 +14,8 @@ package org.eclipse.draw3d.shapes;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.draw3d.RenderContext;
+
 /**
  * A shape that contains other shapes and does no rendering itself. Instead,
  * rendering is delegated to the child shapes in the order they were added.
@@ -64,10 +66,10 @@ public class CompositeShape implements Shape {
 	 * 
 	 * @see org.eclipse.draw3d.shapes.Shape#render()
 	 */
-	public void render() {
+	public void render(RenderContext renderContext) {
 
 		for (Shape shape : m_shapes)
-			shape.render();
+			shape.render(renderContext);
 	}
 
 }
