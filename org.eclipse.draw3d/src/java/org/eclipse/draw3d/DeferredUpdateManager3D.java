@@ -63,8 +63,14 @@ public class DeferredUpdateManager3D extends DeferredUpdateManager {
 			repairDamageFinish();
 
 		} else {
-			log
-					.warning("repairDamage called since root figure or canvas is null");
+
+			if (root3D == null && canvas == null)
+				log.warning("repairDamage called, but root figure and canvas are null");
+			else if (root3D==null) {
+				log.warning("repairDamage called, but root figure is null");
+			} else {
+				log.warning("repairDamage called, but canvas is null. Hint: call LightweightSystem.setControl(..)");
+			}
 		}
 
 	}
