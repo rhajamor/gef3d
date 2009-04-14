@@ -59,7 +59,7 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 	 */
 	public Control createControl3D(Composite i_composite) {
 
-		GLCanvas canvas = Draw3DCanvas.createCanvas(i_composite, SWT.NONE);
+		GLCanvas canvas = Draw3DCanvas.createCanvas(i_composite, SWT.NONE, getLightweightSystem3D());
 
 		setControl(canvas);
 		return getControl();
