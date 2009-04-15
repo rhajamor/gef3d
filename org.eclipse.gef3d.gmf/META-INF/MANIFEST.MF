@@ -12,7 +12,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.gmf.runtime.draw2d.ui,
  org.eclipse.draw3d,
  org.eclipse.draw2d,
- org.eclipse.gmf.runtime.diagram.ui,
+ org.eclipse.gmf.runtime.diagram.ui;bundle-version="1.1.2",
  org.eclipse.gef3d;bundle-version="0.8.1"
 Eclipse-LazyStart: true
 Export-Package: org.eclipse.gef3d.gmf,
