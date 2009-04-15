@@ -10,12 +10,11 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl;
 
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.geometry.IPosition3D;
@@ -24,7 +23,6 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
-import org.eclipse.draw3d.graphics3d.Graphics3DType;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBackBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
@@ -49,7 +47,8 @@ public class Graphics3DLwjgl implements Graphics3D {
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger.getLogger(Graphics3DLwjgl.class.getName());
+	private static final Logger log =
+		Logger.getLogger(Graphics3DLwjgl.class.getName());
 
 	/**
 	 * The texture manager handles OpenGL texture as GL's mechanism to render 2D
@@ -62,7 +61,7 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 * The GL context of this instance.
 	 */
 	public GLCanvas m_context = null;
-	
+
 	/** Cashed hash code */
 	final int hashCode;
 
@@ -73,7 +72,7 @@ public class Graphics3DLwjgl implements Graphics3D {
 		super();
 
 		hashCode = super.hashCode();
-		
+
 		if (log.isLoggable(Level.INFO)) {
 			log.info("Graphics3DLwjgl constructor called"); //$NON-NLS-1$
 		}
@@ -87,11 +86,11 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setGLCanvas(org.eclipse.swt.opengl.GLCanvas)
 	 */
 	public void setGLCanvas(GLCanvas i_canvas) {
-		if (m_textureManager!=null) {
-			throw new IllegalStateException("Texture manager already initialized, cannot set new canvas");
+		if (m_textureManager != null) {
+			throw new IllegalStateException(
+				"Texture manager already initialized, cannot set new canvas");
 		}
-		
-		
+
 		m_context = i_canvas;
 
 	}
@@ -203,7 +202,8 @@ public class Graphics3DLwjgl implements Graphics3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glTexCoord2f(float, float)
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glTexCoord2f(float,
+	 *      float)
 	 */
 	public void glTexCoord2f(float s, float t) {
 		org.lwjgl.opengl.GL11.glTexCoord2f(s, t);
@@ -537,7 +537,7 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 *      int, int, int, Color))
 	 */
 	public Graphics activateGraphics2D(Object i_key, int i_width, int i_height,
-			int i_alpha, Color i_color) {
+		int i_alpha, Color i_color) {
 
 		if (m_textureManager == null) {
 			m_textureManager = new LwjglTextureManager(m_context);
@@ -563,7 +563,8 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#deactivateGraphics2D()
 	 */
 	public void deactivateGraphics2D() {
-		m_textureManager.deactivateTexture();
+		if (m_textureManager != null)
+			m_textureManager.deactivateTexture();
 	}
 
 	/**
@@ -581,9 +582,12 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#dispose()
 	 */
 	public void dispose() {
-
-		m_textureManager.dispose();
-
+		try {
+		if (m_textureManager != null)
+			m_textureManager.dispose();
+		} catch (Exception ex) {
+			log.warning("Error disposing texture manager: " + ex);
+		}
 	}
 
 	/**
@@ -602,14 +606,14 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 *      int, org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig)
 	 */
 	public Graphics3DOffscreenBuffers getGraphics3DOffscreenBuffer(
-			int i_height, int i_width,
-			Graphics3DOffscreenBufferConfig i_bufferConfig) {
+		int i_height, int i_width,
+		Graphics3DOffscreenBufferConfig i_bufferConfig) {
 		if (LwjglTextureFbo.isSuppported()) {
 			return new LwjglOffscreenBuffersFbo(i_height, i_width,
-					i_bufferConfig);
+				i_bufferConfig);
 		} else {
 			return new LwjglOffscreenBackBuffers(i_height, i_width,
-					i_bufferConfig);
+				i_bufferConfig);
 		}
 	}
 
@@ -620,7 +624,7 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 *      int[])
 	 */
 	public Graphics3DOffscreenBufferConfig getGraphics3DOffscreenBufferConfig(
-			int i_buffers, int... i_args) {
+		int i_buffers, int... i_args) {
 		return new LwjglOffscreenBufferConfig(this, i_buffers, i_args);
 	}
 
@@ -631,9 +635,9 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 *      float, float, float, float, float, float, float)
 	 */
 	public void gluLookAt(float eyex, float eyey, float eyez, float centerx,
-			float centery, float centerz, float upx, float upy, float upz) {
+		float centery, float centerz, float upx, float upy, float upz) {
 		org.lwjgl.util.glu.GLU.gluLookAt(eyex, eyey, eyez, centerx, centery,
-				centerz, upx, upy, upz);
+			centerz, upx, upy, upz);
 	}
 
 	/**
@@ -664,10 +668,10 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 *      java.nio.IntBuffer, java.nio.FloatBuffer)
 	 */
 	public void gluUnProject(int winx, int winy, float winz,
-			FloatBuffer modelMatrix, FloatBuffer projMatrix,
-			IntBuffer viewport, FloatBuffer obj_pos) {
+		FloatBuffer modelMatrix, FloatBuffer projMatrix, IntBuffer viewport,
+		FloatBuffer obj_pos) {
 		org.lwjgl.util.glu.GLU.gluUnProject(winx, winy, winz, modelMatrix,
-				projMatrix, viewport, obj_pos);
+			projMatrix, viewport, obj_pos);
 	}
 
 	Properties properties = new Properties();
@@ -676,24 +680,27 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 * Descriptor of this instance.
 	 */
 	protected Graphics3DDescriptor descriptor;
-	
-	/** 
+
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getProperty(java.lang.String)
 	 */
 	public String getProperty(String i_key) {
 		return properties.getProperty(i_key);
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setProperty(java.lang.String, java.lang.Object)
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setProperty(java.lang.String,
+	 *      java.lang.Object)
 	 */
 	public void setProperty(String key, String value) {
 		properties.setProperty(key, value);
-		
+
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -702,18 +709,19 @@ public class Graphics3DLwjgl implements Graphics3D {
 	public Graphics3DDescriptor getDescriptor() {
 		return descriptor;
 	}
-	
-	/** 
+
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setDescriptor(org.eclipse.draw3d.graphics3d.Graphics3DDescriptor)
 	 */
 	public void setDescriptor(Graphics3DDescriptor i_graphics3DDescriptor) {
 		descriptor = i_graphics3DDescriptor;
 	}
 
-
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -721,17 +729,13 @@ public class Graphics3DLwjgl implements Graphics3D {
 		return hashCode;
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getID()
 	 */
 	public String getID() {
 		return Graphics3DLwjgl.class.getName();
 	}
-
-
-		
-	
-
 
 }

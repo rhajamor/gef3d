@@ -34,11 +34,10 @@ import org.eclipse.swt.opengl.GLCanvas;
  */
 public class RenderContext {
 
-	
-	class DepthComparator implements Comparator<TransparentObject> { 
-	
+	class DepthComparator implements Comparator<TransparentObject> {
+
 		RenderContext renderContext;
-		
+
 		/**
 		 * @param i_renderContext
 		 */
@@ -46,7 +45,6 @@ public class RenderContext {
 			super();
 			renderContext = i_renderContext;
 		}
-
 
 		public int compare(TransparentObject i_o1, TransparentObject i_o2) {
 
@@ -56,22 +54,20 @@ public class RenderContext {
 			return Float.compare(depth2, depth1);
 		}
 	};
-	
+
 	/**
 	 * 
 	 */
-	private final Comparator<TransparentObject> depthComparator = 
+	private final Comparator<TransparentObject> depthComparator =
 		new DepthComparator(this);
-	
 
 	/**
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(RenderContext.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(RenderContext.class.getName());
 
-	
 	private ICamera m_camera;
 
 	private ColorProvider m_colorProvider;
@@ -85,7 +81,6 @@ public class RenderContext {
 	private final SortedSet<TransparentObject> m_superimposedObjects;
 
 	private Graphics3D m_g3d = null;
-
 
 	private GLCanvas m_Canvas;
 
@@ -113,7 +108,7 @@ public class RenderContext {
 
 		if (i_transparentObject == null)
 			throw new NullPointerException(
-					"i_transparentObject must not be null");
+				"i_transparentObject must not be null");
 
 		m_transparentObjects.add(i_transparentObject);
 	}
@@ -130,7 +125,7 @@ public class RenderContext {
 
 		if (i_transparentObject == null)
 			throw new NullPointerException(
-					"i_transparentObject must not be null");
+				"i_transparentObject must not be null");
 
 		m_superimposedObjects.add(i_transparentObject);
 	}
@@ -178,7 +173,7 @@ public class RenderContext {
 
 		if (!getMode().isColor())
 			throw new IllegalStateException(
-					"can't provide color when not in color mode");
+				"can't provide color when not in color mode");
 
 		return m_colorProvider.getColor(i_figure);
 	}
@@ -190,15 +185,15 @@ public class RenderContext {
 	 * @throws IllegalStateException if no display list manager is set
 	 */
 	public DisplayListManager getDisplayListManager() {
-		if (getGraphics3D()==null) {
+		if (getGraphics3D() == null) {
 			throw new IllegalStateException("no graphcis 3D instance set yet");
 		}
-		
+
 		DisplayListManager manager = m_displayListManagers.get(getGraphics3D());
-//		if (manager == null)
-//			throw new IllegalStateException(
-//					"display list manager was not set for this graphics3D instane");
-		if (manager==null) {
+		// if (manager == null)
+		// throw new IllegalStateException(
+		// "display list manager was not set for this graphics3D instane");
+		if (manager == null) {
 			manager = new DisplayListManager(this);
 			m_displayListManagers.put(getGraphics3D(), manager);
 		}
@@ -269,31 +264,32 @@ public class RenderContext {
 		m_colorProvider = i_colorProvider;
 	}
 
-//	/**
-//	 * Sets the display list manager.
-//	 * 
-//	 * @param i_displayListManager the display list manager
-//	 * @throws NullPointerException if the given display list manager is
-//	 *             <code>null</code>
-//	 */
-//	public void setDisplayListManager(DisplayListManager i_displayListManager) {
-//		
-//		if (i_displayListManager == null)
-//			throw new NullPointerException(
-//					"i_displayListManager must not be null");
-//
-//		if (getGraphics3D()==null) {
-//			throw new IllegalStateException("no graphics3D intance set yet");
-//		}
-//		
-//		m_displayListManagers.put(getGraphics3D(), i_displayListManager);
-//	}
-	
+	// /**
+	// * Sets the display list manager.
+	// *
+	// * @param i_displayListManager the display list manager
+	// * @throws NullPointerException if the given display list manager is
+	// * <code>null</code>
+	// */
+	// public void setDisplayListManager(DisplayListManager
+	// i_displayListManager) {
+	//		
+	// if (i_displayListManager == null)
+	// throw new NullPointerException(
+	// "i_displayListManager must not be null");
+	//
+	// if (getGraphics3D()==null) {
+	// throw new IllegalStateException("no graphics3D intance set yet");
+	// }
+	//		
+	// m_displayListManagers.put(getGraphics3D(), i_displayListManager);
+	// }
+
 	/**
 	 * Clears the display manager for the current g3d instance.
 	 */
 	public void clearDisplayManager() {
-		if (getGraphics3D()==null) {
+		if (getGraphics3D() == null) {
 			throw new IllegalStateException("no graphics3D intance set yet");
 		}
 		m_displayListManagers.remove(getGraphics3D());
@@ -324,8 +320,6 @@ public class RenderContext {
 	public Graphics3D getGraphics3D() {
 		return this.m_g3d;
 	}
-
-	
 
 	/**
 	 * Sets another Graphics3D instance for further rendering within this
@@ -359,18 +353,29 @@ public class RenderContext {
 
 	/**
 	 * Disposes all {@link DisplayListManager}, clears display manager map, and
-	 * disposes the current {@link Graphics3D} instance.
-	 * This method is called by the {@link LightweightSystem3D} when the
-	 * widget is disposed.
+	 * disposes the current {@link Graphics3D} instance. This method is called
+	 * by the {@link LightweightSystem3D} when the widget is disposed.
 	 */
 	public synchronized void dispose() {
-		
-		for (DisplayListManager displayListManager: m_displayListManagers.values()) {
-			displayListManager.dispose();
+
+		for (DisplayListManager displayListManager : m_displayListManagers
+			.values()) {
+			try {
+				displayListManager.dispose();
+			} catch (Exception ex) {
+				log.warning("Error disposing dipslay list manager: " + ex);
+			}
 		}
-		m_displayListManagers.clear();	
-		
-		m_g3d.dispose();
+		try {
+			m_displayListManagers.clear();
+		} catch (Exception ex) {
+			log.warning("Error clearing dispy list manager map: " + ex);
+		}
+		try {
+			m_g3d.dispose();
+		} catch (Exception ex) {
+			log.warning("Error disposing current graphics 3D instance: " + ex);
+		}
 	}
 
 	/**
@@ -385,6 +390,6 @@ public class RenderContext {
 	 */
 	public void setCanvas(GLCanvas i_canvas) {
 		m_Canvas = i_canvas;
-		
+
 	}
 }
