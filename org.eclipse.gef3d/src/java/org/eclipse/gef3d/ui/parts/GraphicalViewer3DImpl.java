@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Control;
  * @since 16.11.2007
  */
 public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
-		IScene, IFigureFactoryProvider {
+	GraphicalViewer3D, IScene, IFigureFactoryProvider {
 
 	protected IFigureFactory m_FigureFactory = null;
 

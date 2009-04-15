@@ -11,6 +11,7 @@
 package org.eclipse.gef3d.ui.parts;
 
 import org.eclipse.draw3d.LightweightSystem3D;
+import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithPalette;
 import org.eclipse.gef3d.preferences.ScenePreferenceListener;
 import org.eclipse.jface.action.IStatusLineManager;
@@ -36,14 +37,22 @@ public abstract class GraphicalEditor3DWithPalette extends
 	protected ScenePreferenceListener sceneListener;
 
 	/**
-	 * {@inheritDoc} Here, a {@link GraphicalViewer3DImpl} is created instead of
-	 * a ScrollingGraphicalViewer.
+	 * {@inheritDoc} 
+	 * <p>
+	 * This method calls several helper methods which could be overridden by
+	 * subclasses:
+	 * <ol>
+	 * <li>{@link #doCreateGraphicalViewer()}</li>
+	 * <li>{@link #doAttachFPSCounter(GraphicalViewer3D)}</li>
+	 * <li>{@link #doRegisterToScene(IScene)}</li>
+	 * </ol>
+	 * </p>
 	 * 
 	 * @see org.eclipse.gef.ui.parts.GraphicalEditor#createGraphicalViewer(org.eclipse.swt.widgets.Composite)
 	 */
 	@Override
 	protected void createGraphicalViewer(Composite i_parent) {
-		GraphicalViewer3DImpl viewer = new GraphicalViewer3DImpl();
+		GraphicalViewer3D viewer = doCreateGraphicalViewer();
 
 		// 1:1 from GraphicalEditor.createGraphicalViewer(Composite)
 		Control control = viewer.createControl(i_parent);
@@ -52,20 +61,52 @@ public abstract class GraphicalEditor3DWithPalette extends
 		hookGraphicalViewer();
 		initializeGraphicalViewer();
 
+		doAttachFPSCounter(viewer);
+		control.addDisposeListener(viewer.getLightweightSystem3D());
+
+		if (viewer instanceof IScene) {
+			doRegisterToScene((IScene) viewer);
+		}
+	}
+	
+	/**
+	 * Called by {@link #createGraphicalViewer(Composite)} if created viewer is
+	 * an instance of {@link IScene}.
+	 * 
+	 * @param scene
+	 */
+	protected void doRegisterToScene(IScene scene) {
+		sceneListener = new ScenePreferenceListener(scene);
+		sceneListener.start();
+	}
+
+	/**
+	 * Called by {@link #createGraphicalViewer(Composite)} if created viewer is
+	 * an instanceof {@link GraphicalViewer3D}.
+	 * 
+	 * @param viewer3D
+	 */
+	protected void doAttachFPSCounter(GraphicalViewer3D viewer3D) {
 		IEditorSite editorSite = getEditorSite();
 		IActionBars actionBars = editorSite.getActionBars();
 		IStatusLineManager statusLine = actionBars.getStatusLineManager();
 
 		FpsStatusLineItem fpsCounter = new FpsStatusLineItem();
-		LightweightSystem3D lightweightSystem3D = viewer.getLightweightSystem3D();
+		LightweightSystem3D lightweightSystem3D =
+			viewer3D.getLightweightSystem3D();
 		lightweightSystem3D.addRendererListener(fpsCounter);
-		
 		statusLine.add(fpsCounter);
-		
-		sceneListener = new ScenePreferenceListener(viewer);
-		sceneListener.start();
+	}
 
-		control.addDisposeListener(lightweightSystem3D);
+	/**
+	 * Here, a {@link GraphicalViewer3DImpl} is created instead of a
+	 * ScrollingGraphicalViewer.
+	 * 
+	 * @return
+	 */
+	protected GraphicalViewer3D doCreateGraphicalViewer() {
+		GraphicalViewer3DImpl viewer = new GraphicalViewer3DImpl();
+		return viewer;
 	}
 
 	/**
