@@ -31,21 +31,22 @@ public class FeedbackLayer3D extends FreeformLayer {
 		setEnabled(false);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.FreeformLayer#add(org.eclipse.draw2d.IFigure,
-	 *      java.lang.Object, int)
-	 */
-	@Override
-	public void add(IFigure i_child, Object i_constraint, int i_index) {
-
-		if (i_child instanceof Connection) {
-			Connection conn = (Connection) i_child;
-			super.add(conn);
-		} else {
-			super.add(i_child, i_constraint, i_index);
-		}
-	}
+//	/**
+//	 * {@inheritDoc}
+//	 * 
+//	 * @see org.eclipse.draw2d.FreeformLayer#add(org.eclipse.draw2d.IFigure,
+//	 *      java.lang.Object, int)
+//	 */
+//	@Override
+//	public void add(IFigure i_child, Object i_constraint, int i_index) {
+//
+//		if (i_child instanceof Connection) {
+//			Connection conn = (Connection) i_child;
+//			super.add(conn); -- this line leads to a stack overflow (call loop) 
+//			
+//		} else {
+//			super.add(i_child, i_constraint, i_index);
+//		}
+//	}
 
 }

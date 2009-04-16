@@ -85,8 +85,8 @@ public class Figure3DHelper {
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(Figure3DHelper.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(Figure3DHelper.class.getName());
 
 	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
 
@@ -100,7 +100,7 @@ public class Figure3DHelper {
 	 * @return the 3D bounds
 	 */
 	public static IBoundingBox convertBoundsToBounds3D(IFigure i_reference,
-			Rectangle i_rect) {
+		Rectangle i_rect) {
 
 		return convertBoundsToBounds3D(i_reference, i_rect, 0);
 	}
@@ -116,7 +116,7 @@ public class Figure3DHelper {
 	 * @return the 3D bounds
 	 */
 	public static IBoundingBox convertBoundsToBounds3D(IFigure i_reference,
-			Rectangle i_rect, float i_depth) {
+		Rectangle i_rect, float i_depth) {
 
 		Point p2D = new Point(i_rect.x, i_rect.y);
 		Vector3f p3D = Figure3DHelper.getLocation3D(i_reference, p2D, TMP_V3);
@@ -176,7 +176,7 @@ public class Figure3DHelper {
 			}
 
 			throw new UnsupportedOperationException(
-					"getCenter3D not implemented for 3D connections yet");
+				"getCenter3D not implemented for 3D connections yet");
 		}
 
 		Rectangle rect = i_figure.getBounds();
@@ -197,7 +197,7 @@ public class Figure3DHelper {
 	 *             host
 	 */
 	public final static Point getLocation(final IFigure i_figure,
-			final IVector3f i_location) {
+		final IVector3f i_location) {
 
 		if (i_figure == null)
 			throw new NullPointerException("figure must not be null");
@@ -233,7 +233,7 @@ public class Figure3DHelper {
 	 *             host
 	 */
 	public final static Vector3f getLocation3D(final IFigure i_figure,
-			final Point i_location, float i_zOffset, Vector3f io_result) {
+		final Point i_location, float i_zOffset, Vector3f io_result) {
 
 		if (i_figure == null)
 			throw new NullPointerException("figure must not be null");
@@ -250,7 +250,7 @@ public class Figure3DHelper {
 		int y = i_location.y;
 
 		return CoordinateConverter.surfaceToWorld(x, y, i_zOffset, host3D,
-				io_result);
+			io_result);
 	}
 
 	/**
@@ -269,7 +269,7 @@ public class Figure3DHelper {
 	 *             host
 	 */
 	public final static Vector3f getLocation3D(final IFigure i_figure,
-			final Point i_location, Vector3f io_result) {
+		final Point i_location, Vector3f io_result) {
 
 		float depth = 0;
 		if (i_figure instanceof IFigure3D) {
@@ -348,7 +348,7 @@ public class Figure3DHelper {
 	}
 
 	private void logSearch(int indent, IFigure i_figure, TreeSearch i_search,
-			StringBuilder io_result) {
+		StringBuilder io_result) {
 
 		if (i_search.prune(i_figure)) {
 			for (int i = 0; i < indent; i++)
@@ -379,19 +379,20 @@ public class Figure3DHelper {
 	 */
 	public IFigure findFigureAt(int i_x, int i_y, TreeSearch i_search) {
 
-//		if (log.isLoggable(Level.FINEST)) {
-//			StringBuilder str = new StringBuilder(
-//					"Ignored figures for search in " + m_figuresFriend.figure
-//							+ ":\n");
-//			logSearch(1, m_figuresFriend.figure, i_search, str);
-//			log.finest(str.toString());
-//		}
+		// if (log.isLoggable(Level.FINEST)) {
+		// StringBuilder str = new StringBuilder(
+		// "Ignored figures for search in " + m_figuresFriend.figure
+		// + ":\n");
+		// logSearch(1, m_figuresFriend.figure, i_search, str);
+		// log.finest(str.toString());
+		// }
 
 		UpdateManager updateManager = m_figuresFriend.figure.getUpdateManager();
 		if (!(updateManager instanceof PickingUpdateManager3D))
 			return null;
 
-		PickingUpdateManager3D pickingManager = (PickingUpdateManager3D) updateManager;
+		PickingUpdateManager3D pickingManager =
+			(PickingUpdateManager3D) updateManager;
 		ColorPicker picker = pickingManager.getPicker();
 
 		return picker.getFigure(i_x, i_y, i_search);
@@ -494,6 +495,10 @@ public class Figure3DHelper {
 	 * repainting. This is only the case if the current render mode is
 	 * {@link RenderMode#PAINT} and the 2D content is dirty.
 	 * </p>
+	 * <p>
+	 * Note that not only the direct 2D children are painted, but connections as
+	 * well.
+	 * </p>
 	 * 
 	 * @param i_graphics the graphics object to paint on
 	 */
@@ -502,12 +507,12 @@ public class Figure3DHelper {
 		Collection<IFigure> children2D = getChildren2D();
 		if (!children2D.isEmpty()) {
 
-			RenderContext renderContext = 
+			RenderContext renderContext =
 				m_figuresFriend.figure.getRenderContext();
-				
 
-			boolean repaint2D = renderContext.getMode().isPaint()
-					&& m_figuresFriend.is2DContentDirty();
+			boolean repaint2D =
+				renderContext.getMode().isPaint()
+						&& m_figuresFriend.is2DContentDirty();
 
 			IFigure3D figure = m_figuresFriend.figure;
 			Graphics graphics = i_graphics;
@@ -516,9 +521,9 @@ public class Figure3DHelper {
 				Graphics3D g3d = renderContext.getGraphics3D();
 				Rectangle bounds = figure.getBounds();
 
-				Graphics textureGraphics = g3d.activateGraphics2D(figure,
-						bounds.width, bounds.height, figure.getAlpha(), figure
-								.getBackgroundColor());
+				Graphics textureGraphics =
+					g3d.activateGraphics2D(figure, bounds.width, bounds.height,
+						figure.getAlpha(), figure.getBackgroundColor());
 
 				/*
 				 * if (!textureManager.contains(figure)) {
@@ -553,8 +558,8 @@ public class Figure3DHelper {
 						graphics.restoreState();
 					}
 
-					ConnectionLayer connectionLayer = figure
-							.getConnectionLayer(null);
+					ConnectionLayer connectionLayer =
+						figure.getConnectionLayer(null);
 
 					// paint the connections
 					if (connectionLayer != null) {

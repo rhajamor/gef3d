@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
+import java.util.logging.Level;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,13 +60,14 @@ public class DispatchingConnectionLayerHelper {
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger
-			.getLogger(DispatchingConnectionLayerHelper.class.getName());
+	private static final Logger log =
+		Logger.getLogger(DispatchingConnectionLayerHelper.class.getName());
 
 	/**
 	 * layer cache, maps 3D figure to layer
 	 */
-	private final Map<IFigure, ConnectionLayer> distributedLayersMap = new HashMap<IFigure, ConnectionLayer>();
+	private final Map<IFigure, ConnectionLayer> distributedLayersMap =
+		new HashMap<IFigure, ConnectionLayer>();
 
 	// private final List<ConnectionLayer> distributedLayers = new
 	// ArrayList<ConnectionLayer>(10000);
@@ -73,7 +76,8 @@ public class DispatchingConnectionLayerHelper {
 
 	private final ConnectionLayer host;
 
-	private final Map<Connection, ConnectionConstraints> pendingConnections = new HashMap<Connection, ConnectionConstraints>();
+	private final Map<Connection, ConnectionConstraints> pendingConnections =
+		new HashMap<Connection, ConnectionConstraints>();
 
 	/**
 	 * @param i_host
@@ -85,6 +89,10 @@ public class DispatchingConnectionLayerHelper {
 	}
 
 	/**
+	 * Adds a connection to the appropriate layer. If no layer is found yet, the
+	 * connection is marked as pending at added later in
+	 * {@link #dispatchPendingConnections()}.
+	 * 
 	 * @return true, if helper could handle this kind of figure
 	 * @see org.eclipse.draw2d.ConnectionLayer#add(org.eclipse.draw2d.IFigure,
 	 *      java.lang.Object, int)
@@ -92,18 +100,19 @@ public class DispatchingConnectionLayerHelper {
 	public boolean add(IFigure i_figure, Object i_constraint, int i_index) {
 		if (i_constraint != CONSTRAINT_LAYER && i_figure instanceof Connection
 				&& !(i_figure instanceof IFigure3D)) {
-			ConnectionLayer distributedLayer = findDistributedLayer((Connection) i_figure);
+			ConnectionLayer distributedLayer =
+				findDistributedLayer((Connection) i_figure);
 			if (distributedLayer != null) {
 				// if (distributedLayer.getConnectionRouter()==null) {
 				distributedLayer
-						.setConnectionRouter(host.getConnectionRouter());
+					.setConnectionRouter(host.getConnectionRouter());
 				// }
 				distributedLayer.add(i_figure, i_constraint, i_index);
 				// if it was added before:
 				pendingConnections.remove(i_figure);
 			} else {
 				pendingConnections.put((Connection) i_figure,
-						new ConnectionConstraints(i_constraint, i_index));
+					new ConnectionConstraints(i_constraint, i_index));
 
 			}
 			return true;
@@ -113,7 +122,8 @@ public class DispatchingConnectionLayerHelper {
 	}
 
 	/**
-	 * 
+	 * Dispatches connections, that is connections not added to a connection
+	 * layer associated with a figure3D are now assigned to one of these layers.
 	 */
 	public void dispatchPendingConnections() {
 		if (!pendingConnections.isEmpty()) {
@@ -129,7 +139,7 @@ public class DispatchingConnectionLayerHelper {
 			//				log.info(StopWatch.start("Dispatching 0..20")); //$NON-NLS-1$
 			// }
 
-			for (Connection figure : pendingConnections.keySet()) {
+			for (Connection connection : pendingConnections.keySet()) {
 
 				// i++;
 				// if (i % 20 == 0) {
@@ -142,13 +152,14 @@ public class DispatchingConnectionLayerHelper {
 				//
 				// }
 
-				ConnectionConstraints cc = pendingConnections.get(figure);
+				ConnectionConstraints cc = pendingConnections.get(connection);
 
 				// if (log.isLoggable(Level.INFO) && (i % 20 == 0)) {
 				//					log.info(StopWatch.start("find layer")); //$NON-NLS-1$
 				// }
 
-				ConnectionLayer distributedLayer = findDistributedLayer(figure);
+				ConnectionLayer distributedLayer =
+					findDistributedLayer(connection);
 
 				// if (log.isLoggable(Level.INFO) && (i % 20 == 0)) {
 				//					log.info(StopWatch.stop()); //$NON-NLS-1$
@@ -157,12 +168,12 @@ public class DispatchingConnectionLayerHelper {
 				if (distributedLayer != null) {
 					// if (distributedLayer.getConnectionRouter()==null) {
 					distributedLayer.setConnectionRouter(host
-							.getConnectionRouter());
+						.getConnectionRouter());
 					// }
-					dispatchedConnections.add(figure);
-					distributedLayer.add(figure, cc.constaint, cc.index);
+					dispatchedConnections.add(connection);
+					distributedLayer.add(connection, cc.constaint, cc.index);
 
-					rewire(figure);
+					rewire(connection);
 
 					distributedLayer.validate();
 				}
@@ -181,6 +192,11 @@ public class DispatchingConnectionLayerHelper {
 	}
 
 	/**
+	 * Finds an appropriate layer for a given connection. If no layer is found,
+	 * it is created lazily. Note that only layers for connections with source
+	 * and target placed on the same surface, i.e. 3D figure, can be added to a
+	 * layer.
+	 * 
 	 * @param i_connection
 	 * @return
 	 */
@@ -195,16 +211,25 @@ public class DispatchingConnectionLayerHelper {
 
 		IFigure3D sourceAncestor3D = Figure3DHelper.getAncestor3D(source);
 		IFigure3D targetAncestor3D = Figure3DHelper.getAncestor3D(target);
+
+		// a 2D connection can only be handled by a layer, if its source
+		// and target are on the same surface
 		if (sourceAncestor3D == targetAncestor3D) {
 			if (sourceAncestor3D != null) {
 
 				layer = distributedLayersMap.get(sourceAncestor3D);
-				if (layer == null) {
-					// sourceAncestor3D.invalidate();
+				if (layer == null) { // create layer lazily
 					layer = sourceAncestor3D.getConnectionLayer(factory);
-					host.add(layer, CONSTRAINT_LAYER);
-					distributedLayersMap.put(sourceAncestor3D, layer);
-					// distributedLayers.add(layer);
+					if (layer != null) {
+						host.add(layer, CONSTRAINT_LAYER);
+						distributedLayersMap.put(sourceAncestor3D, layer);
+					} else {
+						log
+							.warning("Cannot create connection layer for figure "
+									+ sourceAncestor3D);
+					}
+				} else {
+
 				}
 			} else {
 				return null;
@@ -213,7 +238,7 @@ public class DispatchingConnectionLayerHelper {
 			log.severe("2D connections with different 3D ancestors");
 
 			throw new IllegalArgumentException(
-					"Connection's anchors have different 3D ancestors");
+				"Connection's anchors have different 3D ancestors");
 		}
 
 		return layer;
@@ -222,8 +247,8 @@ public class DispatchingConnectionLayerHelper {
 	/**
 	 * Paints the children of the host connection layer. Since the distributed
 	 * connection layers are already painted by their host 3D figures (see
-	 * {@link Figure3DHelper#paintChildren(Graphics)}), they are not painted
-	 * here for performance reasons.
+	 * {@link Figure3DHelper#paintChildren(Graphics)}), they are <em>not</em>
+	 * painted here for performance reasons.
 	 * 
 	 * @param i_graphics the graphics object to paint on
 	 */
@@ -233,8 +258,12 @@ public class DispatchingConnectionLayerHelper {
 		Rectangle clip = Rectangle.SINGLETON;
 		for (Iterator iter = children.iterator(); iter.hasNext();) {
 			IFigure child = (IFigure) iter.next();
-			if (!(child instanceof ConnectionLayer) && child.isVisible()
-					&& child.intersects(i_graphics.getClip(clip))) {
+			if (!(child instanceof ConnectionLayer) // if child is a connection,
+					// is it painted by its 3D host figure
+					&& child.isVisible() // only paint if visible
+					&& child.intersects(i_graphics.getClip(clip)) // only paint
+			// if it intersects
+			) {
 				i_graphics.clipRect(child.getBounds());
 				child.paint(i_graphics);
 				i_graphics.restoreState();
@@ -250,7 +279,8 @@ public class DispatchingConnectionLayerHelper {
 		if (i_figure instanceof Connection && !(i_figure instanceof IFigure3D)) {
 
 			if (pendingConnections.remove(i_figure) == null) {
-				ConnectionLayer distributedLayer = findDistributedLayer((Connection) i_figure);
+				ConnectionLayer distributedLayer =
+					findDistributedLayer((Connection) i_figure);
 				if (distributedLayer != null) {
 					distributedLayer.remove(i_figure);
 				}

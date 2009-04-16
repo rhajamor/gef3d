@@ -30,8 +30,8 @@ public class DispatchingConnectionLayer extends ConnectionLayer {
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger
-			.getLogger(DispatchingConnectionLayer.class.getName());
+	private static final Logger log =
+		Logger.getLogger(DispatchingConnectionLayer.class.getName());
 
 	private final DispatchingConnectionLayerHelper dclhelper;
 
@@ -39,7 +39,8 @@ public class DispatchingConnectionLayer extends ConnectionLayer {
 	 * 
 	 */
 	public DispatchingConnectionLayer() {
-		dclhelper = new DispatchingConnectionLayerHelper(this,
+		dclhelper =
+			new DispatchingConnectionLayerHelper(this,
 				ConnectionLayerFactory.singleton);
 	}
 
@@ -57,7 +58,10 @@ public class DispatchingConnectionLayer extends ConnectionLayer {
 	}
 
 	/**
-	 * 
+	 * Dispatches connections, that is connections not added to a connection
+	 * layer associated with a figure3D are now assigned to one of these
+	 * layers.
+	 * @see DispatchingConnectionLayerHelper#dispatchPendingConnections()
 	 */
 	public void dispatchPendingConnections() {
 		dclhelper.dispatchPendingConnections();
@@ -70,7 +74,6 @@ public class DispatchingConnectionLayer extends ConnectionLayer {
 	 */
 	@Override
 	protected void paintChildren(Graphics i_graphics) {
-
 		dclhelper.paintChildren(i_graphics);
 	}
 
