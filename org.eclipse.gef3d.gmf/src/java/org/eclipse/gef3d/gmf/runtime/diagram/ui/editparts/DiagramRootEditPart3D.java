@@ -58,7 +58,6 @@ public class DiagramRootEditPart3D extends DiagramRootEditPart {
 				super.paint(graphics);
 			}
 		};
-
 		layeredPane.add(new FreeformLayer(), PRIMARY_LAYER);
 		layeredPane.add(new DispatchingConnectionLayerEx(), CONNECTION_LAYER);
 		layeredPane.add(new FreeformLayer(),

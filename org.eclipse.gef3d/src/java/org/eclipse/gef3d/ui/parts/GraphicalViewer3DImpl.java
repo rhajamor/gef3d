@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Control;
  * @since 16.11.2007
  */
 public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
-	GraphicalViewer3D, IScene, IFigureFactoryProvider {
+		GraphicalViewer3D, IScene, IFigureFactoryProvider {
 
 	protected IFigureFactory m_FigureFactory = null;
 
@@ -56,9 +56,18 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	 */
 	@Override
 	public Control createControl(Composite i_composite) {
+		return createControl3D(i_composite);
+	}
 
-		final GLCanvas canvas = Draw3DCanvas
-				.createCanvas(i_composite, SWT.NONE, getLightweightSystem3D());
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.ui.parts.GraphicalViewer3D#createControl3D(org.eclipse.swt.widgets.Composite)
+	 */
+	public Control createControl3D(Composite i_composite) {
+		final GLCanvas canvas =
+			Draw3DCanvas.createCanvas(i_composite, SWT.NONE,
+				getLightweightSystem3D());
 
 		setControl(canvas);
 		return getControl();
@@ -138,7 +147,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 		LightweightSystem3D lightweightSystem3D = getLightweightSystem3D();
 		if (lightweightSystem3D == null)
 			return;
-		
+
 		lightweightSystem3D.getRenderContext().activate();
 
 		UpdateManager updateManager = getUpdateManager();

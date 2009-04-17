@@ -18,6 +18,7 @@ import org.eclipse.draw3d.Draw3DCanvas;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.gef.EditPart;
+import org.eclipse.gef3d.ui.parts.GraphicalViewer3D;
 import org.eclipse.gef3d.ui.parts.IScene;
 import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
 import org.eclipse.swt.SWT;
@@ -34,7 +35,7 @@ import org.eclipse.swt.widgets.Control;
  * @since Apr 7, 2009
  */
 public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
-		IScene {
+		GraphicalViewer3D, IScene {
 
 	/**
 	 * {@inheritDoc}
@@ -61,6 +62,7 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 		setControl(canvas);
 		return getControl();
 	}
+	
 
 	/**
 	 * {@inheritDoc}
@@ -103,6 +105,7 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 	 * 
 	 * @return the 3D lightweight system or <code>null</code> if the current
 	 *         lightweight system is not 3D
+	 * @see org.eclipse.gef3d.ui.parts.GraphicalViewer3D#getLightweightSystem3D()
 	 */
 	public LightweightSystem3D getLightweightSystem3D() {
 

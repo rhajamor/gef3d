@@ -54,8 +54,9 @@ public abstract class GraphicalEditor3DWithPalette extends
 	protected void createGraphicalViewer(Composite i_parent) {
 		GraphicalViewer3D viewer = doCreateGraphicalViewer();
 
-		// 1:1 from GraphicalEditor.createGraphicalViewer(Composite)
-		Control control = viewer.createControl(i_parent);
+		// 1:1 from GraphicalEditor.createGraphicalViewer(Composite),
+		// instead of createControl, createControl3D is called!
+		Control control = viewer.createControl3D(i_parent);
 		setGraphicalViewer(viewer);
 		configureGraphicalViewer();
 		hookGraphicalViewer();
