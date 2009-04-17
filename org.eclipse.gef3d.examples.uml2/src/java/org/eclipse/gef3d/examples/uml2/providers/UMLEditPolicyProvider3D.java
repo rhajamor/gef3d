@@ -57,7 +57,8 @@ public class UMLEditPolicyProvider3D extends AbstractProvider implements
 	public boolean provides(IOperation i_operation) {
 //		if (true) return false;
 		
-		if (!is3D()) return false;
+		if (!is3D()) 
+			return false;
 		
 		CreateEditPoliciesOperation epOp = (CreateEditPoliciesOperation) i_operation;
 		EditPart editPart = epOp.getEditPart();

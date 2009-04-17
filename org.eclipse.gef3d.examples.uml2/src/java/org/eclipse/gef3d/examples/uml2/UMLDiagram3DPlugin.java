@@ -10,6 +10,10 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.uml2;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.LogManager;
+
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -41,6 +45,24 @@ public class UMLDiagram3DPlugin extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+		initLogging();
+
+	}
+
+	private void initLogging() {
+		
+		InputStream is = this.getClass().getResourceAsStream("logging.properties");
+		if (is==null) return;
+		try {
+			LogManager.getLogManager().readConfiguration(is);
+		} catch (SecurityException ex) {
+			// TODO Implement catch block for SecurityException
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			// TODO Implement catch block for IOException
+			ex.printStackTrace();
+		}
+		
 	}
 
 	/*

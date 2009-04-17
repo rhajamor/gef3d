@@ -10,14 +10,21 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.uml2.activity.part;
 
+import java.util.logging.Logger;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.gef.ContextMenuProvider;
+import org.eclipse.gef.EditPartFactory;
+import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.KeyHandler;
 import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
+import org.eclipse.gef3d.ext.multieditor.INestableEditor;
+import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer;
+import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
 import org.eclipse.gef3d.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer3D;
 import org.eclipse.gef3d.preferences.ScenePreferenceListener;
 import org.eclipse.gef3d.tools.CameraTool;
@@ -31,6 +38,7 @@ import org.eclipse.gmf.runtime.diagram.ui.parts.IDiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider;
 import org.eclipse.gmf.runtime.diagram.ui.services.editpart.EditPartService;
 import org.eclipse.gmf.runtime.draw2d.ui.mapmode.MapModeTypes;
+import org.eclipse.gmf.runtime.notation.Diagram;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -47,7 +55,11 @@ import org.eclipse.uml2.diagram.activity.part.UMLDiagramEditor;
  * @version	$Revision$
  * @since 	Apr 7, 2009
  */
-public class UMLDiagramEditor3D extends UMLDiagramEditor {
+public class UMLDiagramEditor3D extends UMLDiagramEditor implements INestableEditor {
+	/**
+	 * Logger for this class
+	 */
+	private static final Logger log = Logger.getLogger(UMLDiagramEditor3D.class.getName());
 
 	
 	private ScenePreferenceListener sceneListener;
@@ -185,6 +197,8 @@ public class UMLDiagramEditor3D extends UMLDiagramEditor {
 
 		return root;
 	}
+	
+	
 
 	/**
 	 * {@inheritDoc}
@@ -211,6 +225,49 @@ public class UMLDiagramEditor3D extends UMLDiagramEditor {
 		return getGraphicalViewer().getControl();
 	}
 	
+	/*
+	 * *************************************************************************
+	 * Nested
+	 * **********************************************************************
+	 */
+
+	public void initializeAsNested(GraphicalViewer viewer,
+		MultiEditorPartFactory i_multiEditorPartFactory,
+		MultiEditorModelContainer i_multiEditorModelContainer) {
+		try {
+//			setGraphicalViewer(viewer);
+
+			// initializeGraphicalViewerContents():
+			Diagram diagram = getDiagram();
+			EditPartFactory factory = EditPartService.getInstance();
+
+			// EditPart editPart = getDiagramEditPart();
+
+			i_multiEditorPartFactory.prepare(diagram, factory);
+			i_multiEditorModelContainer.add(diagram);
+
+		} catch (Exception ex) {
+			log.warning("GraphicalViewer exception: " + ex); //$NON-NLS-1$ 
+		}
+
+	}
+
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditor#createPaletteDrawer()
+	 */
+	public PaletteDrawer createPaletteDrawer() {
+		PaletteRoot root = createPaletteRoot(null);
+		if (root.getChildren().size()==1 && root.getChildren().get(0) instanceof PaletteDrawer) {
+			return (PaletteDrawer) root.getChildren().get(0);
+		} else {
+			PaletteDrawer drawer = new PaletteDrawer("Activity Diagram");
+			drawer.setChildren(root.getChildren());
+			return drawer;
+			
+		}
+	}
 	
 
 }

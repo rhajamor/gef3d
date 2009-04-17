@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <plugin>
 
-	<!-- Class --> 
+	<!-- Class -->
    <extension point="org.eclipse.ui.editors">
       <editor
             class="org.eclipse.gef3d.examples.uml2.clazz.part.UMLDiagramEditor3D"
@@ -10,6 +10,16 @@
             extensions="umlclass"
             id="org.eclipse.gef3d.examples.uml2.clazz.part.UMLDiagramEditor3D"
             name="UML Tools Class Editor 3D">
+      </editor>
+   </extension>
+   
+   <extension point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.gef3d.examples.uml2.multi.part.MultiGraphicalEditor3D"
+            default="false"
+            extensions="umlclass"
+            id="org.eclipse.gef3d.examples.uml2.multi.part.MultiGraphicalEditor3D"
+            name="Multi Editor 3D">
       </editor>
    </extension>
    
@@ -22,8 +32,8 @@
    
    
    
-   <!-- Activity -->
-   <extension point="org.eclipse.ui.editors">
+    <!-- Activity -->
+     <extension point="org.eclipse.ui.editors">
       <editor
             class="org.eclipse.gef3d.examples.uml2.activity.part.UMLDiagramEditor3D"
             default="false"
@@ -41,7 +51,7 @@
    </extension>
    
    
-   <!-- Use Case -->
+   <!-- Use Case --> 
    <extension point="org.eclipse.ui.editors">
       <editor
             class="org.eclipse.gef3d.examples.uml2.usecase.part.UMLDiagramEditor3D"
@@ -59,7 +69,7 @@
       </editpartProvider>
    </extension>
    
-   
+   <!-- 3D Handles and Feedback for all 3D-Editors --> 
    <extension
          point="org.eclipse.gmf.runtime.diagram.ui.editpolicyProviders">
       <editpolicyProvider
