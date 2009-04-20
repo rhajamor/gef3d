@@ -12,6 +12,8 @@
 
 package org.eclipse.draw3d.picking;
 
+import java.util.logging.Level;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +48,8 @@ public class FigureManager implements ColorProvider {
 	private Set<IFigure3D> m_ignoredFigures = new HashSet<IFigure3D>();
 
 	private Set<Class<?>> m_ignoredTypes = new HashSet<Class<?>>();
+	
+	private IFigure3D m_rootFigure;
 
 	/**
 	 * The next color to be returned when
@@ -70,11 +74,12 @@ public class FigureManager implements ColorProvider {
 	 * @param i_ignoredTypes the ignored types
 	 */
 	private FigureManager(List<IFigure3D> i_figures,
-			Set<IFigure3D> i_ignoredFigures, Set<Class<?>> i_ignoredTypes) {
+			Set<IFigure3D> i_ignoredFigures, Set<Class<?>> i_ignoredTypes,
+			IFigure3D i_rootFigure) {
 
 		if (i_figures == null)
 			throw new NullPointerException("i_figures must not be null");
-
+		
 		if (i_ignoredFigures == null)
 			throw new NullPointerException("i_ignoredFigures must not be null");
 
@@ -84,6 +89,9 @@ public class FigureManager implements ColorProvider {
 		m_figures.addAll(i_figures);
 		m_ignoredFigures.addAll(i_ignoredFigures);
 		m_ignoredTypes.addAll(i_ignoredTypes);
+		
+		m_rootFigure = i_rootFigure;
+		
 	}
 
 	/**
@@ -119,7 +127,7 @@ public class FigureManager implements ColorProvider {
 	 */
 	public FigureManager createSnapshot() {
 
-		return new FigureManager(m_figures, m_ignoredFigures, m_ignoredTypes);
+		return new FigureManager(m_figures, m_ignoredFigures, m_ignoredTypes, m_rootFigure);
 	}
 
 	/**
@@ -147,12 +155,18 @@ public class FigureManager implements ColorProvider {
 	 */
 	public IFigure3D getFigure(int i_color) {
 
-		if (i_color == 0xFFFFFF)
-			return null;
+		if (i_color == 0xFFFFFF) {
+			return m_rootFigure;
+//			return null;
+		}
+			
 
 		int index = i_color - MIN_INDEX;
-		if (index < 0 || index >= m_figures.size())
-			return null;
+		if (index < 0 || index >= m_figures.size()) {
+//			log.warning("int - Unexpected color index=" + index + " - exception: " + null); //$NON-NLS-1$ //$NON-NLS-2$
+			return m_rootFigure;
+//			return null;
+		}
 
 		return m_figures.get(index);
 	}
@@ -210,5 +224,13 @@ public class FigureManager implements ColorProvider {
 				return true;
 
 		return false;
+	}
+
+	/**
+	 * @return
+	 */
+	protected IFigure3D getRootFigure() {
+		// TODO implement method FigureManager.getRootFigure
+		return null;
 	}
 }

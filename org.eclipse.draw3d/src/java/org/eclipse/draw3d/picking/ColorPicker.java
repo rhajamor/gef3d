@@ -111,7 +111,7 @@ public class ColorPicker {
 
 	private final PickingBuffers m_pickingBuffers;
 
-	private IFigure m_rootFigure;
+	private IFigure3D m_rootFigure;
 
 	private boolean m_valid = false;
 
@@ -326,10 +326,24 @@ public class ColorPicker {
 		int color = getColorValue(i_x, i_y);
 
 		IFigure3D figure = m_figureManager.getFigure(color);
+		
+		
 		if (figure != null)
 			m_lastFigure = figure;
 
 		return figure;
+	}
+	
+	/**
+	 * Returns the last valud picked figure. This is the actually picked
+	 * last figure or the root figure.
+	 * @return
+	 */
+	public IFigure3D getLastValidFigure() {
+		if (m_lastFigure!=null)
+			return m_lastFigure;
+		else 
+			return m_rootFigure;
 	}
 
 	/**
@@ -509,7 +523,7 @@ public class ColorPicker {
 	 * 
 	 * @param i_rootFigure the root figure
 	 */
-	public void setRootFigure(IFigure i_rootFigure) {
+	public void setRootFigure(IFigure3D i_rootFigure) {
 
 		if (m_disposed)
 			throw new IllegalStateException("color picker is disposed");

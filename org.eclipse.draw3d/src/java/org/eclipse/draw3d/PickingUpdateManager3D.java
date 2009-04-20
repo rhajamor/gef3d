@@ -111,6 +111,7 @@ public class PickingUpdateManager3D extends DeferredUpdateManager3D {
 	public void setRoot(IFigure i_figure) {
 		super.setRoot(i_figure);
 
-		m_picker.setRootFigure(i_figure);
+		m_picker.setRootFigure(
+			Figure3DHelper.getAncestor3D(i_figure));
 	}
 }

@@ -13,6 +13,8 @@ package org.eclipse.gef3d.tools;
 
 import static org.eclipse.draw3d.util.CoordinateConverter.worldToSurface;
 
+import java.text.MessageFormat;
+
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.IFigure3D;
@@ -53,33 +55,46 @@ public class TrackState {
 
 	private Vector3f m_moveDelta3D = new Vector3fImpl();
 
+	/**
+	 * Postcondition: moveDeltas (2D and 3D) != null
+	 */
 	private void validate() {
 
-		if (m_valid)
-			return;
+		if (!m_valid) {
 
-		int x = m_screenLocation2D.x;
-		int y = m_screenLocation2D.y;
+			int x = m_screenLocation2D.x;
+			int y = m_screenLocation2D.y;
 
-		m_picker.getVirtualCoordinates(x, y, m_location3D);
-		m_currentFigure = m_picker.getFigure3D(x, y);
+			m_picker.getVirtualCoordinates(x, y, m_location3D);
+			m_currentFigure = m_picker.getFigure3D(x, y);
 
-		worldToSurface(m_location3D.getX(), m_location3D.getY(), m_location3D
-				.getZ(), m_currentFigure, m_location2D);
+			IFigure3D surfaceFigure = m_picker.getLastValidFigure();
 
-		Math3D.sub(m_location3D, m_startLocation3D, m_moveDelta3D);
+			worldToSurface(m_location3D.getX(), m_location3D.getY(),
+				m_location3D.getZ(), surfaceFigure, m_location2D);
 
-		if (m_startFigure == m_currentFigure) {
+			Math3D.sub(m_location3D, m_startLocation3D, m_moveDelta3D);
+
+			// if (m_startFigure == m_currentFigure) {
 			if (m_moveDelta2D == null)
 				m_moveDelta2D = new Dimension();
 
 			m_moveDelta2D.width = m_location2D.x - m_startLocation2D.x;
 			m_moveDelta2D.height = m_location2D.y - m_startLocation2D.y;
-		} else {
-			m_moveDelta2D = null;
-		}
+			// } else {
+			// m_moveDelta2D = null;
+			// }
 
-		m_valid = true;
+			m_valid = true;
+		}
+		// postcondition:
+		if (!(m_moveDelta2D != null && m_moveDelta3D != null)) {
+			throw new IllegalStateException(MessageFormat.format(
+				"Postcondition failed, "
+						+ "at least one move delta is null (2D: {0}, 3D: {1})",
+				m_moveDelta2D, m_moveDelta3D));
+
+		}
 	}
 
 	/**
@@ -115,7 +130,7 @@ public class TrackState {
 
 		if (i_screenLocation2D == null)
 			throw new NullPointerException(
-					"i_screenLocation2D must not be null");
+				"i_screenLocation2D must not be null");
 
 		if (i_picker == null)
 			throw new NullPointerException("i_picker must not be null");
@@ -124,11 +139,11 @@ public class TrackState {
 		setScreenLocation(i_screenLocation2D);
 
 		m_picker.getVirtualCoordinates(m_screenLocation2D.x,
-				m_screenLocation2D.y, m_startLocation3D);
-		m_startFigure = m_picker.getFigure3D(m_screenLocation2D.x,
-				m_screenLocation2D.y);
+			m_screenLocation2D.y, m_startLocation3D);
+		m_startFigure =
+			m_picker.getFigure3D(m_screenLocation2D.x, m_screenLocation2D.y);
 		worldToSurface(m_startLocation3D.getX(), m_startLocation3D.getY(),
-				m_startLocation3D.getZ(), m_startFigure, m_startLocation2D);
+			m_startLocation3D.getZ(), m_startFigure, m_startLocation2D);
 	}
 
 	/**
