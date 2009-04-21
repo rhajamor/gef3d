@@ -21,7 +21,6 @@ import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.util.CoordinateConverter;
 
-
 /**
  * 3D version of {@link org.eclipse.draw2d.ChopboxAnchor}.
  * 
@@ -34,7 +33,6 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 
 	private static final Point TMP_P = new Point();
 
-	
 	private static final Vector3fImpl TMP_V3_1 = new Vector3fImpl();
 
 	/**
@@ -43,7 +41,6 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 	 */
 	private static final Vector3fImpl TMP_V3_2 = new Vector3fImpl();
 
-	
 	/**
 	 * Constructs a new ChopboxAnchor.
 	 */
@@ -123,9 +120,9 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 
 	/**
 	 * @param reference
-	 * @param absoluteMode used in 2D mode to translate owner to absolute. In 
-	 * 	3D mode this is done when converting the location to 3D. (have I heard
-	 * 	someone whisper "this is a damn hack"?)
+	 * @param absoluteMode used in 2D mode to translate owner to absolute. In 3D
+	 *            mode this is done when converting the location to 3D. (have I
+	 *            heard someone whisper "this is a hack"?)
 	 * @return
 	 */
 	private Point doGetLocation(Point reference, boolean absoluteMode) {
@@ -134,7 +131,8 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 		r.translate(-1, -1);
 		r.resize(1, 1);
 
-		if (absoluteMode) getOwner().translateToAbsolute(r);
+		if (absoluteMode)
+			getOwner().translateToAbsolute(r);
 		float centerX = r.x + 0.5f * r.width;
 		float centerY = r.y + 0.5f * r.height;
 
@@ -167,8 +165,7 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 	 *      Vector3f)
 	 */
 	@Override
-	public IVector3f getLocation3D(IVector3f i_reference,
-			Vector3f io_result) {
+	public IVector3f getLocation3D(IVector3f i_reference, Vector3f io_result) {
 
 		if (io_result == null)
 			io_result = new Vector3fImpl();
@@ -179,7 +176,7 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 
 			// bounding box in relative coordinates
 			IBoundingBox boundingBox = getBounds3D();
-			Vector3f size = boundingBox.getSize(null); 
+			Vector3f size = boundingBox.getSize(null);
 			boundingBox.getCenter(TMP_V3_1);
 
 			// bounding box is a dot
@@ -226,11 +223,10 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 				float y = i_reference.getY();
 				float z = i_reference.getZ();
 
-				
 				CoordinateConverter.worldToSurface(x, y, z, ancestor3D, TMP_P);
 				result2D = doGetLocation(TMP_P, false);
 			}
-			
+
 			// TODO fix this hack when we get a surfaceLocationMatrix
 			float depth = -ancestor3D.getSize3D().getZ();
 			return CoordinateConverter.surfaceToWorld(result2D.x, result2D.y,
