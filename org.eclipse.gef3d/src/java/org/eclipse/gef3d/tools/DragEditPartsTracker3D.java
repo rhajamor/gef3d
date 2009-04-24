@@ -19,12 +19,15 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.gef.EditPart;
+import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.tools.DragEditPartsTracker;
+import org.eclipse.gef3d.handles.MoveHandle3D;
 import org.eclipse.gef3d.requests.ChangeBounds3DRequest;
+import org.eclipse.swt.events.MouseEvent;
 
 /**
- * DragEditPartsTracker3D There should really be more documentation here.
+ * Created in {@link MoveHandle3D#createDragTracker()}.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -36,8 +39,8 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger
-			.getLogger(DragEditPartsTracker3D.class.getName());
+	private static final Logger log =
+		Logger.getLogger(DragEditPartsTracker3D.class.getName());
 
 	private TrackState m_trackState;
 
@@ -111,8 +114,8 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 			if (log.isLoggable(Level.FINER))
 				log.finer("creating track state");
 
-			m_trackState = Tracker3DHelper.getTrackState(location,
-					getCurrentViewer());
+			m_trackState =
+				Tracker3DHelper.getTrackState(location, getCurrentViewer());
 		}
 
 		m_trackState.setScreenLocation(getCurrentInput().getMouseLocation());
@@ -127,10 +130,12 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 	@Override
 	protected void performDrag() {
 
-		super.performDrag();
-		m_trackState = null;
-		Tracker3DHelper.getPicker(getCurrentViewer()).clearIgnored();
-
+		try {
+			super.performDrag();
+		} finally {
+			m_trackState = null;
+			Tracker3DHelper.getPicker(getCurrentViewer()).clearIgnored();
+		}
 		if (log.isLoggable(Level.FINER))
 			log.finer("drag finished");
 	}
@@ -157,8 +162,8 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 	@Override
 	protected void updateTargetRequest() {
 
-		if (log.isLoggable(Level.FINER))
-			log.finer("updating target request");
+		// if (log.isLoggable(Level.FINER))
+		// log.finer("updating target request");
 
 		// behave like 2D version
 		super.updateTargetRequest();
@@ -168,7 +173,8 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 		if (request1 instanceof ChangeBounds3DRequest) {
 
 			ChangeBounds3DRequest req3D = (ChangeBounds3DRequest) request1;
-			IVector3f delta = new Vector3fImpl(getTrackState().getMoveDelta3D());
+			IVector3f delta =
+				new Vector3fImpl(getTrackState().getMoveDelta3D());
 
 			// TODO handle modifier keys for constrained movement
 			// constrains the move to dx=0, dy=0, or dx=dy if shift is depressed
@@ -233,11 +239,12 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 	@Override
 	protected boolean updateTargetUnderMouse() {
 
-		if (log.isLoggable(Level.FINER))
-			log.finer("updating target under mouse");
+		// if (log.isLoggable(Level.FINER))
+		// log.finer("updating target under mouse");
 
 		if (!isTargetLocked()) {
-			EditPart editPart = getCurrentViewer().findObjectAtExcluding(
+			EditPart editPart =
+				getCurrentViewer().findObjectAtExcluding(
 					getCurrentInput().getMouseLocation(), getExclusionSet(),
 					getTargetingConditional());
 			if (editPart != null)
@@ -247,5 +254,31 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 			return changed;
 		} else
 			return false;
+	}
+
+	/**
+	 * 1:1 {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#mouseDrag(org.eclipse.swt.events.MouseEvent,
+	 *      org.eclipse.gef.EditPartViewer)
+	 */
+	@Override
+	public void mouseDrag(MouseEvent me, EditPartViewer viewer) {
+
+		// if (log.isLoggable(Level.INFO)) {
+		//			log.info("MouseEvent, EditPartViewer - me=" + me + ", viewer=" + viewer); //$NON-NLS-1$ //$NON-NLS-2$
+		// }
+
+		if (!isViewerImportant(viewer))
+			return;
+		setViewer(viewer);
+		boolean wasDragging = movedPastThreshold();
+		getCurrentInput().setInput(me);
+		handleDrag();
+		if (movedPastThreshold()) {
+			if (!wasDragging)
+				handleDragStarted();
+			handleDragInProgress();
+		}
 	}
 }

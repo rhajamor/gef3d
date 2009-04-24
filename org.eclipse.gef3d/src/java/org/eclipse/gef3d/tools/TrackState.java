@@ -41,10 +41,6 @@ public class TrackState {
 
 	private Vector3f m_startLocation3D = new Vector3fImpl();
 
-	private IFigure3D m_startFigure;
-
-	private IFigure3D m_currentFigure;
-
 	private Point m_screenLocation2D = new Point();
 
 	private Point m_location2D = new Point();
@@ -66,7 +62,7 @@ public class TrackState {
 			int y = m_screenLocation2D.y;
 
 			m_picker.getVirtualCoordinates(x, y, m_location3D);
-			m_currentFigure = m_picker.getFigure3D(x, y);
+//			m_currentFigure = m_picker.getFigure3D(x, y);
 
 			IFigure3D surfaceFigure = m_picker.getLastValidFigure();
 
@@ -140,10 +136,17 @@ public class TrackState {
 
 		m_picker.getVirtualCoordinates(m_screenLocation2D.x,
 			m_screenLocation2D.y, m_startLocation3D);
-		m_startFigure =
+		IFigure3D figureUnderLocation = 
 			m_picker.getFigure3D(m_screenLocation2D.x, m_screenLocation2D.y);
+		
+		if (figureUnderLocation==null) {
+//			figureUnderLocation = m_picker.getLastValidFigure();
+//			if (figureUnderLocation==null)
+				throw new NullPointerException("No initial surface found.");
+		}
+		
 		worldToSurface(m_startLocation3D.getX(), m_startLocation3D.getY(),
-			m_startLocation3D.getZ(), m_startFigure, m_startLocation2D);
+			m_startLocation3D.getZ(), figureUnderLocation, m_startLocation2D);
 	}
 
 	/**

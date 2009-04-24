@@ -37,8 +37,8 @@ public class ResizeTracker3D extends ResizeTracker {
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger.getLogger(ResizeTracker3D.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(ResizeTracker3D.class.getName());
 
 	protected TrackState m_trackState;
 
@@ -111,8 +111,8 @@ public class ResizeTracker3D extends ResizeTracker {
 			if (log.isLoggable(Level.FINE))
 				log.fine("creating track state");
 
-			m_trackState = Tracker3DHelper.getTrackState(location,
-					getCurrentViewer());
+			m_trackState =
+				Tracker3DHelper.getTrackState(location, getCurrentViewer());
 		}
 
 		m_trackState.setScreenLocation(getCurrentInput().getMouseLocation());
@@ -126,11 +126,12 @@ public class ResizeTracker3D extends ResizeTracker {
 	 */
 	@Override
 	protected void performDrag() {
-
-		super.performDrag();
-		m_trackState = null;
-		Tracker3DHelper.getPicker(getCurrentViewer()).clearIgnored();
-
+		try {
+			super.performDrag();
+		} finally {
+			m_trackState = null;
+			Tracker3DHelper.getPicker(getCurrentViewer()).clearIgnored();
+		}
 		if (log.isLoggable(Level.FINE))
 			log.fine("resize finished");
 	}
@@ -156,8 +157,8 @@ public class ResizeTracker3D extends ResizeTracker {
 			ChangeBounds3DRequest req3D = (ChangeBounds3DRequest) request;
 
 			Vector3f moveDelta3D = getTrackState().getMoveDelta3D();
-			IVector3f location3D = new Vector3fImpl(getTrackState()
-					.getLocation3D());
+			IVector3f location3D =
+				new Vector3fImpl(getTrackState().getLocation3D());
 
 			Vector3fImpl moveDelta = new Vector3fImpl();
 			Vector3fImpl resizeDelta = new Vector3fImpl();
@@ -252,7 +253,7 @@ public class ResizeTracker3D extends ResizeTracker {
 			 */
 		} else {
 			log
-					.warning("3D coordinates of request not set, wrong type: " + request); //$NON-NLS-1$
+				.warning("3D coordinates of request not set, wrong type: " + request); //$NON-NLS-1$
 		}
 	}
 }

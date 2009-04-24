@@ -24,13 +24,22 @@ import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.handles.MoveHandle;
 import org.eclipse.gef.tools.DragEditPartsTracker;
+import org.eclipse.gef3d.editpolicies.ResizableEditPolicy3D;
 import org.eclipse.gef3d.tools.DragEditPartsTracker3D;
 import org.eclipse.swt.graphics.Color;
 
-
 /**
- * 3D version of {@link MoveHandle}.
+ * 3D version of {@link MoveHandle}. The move handle is created via a
+ * {@link MoveHandle3DFactory}, which is used by appropriate policies such as
+ * the {@link ResizableEditPolicy3D}.
  * 
+ * <p>
+ * Parts of this class (methods and/or comments) were copied and modified from
+ * {@link MoveHandle}, copyright (c) 2000, 2005 IBM Corporation and others
+ * and distributed under the EPL license.
+ * </p>
+ * 
+ * @author unkown (original 2D implementation)
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Apr 15, 2008
@@ -38,8 +47,8 @@ import org.eclipse.swt.graphics.Color;
 public class MoveHandle3D extends AbstractHandle3D {
 
 	/**
-	 * Creates a MoveHandle for the given <code>GraphicalEditPart</code> using
-	 * a default {@link Locator}.
+	 * Creates a MoveHandle for the given <code>GraphicalEditPart</code> using a
+	 * default {@link Locator}.
 	 * <p>
 	 * Copied from {@link MoveHandle#MoveHandle(GraphicalEditPart)}, using a 3D
 	 * locator instead of a 2D one
@@ -143,8 +152,8 @@ public class MoveHandle3D extends AbstractHandle3D {
 	 */
 	@Override
 	public void postrender(RenderContext renderContext) {
-				int alpha = getAlpha();
-//		IMatrix4f modelMatrix = getModelMatrix();
+		int alpha = getAlpha();
+		// IMatrix4f modelMatrix = getModelMatrix();
 		Position3D position3D = getPosition3D();
 
 		if (renderContext.getMode().isPaint()) {
@@ -170,6 +179,5 @@ public class MoveHandle3D extends AbstractHandle3D {
 			}
 		}
 	}
-
 
 }

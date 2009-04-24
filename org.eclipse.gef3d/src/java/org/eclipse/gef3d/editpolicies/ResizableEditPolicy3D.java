@@ -10,7 +10,14 @@
  ******************************************************************************/
 package org.eclipse.gef3d.editpolicies;
 
-import static org.eclipse.draw2d.PositionConstants.*;
+import static org.eclipse.draw2d.PositionConstants.EAST;
+import static org.eclipse.draw2d.PositionConstants.NORTH;
+import static org.eclipse.draw2d.PositionConstants.NORTH_EAST;
+import static org.eclipse.draw2d.PositionConstants.NORTH_WEST;
+import static org.eclipse.draw2d.PositionConstants.SOUTH;
+import static org.eclipse.draw2d.PositionConstants.SOUTH_EAST;
+import static org.eclipse.draw2d.PositionConstants.SOUTH_WEST;
+import static org.eclipse.draw2d.PositionConstants.WEST;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +32,11 @@ import org.eclipse.draw3d.geometry.BoundingBoxImpl;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.Handle;
+import org.eclipse.gef.RequestConstants;
+import org.eclipse.gef.editpolicies.ConstrainedLayoutEditPolicy;
 import org.eclipse.gef.editpolicies.NonResizableEditPolicy;
 import org.eclipse.gef.editpolicies.ResizableEditPolicy;
 import org.eclipse.gef.handles.HandleBounds;
@@ -44,17 +54,40 @@ import org.eclipse.gef3d.requests.ChangeBounds3DRequest;
  * a 3D editor, otherwise it behaves such like its super class. I.e. this class
  * can be used instead of its superclass to enable controllers which can be used
  * in both, 2D and 3D modes.
+ * <p>
+ * This policy is usually not created and installed by the host edit part
+ * directly. Instead it is created as a child policy. That means a parent edit
+ * part's policy decorates the children of their host edit part with new
+ * policies. An example can be found in <code>Handles3DEditPolicy</code> of the
+ * GMF UML Tools 3D example. The according 2D version is for example created by
+ * {@link ConstrainedLayoutEditPolicy#createChildEditPolicy(EditPart)}.
+ * </p>
+ * <p>
+ * Since the task of this policy remains, the policy can still understand the
+ * same requests as the original 2D version, that is for example the following
+ * types: {@link RequestConstants#REQ_RESIZE}, {@link RequestConstants#REQ_MOVE}
+ * (if drag is allowed), {@link RequestConstants#REQ_CLONE},
+ * {@link RequestConstants#REQ_ADD}, {@link RequestConstants#REQ_ORPHAN} and
+ * {@link RequestConstants#REQ_ALIGN}.
+ * </p>
+ * <p>
+ * Parts of this class (methods and/or comments) were copied and modified from
+ * {@link ResizableEditPolicy}, copyright (c) 2000, 2005 IBM Corporation and
+ * others and distributed under the EPL license.
+ * </p>
  * 
+ * @author hudsonr (original 2D implementation)
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Mar 24, 2008
  */
 public class ResizableEditPolicy3D extends ResizableEditPolicy {
+
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger
-			.getLogger(ResizableEditPolicy3D.class.getName());
+	private static final Logger log =
+		Logger.getLogger(ResizableEditPolicy3D.class.getName());
 
 	private static Vector3fImpl TEMP_V_1 = new Vector3fImpl();
 
@@ -75,7 +108,8 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 			return super.createSelectionHandles();
 		} else { // use 3D implementation otherwise
 
-			IHandleFactory nonResizableHF = NonResizableHandle3DFactory.INSTANCE;
+			IHandleFactory nonResizableHF =
+				NonResizableHandle3DFactory.INSTANCE;
 			IHandleFactory resizableHF = ResizableHandle3DFactory.INSTANCE;
 			IHandleFactory moveHF = MoveHandle3DFactory.INSTANCE;
 
@@ -261,13 +295,13 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 				// Why is this in GEF not necessary:
 				IVector3f rv = bb.getSize(TEMP_V_1);
 				bb.setSize((rv.getX() < 0) ? 0 : rv.getX(), //
-						(rv.getY() < 0) ? 0 : rv.getY(), //
-						(rv.getZ() < 0) ? 0 : rv.getZ());
+					(rv.getY() < 0) ? 0 : rv.getY(), //
+					(rv.getZ() < 0) ? 0 : rv.getZ());
 
 				feedback3D.setSize3D(bb.getSize(TEMP_V_1));
 			} else {
 				log
-						.warning("ChangeBoundsRequest - ChangeBoundsRequest3D expected, received " + request); //$NON-NLS-1$ //$NON-NLS-2$
+					.warning("ChangeBoundsRequest - ChangeBoundsRequest3D expected, received " + request); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		}
 	}
