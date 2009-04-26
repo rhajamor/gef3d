@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (c) 2000, 2005 IBM Corporation and others, 
  * Copyright (c) 2008 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -6,6 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
+ *    IBM Corporation - initial API and implementation of 2D version
  *    Jens von Pilgrim - initial API and implementation
  ******************************************************************************/
 package org.eclipse.gef3d.handles;
@@ -30,10 +32,11 @@ import org.eclipse.swt.graphics.Cursor;
 /**
  * 3D version of {@link AbstractHandle}, most methods are 1:1 copies of
  * original version and are not modified. This class was created since
- * AbstractHandle is derived from Figure, and this one must be derived from
- * Figure3D.
+ * AbstractHandle extends Figure, and this one must extend Figure3D.
  * 
  * @todo Create Handle3D interface returning a 3D point
+ * 
+ * @author IBM Corporation (original 2D version)
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Mar 25, 2008

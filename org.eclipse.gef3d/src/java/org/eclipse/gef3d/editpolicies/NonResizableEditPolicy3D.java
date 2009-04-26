@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (c) 2000, 2005 IBM Corporation and others,
  * Copyright (c) 2008 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -6,6 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
+ *    IBM Corporation - initial API and implementation of 2D version
  *    Jens von Pilgrim - initial API and implementation
  ******************************************************************************/
 package org.eclipse.gef3d.editpolicies;
@@ -41,6 +43,7 @@ import org.eclipse.gef3d.handles.NonResizableHandle3DFactory;
  * instead of its superclass to enable controllers which can be used in both,
  * 2D and 3D modes.
  * 
+ * @author Randy Hudson (hudsonr) (original 2D version)
  * @author 	Jens von Pilgrim
  * @version	$Revision$
  * @since 	Apr 14, 2008

@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (c) 2000, 2005 IBM Corporation and others,
  * Copyright (c) 2008 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -6,6 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
+ *    IBM Corporation - initial API and implementation of 2D version
  *    Jens von Pilgrim - initial API and implementation
  ******************************************************************************/
 package org.eclipse.gef3d.handles;
@@ -29,12 +31,10 @@ import org.eclipse.swt.graphics.Cursor;
  * in the original GEF) as <code>NonResizableHandle</code> (the class
  * {@link org.eclipse.gef.handles.NonResizableHandle} is marked deprecated).
  * 
+ * @author IBM Corporation (original 2D version)
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Mar 26, 2008
- * @see $HeadURL:
- *      https://gorgo.fernuni-hagen.de/OpenglGEF/trunk/org.eclipse.gef3d/src
- *      /java/de/feu/gef3d/handles/ResizeHandle3D.java $
  */
 public class ResizeHandle3D extends CubeHandle  {
 
