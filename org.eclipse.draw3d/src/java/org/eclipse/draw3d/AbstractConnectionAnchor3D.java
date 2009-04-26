@@ -17,7 +17,7 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
 
 /**
- * 3D version of AbstractConnectionAnchor. Since this class is derived from
+ * 3D version of AbstractConnectionAnchor. Since this class extends
  * {@link AbstractConnectionAnchor}, it could be used instead of this class,
  * too.
  * 

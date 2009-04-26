@@ -1,16 +1,13 @@
-/*
- * Type:    org.eclipse.emf.ecoretools.diagram.edit.parts.FeedbackLayer3D
- * File:  	FeedbackLayer3D.java
- * Project:	de.feu.gef3d.ecoretools
- * Date: 	06.12.2008
- * Author: 	Kristian Duske
- * Version:	$Revision$
- * Changed: $Date$ by $Author$ 
- * URL:     $HeadURL$
+/*******************************************************************************
+ * Copyright (c) 2008 Kristian Duske and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  *
- * Copyright 2007, FernUniversitaet in Hagen
- */
-
+ * Contributors:
+ *    Kristian Duske - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.draw3d;
 
 import org.eclipse.draw2d.Connection;

@@ -1,12 +1,13 @@
 /*******************************************************************************
- * Copyright (c) 2008 Jens von Pilgrim and others.
+ * Copyright (c) 2000, 2005 IBM Corporation and others,
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Jens von Pilgrim - initial API and implementation
+ *    IBM Corporation - initial API and implementation
+ *    Jens von Pilgrim - moved to draw3d and made class public
  ******************************************************************************/
 package org.eclipse.draw3d.draw2dports;
 
@@ -28,7 +29,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
  * <b>It was duplicated since the original class is package visible only.</b>
  * </p>
  * 
- * @author Jens von Pilgrim
+ * @author IBM Corporation
  * @version $Revision$
  * @since Feb 11, 2008
  */

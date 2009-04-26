@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (c) 2000, 2005 IBM Corporation and others,
  * Copyright (c) 2008 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -6,6 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
+ *    IBM Corporation - initial API and implementation of 2D version
  *    Jens von Pilgrim - initial API and implementation
  ******************************************************************************/
 package org.eclipse.draw3d;
@@ -29,13 +31,14 @@ import org.eclipse.draw3d.ArrowLocator3D.Alignment;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 /**
- * PolylineConnection3D is the 3D version of PolylineConnection with exactly the
- * same features. Instead of a 2D connection router, a 3D router is used, and,
- * of course, it extends Polyline3D instead of Polyline.
+ * PolylineConnection3D is the 3D version of {@link PolylineConnection} with
+ * exactly the same features. Instead of a 2D connection router, a 3D router is
+ * used, and, of course, it extends Polyline3D instead of Polyline.
  * <p>
  * Internal note: This class is a copy of PolylineConnection, modifications are
  * deocumented.
  * 
+ * @author IBM Corporation (original 2D version)
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since 26.11.2007
@@ -48,8 +51,8 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger
-			.getLogger(PolylineConnection3D.class.getName());
+	private static final Logger log =
+		Logger.getLogger(PolylineConnection3D.class.getName());
 
 	/** Start anchor, just as in PolylineConnection */
 	private ConnectionAnchor startAnchor;
@@ -246,7 +249,7 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 		(getSourceAnchor() != null && getTargetAnchor() != null)
 		// added:
 				&& (getSourceAnchor().getOwner() != null && getTargetAnchor()
-						.getOwner() != null)) {
+					.getOwner() != null)) {
 			connectionRouter.route(this); // from PolylineConnection
 		}
 
@@ -338,7 +341,7 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 				connectionRouter = cr;
 			}
 			firePropertyChange(Connection.PROPERTY_CONNECTION_ROUTER,
-					oldRouter, cr);
+				oldRouter, cr);
 			revalidate();
 		}
 	}

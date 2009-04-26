@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (c) 2000, 2005 IBM Corporation and others,
  * Copyright (c) 2008 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -6,6 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
+ *    IBM Corporation - initial API and implementation of 2D version
  *    Jens von Pilgrim - initial API and implementation
  ******************************************************************************/
 package org.eclipse.draw3d;
@@ -24,13 +26,14 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 /**
  * RelativeLocator3D, 3D version of the 2D relative locator
- * {@link RelativeLocator}. This 3D version is derived from its 2D version, so
- * it can be used instead of the 2D version.
+ * {@link RelativeLocator}. This 3D version extends its 2D version, so it can be
+ * used instead of the 2D version.
  * <p>
  * This locator (as its 2D version) is used for positioning handles on figures,
  * see GEF's <code>ResizableEditPolicy</code> (and other selection policies) of
  * how this locator and handles are used.
  * 
+ * @author IBM Corporation (original 2D version)
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Mar 24, 2008
@@ -39,8 +42,8 @@ public class RelativeLocator3D extends RelativeLocator {
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger.getLogger(RelativeLocator3D.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(RelativeLocator3D.class.getName());
 
 	private static final Vector3fImpl TMP_V2 = new Vector3fImpl();
 
@@ -87,7 +90,7 @@ public class RelativeLocator3D extends RelativeLocator {
 
 		super(i_reference, i_relativeX, i_relativeY);
 		m_relativeVec.set((float) i_relativeX, (float) i_relativeY,
-				(float) i_relativeZ);
+			(float) i_relativeZ);
 	}
 
 	/**

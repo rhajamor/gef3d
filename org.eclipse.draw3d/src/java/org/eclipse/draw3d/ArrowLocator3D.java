@@ -40,7 +40,6 @@ public class ArrowLocator3D implements Locator {
 	 * @author Kristian Duske
 	 * @version $Revision$
 	 * @since 19.05.2008
-	 * @see $HeadURL$
 	 */
 	public static enum Alignment {
 		/**
