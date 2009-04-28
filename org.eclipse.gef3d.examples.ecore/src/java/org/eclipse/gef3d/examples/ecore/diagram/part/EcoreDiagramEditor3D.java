@@ -19,6 +19,7 @@ import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
+import org.eclipse.gef.ui.parts.GraphicalEditor;
 import org.eclipse.gef3d.preferences.ScenePreferenceListener;
 import org.eclipse.gef3d.tools.CameraTool;
 import org.eclipse.gef3d.ui.parts.FpsStatusLineItem;
@@ -26,6 +27,7 @@ import org.eclipse.gmf.runtime.diagram.ui.actions.ActionIds;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.IDiagramPreferenceSupport;
 import org.eclipse.gmf.runtime.diagram.ui.internal.parts.DiagramGraphicalViewerKeyHandler;
 import org.eclipse.gmf.runtime.diagram.ui.internal.parts.DirectEditKeyHandler;
+import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor;
 import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.parts.IDiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider;
@@ -80,8 +82,14 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor {
 
 	/**
 	 * {@inheritDoc}
+	 * <p>
+	 * Parts of this method were copied from {@link GraphicalEditor} and
+	 * {@link DiagramEditor}.
+	 * </p>
 	 * 
 	 * @see org.eclipse.gef.ui.parts.GraphicalEditor#configureGraphicalViewer()
+	 * @author hudsonnr (fragments from GraphicalEditor)
+	 * @author melaasar (fragments from DiagramEditor)
 	 */
 	@Override
 	protected void configureGraphicalViewer() {
