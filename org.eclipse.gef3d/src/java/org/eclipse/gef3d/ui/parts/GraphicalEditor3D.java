@@ -11,7 +11,6 @@
 package org.eclipse.gef3d.ui.parts;
 
 import org.eclipse.draw3d.LightweightSystem3D;
-import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
 import org.eclipse.gef3d.preferences.ScenePreferenceListener;
 import org.eclipse.jface.action.IStatusLineManager;
@@ -19,7 +18,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorSite;
-
 
 /**
  * GraphicalEditor3D, overrides
@@ -47,8 +45,13 @@ public abstract class GraphicalEditor3D extends GraphicalEditor {
 	 * <li>{@link #doRegisterToScene(IScene)}</li>
 	 * </ol>
 	 * </p>
+	 * <p>
+	 * This method was copied from {@link GraphicalEditor3D}.
+	 * </p>
 	 * 
 	 * @see org.eclipse.gef.ui.parts.GraphicalEditor#createGraphicalViewer(org.eclipse.swt.widgets.Composite)
+	 * @author hudsonnr (original 2D version)
+	 * @author Jens von Pilgrim
 	 */
 	@Override
 	protected void createGraphicalViewer(Composite i_parent) {
@@ -69,8 +72,7 @@ public abstract class GraphicalEditor3D extends GraphicalEditor {
 			doRegisterToScene((IScene) viewer);
 		}
 	}
-	
-	
+
 	/**
 	 * Called by {@link #createGraphicalViewer(Composite)} if created viewer is
 	 * an instance of {@link IScene}.
@@ -94,8 +96,8 @@ public abstract class GraphicalEditor3D extends GraphicalEditor {
 		IStatusLineManager statusLine = actionBars.getStatusLineManager();
 
 		FpsStatusLineItem fpsCounter = new FpsStatusLineItem();
-		LightweightSystem3D lightweightSystem3D =
-			viewer3D.getLightweightSystem3D();
+		LightweightSystem3D lightweightSystem3D = viewer3D
+				.getLightweightSystem3D();
 		lightweightSystem3D.addRendererListener(fpsCounter);
 		statusLine.add(fpsCounter);
 	}
@@ -110,11 +112,9 @@ public abstract class GraphicalEditor3D extends GraphicalEditor {
 		GraphicalViewer3DImpl viewer = new GraphicalViewer3DImpl();
 		return viewer;
 	}
-	
-	
+
 	protected void createActionBarContribution() {
-		
-		
+
 	}
 
 	/**
