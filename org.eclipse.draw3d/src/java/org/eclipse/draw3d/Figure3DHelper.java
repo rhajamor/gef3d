@@ -160,11 +160,11 @@ public class Figure3DHelper {
 	 * @return the center of th given figure
 	 * @todo why is this static? why not use an instance method here?
 	 */
-	public static IVector3f getCenter3D(IFigure i_figure, Vector3f o_result) {
+	public static IVector3f getCenter3D(IFigure i_figure, Vector3f io_result) {
 
 		if (i_figure instanceof IFigure3D) {
 			IFigure3D figure3D = (IFigure3D) i_figure;
-			return figure3D.getBounds3D().getCenter(o_result);
+			return figure3D.getBounds3D().getCenter(io_result);
 		}
 
 		if (i_figure instanceof Connection) {
@@ -172,7 +172,7 @@ public class Figure3DHelper {
 				Connection conn = (Connection) i_figure;
 				Point midPoint = conn.getPoints().getMidpoint();
 
-				return getLocation3D(i_figure, midPoint, o_result);
+				return getLocation3D(i_figure, midPoint, io_result);
 			}
 
 			throw new UnsupportedOperationException(
@@ -182,7 +182,7 @@ public class Figure3DHelper {
 		Rectangle rect = i_figure.getBounds();
 		Point center = rect.getCenter();
 
-		return getLocation3D(i_figure, center, o_result);
+		return getLocation3D(i_figure, center, io_result);
 	}
 
 	/**
