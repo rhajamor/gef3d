@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
  * Copyright (c) 2008 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -6,12 +7,14 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
+ *    IBM Corporation - initial API and implementation (RadioGroupFieldEditor)
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
 package org.eclipse.gef3d.preferences;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.preference.FieldEditor;
+import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -26,8 +29,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 
 /**
- * Allows editing of bit fields.
+ * Allows editing of bit fields. This class was copied from
+ * {@link RadioGroupFieldEditor} and subsequently modified to display check
+ * boxes.
  * 
+ * @author IBM Corporation (individual author unknown)
  * @author Kristian Duske
  * @version $Revision$
  * @since 19.02.2009
