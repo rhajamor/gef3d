@@ -95,8 +95,10 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 	 * Returns the 2D bounds of this ChopboxAnchor's owner. Subclasses can
 	 * override this method to adjust the box the anchor can be placed on. For
 	 * instance, the owner figure may have a drop shadow that should not be
-	 * included in the box. Copied from original
-	 * {@link org.eclipse.draw2d.ChopboxAnchor}.
+	 * included in the box.
+	 * <p>
+	 * Copied from original {@link org.eclipse.draw2d.ChopboxAnchor}.
+	 * </p>
 	 * 
 	 * @return the 2D bounds of this ChopboxAnchor's owner
 	 */
@@ -170,8 +172,9 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 	@Override
 	public IVector3f getLocation3D(IVector3f i_reference, Vector3f io_result) {
 
-		if (io_result == null)
-			io_result = new Vector3fImpl();
+		Vector3f result = io_result;
+		if (result == null)
+			result = new Vector3fImpl();
 
 		// maybe the owner is a 2D figure!
 		if (getOwner() instanceof IFigure3D) {
@@ -184,8 +187,8 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 
 			// bounding box is a dot
 			if (size.lengthSquared() == 0 || i_reference == null) {
-				io_result.set(TMP_V3_1);
-				return io_result;
+				result.set(TMP_V3_1);
+				return result;
 			}
 
 			// We can avoid doing intersections by simply scaling the vector
@@ -214,8 +217,8 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 			// absolute
 			owner3D.transformToAbsolute(TMP_V3_2);
 
-			io_result.set(TMP_V3_2);
-			return io_result;
+			result.set(TMP_V3_2);
+			return result;
 		} else { // 2D owner
 			IFigure3D ancestor3D = Figure3DHelper.getAncestor3D(getOwner());
 			Point result2D = null;
@@ -233,7 +236,7 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 			// TODO fix this hack when we get a surfaceLocationMatrix
 			float depth = -ancestor3D.getSize3D().getZ();
 			return CoordinateConverter.surfaceToWorld(result2D.x, result2D.y,
-					depth, ancestor3D, io_result);
+					depth, ancestor3D, result);
 		}
 	}
 
@@ -264,7 +267,7 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 
 		Vector3f result = io_result;
 		if (result == null)
-			result = io_result;
+			result = new Vector3fImpl();
 
 		if (owner instanceof IFigure3D) {
 			getBounds3D().getCenter(TMP_V3_2);
