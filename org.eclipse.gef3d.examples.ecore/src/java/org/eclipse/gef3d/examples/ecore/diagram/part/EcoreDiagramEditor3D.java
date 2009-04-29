@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (c) 2000, 2005 IBM Corporation and others,
  * Copyright (c) 2008 Kristian Duske and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -6,6 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
+ *    IBM Corporation - initial API and implementation (original 2D version)
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
 package org.eclipse.gef3d.examples.ecore.diagram.part;
