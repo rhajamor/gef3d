@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Jens von Pilgrim - initial API and implementation
+ *    Jens von Pilgrim, Kristian Duske - initial API and implementation
  ******************************************************************************/
 package org.eclipse.gef3d.examples.uml2.clazz.providers;
 
@@ -27,13 +27,15 @@ import org.eclipse.uml2.diagram.clazz.providers.UMLEditPartProvider;
  * UMLEditPartProvider3D There should really be more documentation here.
  * 
  * @author Jens von Pilgrim
+ * @author Kristian Duske
  * @version $Revision$
  * @since Apr 7, 2009
  */
 public class UMLEditPartProvider3D extends UMLEditPartProvider {
 
 	public static String[] SUPPORTED_EDITORS =
-		{ UMLDiagramEditor3D.class.getName() };
+		{ UMLDiagramEditor3D.class.getName()
+		};
 
 	/**
 	 * 

@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (c) 2005, 2006 IBM Corporation and others,
  * Copyright (c) 2009 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -6,7 +7,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Jens von Pilgrim - initial API and implementation
+ *    IBM Corporation - initial API and implementation of 2D version 
+ *    Jens von Pilgrim, Kristian Duske - initial API and implementation
  ******************************************************************************/
 package org.eclipse.gef3d.examples.uml2.clazz.part;
 
@@ -51,7 +53,9 @@ import org.eclipse.uml2.diagram.clazz.part.UMLDiagramEditor;
 /**
  * UMLDiagramEditor3D There should really be more documentation here.
  * 
+ * @author mgoyal (original 2D version)
  * @author Jens von Pilgrim
+ * @author Kristian Duske
  * @version $Revision$
  * @since Apr 7, 2009
  */

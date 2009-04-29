@@ -80,6 +80,8 @@ public class UMLEditPolicyProvider3D extends AbstractProvider implements
 		String name;
 		for (StackTraceElement element : ex.getStackTrace()) {
 			name = element.getClassName(); 
+//			if (name.startsWith("org.eclipse.ui"))
+//				break;
 			if (name.endsWith("3D") && name.startsWith("org.eclipse.gef3d.examples.uml2") && ! name.endsWith(thisClass))
 				return true;
 		}

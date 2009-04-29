@@ -6,11 +6,12 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Jens von Pilgrim - initial API and implementation
+ *    Jens von Pilgrim, Kristian Duske - initial API and implementation
  ******************************************************************************/
 package org.eclipse.gef3d.examples.uml2.usecase.providers;
 
 import org.eclipse.gef.RootEditPart;
+import org.eclipse.gef3d.examples.uml2.multi.part.MultiGraphicalEditor3D;
 import org.eclipse.gef3d.examples.uml2.usecase.edit.parts.UMLEditPartFactory3D;
 import org.eclipse.gef3d.examples.uml2.usecase.part.UMLDiagramEditor3D;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
@@ -25,14 +26,16 @@ import org.eclipse.uml2.diagram.usecase.providers.UMLEditPartProvider;
  * UMLEditPartProvider3D There should really be more documentation here.
  * 
  * @author Jens von Pilgrim
+ * @author Kristian Duske
  * @version $Revision$
  * @since Apr 7, 2009
  */
 public class UMLEditPartProvider3D extends UMLEditPartProvider {
-	
+
 	public static String[] SUPPORTED_EDITORS =
-	{ UMLDiagramEditor3D.class.getName() };
-//		MultiEditorPartFactory.class.getName() };
+		{ UMLDiagramEditor3D.class.getName() };
+
+	// MultiEditorPartFactory.class.getName() };
 
 	/**
 	 * 
@@ -67,11 +70,12 @@ public class UMLEditPartProvider3D extends UMLEditPartProvider {
 	 */
 	public boolean isSupported() {
 		Exception ex = new Exception();
-//		ex.printStackTrace();
+//	 ex.printStackTrace();
 		String name;
 		for (StackTraceElement element : ex.getStackTrace()) {
 			name = element.getClassName();
-			if (name.startsWith(" org.eclipse.ui")) break;
+			if (name.startsWith("org.eclipse.ui"))
+				break;
 			for (int i = 0; i < SUPPORTED_EDITORS.length; i++) {
 				if (name.equals(SUPPORTED_EDITORS[i]))
 					return true;

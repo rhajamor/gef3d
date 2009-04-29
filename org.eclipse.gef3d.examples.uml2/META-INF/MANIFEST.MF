@@ -49,3 +49,16 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.uml2.diagram.usecase;bundle-version="0.8.1"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
+Export-Package: org.eclipse.gef3d.examples.uml2,
+ org.eclipse.gef3d.examples.uml2.activity.edit.parts,
+ org.eclipse.gef3d.examples.uml2.activity.part,
+ org.eclipse.gef3d.examples.uml2.activity.providers,
+ org.eclipse.gef3d.examples.uml2.clazz.edit.parts,
+ org.eclipse.gef3d.examples.uml2.clazz.part,
+ org.eclipse.gef3d.examples.uml2.clazz.providers,
+ org.eclipse.gef3d.examples.uml2.figures,
+ org.eclipse.gef3d.examples.uml2.multi.part,
+ org.eclipse.gef3d.examples.uml2.providers,
+ org.eclipse.gef3d.examples.uml2.usecase.edit.parts,
+ org.eclipse.gef3d.examples.uml2.usecase.part,
+ org.eclipse.gef3d.examples.uml2.usecase.providers

@@ -146,7 +146,7 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 
 		viewer.getContents().installEditPolicy(EditorInputDropPolicy.EDITOR_INPUT_ROLE,
 			new EditorInputDropPolicy());
-
+		
 		addEditor(getEditorInput());
 	}
 

@@ -25,13 +25,28 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartListener;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.editpolicies.AbstractEditPolicy;
+import org.eclipse.gef.editpolicies.ConstrainedLayoutEditPolicy;
 import org.eclipse.gef.editpolicies.ResizableEditPolicy;
 import org.eclipse.gef3d.editpolicies.ResizableEditPolicy3D;
 
 /**
- * Handles3DEditPolicy There should really be more documentation here.
+ * This policy decorates the child edit parts of its host edit parts by adding
+ * appropriate policies for creating handles and feedback figures. Usually, this
+ * task is fulfilled by a layout policy (see for example
+ * {@link ConstrainedLayoutEditPolicy#createChildEditPolicy(EditPart)}. But we
+ * need 3D handles and feedback figures while the layout manager itself can be
+ * resued (on the surface, the original 2D code can be reused). So we have to
+ * manage the creation of appropriate 3D handles and feedback figures
+ * separately.
+ * <p>
+ * This policy itself is installed by a provider (GMF style), see
+ * {@link UMLEditPolicyProvider3D#createEditPolicies(EditPart)} in this case.
+ * (If only GEF is used, this policy must be installed, for example by using the
+ * borg factory pattern and an assimilator installing new policies). The role 
+ * of this policy is usually {@link EditPolicy#PRIMARY_DRAG_ROLE}.
+ * </p>
  * 
- * @author Jens von Pilgrim
+ * @author Jens von Pilgrim, Kristian Duske
  * @version $Revision$
  * @since May 5, 2008
  * @see $HeadURL:
@@ -43,8 +58,8 @@ public class Handles3DEditPolicy extends AbstractEditPolicy {
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger
-			.getLogger(Handles3DEditPolicy.class.getName());
+	private static final Logger log =
+		Logger.getLogger(Handles3DEditPolicy.class.getName());
 
 	private EditPartListener listener;
 
