@@ -39,6 +39,7 @@ import org.eclipse.gmf.runtime.diagram.ui.internal.parts.DirectEditKeyHandler;
 import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.parts.IDiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider;
+import org.eclipse.gmf.runtime.diagram.ui.resources.editor.parts.DiagramDocumentEditor;
 import org.eclipse.gmf.runtime.diagram.ui.services.editpart.EditPartService;
 import org.eclipse.gmf.runtime.draw2d.ui.mapmode.MapModeTypes;
 import org.eclipse.gmf.runtime.notation.Diagram;
@@ -53,7 +54,7 @@ import org.eclipse.uml2.diagram.clazz.part.UMLDiagramEditor;
 /**
  * UMLDiagramEditor3D There should really be more documentation here.
  * 
- * @author mgoyal (original 2D version)
+ * @author mgoyal (original {@link DiagramDocumentEditor})
  * @author Jens von Pilgrim
  * @author Kristian Duske
  * @version $Revision$
