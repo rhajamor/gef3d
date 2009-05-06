@@ -53,20 +53,17 @@ public class RenderContext {
 			// return -1 * Float.compare(depth1, depth2);
 			return Float.compare(depth2, depth1);
 		}
-	};
+	}
 
-	/**
-	 * 
-	 */
-	private final Comparator<TransparentObject> depthComparator =
-		new DepthComparator(this);
+	private final Comparator<TransparentObject> depthComparator = new DepthComparator(
+			this);
 
 	/**
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(RenderContext.class.getName());
+	private static final Logger log = Logger.getLogger(RenderContext.class
+			.getName());
 
 	private ICamera m_camera;
 
@@ -88,7 +85,7 @@ public class RenderContext {
 	 * Creates a new render context. The context is created by the
 	 * {@link LightweightSystem3D}.
 	 */
-	RenderContext() {
+	public RenderContext() {
 
 		m_mode = RenderMode.PAINT;
 
@@ -108,7 +105,7 @@ public class RenderContext {
 
 		if (i_transparentObject == null)
 			throw new NullPointerException(
-				"i_transparentObject must not be null");
+					"i_transparentObject must not be null");
 
 		m_transparentObjects.add(i_transparentObject);
 	}
@@ -125,7 +122,7 @@ public class RenderContext {
 
 		if (i_transparentObject == null)
 			throw new NullPointerException(
-				"i_transparentObject must not be null");
+					"i_transparentObject must not be null");
 
 		m_superimposedObjects.add(i_transparentObject);
 	}
@@ -173,7 +170,7 @@ public class RenderContext {
 
 		if (!getMode().isColor())
 			throw new IllegalStateException(
-				"can't provide color when not in color mode");
+					"can't provide color when not in color mode");
 
 		return m_colorProvider.getColor(i_figure);
 	}
@@ -359,7 +356,7 @@ public class RenderContext {
 	public synchronized void dispose() {
 
 		for (DisplayListManager displayListManager : m_displayListManagers
-			.values()) {
+				.values()) {
 			try {
 				displayListManager.dispose();
 			} catch (Exception ex) {
