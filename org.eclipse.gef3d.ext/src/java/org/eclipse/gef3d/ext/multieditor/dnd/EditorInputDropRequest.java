@@ -97,4 +97,25 @@ public class EditorInputDropRequest extends Request implements DropRequest {
 		location = i_location;
 	}
 
+	/** 
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		result.append("EditorInputRequest");
+		if (location!=null) {
+			result.append(" at ").append(location.toString());
+		}
+		if (editorInputs!=null) {
+			result.append(" with input ").append(editorInputs.toString());
+		} else {
+			result.append(" w/o input information");
+		}
+		return result.toString();
+	}
+	
+	
+
 }

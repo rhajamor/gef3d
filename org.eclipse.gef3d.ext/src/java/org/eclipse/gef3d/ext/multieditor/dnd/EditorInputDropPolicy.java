@@ -10,6 +10,9 @@
  ******************************************************************************/
 package org.eclipse.gef3d.ext.multieditor.dnd;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.Request;
@@ -49,6 +52,10 @@ import org.eclipse.ui.IEditorInput;
  * @since Apr 15, 2009
  */
 public class EditorInputDropPolicy extends AbstractEditPolicy {
+	/**
+	 * Logger for this class
+	 */
+	private static final Logger log = Logger.getLogger(EditorInputDropPolicy.class.getName());
 
 	public static final Object EDITOR_INPUT_ROLE = "EDITOR_INPUT_ROLE";
 
@@ -59,6 +66,9 @@ public class EditorInputDropPolicy extends AbstractEditPolicy {
 	 */
 	@Override
 	public EditPart getTargetEditPart(Request i_request) {
+//		if (log.isLoggable(Level.INFO)) {
+//			log.info("getTargetEditPart - i_req=" + i_request); //$NON-NLS-1$
+//		}
 		if (i_request instanceof EditorInputDropRequest) {
 			return this.getHost();
 		}
@@ -73,7 +83,9 @@ public class EditorInputDropPolicy extends AbstractEditPolicy {
 	 */
 	@Override
 	public Command getCommand(Request i_request) {
-
+//		if (log.isLoggable(Level.INFO)) {
+//			log.info("getCommand - i_req=" + i_request); //$NON-NLS-1$
+//		}
 		if (i_request instanceof EditorInputDropRequest) {
 			EditorInputDropRequest dor = (EditorInputDropRequest) i_request;
 
@@ -87,5 +99,20 @@ public class EditorInputDropPolicy extends AbstractEditPolicy {
 
 		return super.getCommand(i_request);
 	}
+
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.gef.editpolicies.AbstractEditPolicy#understandsRequest(org.eclipse.gef.Request)
+	 */
+	@Override
+	public boolean understandsRequest(Request i_req) {
+//		if (log.isLoggable(Level.INFO)) {
+//			log.info("understandsRequest - i_req=" + i_req); //$NON-NLS-1$
+//		}
+
+		return super.understandsRequest(i_req);
+	}
+	
+	
 
 }
