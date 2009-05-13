@@ -24,6 +24,15 @@ public class CallStackTracer {
 	 * The new line character for the current platform.
 	 */
 	public final static String NEWLINE = System.getProperty("line.separator");
+	
+	/**
+	 * Returns the caller of a method. I.e. if a method foo() calls a method
+	 * bar(), and bar() invokes getCaller(), "foo()" is returned.
+	 * @return
+	 */
+	public static String getCaller() {
+		return getStackTrace(3,3);
+	}
 
 	/**
 	 * Prints stack trace w/o showing traces inside this class.
