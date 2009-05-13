@@ -123,9 +123,9 @@ public class MoveHandle3D extends AbstractHandle3D {
 	// return p;
 	// }
 
-	private WiredCube wiredcube = new WiredCube();
+	protected WiredCube wiredcube = new WiredCube();
 
-	private SolidCube solidcube = new SolidCube();
+	protected SolidCube solidcube = new SolidCube();
 
 	/**
 	 * Initializes the handle, i.e. sets figure's properties.
