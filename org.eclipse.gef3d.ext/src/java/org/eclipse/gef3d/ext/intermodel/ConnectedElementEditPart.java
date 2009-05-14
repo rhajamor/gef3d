@@ -14,6 +14,7 @@ package org.eclipse.gef3d.ext.intermodel;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.IFigure;
@@ -33,9 +34,7 @@ import org.eclipse.gef.Request;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.gef3d.ext.IConnectionAnchorFactory;
 import org.eclipse.gef3d.ext.SingletonConnectionAnchorFactory;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Display;
 
 
 /**
@@ -47,8 +46,8 @@ import org.eclipse.swt.widgets.Display;
  */
 public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 		implements NodeEditPart {
-	private static final Color COLOR = Display.getCurrent().getSystemColor(
-			SWT.COLOR_GREEN);
+	private static final Color COLOR = ColorConstants.green; 
+		
 
 	/**
 	 * Logger for this class

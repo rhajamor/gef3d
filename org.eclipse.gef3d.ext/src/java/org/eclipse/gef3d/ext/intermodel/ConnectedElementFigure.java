@@ -13,15 +13,15 @@ package org.eclipse.gef3d.ext.intermodel;
 
 import java.util.logging.Logger;
 
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Display;
+
 
 
 /**
@@ -47,7 +47,7 @@ public class ConnectedElementFigure extends Figure3D {
 
 		// embed 2D components into this figure
 		this.setLayoutManager(new FlowLayout());
-		Color c = Display.getCurrent().getSystemColor(SWT.COLOR_GREEN);
+		Color c = ColorConstants.green;
 		setAlpha(200);
 		setBackgroundColor(c);
 
