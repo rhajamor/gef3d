@@ -198,11 +198,14 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 			
 			
 			
+			
 
 		} catch (PartInitException ex) {
-			// TODO Implement catch block for PartInitException
-			ex.printStackTrace();
+			log.warning("IEditorInput - exception: " + ex); //$NON-NLS-1$
+
+			
 		}
+		getGraphicalViewer().getRootEditPart().refresh();
 
 	}
 
