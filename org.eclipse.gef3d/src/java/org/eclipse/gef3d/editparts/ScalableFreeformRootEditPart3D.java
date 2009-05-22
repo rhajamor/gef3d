@@ -1,4 +1,4 @@
-package org.eclipse.gef3d.examples.graph.editor.editparts;
+package org.eclipse.gef3d.editparts;
 
 import org.eclipse.draw2d.FreeformLayer;
 import org.eclipse.draw2d.FreeformLayeredPane;
@@ -9,7 +9,18 @@ import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 
 /**
  * ScalableFreeformRootEditPart3D with special printable layers, a
- * {@link DispatchingConnectionLayer}, a primary layer (FreeformLayer).
+ * {@link DispatchingConnectionLayer}, a primary layer (FreeformLayer). This
+ * part can be used as root edit parts in editors, e.g. <code>
+ * protected void configureGraphicalViewer() {
+ *  	super.configureGraphicalViewer();
+ *  
+ *  	getGraphicalViewer().setEditPartFactory(new GraphEditPartFactory());
+ *  	((GraphicalViewer3DImpl) getGraphicalViewer()).setFigureFactory(new GraphFigureFactory(mode));
+ *  
+ *  	ScalableFreeformRootEditPart root = new ScalableFreeformRootEditPart3D();
+ *  	getGraphicalViewer().setRootEditPart(root);
+ *  }
+ * </code>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
