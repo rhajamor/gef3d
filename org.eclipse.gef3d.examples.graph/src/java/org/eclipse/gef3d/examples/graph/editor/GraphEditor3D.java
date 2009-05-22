@@ -14,11 +14,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.draw2d.FreeformLayer;
-import org.eclipse.draw2d.FreeformLayeredPane;
-import org.eclipse.draw2d.Graphics;
-import org.eclipse.draw2d.LayeredPane;
-import org.eclipse.draw3d.DispatchingConnectionLayer;
 import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.palette.CreationToolEntry;
@@ -30,6 +25,7 @@ import org.eclipse.gef.requests.SimpleFactory;
 import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef3d.examples.graph.editor.actions.ActionBuilder;
 import org.eclipse.gef3d.examples.graph.editor.editparts.GraphEditPartFactory;
+import org.eclipse.gef3d.examples.graph.editor.editparts.ScalableFreeformRootEditPart3D;
 import org.eclipse.gef3d.examples.graph.editor.figures.GraphFigureFactory;
 import org.eclipse.gef3d.examples.graph.model.Graph;
 import org.eclipse.gef3d.examples.graph.model.Vertex;
@@ -128,35 +124,7 @@ public class GraphEditor3D extends GraphicalEditor3DWithPalette {
 		getGraphicalViewer().setEditPartFactory(new GraphEditPartFactory());
 		((GraphicalViewer3DImpl) getGraphicalViewer()).setFigureFactory(new GraphFigureFactory(mode));
 
-		ScalableFreeformRootEditPart root = new ScalableFreeformRootEditPart() {
-
-			/**
-			 * {@inheritDoc}
-			 * 
-			 * @see org.eclipse.gef.editparts.FreeformGraphicalRootEditPart#createPrintableLayers()
-			 */
-			@Override
-			protected LayeredPane createPrintableLayers() {
-				FreeformLayeredPane layeredPane = new FreeformLayeredPane() {
-					@Override
-					public void paint(Graphics graphics) {
-						for (Object child : getChildren()) {
-							if (child instanceof DispatchingConnectionLayer) {
-								((DispatchingConnectionLayer) child)
-										.dispatchPendingConnections();
-							}
-						}
-						super.paint(graphics);
-					}
-				};
-
-				layeredPane.add(new FreeformLayer(), PRIMARY_LAYER);
-				layeredPane.add(new DispatchingConnectionLayer(),
-						CONNECTION_LAYER);
-				return layeredPane;
-			}
-
-		};
+		ScalableFreeformRootEditPart root = new ScalableFreeformRootEditPart3D();
 		getGraphicalViewer().setRootEditPart(root);
 	}
 
