@@ -55,6 +55,13 @@ import org.eclipse.gef.editpolicies.AbstractEditPolicy;
  * part's policy list during activation of the edit part, as the internal
  * iterator is unaware of such changes.
  * </p>
+ * <p>In other words: How does it work now? On activation ({@link #activate()},
+ * this policy does not directly modify the edit part, instead it registers itsself
+ * as an {@link EditPartListener}. Thus it is called after the edit part has
+ * been activated (and all other installed policies were activated). Only now
+ * the edit part is modified and new policies are added (or other ones are 
+ * removed).
+ * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
