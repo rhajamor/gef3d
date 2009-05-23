@@ -104,7 +104,6 @@ public class BorgEditPartFactory implements EditPartFactory {
 							(IEditPartAssimilator) assimilator);
 					io_editPart.installEditPolicy(
 							AssimulatorPolicy.ASSIMILATOR_POLICY_ROLE, ap);
-					ap.waitForActivation();
 				}
 			}
 		}

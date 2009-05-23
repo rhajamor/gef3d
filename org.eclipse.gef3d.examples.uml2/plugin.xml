@@ -17,7 +17,7 @@
       <editor
             class="org.eclipse.gef3d.examples.uml2.multi.part.MultiGraphicalEditor3D"
             default="false"
-            extensions="umlclass"
+            extensions="umlclass,umlusc,umlact"
             id="org.eclipse.gef3d.examples.uml2.multi.part.MultiGraphicalEditor3D"
             name="Multi Editor 3D">
       </editor>

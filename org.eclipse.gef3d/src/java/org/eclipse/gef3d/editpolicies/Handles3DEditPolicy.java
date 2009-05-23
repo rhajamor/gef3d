@@ -15,7 +15,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.eclipse.gef3d.examples.uml2.providers;
+package org.eclipse.gef3d.editpolicies;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -49,10 +49,7 @@ import org.eclipse.gef3d.editpolicies.ResizableEditPolicy3D;
  * @author Jens von Pilgrim, Kristian Duske
  * @version $Revision$
  * @since May 5, 2008
- * @see $HeadURL:
- *      https://gorgo.fernuni-hagen.de/OpenglGEF/trunk/de.feu.gef3d.topcased
- *      /src/java/de/feu/gef3d/topcased/modeler/uml/classdiagram/policies/
- *      Handles3DEditPolicy.java $
+ * 
  */
 public class Handles3DEditPolicy extends AbstractEditPolicy {
 	/**

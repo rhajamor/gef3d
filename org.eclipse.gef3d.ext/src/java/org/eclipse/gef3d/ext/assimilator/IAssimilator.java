@@ -49,6 +49,8 @@ public interface IAssimilator<T> {
 			}
 			type = i_type;
 		}
+		
+		
 	}
 
 	/**

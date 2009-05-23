@@ -23,8 +23,11 @@ import org.eclipse.gef.EditPart;
  */
 public interface IEditPartAssimilator extends IAssimilator<EditPart>{
 	/**
-	 * Called when the edit part processes a request and calls its policies
-	 * the first time.
+	 * Called after the edit part has been activated.
+	 * <p>
+	 * This mechanism is a little bit tricky, see {@link AssimulatorPolicy} for
+	 * details.
+	 * </p>
 	 */
 	void modifyPolicies(EditPart io_editpart);
 }
