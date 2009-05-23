@@ -43,7 +43,7 @@ import org.eclipse.gef3d.editpolicies.ResizableEditPolicy3D;
  * {@link UMLEditPolicyProvider3D#createEditPolicies(EditPart)} in this case.
  * (If only GEF is used, this policy must be installed, for example by using the
  * borg factory pattern and an assimilator installing new policies). The role 
- * of this policy is usually {@link EditPolicy#PRIMARY_DRAG_ROLE}.
+ * of this policy is usually {@link #CHILD_DECORATOR}.
  * </p>
  * 
  * @author Jens von Pilgrim, Kristian Duske
@@ -57,6 +57,8 @@ public class Handles3DEditPolicy extends AbstractEditPolicy {
 	 */
 	private static final Logger log =
 		Logger.getLogger(Handles3DEditPolicy.class.getName());
+
+	public static final Object CHILD_DECORATOR = "Handles3DEditPolicy Child Decorator";
 
 	private EditPartListener listener;
 
