@@ -107,19 +107,7 @@ public class ReverseLookupHelper {
 	}
 
 
-	/**
-	 * @param i_element
-	 * @param i_editPart
-	 * @return
-	 */
-	private boolean isModelOfEditPart(Object element, EditPart editPart) {
-		if (element == editPart.getModel())
-			return true;
-		if (editPart.getModel() instanceof View) {
-			return ((View) editPart.getModel()).getElement() == element;
-		}
-		return false;
-	}
+	
 
 	private Object getModelElement(EditPart editPart) {
 		if (editPart.getModel() instanceof View) {
