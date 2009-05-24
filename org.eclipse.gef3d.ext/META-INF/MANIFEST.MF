@@ -15,4 +15,5 @@ Export-Package: org.eclipse.gef3d.ext,
  org.eclipse.gef3d.ext.assimilator,
  org.eclipse.gef3d.ext.intermodel,
  org.eclipse.gef3d.ext.multieditor,
- org.eclipse.gef3d.ext.multieditor.dnd
+ org.eclipse.gef3d.ext.multieditor.dnd,
+ org.eclipse.gef3d.ext.reverselookup
