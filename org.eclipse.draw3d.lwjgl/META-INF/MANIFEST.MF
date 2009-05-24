@@ -15,4 +15,5 @@ Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.draw3d.graphics3d.lwjgl,
  org.eclipse.draw3d.graphics3d.lwjgl.font,
  org.eclipse.draw3d.graphics3d.lwjgl.graphics,
- org.eclipse.draw3d.graphics3d.lwjgl.offscreen
+ org.eclipse.draw3d.graphics3d.lwjgl.offscreen,
+ org.eclipse.draw3d.graphics3d.lwjgl.util

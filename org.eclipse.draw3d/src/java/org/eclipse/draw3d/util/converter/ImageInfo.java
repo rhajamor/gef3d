@@ -25,6 +25,16 @@ public class ImageInfo {
 	private int m_depth;
 
 	/**
+	 * Creates a new image info object with the given color depth.
+	 * 
+	 * @param i_depth the color depth
+	 */
+	public ImageInfo(int i_depth) {
+
+		m_depth = i_depth;
+	}
+
+	/**
 	 * Returns the color depth of the image.
 	 * 
 	 * @return the color depth of the image
