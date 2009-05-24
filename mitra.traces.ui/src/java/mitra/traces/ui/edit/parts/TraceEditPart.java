@@ -37,6 +37,7 @@ import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.gef3d.ext.IConnectionAnchorFactory;
 import org.eclipse.gef3d.ext.SingletonConnectionAnchorFactory;
 import org.eclipse.gef3d.ext.intermodel.ConnectedElementEditPart;
+import org.eclipse.gef3d.ext.reverselookup.ReverseLookupManager;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
@@ -115,7 +116,7 @@ public class TraceEditPart extends AbstractGraphicalEditPart implements
 		// fig.setResolution(IFigure3D.RESOLUTION_DISABLE);
 		Color c =
 			TraceUtil.isAuto(getTrace()) ? ColorConstants.yellow
-					: ColorConstants.lightGray;
+				: ColorConstants.lightGray;
 		fig.setBackgroundColor(c);
 
 		Font f = new Font(Display.getCurrent(), "Arial", 8, 0);
@@ -160,17 +161,23 @@ public class TraceEditPart extends AbstractGraphicalEditPart implements
 	 * @return
 	 */
 	private IVector3f getCenter(int dir) {
+		ReverseLookupManager<EditPart> reverseLookupManager =
+			ReverseLookupManager.getEditPartLookupManager(getViewer());
 		if (connectingFigures[dir] == null) {
 			connectingFigures[dir] = new ArrayList<IFigure>();
 			List<TraceElement> elementlist =
 				(dir == 0) ? TraceUtil.getSourceElements(getTrace())
-						: TraceUtil.getTargetElements(getTrace());
+					: TraceUtil.getTargetElements(getTrace());
 			for (TraceElement element : elementlist) {
 				TraceRecordEditPart parentPart =
 					(TraceRecordEditPart) getParent();
 				EditPart part =
-					parentPart.getReverseLookupHelper().findEditPart(
-						element.getElement()); // , subtreeRootEditPart);
+					reverseLookupManager
+						.findNotationElementForDomainElement(element
+							.getElement());
+
+				// parentPart.getReverseLookupHelper().findEditPart(
+				// element.getElement()); // , subtreeRootEditPart);
 				if (part != null) {
 					IFigure fig = ((GraphicalEditPart) part).getFigure();
 					if (fig != null) {

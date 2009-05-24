@@ -18,7 +18,6 @@ import java.util.logging.Logger;
 
 import mitra.traces.ui.edit.TraceRecordPartRefresher;
 import mitra.traces.ui.edit.figures.TraceRecordFigure;
-import mitra.traces.ui.util.ReverseLookupHelper;
 import mitra.traces.ui.util.TraceUtil;
 
 import org.eclipse.draw2d.IFigure;
@@ -34,6 +33,7 @@ import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.gef3d.ext.intermodel.ConnectedElementAdapter;
 import org.eclipse.gef3d.ext.intermodel.IInterModelRootEditPart;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainerEditPart;
+import org.eclipse.gef3d.ext.reverselookup.ReverseLookupManager;
 
 import de.feu.mitra.traces.Trace;
 import de.feu.mitra.traces.TraceElement;
@@ -64,10 +64,9 @@ public class TraceRecordEditPart extends AbstractGraphicalEditPart implements
 		Logger.getLogger(TraceRecordEditPart.class.getName());
 
 	/**
-	 * This field is initialized lazily in {@link #getReverseLookupHelper()},
-	 * do not access this field directly.
+	 * Lazily initialized in {@link #getModelChildren()}
 	 */
-	private ReverseLookupHelper reverseLookupHelper;
+	ReverseLookupManager<EditPart> reverseLookupManager = null;
 
 	private Adapter modelListener;
 
@@ -125,7 +124,7 @@ public class TraceRecordEditPart extends AbstractGraphicalEditPart implements
 	public void doStructureRefresh() {
 		refreshChildren();
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -134,6 +133,11 @@ public class TraceRecordEditPart extends AbstractGraphicalEditPart implements
 	@SuppressWarnings("unchecked")
 	@Override
 	protected List getModelChildren() {
+
+		if (reverseLookupManager == null) {
+			reverseLookupManager =
+				ReverseLookupManager.getEditPartLookupManager(getViewer());
+		}
 
 		ArrayList list = new ArrayList();
 		int iNumberOfVisibleSourceElements = 0;
@@ -154,7 +158,7 @@ public class TraceRecordEditPart extends AbstractGraphicalEditPart implements
 					TraceUtil.getTargetElements(trace));
 				iNumberOfVisibleTargetElements =
 					listConnectedElementAdapters.size()
-							- iNumberOfVisibleSourceElements;
+						- iNumberOfVisibleSourceElements;
 				if (iNumberOfVisibleTargetElements > 0) {
 					// at least one target and source connected element visible
 					list.add(trace);
@@ -169,8 +173,9 @@ public class TraceRecordEditPart extends AbstractGraphicalEditPart implements
 			}
 			if (log.isLoggable(Level.INFO)) {
 				if (iNumberOfVisibleTargetElements > 0
-						&& iNumberOfVisibleSourceElements > 0) {
-					log.info("trace=" + trace + ", iNumberOfVisibleSourceElements=" + iNumberOfVisibleSourceElements + ", iNumberOfVisibleTargetElements=" + iNumberOfVisibleTargetElements); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					&& iNumberOfVisibleSourceElements > 0) {
+					log
+						.info("trace=" + trace + ", iNumberOfVisibleSourceElements=" + iNumberOfVisibleSourceElements + ", iNumberOfVisibleTargetElements=" + iNumberOfVisibleTargetElements); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				} else
 					log.warning("trace not visible: " + trace);
 			}
@@ -192,7 +197,9 @@ public class TraceRecordEditPart extends AbstractGraphicalEditPart implements
 
 		for (TraceElement element : i_TraceElements) {
 			EObject semanticObject = element.getElement();
-			EditPart editPart = getReverseLookupHelper().findEditPart(semanticObject);
+			EditPart editPart =	reverseLookupManager
+					.findNotationElementForDomainElement(semanticObject);
+			// getReverseLookupHelper().findEditPart(semanticObject);
 
 			if (editPart != null) {
 				adapter =
@@ -206,16 +213,6 @@ public class TraceRecordEditPart extends AbstractGraphicalEditPart implements
 			}
 		}
 
-	}
-
-	/**
-	 * @return the reverseLookupHelper
-	 */
-	public ReverseLookupHelper getReverseLookupHelper() {
-		if (reverseLookupHelper==null) {
-			reverseLookupHelper = new ReverseLookupHelper(getViewer().getRootEditPart());
-		}
-		return reverseLookupHelper;
 	}
 
 	/**
@@ -255,10 +252,10 @@ public class TraceRecordEditPart extends AbstractGraphicalEditPart implements
 			}
 
 			public void setTarget(Notifier i_newTarget) {
-				if (i_newTarget != getTraceRecord() && i_newTarget!=null) {
+				if (i_newTarget != getTraceRecord() && i_newTarget != null) {
 					String strMessage =
 						"TraceRecord EditPart can only listen to its model, not to: "
-								+ i_newTarget;
+							+ i_newTarget;
 					if (log.isLoggable(Level.INFO)) {
 						log.info(strMessage); //$NON-NLS-1$
 					}
@@ -269,7 +266,7 @@ public class TraceRecordEditPart extends AbstractGraphicalEditPart implements
 
 		};
 
-//		getTraceRecord().eAdapters().add(modelListener);
+		// getTraceRecord().eAdapters().add(modelListener);
 		TraceRecordPartRefresher.registerTraceRecordEditPart(this);
 	}
 
@@ -281,7 +278,7 @@ public class TraceRecordEditPart extends AbstractGraphicalEditPart implements
 	@Override
 	public void deactivate() {
 		super.deactivate();
-//		getTraceRecord().eAdapters().remove(modelListener);
+		// getTraceRecord().eAdapters().remove(modelListener);
 		TraceRecordPartRefresher.unregisterTraceRecordEditPart(this);
 		modelListener = null;
 	}
