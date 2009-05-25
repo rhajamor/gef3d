@@ -10,8 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
-import java.util.logging.Level;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -66,8 +64,8 @@ public class DispatchingConnectionLayerHelper {
 	/**
 	 * layer cache, maps 3D figure to layer
 	 */
-	private final Map<IFigure, ConnectionLayer> distributedLayersMap =
-		new HashMap<IFigure, ConnectionLayer>();
+	private final Map<IFigure3D, ConnectionLayer> distributedLayersMap =
+		new HashMap<IFigure3D, ConnectionLayer>();
 
 	// private final List<ConnectionLayer> distributedLayers = new
 	// ArrayList<ConnectionLayer>(10000);
@@ -99,9 +97,12 @@ public class DispatchingConnectionLayerHelper {
 	 */
 	public boolean add(IFigure i_figure, Object i_constraint, int i_index) {
 		if (i_constraint != CONSTRAINT_LAYER && i_figure instanceof Connection
-				&& !(i_figure instanceof IFigure3D)) {
+			&& !(i_figure instanceof IFigure3D)) {
+
+			IFigure3D fig3DHost = findConectionLayerHost((Connection) i_figure);
 			ConnectionLayer distributedLayer =
-				findDistributedLayer((Connection) i_figure);
+				getConnectionLayerOf3DHost(fig3DHost);
+
 			if (distributedLayer != null) {
 				// if (distributedLayer.getConnectionRouter()==null) {
 				distributedLayer
@@ -110,6 +111,7 @@ public class DispatchingConnectionLayerHelper {
 				distributedLayer.add(i_figure, i_constraint, i_index);
 				// if it was added before:
 				pendingConnections.remove(i_figure);
+				fig3DHost.invalidateTree(); // repaint 2D content
 			} else {
 				pendingConnections.put((Connection) i_figure,
 					new ConnectionConstraints(i_constraint, i_index));
@@ -129,65 +131,27 @@ public class DispatchingConnectionLayerHelper {
 		if (!pendingConnections.isEmpty()) {
 			ArrayList<IFigure> dispatchedConnections = new ArrayList<IFigure>();
 
-			// if (log.isLoggable(Level.INFO))
-			//				log.info(StopWatch.start("Dispatching " //$NON-NLS-1$
-			//						+ pendingConnections.size() + " pending connections")); //$NON-NLS-1$
-			//
-			// int i = 0;
-			//
-			// if (log.isLoggable(Level.INFO)) {
-			//				log.info(StopWatch.start("Dispatching 0..20")); //$NON-NLS-1$
-			// }
-
+			IFigure3D fig3DHost;
+			ConnectionLayer distributedLayer;
 			for (Connection connection : pendingConnections.keySet()) {
-
-				// i++;
-				// if (i % 20 == 0) {
-				//
-				// if (log.isLoggable(Level.INFO)) {
-				// log.info(StopWatch.stop());
-				// log.info(StopWatch
-				//								.start("Dispatching " + i + ".." + (i + 20))); //$NON-NLS-1$
-				// }
-				//
-				// }
-
 				ConnectionConstraints cc = pendingConnections.get(connection);
 
-				// if (log.isLoggable(Level.INFO) && (i % 20 == 0)) {
-				//					log.info(StopWatch.start("find layer")); //$NON-NLS-1$
-				// }
-
-				ConnectionLayer distributedLayer =
-					findDistributedLayer(connection);
-
-				// if (log.isLoggable(Level.INFO) && (i % 20 == 0)) {
-				//					log.info(StopWatch.stop()); //$NON-NLS-1$
-				// }
+				fig3DHost = findConectionLayerHost(connection);
+				distributedLayer = getConnectionLayerOf3DHost(fig3DHost);
 
 				if (distributedLayer != null) {
-					// if (distributedLayer.getConnectionRouter()==null) {
 					distributedLayer.setConnectionRouter(host
 						.getConnectionRouter());
-					// }
 					dispatchedConnections.add(connection);
 					distributedLayer.add(connection, cc.constaint, cc.index);
-
 					rewire(connection);
-
 					distributedLayer.validate();
+					fig3DHost.invalidateTree(); // repaint 2D content
 				}
 			}
-			// if (log.isLoggable(Level.INFO)) {
-			// log.info(StopWatch.stop());
-			// }
-
-			for (IFigure conn : dispatchedConnections)
+			for (IFigure conn : dispatchedConnections) {
 				pendingConnections.remove(conn);
-
-			// if (log.isLoggable(Level.INFO))
-			// log.info(StopWatch.stop());
-
+			}
 		}
 	}
 
@@ -198,10 +162,11 @@ public class DispatchingConnectionLayerHelper {
 	 * layer.
 	 * 
 	 * @param i_connection
-	 * @return
+	 * @return 3D figure hosting connection layer or null, if connection has no
+	 * 	3D ancestor
+	 * @throws IllegalArgumentException if connection has different 3D hosts
 	 */
-	protected ConnectionLayer findDistributedLayer(Connection i_connection) {
-		ConnectionLayer layer = null;
+	protected IFigure3D findConectionLayerHost(Connection i_connection) {
 
 		ConnectionAnchor anchor;
 		anchor = i_connection.getSourceAnchor();
@@ -214,33 +179,37 @@ public class DispatchingConnectionLayerHelper {
 
 		// a 2D connection can only be handled by a layer, if its source
 		// and target are on the same surface
-		if (sourceAncestor3D == targetAncestor3D) {
-			if (sourceAncestor3D != null) {
-
-				layer = distributedLayersMap.get(sourceAncestor3D);
-				if (layer == null) { // create layer lazily
-					layer = sourceAncestor3D.getConnectionLayer(factory);
-					if (layer != null) {
-						host.add(layer, CONSTRAINT_LAYER);
-						distributedLayersMap.put(sourceAncestor3D, layer);
-					} else {
-						log
-							.warning("Cannot create connection layer for figure "
-									+ sourceAncestor3D);
-					}
-				} else {
-
-				}
-			} else {
-				return null;
-			}
-		} else {
-			log.severe("2D connections with different 3D ancestors");
+		if (sourceAncestor3D != targetAncestor3D) {
+			log
+				.severe("2D connections with different 3D ancestors");
 
 			throw new IllegalArgumentException(
 				"Connection's anchors have different 3D ancestors");
 		}
 
+		return sourceAncestor3D;
+	}
+
+	/**
+	 * Returns (2D) connection layer associated with given 3D figure.
+	 * 
+	 * @param fig3DHost
+	 */
+	private ConnectionLayer getConnectionLayerOf3DHost(IFigure3D fig3DHost) {
+		if (fig3DHost == null)
+			return null;
+		ConnectionLayer layer;
+		layer = distributedLayersMap.get(fig3DHost);
+		if (layer == null) { // create layer lazily
+			layer = fig3DHost.getConnectionLayer(factory);
+			if (layer != null) {
+				host.add(layer, CONSTRAINT_LAYER);
+				distributedLayersMap.put(fig3DHost, layer);
+			} else {
+				log.warning("Cannot create connection layer for figure "
+					+ fig3DHost);
+			}
+		}
 		return layer;
 	}
 
@@ -259,9 +228,9 @@ public class DispatchingConnectionLayerHelper {
 		for (Iterator iter = children.iterator(); iter.hasNext();) {
 			IFigure child = (IFigure) iter.next();
 			if (!(child instanceof ConnectionLayer) // if child is a connection,
-					// is it painted by its 3D host figure
-					&& child.isVisible() // only paint if visible
-					&& child.intersects(i_graphics.getClip(clip)) // only paint
+				// is it painted by its 3D host figure
+				&& child.isVisible() // only paint if visible
+				&& child.intersects(i_graphics.getClip(clip)) // only paint
 			// if it intersects
 			) {
 				i_graphics.clipRect(child.getBounds());
@@ -279,13 +248,16 @@ public class DispatchingConnectionLayerHelper {
 		if (i_figure instanceof Connection && !(i_figure instanceof IFigure3D)) {
 
 			if (pendingConnections.remove(i_figure) == null) {
+				IFigure3D fig3DHost =
+					findConectionLayerHost((Connection) i_figure);
 				ConnectionLayer distributedLayer =
-					findDistributedLayer((Connection) i_figure);
+					getConnectionLayerOf3DHost(fig3DHost);
+
 				if (distributedLayer != null) {
 					distributedLayer.remove(i_figure);
+					fig3DHost.invalidateTree(); // repaint 2D content
 				}
 			}
-
 			return true;
 		} else {
 			return false;

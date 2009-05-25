@@ -54,7 +54,6 @@ public class DispatchingConnectionLayer extends ConnectionLayer {
 	public void add(IFigure i_figure, Object i_constraint, int i_index) {
 		if (!dclhelper.add(i_figure, i_constraint, i_index))
 			super.add(i_figure, i_constraint, i_index);
-
 	}
 
 	/**
