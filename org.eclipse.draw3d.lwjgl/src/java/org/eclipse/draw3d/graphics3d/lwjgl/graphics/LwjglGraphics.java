@@ -38,6 +38,7 @@ import org.eclipse.draw3d.util.converter.BufferInfo;
 import org.eclipse.draw3d.util.converter.ImageConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.Image;
@@ -660,7 +661,18 @@ public class LwjglGraphics extends Graphics {
 	public void drawFocus(int i_x, int i_y, int i_w, int i_h) {
 
 		checkDisposed();
-		throw new UnsupportedOperationException("drawFocus(int, int, int, int)");
+
+		pushState();
+		try {
+			Device dev = Display.getCurrent();
+			Color c = dev.getSystemColor(SWT.COLOR_LIST_SELECTION);
+			setForegroundColor(c);
+			setLineStyle(SWT.LINE_SOLID);
+			setLineWidth(2);
+			drawRectangle(i_x, i_y, i_w, i_h);
+		} finally {
+			popState();
+		}
 	}
 
 	/**
