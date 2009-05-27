@@ -27,7 +27,7 @@ import org.eclipse.gef.GraphicalEditPart;
  * @version $Revision$
  * @since 22.01.2008
  */
-public class ConnectedElementAdapter  {
+public class ConnectedElementAdapter {
 
 	GraphicalEditPart elementEditPart;
 
@@ -36,35 +36,34 @@ public class ConnectedElementAdapter  {
 	List sourceConnections;
 
 	List targetConnections;
-	
+
 	// Observer-Pattern (Subject)
 	Collection<IElementAdapterListener> listeners;
-	
-	
 
 	/**
-	 * @param i_elementEditPart
-	 * @param i_intermodelConnector
+	 * @param i_elementEditPart the connected edit part (with the referenced
+	 *            model)
+	 * @param i_intermodelConnector element in the intermodel model referencing
+	 *            the edit part's model
 	 */
 	public ConnectedElementAdapter(GraphicalEditPart i_elementEditPart,
 			Object i_intermodelConnector) {
-		
+
 		if (i_elementEditPart == null) // parameter precondition
 			throw new NullPointerException("i_elementEditPart must not be null");
-		
-		
+
 		elementEditPart = i_elementEditPart;
 		intermodelConnector = i_intermodelConnector;
 		sourceConnections = new ArrayList(2);
 		targetConnections = new ArrayList(2);
-		listeners = new HashSet<IElementAdapterListener>(); 
-			// the edit part listens to this class
+		listeners = new HashSet<IElementAdapterListener>();
+		// the edit part listens to this class
 		i_elementEditPart.getFigure().addFigureListener(new FigureListener() {
 
 			public void figureMoved(IFigure i_source) {
 				fireFigureMoved(i_source);
 			}
-			
+
 		});
 
 	}
@@ -74,7 +73,7 @@ public class ConnectedElementAdapter  {
 			throw new NullPointerException("listener must not be null");
 		listeners.add(listener);
 	}
-	
+
 	public void removeElementAdapterListener(IElementAdapterListener listener) {
 		if (listener != null) {
 			listeners.remove(listener);
@@ -83,14 +82,15 @@ public class ConnectedElementAdapter  {
 
 	/**
 	 * Propagates event to registered listeners.
+	 * 
 	 * @param i_source The moved figure, this is the figure displaying the
-	 * 	adapted model element.
+	 *            adapted model element.
 	 */
 	protected void fireFigureMoved(IFigure i_source) {
-		for(IElementAdapterListener listener: listeners) {
+		for (IElementAdapterListener listener : listeners) {
 			listener.figureMoved(i_source);
 		}
-		
+
 	}
 
 	/**
@@ -116,13 +116,14 @@ public class ConnectedElementAdapter  {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer strb = new StringBuffer();
-		strb.append("Element's part: ");
+		StringBuilder strb = new StringBuilder();
+		strb.append("ConnectedElementAdapter (Element's part: ");
 		if (elementEditPart != null) {
 			strb.append(elementEditPart.toString());
 		} else {
 			strb.append("ERROR, part is null");
 		}
+		strb.append(")");
 		return strb.toString();
 	}
 
@@ -183,7 +184,5 @@ public class ConnectedElementAdapter  {
 	public boolean removeTargetConnection(Object i_o) {
 		return targetConnections.remove(i_o);
 	}
-	
-	
 
 }
