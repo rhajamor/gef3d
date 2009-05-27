@@ -79,7 +79,7 @@ public class TraceRecordEditPart extends AbstractGraphicalEditPart implements
 	}
 
 	/**
-	 * Convenience method returning the cased parent edit part.
+	 * Convenience method returning the casted parent edit part.
 	 * 
 	 * @return
 	 */

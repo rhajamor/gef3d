@@ -29,39 +29,40 @@ import de.feu.mitra.traces.Trace;
 import de.feu.mitra.traces.TraceElement;
 
 /**
- * This is the connection between the center (i.e. the
- * {@link TraceEditPart} and the source or target. Note that the actual
- * source or target are not directly connected since the source and target model
- * must not be modified (which would be the case if the actual model elements
- * were connected). Instead, the connection here connects the center box and
- * {@link ConnectedElementAdapter} managed by {@link ConnectedElementEditPart}.
+ * This is the connection between the center (i.e. the {@link TraceEditPart} and
+ * the source or target. Note that the actual source or target are not directly
+ * connected since the source and target model must not be modified (which would
+ * be the case if the actual model elements were connected). Instead, the
+ * connection here connects the center box and {@link ConnectedElementAdapter}
+ * managed by {@link ConnectedElementEditPart}.
  * <p>
- * The color of the line reflects the depth of the model element, i.e.
- * the root element connection (the diagrams themselves) is drawn dark red,
- * top level element connections red and nested element connections green or 
- * magenta. 
+ * The color of the line reflects the depth of the model element, i.e. the root
+ * element connection (the diagrams themselves) is drawn dark red, top level
+ * element connections red and nested element connections green or magenta.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since 21.01.2008
  * @see $HeadURL:
- *      https://gorgo.fernuni-hagen.de/OpenglGEF/trunk/de.feu.gef3d.samples.multieditor/src/java/de/feu/gef3d/samples/unitrace/edit/MergedTraceElementEditPart.java $
+ *      https://gorgo.fernuni-hagen.de/OpenglGEF/trunk/de.feu.gef3d.samples
+ *      .multieditor
+ *      /src/java/de/feu/gef3d/samples/unitrace/edit/MergedTraceElementEditPart
+ *      .java $
  */
 public class TraceElementEditPart extends AbstractConnectionEditPart {
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger
-			.getLogger(TraceElementEditPart.class.getName());
+	private static final Logger log =
+		Logger.getLogger(TraceElementEditPart.class.getName());
 
-	public static Color LEVEL_COLORS[] = { 
-		ColorConstants.red, ColorConstants.red, ColorConstants.orange, ColorConstants.orange 
-		}; 
-	public static Color LEVEL_COLOR_AUTO[] = {
-		ColorConstants.yellow, ColorConstants.yellow, ColorConstants.gray, ColorConstants.lightGray 
-	};
-	
-	
+	public static Color LEVEL_COLORS[] =
+		{ ColorConstants.red, ColorConstants.red, ColorConstants.orange,
+			ColorConstants.yellow };
+
+	public static Color LEVEL_COLOR_AUTO[] =
+		{ ColorConstants.darkGreen, ColorConstants.green,
+			ColorConstants.lightGreen, ColorConstants.lightGray };
 
 	/**
 	 * 
@@ -88,12 +89,12 @@ public class TraceElementEditPart extends AbstractConnectionEditPart {
 		if (iLevel >= LEVEL_COLORS.length)
 			iLevel = LEVEL_COLORS.length - 1;
 
-		boolean bAuto = TraceUtil.isAuto((Trace) getTraceElement().eContainer());
-		
-		fig.setForegroundColor(
-				bAuto ? LEVEL_COLOR_AUTO[iLevel] : LEVEL_COLORS[iLevel]
-				                                                );
-			
+		boolean bAuto =
+			TraceUtil.isAuto((Trace) getTraceElement().eContainer());
+
+		fig.setForegroundColor(bAuto ? LEVEL_COLOR_AUTO[iLevel]
+			: LEVEL_COLORS[iLevel]);
+
 		// if (log.isLoggable(Level.INFO)) {
 		// log.info("Level: " + calcLevel()); //$NON-NLS-1$
 		// }
@@ -114,34 +115,6 @@ public class TraceElementEditPart extends AbstractConnectionEditPart {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef.editparts.AbstractConnectionEditPart#setSource(org.eclipse.gef.EditPart)
-	 */
-	@Override
-	public void setSource(EditPart i_editPart) {
-		super.setSource(i_editPart);
-
-		// if (log.isLoggable(Level.INFO)) {
-		// log.info("EditPart - i_editPart=" + i_editPart); //$NON-NLS-1$
-		// }
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef.editparts.AbstractConnectionEditPart#setTarget(org.eclipse.gef.EditPart)
-	 */
-	@Override
-	public void setTarget(EditPart i_editPart) {
-		super.setTarget(i_editPart);
-
-		// if (log.isLoggable(Level.INFO)) {
-		// log.info("EditPart - i_editPart=" + i_editPart); //$NON-NLS-1$
-		// }
-	}
-
-	/**
 	 * Convenience method, returns casted {@link #getModel()}
 	 * 
 	 * @return
@@ -153,8 +126,8 @@ public class TraceElementEditPart extends AbstractConnectionEditPart {
 	public int calcLevel() {
 		TraceElement traceElement = getTraceElement();
 		EObject eobj = traceElement.getElement();
-//		if (eobj instanceof Relationship)
-//			return 1;
+		// if (eobj instanceof Relationship)
+		// return 1;
 		int iLevel = 0;
 		while (eobj.eContainer() != null && eobj.eContainer() != eobj) {
 			eobj = eobj.eContainer();

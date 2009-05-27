@@ -115,8 +115,8 @@ public class TraceEditPart extends AbstractGraphicalEditPart implements
 		TraceFigure fig = new TraceFigure();
 		// fig.setResolution(IFigure3D.RESOLUTION_DISABLE);
 		Color c =
-			TraceUtil.isAuto(getTrace()) ? ColorConstants.yellow
-				: ColorConstants.lightGray;
+			TraceUtil.isAuto(getTrace()) ? ColorConstants.lightGreen
+				: ColorConstants.orange;
 		fig.setBackgroundColor(c);
 
 		Font f = new Font(Display.getCurrent(), "Arial", 8, 0);
