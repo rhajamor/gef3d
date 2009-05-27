@@ -17,9 +17,14 @@ import org.eclipse.draw2d.UpdateManager;
 import org.eclipse.draw3d.Draw3DCanvas;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.camera.ICamera;
+import org.eclipse.emf.common.notify.Notifier;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.gef.EditPart;
+import org.eclipse.gef3d.gmf.runtime.core.service.IProviderAcceptorProvider;
+import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gef3d.ui.parts.GraphicalViewer3D;
 import org.eclipse.gef3d.ui.parts.IScene;
+import org.eclipse.gmf.runtime.common.ui.services.editor.IEditorProvider;
 import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -35,7 +40,54 @@ import org.eclipse.swt.widgets.Control;
  * @since Apr 7, 2009
  */
 public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
-		GraphicalViewer3D, IScene {
+		GraphicalViewer3D, IScene, IProviderAcceptorProvider {
+
+	/**
+	 * Creates this viewer and adds a {@link ProviderAcceptor} to its
+	 * properties. This provider selector is also attached as viewer to the
+	 * diagram, in order to be accessible via {@link IEditorProvider}, see
+	 * {@link IProviderSelector} for details.
+	 */
+	public DiagramGraphicalViewer3D() {
+		this(new ProviderAcceptor(true));
+
+	}
+
+	/**
+	 * Creates this viewer and adds the given provider selector to is
+	 * properties.
+	 * 
+	 * @param providerAcceptor
+	 */
+	public DiagramGraphicalViewer3D(ProviderAcceptor providerAcceptor) {
+		setProperty(ProviderAcceptor.PROVIDER_ACCEPTOR_PROPERTY_KEY,
+			providerAcceptor);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.ui.parts.AbstractEditPartViewer#setContents(java.lang.Object)
+	 */
+	@Override
+	public void setContents(Object contents) {
+		if (contents instanceof EObject) {
+			EObject eobj = (EObject) contents;
+			ProviderAcceptor providerSelector = getProviderAcceptor();
+			eobj.eAdapters().add(providerSelector);
+
+		}
+		super.setContents(contents);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.gmf.runtime.core.service.IProviderAcceptorProvider#getProviderAcceptor()
+	 */
+	public ProviderAcceptor getProviderAcceptor() {
+		return (ProviderAcceptor) getProperty(ProviderAcceptor.PROVIDER_ACCEPTOR_PROPERTY_KEY);
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -56,13 +108,13 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 	 */
 	public Control createControl3D(Composite i_composite) {
 
-		GLCanvas canvas = Draw3DCanvas.createCanvas(i_composite, SWT.NONE,
+		GLCanvas canvas =
+			Draw3DCanvas.createCanvas(i_composite, SWT.NONE,
 				getLightweightSystem3D());
 
 		setControl(canvas);
 		return getControl();
 	}
-	
 
 	/**
 	 * {@inheritDoc}
@@ -189,4 +241,30 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 		super.setRootFigure(i_figure);
 		getLightweightSystem().setContents(i_figure);
 	}
+
+	/**
+	 * Always returns false as no 3D version of
+	 * {@link org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer.LightweightSystemWithUpdateToggle}
+	 * is available yet.
+	 * 
+	 * @todo implement 3D version of LightweightSystemWithUpdateToggle
+	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer#areUpdatesDisabled()
+	 */
+	@Override
+	public boolean areUpdatesDisabled() {
+		return false;
+	}
+
+	/**
+	 * Does nothing yet as no 3D version of
+	 * {@link org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer.LightweightSystemWithUpdateToggle}
+	 * is available yet.
+	 * 
+	 * @todo implement 3D version of LightweightSystemWithUpdateToggle
+	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer#enableUpdates(boolean)
+	 */
+	@Override
+	public void enableUpdates(boolean i_enable) {
+	}
+
 }

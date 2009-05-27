@@ -58,7 +58,6 @@ Export-Package: org.eclipse.gef3d.examples.uml2,
  org.eclipse.gef3d.examples.uml2.clazz.providers,
  org.eclipse.gef3d.examples.uml2.figures,
  org.eclipse.gef3d.examples.uml2.multi.part,
- org.eclipse.gef3d.examples.uml2.providers,
  org.eclipse.gef3d.examples.uml2.usecase.edit.parts,
  org.eclipse.gef3d.examples.uml2.usecase.part,
  org.eclipse.gef3d.examples.uml2.usecase.providers

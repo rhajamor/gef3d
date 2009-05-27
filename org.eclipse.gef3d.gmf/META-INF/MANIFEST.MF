@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: GEF3D GMF Ports
-Bundle-SymbolicName: org.eclipse.gef3d.gmf
+Bundle-SymbolicName: org.eclipse.gef3d.gmf;singleton:=true
 Bundle-Version: 0.8.1
 Bundle-Activator: org.eclipse.gef3d.gmf.Activator
 Bundle-Vendor: Eclipse.org
@@ -15,9 +15,12 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.gmf.runtime.diagram.ui;bundle-version="1.1.2",
  org.eclipse.gef3d;bundle-version="0.8.1",
  org.eclipse.gef3d.ext;bundle-version="0.8.1"
-Eclipse-LazyStart: true
+Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.gef3d.gmf,
  org.eclipse.gef3d.gmf.ext.reverselookup,
+ org.eclipse.gef3d.gmf.runtime.core.service,
  org.eclipse.gef3d.gmf.runtime.diagram.ui.editparts,
  org.eclipse.gef3d.gmf.runtime.diagram.ui.parts,
+ org.eclipse.gef3d.gmf.runtime.diagram.ui.services.editpart,
+ org.eclipse.gef3d.gmf.runtime.diagram.ui.services.editpolicy,
  org.eclipse.gef3d.gmf.runtime.draw2d.ui.internal.figures.ConnectionLayerEx

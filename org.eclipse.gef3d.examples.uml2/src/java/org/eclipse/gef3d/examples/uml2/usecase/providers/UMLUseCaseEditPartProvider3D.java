@@ -10,13 +10,17 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.uml2.usecase.providers;
 
+import java.util.logging.Logger;
+
+import java.util.logging.Level;
+
 import org.eclipse.gef.RootEditPart;
-import org.eclipse.gef3d.examples.uml2.multi.part.MultiGraphicalEditor3D;
 import org.eclipse.gef3d.examples.uml2.usecase.edit.parts.UMLEditPartFactory3D;
-import org.eclipse.gef3d.examples.uml2.usecase.part.UMLDiagramEditor3D;
-import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
+import org.eclipse.gef3d.examples.uml2.usecase.part.UMLUseCaseDiagramEditor3D;
+import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gef3d.gmf.runtime.diagram.ui.editparts.DiagramRootEditPart3D;
 import org.eclipse.gmf.runtime.common.core.service.IOperation;
+import org.eclipse.gmf.runtime.diagram.ui.services.editpart.CreateGraphicEditPartOperation;
 import org.eclipse.gmf.runtime.diagram.ui.services.editpart.CreateRootEditPartOperation;
 import org.eclipse.gmf.runtime.notation.Diagram;
 import org.eclipse.gmf.runtime.notation.View;
@@ -30,17 +34,23 @@ import org.eclipse.uml2.diagram.usecase.providers.UMLEditPartProvider;
  * @version $Revision$
  * @since Apr 7, 2009
  */
-public class UMLEditPartProvider3D extends UMLEditPartProvider {
+public class UMLUseCaseEditPartProvider3D extends UMLEditPartProvider {
+	/**
+	 * Logger for this class
+	 */
+	private static final Logger log = Logger.getLogger(UMLUseCaseEditPartProvider3D.class.getName());
 
+	
+	
 	public static String[] SUPPORTED_EDITORS =
-		{ UMLDiagramEditor3D.class.getName() };
+		{ UMLUseCaseDiagramEditor3D.class.getName() };
 
 	// MultiEditorPartFactory.class.getName() };
 
 	/**
 	 * 
 	 */
-	public UMLEditPartProvider3D() {
+	public UMLUseCaseEditPartProvider3D() {
 		super(); // sets 2D factory
 
 		setFactory(new UMLEditPartFactory3D());
@@ -55,11 +65,32 @@ public class UMLEditPartProvider3D extends UMLEditPartProvider {
 	 */
 	@Override
 	public synchronized boolean provides(IOperation i_operation) {
-		if (!isSupported())
-			return false;
-		if (i_operation instanceof CreateRootEditPartOperation)
-			return true;
-		return super.provides(i_operation);
+		if (i_operation instanceof CreateGraphicEditPartOperation) {
+			ProviderAcceptor providerAcceptor =
+				ProviderAcceptor.retrieveProviderAcceptor(i_operation);
+			boolean bIsAccepted =
+				ProviderAcceptor.evaluate3DAcceptance(this, i_operation);
+			boolean bIsSupported = isSupported();
+			
+			CreateGraphicEditPartOperation op = (CreateGraphicEditPartOperation) i_operation;
+			
+			bIsAccepted &= super.provides(i_operation);
+
+			if (bIsAccepted!=bIsSupported) {
+				if (log.isLoggable(Level.INFO)) {
+					log.info("Warning, isSupported = " + bIsSupported + 
+							", acceptor says " + bIsAccepted +
+							", acceptor: " + providerAcceptor +
+							", model: " + op.getView().getElement()
+							); //$NON-NLS-1$
+				}
+			}
+			
+			return bIsAccepted;
+			
+			
+		}
+		return false;
 	}
 
 	/**
@@ -102,7 +133,7 @@ public class UMLEditPartProvider3D extends UMLEditPartProvider {
 	 */
 	@Override
 	public RootEditPart createRootEditPart(Diagram i_diagram) {
-		return new DiagramRootEditPart3D();
+		return null;
 	}
 
 }

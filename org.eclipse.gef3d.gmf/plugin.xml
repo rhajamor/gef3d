@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+     <!-- 3D Handles and Feedback for all 3D-Editors --> 
+   <extension
+         point="org.eclipse.gmf.runtime.diagram.ui.editpolicyProviders">
+      <editpolicyProvider
+            class="org.eclipse.gef3d.gmf.runtime.diagram.ui.services.editpolicy.Handles3DEditPolicyProvider3D">
+         <Priority
+               name="Low">
+         </Priority>
+      </editpolicyProvider>
+   </extension>
+   
+   <extension point="org.eclipse.gmf.runtime.diagram.ui.editpartProviders">
+      <editpartProvider
+            class="org.eclipse.gef3d.gmf.runtime.diagram.ui.services.editpart.DiagramRootEditPart3DProvider">
+         <Priority name="High"></Priority>
+      </editpartProvider>
+   </extension>
+
+</plugin>

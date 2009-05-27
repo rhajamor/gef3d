@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.gef.ContextMenuProvider;
-import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.KeyHandler;
@@ -25,22 +24,28 @@ import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
+import org.eclipse.gef3d.examples.uml2.clazz.providers.UMLClassEditPartProvider3D;
 import org.eclipse.gef3d.ext.multieditor.INestableEditor;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
+import org.eclipse.gef3d.ext.reverselookup.ReverseLookupManager;
+import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gef3d.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer3D;
 import org.eclipse.gef3d.preferences.ScenePreferenceListener;
 import org.eclipse.gef3d.tools.CameraTool;
 import org.eclipse.gef3d.ui.parts.FpsStatusLineItem;
+import org.eclipse.gmf.runtime.common.core.service.IProvider;
 import org.eclipse.gmf.runtime.diagram.ui.actions.ActionIds;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.IDiagramPreferenceSupport;
 import org.eclipse.gmf.runtime.diagram.ui.internal.parts.DiagramGraphicalViewerKeyHandler;
 import org.eclipse.gmf.runtime.diagram.ui.internal.parts.DirectEditKeyHandler;
+import org.eclipse.gmf.runtime.diagram.ui.internal.services.editpart.IEditPartProvider;
 import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.parts.IDiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider;
 import org.eclipse.gmf.runtime.diagram.ui.resources.editor.parts.DiagramDocumentEditor;
 import org.eclipse.gmf.runtime.diagram.ui.services.editpart.EditPartService;
+import org.eclipse.gmf.runtime.diagram.ui.services.editpolicy.IEditPolicyProvider;
 import org.eclipse.gmf.runtime.draw2d.ui.mapmode.MapModeTypes;
 import org.eclipse.gmf.runtime.notation.Diagram;
 import org.eclipse.jface.action.IStatusLineManager;
@@ -50,6 +55,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.uml2.diagram.clazz.part.DiagramEditorContextMenuProvider;
 import org.eclipse.uml2.diagram.clazz.part.UMLDiagramEditor;
+import org.eclipse.uml2.diagram.clazz.providers.UMLEditPartProvider;
 
 /**
  * UMLDiagramEditor3D There should really be more documentation here.
@@ -60,13 +66,13 @@ import org.eclipse.uml2.diagram.clazz.part.UMLDiagramEditor;
  * @version $Revision$
  * @since Apr 7, 2009
  */
-public class UMLDiagramEditor3D extends UMLDiagramEditor implements
+public class UMLClassDiagramEditor3D extends UMLDiagramEditor implements
 		INestableEditor {
 	/**
 	 * Logger for this class
 	 */
 	private static final Logger log =
-		Logger.getLogger(UMLDiagramEditor3D.class.getName());
+		Logger.getLogger(UMLClassDiagramEditor3D.class.getName());
 
 	private ScenePreferenceListener sceneListener;
 
@@ -80,7 +86,7 @@ public class UMLDiagramEditor3D extends UMLDiagramEditor implements
 	/**
 	 * 
 	 */
-	public UMLDiagramEditor3D() {
+	public UMLClassDiagramEditor3D() {
 		// this is a hack:
 		MapModeTypes.DEFAULT_MM = MapModeTypes.IDENTITY_MM;
 	}
@@ -92,10 +98,23 @@ public class UMLDiagramEditor3D extends UMLDiagramEditor implements
 	 */
 	@Override
 	protected void initializeGraphicalViewerContents() {
-
 		// zoom needs to be 1
 		super.initializeGraphicalViewerContents();
 		getZoomManager().setZoom(1.0);
+	}
+
+	/**
+	 * 
+	 */
+	protected void configureProviderAcceptor() {
+		// set special provider acceptor
+		ProviderAcceptor providerAcceptor = new ProviderAcceptor(true);
+		providerAcceptor.setProperty(ProviderAcceptor.GRAPHICAL_EDITOR, this);
+//		providerAcceptor.setProperty(
+//			UMLClassEditPartProvider3D.CLASSDIAGRAM_3D_ACCEPTED, true);
+		getGraphicalViewer().setProperty(
+			ProviderAcceptor.PROVIDER_ACCEPTOR_PROPERTY_KEY, providerAcceptor);
+		getDiagram().eAdapters().add(providerAcceptor);
 	}
 
 	/**
@@ -105,6 +124,8 @@ public class UMLDiagramEditor3D extends UMLDiagramEditor implements
 	 */
 	@Override
 	protected void configureGraphicalViewer() {
+
+		configureProviderAcceptor();
 
 		{ // GraphicalEditor
 			getGraphicalViewer().getControl().setBackground(
@@ -246,10 +267,22 @@ public class UMLDiagramEditor3D extends UMLDiagramEditor implements
 		try {
 			// initializeGraphicalViewerContents():
 			Diagram diagram = getDiagram();
+			
+			// set provider acceptor in nested content diagram
+			diagram.eAdapters().add(
+				ProviderAcceptor.retrieveProviderSelector(viewer));
+			
 			EditPartFactory factory = EditPartService.getInstance();
 
 			i_multiEditorPartFactory.prepare(diagram, factory);
 			i_multiEditorModelContainer.add(diagram);
+			
+			// we need this only during initialization, views
+			// are shared between multiple editor instances, even
+			// between 3D and 2D instances!
+			diagram.eAdapters().remove(
+				ProviderAcceptor.retrieveProviderSelector(viewer));
+
 
 		} catch (Exception ex) {
 			log.warning("GraphicalViewer exception: " + ex); //$NON-NLS-1$ 
@@ -264,7 +297,7 @@ public class UMLDiagramEditor3D extends UMLDiagramEditor implements
 	public PaletteDrawer createPaletteDrawer() {
 		PaletteRoot root = createPaletteRoot(null);
 		if (root.getChildren().size() == 1
-				&& root.getChildren().get(0) instanceof PaletteDrawer) {
+			&& root.getChildren().get(0) instanceof PaletteDrawer) {
 			return (PaletteDrawer) root.getChildren().get(0);
 		} else {
 			PaletteDrawer drawer = new PaletteDrawer("Class Diagram");

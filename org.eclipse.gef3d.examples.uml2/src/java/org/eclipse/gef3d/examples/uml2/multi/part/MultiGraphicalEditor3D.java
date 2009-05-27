@@ -172,13 +172,13 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 		INestableEditor nestedEditor = null;
 		if (strName.endsWith(".umlclass")) {
 			nestedEditor =
-				new org.eclipse.gef3d.examples.uml2.clazz.part.UMLDiagramEditor3D();
+				new org.eclipse.gef3d.examples.uml2.clazz.part.UMLClassDiagramEditor3D();
 		} else if (strName.endsWith(".umlact")) {
 			nestedEditor =
-				new org.eclipse.gef3d.examples.uml2.activity.part.UMLDiagramEditor3D();
+				new org.eclipse.gef3d.examples.uml2.activity.part.UMLActivityDiagramEditor3D();
 		} else if (strName.endsWith(".umlusc")) {
 			nestedEditor =
-				new org.eclipse.gef3d.examples.uml2.usecase.part.UMLDiagramEditor3D();
+				new org.eclipse.gef3d.examples.uml2.usecase.part.UMLUseCaseDiagramEditor3D();
 		}
 		if (nestedEditor == null) {
 			if (log.isLoggable(Level.INFO)) {

@@ -5,7 +5,7 @@
 	<!-- Class -->
    <extension point="org.eclipse.ui.editors">
       <editor
-            class="org.eclipse.gef3d.examples.uml2.clazz.part.UMLDiagramEditor3D"
+            class="org.eclipse.gef3d.examples.uml2.clazz.part.UMLClassDiagramEditor3D"
             default="false"
             extensions="umlclass"
             id="org.eclipse.gef3d.examples.uml2.clazz.part.UMLDiagramEditor3D"
@@ -23,19 +23,20 @@
       </editor>
    </extension>
    
-   <extension point="org.eclipse.gmf.runtime.diagram.ui.editpartProviders">
+    <extension point="org.eclipse.gmf.runtime.diagram.ui.editpartProviders">
       <editpartProvider
-            class="org.eclipse.gef3d.examples.uml2.clazz.providers.UMLEditPartProvider3D">
-         <Priority name="Highest"></Priority>
+            class="org.eclipse.gef3d.examples.uml2.clazz.providers.UMLClassEditPartProvider3D">
+         <Priority name="Medium"></Priority>
       </editpartProvider>
    </extension>
+   
    
    
    
     <!-- Activity -->
      <extension point="org.eclipse.ui.editors">
       <editor
-            class="org.eclipse.gef3d.examples.uml2.activity.part.UMLDiagramEditor3D"
+            class="org.eclipse.gef3d.examples.uml2.activity.part.UMLActivityDiagramEditor3D"
             default="false"
             extensions="umlact"
             id="org.eclipse.gef3d.examples.uml2.activity.part.UMLDiagramEditor3D"
@@ -45,8 +46,8 @@
    
    <extension point="org.eclipse.gmf.runtime.diagram.ui.editpartProviders">
       <editpartProvider
-            class="org.eclipse.gef3d.examples.uml2.activity.providers.UMLEditPartProvider3D">
-         <Priority name="Highest"></Priority>
+            class="org.eclipse.gef3d.examples.uml2.activity.providers.UMLActivityEditPartProvider3D">
+         <Priority name="Medium"></Priority>
       </editpartProvider>
    </extension>
    
@@ -54,7 +55,7 @@
    <!-- Use Case --> 
    <extension point="org.eclipse.ui.editors">
       <editor
-            class="org.eclipse.gef3d.examples.uml2.usecase.part.UMLDiagramEditor3D"
+            class="org.eclipse.gef3d.examples.uml2.usecase.part.UMLUseCaseDiagramEditor3D"
             default="false"
             extensions="umlusc"
             id="org.eclipse.gef3d.examples.uml2.usecase.part.UMLDiagramEditor3D"
@@ -64,20 +65,15 @@
    
    <extension point="org.eclipse.gmf.runtime.diagram.ui.editpartProviders">
       <editpartProvider
-            class="org.eclipse.gef3d.examples.uml2.usecase.providers.UMLEditPartProvider3D">
-         <Priority name="Highest"></Priority>
+            class="org.eclipse.gef3d.examples.uml2.usecase.providers.UMLUseCaseEditPartProvider3D">
+         <Priority name="Medium"></Priority>
       </editpartProvider>
    </extension>
    
-   <!-- 3D Handles and Feedback for all 3D-Editors --> 
-   <extension
-         point="org.eclipse.gmf.runtime.diagram.ui.editpolicyProviders">
-      <editpolicyProvider
-            class="org.eclipse.gef3d.examples.uml2.providers.UMLEditPolicyProvider3D">
-         <Priority
-               name="Highest">
-         </Priority>
-      </editpolicyProvider>
-   </extension>
+   
+   
+  
+   
+ 
   
 </plugin>

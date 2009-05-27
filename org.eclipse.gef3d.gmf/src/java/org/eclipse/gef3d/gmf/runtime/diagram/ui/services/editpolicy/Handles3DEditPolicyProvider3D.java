@@ -8,7 +8,7 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.gef3d.examples.uml2.providers;
+package org.eclipse.gef3d.gmf.runtime.diagram.ui.services.editpolicy;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef3d.editpolicies.Handles3DEditPolicy;
+import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gmf.runtime.common.core.service.AbstractProvider;
 import org.eclipse.gmf.runtime.common.core.service.IOperation;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart;
@@ -29,11 +30,11 @@ import org.eclipse.gmf.runtime.diagram.ui.services.editpolicy.IEditPolicyProvide
  * @version $Revision$
  * @since 06.01.2009
  */
-public class UMLEditPolicyProvider3D extends AbstractProvider implements
+public class Handles3DEditPolicyProvider3D extends AbstractProvider implements
 		IEditPolicyProvider {
 
-	private static final Logger log = Logger
-			.getLogger(UMLEditPolicyProvider3D.class.getName());
+	private static final Logger log =
+		Logger.getLogger(Handles3DEditPolicyProvider3D.class.getName());
 
 	/**
 	 * {@inheritDoc}
@@ -44,10 +45,10 @@ public class UMLEditPolicyProvider3D extends AbstractProvider implements
 
 		if (log.isLoggable(Level.INFO))
 			log.fine("modifying edit policies of "
-					+ i_editPart.getClass().getName());
+				+ i_editPart.getClass().getName());
 
 		i_editPart.installEditPolicy(EditPolicy.PRIMARY_DRAG_ROLE,
-				new Handles3DEditPolicy());
+			new Handles3DEditPolicy());
 	}
 
 	/**
@@ -56,37 +57,18 @@ public class UMLEditPolicyProvider3D extends AbstractProvider implements
 	 * @see org.eclipse.gmf.runtime.common.core.service.IProvider#provides(org.eclipse.gmf.runtime.common.core.service.IOperation)
 	 */
 	public boolean provides(IOperation i_operation) {
-//		if (true) return false;
-		
-		if (!is3D()) 
-			return false;
-		
-		CreateEditPoliciesOperation epOp = (CreateEditPoliciesOperation) i_operation;
-		EditPart editPart = epOp.getEditPart();
+		if (i_operation instanceof CreateEditPoliciesOperation) {
+			EditPart editPart =
+				((CreateEditPoliciesOperation) i_operation).getEditPart();
 
-		if (editPart instanceof DiagramEditPart)
-			return true;
-
-		return false;
-
-	}
-	
-	/**
-	 * This is a very very very very dirty hack!
-	 * @return
-	 */
-	public boolean is3D() {
-		Exception ex = new Exception();
-		String thisClass = this.getClass().getName();
-		String name;
-		for (StackTraceElement element : ex.getStackTrace()) {
-			name = element.getClassName(); 
-//			if (name.startsWith("org.eclipse.ui"))
-//				break;
-			if (name.endsWith("3D") && name.startsWith("org.eclipse.gef3d.examples.uml2") && ! name.endsWith(thisClass))
-				return true;
+			if (editPart instanceof DiagramEditPart) {
+				if (ProviderAcceptor.evaluate3DAcceptance(this, i_operation))
+					return true;
+			}
 		}
+
 		return false;
+
 	}
 
 }

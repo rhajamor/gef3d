@@ -10,17 +10,19 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.uml2.clazz.providers;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef3d.examples.uml2.clazz.edit.parts.UMLEditPartFactory3D;
-import org.eclipse.gef3d.examples.uml2.clazz.part.UMLDiagramEditor3D;
-import org.eclipse.gef3d.examples.uml2.multi.part.MultiGraphicalEditor3D;
-import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
+import org.eclipse.gef3d.examples.uml2.clazz.part.UMLClassDiagramEditor3D;
+import org.eclipse.gef3d.examples.uml2.usecase.part.UMLUseCaseDiagramEditor3D;
+import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gef3d.gmf.runtime.diagram.ui.editparts.DiagramRootEditPart3D;
+import org.eclipse.gef3d.gmf.runtime.diagram.ui.services.editpart.DiagramRootEditPart3DProvider;
 import org.eclipse.gmf.runtime.common.core.service.IOperation;
 import org.eclipse.gmf.runtime.diagram.ui.services.editpart.CreateGraphicEditPartOperation;
-import org.eclipse.gmf.runtime.diagram.ui.services.editpart.CreateRootEditPartOperation;
 import org.eclipse.gmf.runtime.notation.Diagram;
-import org.eclipse.gmf.runtime.notation.View;
 import org.eclipse.uml2.diagram.clazz.providers.UMLEditPartProvider;
 
 /**
@@ -31,16 +33,21 @@ import org.eclipse.uml2.diagram.clazz.providers.UMLEditPartProvider;
  * @version $Revision$
  * @since Apr 7, 2009
  */
-public class UMLEditPartProvider3D extends UMLEditPartProvider {
+public class UMLClassEditPartProvider3D extends UMLEditPartProvider {
 
 	public static String[] SUPPORTED_EDITORS =
-		{ UMLDiagramEditor3D.class.getName()
-		};
+	{ UMLClassDiagramEditor3D.class.getName() };
+
+	/**
+	 * Logger for this class
+	 */
+	private static final Logger log =
+		Logger.getLogger(UMLClassEditPartProvider3D.class.getName());
 
 	/**
 	 * 
 	 */
-	public UMLEditPartProvider3D() {
+	public UMLClassEditPartProvider3D() {
 		super(); // sets 2D factory
 
 		setFactory(new UMLEditPartFactory3D());
@@ -48,24 +55,44 @@ public class UMLEditPartProvider3D extends UMLEditPartProvider {
 	}
 
 	/**
-	 * Returns true if editor is supported (see {@link #SUPPORTED_EDITORS} and
-	 * if the operation is an {@link CreateRootEditPartOperation}.
+	 * Returns true if editor is accepts this provider, this is evaluated using
+	 * the {@link ProviderAcceptor} retrieved from the operation. The
+	 * {@link ProviderAcceptor} must have set flag
+	 * {@link #CLASSDIAGRAM_3D_ACCEPTED}.
 	 * 
 	 * @see org.eclipse.uml2.diagram.clazz.providers.UMLEditPartProvider#provides(org.eclipse.gmf.runtime.common.core.service.IOperation)
 	 */
 	@Override
 	public synchronized boolean provides(IOperation i_operation) {
-		if (!isSupported())
-			return false;
-		if (i_operation instanceof CreateRootEditPartOperation // in case of UML
-				// editor 3D example
-				|| i_operation instanceof CreateGraphicEditPartOperation // in
-		// case of multi editor 3D example
-		)
-			return true;
-		return super.provides(i_operation);
+		if (i_operation instanceof CreateGraphicEditPartOperation) {
+			ProviderAcceptor providerAcceptor =
+				ProviderAcceptor.retrieveProviderAcceptor(i_operation);
+			boolean bIsAccepted =
+				ProviderAcceptor.evaluate3DAcceptance(this, i_operation);
+			boolean bIsSupported = isSupported();
+			
+			CreateGraphicEditPartOperation op = (CreateGraphicEditPartOperation) i_operation;
+			
+			bIsAccepted &= super.provides(i_operation);
+				
+			
+			if (bIsAccepted!=bIsSupported) {
+				if (log.isLoggable(Level.INFO)) {
+					log.info("Warning, isSupported = " + bIsSupported + 
+							", acceptor says " + bIsAccepted +
+							", acceptor: " + providerAcceptor +
+							", model: " + op.getView().getElement()
+							); //$NON-NLS-1$
+				}
+			}
+			
+			return bIsAccepted;
+			
+			
+		}
+		return false;
 	}
-
+	
 	/**
 	 * Tests if the editor using this provider is supported. This method
 	 * actually is a hack and we have to find a better solution.
@@ -74,11 +101,11 @@ public class UMLEditPartProvider3D extends UMLEditPartProvider {
 	 */
 	public boolean isSupported() {
 		Exception ex = new Exception();
-		// ex.printStackTrace();
+//	 ex.printStackTrace();
 		String name;
 		for (StackTraceElement element : ex.getStackTrace()) {
 			name = element.getClassName();
-			if (name.startsWith(" org.eclipse.ui"))
+			if (name.startsWith("org.eclipse.ui"))
 				break;
 			for (int i = 0; i < SUPPORTED_EDITORS.length; i++) {
 				if (name.equals(SUPPORTED_EDITORS[i]))
@@ -88,25 +115,21 @@ public class UMLEditPartProvider3D extends UMLEditPartProvider {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gmf.runtime.diagram.ui.services.editpart.AbstractEditPartProvider#getDiagramEditPartClass(org.eclipse.gmf.runtime.notation.View)
-	 */
-	@Override
-	protected Class getDiagramEditPartClass(View i_view) {
-		// TODO implement method UMLEditPartProvider3D.getDiagramEditPartClass
-		return super.getDiagramEditPartClass(i_view);
-	}
 
 	/**
-	 * {@inheritDoc}
+	 * Returns null as the root edit part is expected to be created by a
+	 * different provider in case of 3D, i.e. by {@link
+	 * DiagramRootEditPart3DProvider.}
 	 * 
 	 * @see org.eclipse.gmf.runtime.diagram.ui.services.editpart.AbstractEditPartProvider#createRootEditPart(org.eclipse.gmf.runtime.notation.Diagram)
 	 */
 	@Override
 	public RootEditPart createRootEditPart(Diagram i_diagram) {
-		return new DiagramRootEditPart3D();
+		if (log.isLoggable(Level.INFO)) {
+			log.info("I don't want to create a root"); //$NON-NLS-1$
+		}
+
+		return null;
 	}
 
 }
