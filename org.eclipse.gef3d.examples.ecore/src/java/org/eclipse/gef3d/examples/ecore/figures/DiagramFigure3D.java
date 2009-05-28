@@ -68,10 +68,10 @@ public class DiagramFigure3D extends Figure3D implements TransparentObject {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#postrender()
+	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void postrender(RenderContext renderContext) {
+	public void render(RenderContext renderContext) {
 		renderContext.addTransparentObject(this);
 	}
 

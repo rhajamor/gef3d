@@ -403,10 +403,10 @@ public class LightweightSystem3D extends LightweightSystem implements
 					listener.renderPassStarted(renderContext);
 
 				// the root figure needs to paint itself first
-				render(renderContext);
+				prerender(renderContext);
 				paintBorder(graphics);
 				paintClientArea(graphics);
-				postrender(renderContext);
+				render(renderContext);
 			} finally {
 				for (RenderListener listener : m_renderListeners)
 					listener.renderPassFinished(renderContext);
@@ -451,9 +451,9 @@ public class LightweightSystem3D extends LightweightSystem implements
 		/**
 		 * {@inheritDoc}
 		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#postrender()
+		 * @see org.eclipse.draw3d.IFigure3D#render()
 		 */
-		public void postrender(RenderContext renderContext) {
+		public void render(RenderContext renderContext) {
 			renderContext.renderTransparency();
 			Graphics3D g3d = getRenderContext().getGraphics3D();
 
@@ -465,7 +465,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 		 * 
 		 * @see org.eclipse.draw3d.Figure3D#render()
 		 */
-		public void render(RenderContext renderContext) {
+		public void prerender(RenderContext renderContext) {
 
 			// if (log.isLoggable(Level.INFO)) {
 			// log.info("render "+ this); //$NON-NLS-1$

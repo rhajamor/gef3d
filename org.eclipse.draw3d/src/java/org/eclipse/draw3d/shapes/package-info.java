@@ -18,10 +18,10 @@
  * <pre><code>
  * private Shape m_shape = new CuboidFigureShape(this);
  * </code></pre>
- * The shape is then rendered in the figures render or (usually) 
- * postrender method:
+ * The shape is then rendered in the figures prerender or (usually) 
+ * render method:
  * <pre><code>
- * public void postrender() {
+ * public void render() {
  * 		m_shape.render();
  * }
  * </code></pre>

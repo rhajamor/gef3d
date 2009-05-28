@@ -553,16 +553,16 @@ public class Figure3D extends Figure implements IFigure3D {
 
 	/** 
 	 * The default implementation renders nothing.
-	 * @see org.eclipse.draw3d.Renderable#postrender(org.eclipse.draw3d.RenderContext)
+	 * @see org.eclipse.draw3d.Renderable#render(org.eclipse.draw3d.RenderContext)
 	 */
-	public void postrender(RenderContext renderContext) {
+	public void render(RenderContext renderContext) {
 	}
 	
 	/** 
 	 * The default implementation renders nothing.
-	 * @see org.eclipse.draw3d.Renderable#render(org.eclipse.draw3d.RenderContext)
+	 * @see org.eclipse.draw3d.Renderable#prerender(org.eclipse.draw3d.RenderContext)
 	 */
-	public void render(RenderContext renderContext) {
+	public void prerender(RenderContext renderContext) {
 	}
 
 

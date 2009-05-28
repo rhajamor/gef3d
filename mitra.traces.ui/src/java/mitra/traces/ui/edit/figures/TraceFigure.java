@@ -47,10 +47,10 @@ public class TraceFigure extends Figure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#postrender()
+	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void postrender(RenderContext renderContext) {
+	public void render(RenderContext renderContext) {
 		if (isVisible())
 			m_shape.render(renderContext);
 	}

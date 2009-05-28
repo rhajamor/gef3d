@@ -181,7 +181,7 @@ public class Polyline3D extends Figure3D {
 	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void render(RenderContext renderContext) {
+	public void prerender(RenderContext renderContext) {
 
 		m_shape.setPoints(points);
 

@@ -14,8 +14,8 @@ package org.eclipse.draw3d;
  * General interface for objects to be rendered. Rendering is performed three
  * pass:
  * <ul>
- * <li>Firstly render is called</li>
- * <li>Secondly postrender is called, this is usually done after possible
+ * <li>Firstly prerender is called</li>
+ * <li>Secondly render is called, this is usually done after possible
  * children have been rendered, i.e. after textures were updated</li>
  * <li>Transparent parts of the object are stored in renderState and are
  * rendered after everything else has been rendered</li>
@@ -32,9 +32,9 @@ public interface Renderable {
 	 * <strong>before</strong> children are rendered, i.e. textures created by
 	 * children may not be created yet.
 	 * 
-	 * @see #postrender()
+	 * @see #render()
 	 */
-	public void render(RenderContext renderContext);
+	public void prerender(RenderContext renderContext);
 
 	/**
 	 * This method is responsible of rendering to the screen. It is called (via
@@ -42,7 +42,7 @@ public interface Renderable {
 	 * <strong>after</strong> children were rendered, i.e. textures created by
 	 * children are created.
 	 * 
-	 * @see #render()
+	 * @see #prerender()
 	 */
-	public void postrender(RenderContext renderContext);
+	public void render(RenderContext renderContext);
 }

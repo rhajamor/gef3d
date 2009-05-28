@@ -612,8 +612,8 @@ public class Figure3DHelper {
 		g3d.deactivateGraphics2D();
 
 		IFigure3D figure = m_figuresFriend.figure;
+		figure.prerender(renderContext);
 		figure.render(renderContext);
-		figure.postrender(renderContext);
 	}
 
 	/**

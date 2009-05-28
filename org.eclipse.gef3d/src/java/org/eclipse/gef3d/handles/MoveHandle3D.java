@@ -150,10 +150,10 @@ public class MoveHandle3D extends AbstractHandle3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#postrender()
+	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void postrender(RenderContext renderContext) {
+	public void render(RenderContext renderContext) {
 		int alpha = getAlpha();
 		// IMatrix4f modelMatrix = getModelMatrix();
 		Position3D position3D = getPosition3D();

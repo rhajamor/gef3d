@@ -25,7 +25,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
-
 /**
  * GraphFigure3D There should really be more documentation here.
  * 
@@ -39,8 +38,8 @@ public class VertexFigure3D extends Figure3D {
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger.getLogger(VertexFigure3D.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(VertexFigure3D.class.getName());
 
 	private Shape m_shape = new CuboidFigureShape(this);
 
@@ -53,33 +52,29 @@ public class VertexFigure3D extends Figure3D {
 		Color c = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
 		this.setBackgroundColor(c);
 		this.setAlpha(0xBB);
-		
-		
+
 		Vector3f v = new Vector3fImpl(getSize3D());
 		v.setZ(50);
 		this.setSize3D(v);
-		
+
 		add(new Label("Node " + counter));
 		number = counter;
 		counter++;
-		
-		
-		
-//		add(new Label("---------"));
-//		add(new Label("+ someAttrib"));
-//		add(new Label("---------"));
-//		add(new Label("+ someOp()"));
+
+		// add(new Label("---------"));
+		// add(new Label("+ someAttrib"));
+		// add(new Label("---------"));
+		// add(new Label("+ someOp()"));
 
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#postrender()
+	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void postrender(RenderContext renderContext) {
-
+	public void render(RenderContext renderContext) {
 		m_shape.render(renderContext);
 	}
 

@@ -22,8 +22,6 @@ import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.graphics.Color;
 
-
-
 /**
  * ConnectedElementFigure There should really be more documentation here.
  * 
@@ -36,8 +34,8 @@ public class ConnectedElementFigure extends Figure3D {
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger
-			.getLogger(ConnectedElementFigure.class.getName());
+	private static final Logger log =
+		Logger.getLogger(ConnectedElementFigure.class.getName());
 
 	private Shape m_shape = new CuboidFigureShape(this);
 
@@ -56,15 +54,12 @@ public class ConnectedElementFigure extends Figure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#postrender()
+	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void postrender(RenderContext renderContext) {
-
+	public void render(RenderContext renderContext) {
 		m_shape.render(renderContext);
 	}
-
-	
 
 	public void setTag(String strTag) {
 		tagLabel.setText(strTag);

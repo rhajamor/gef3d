@@ -65,10 +65,10 @@ public class FeedbackFigure3D extends Figure3D implements TransparentObject {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render(org.eclipse.draw3d.RenderContext)
+	 * @see org.eclipse.draw3d.Figure3D#prerender(org.eclipse.draw3d.RenderContext)
 	 */
 	@Override
-	public void render(RenderContext renderContext) {
+	public void prerender(RenderContext renderContext) {
 		if (renderContext.getMode().isPaint())
 			renderContext.addTransparentObject(this);
 	}

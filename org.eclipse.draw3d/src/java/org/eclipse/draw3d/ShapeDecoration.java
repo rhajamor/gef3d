@@ -44,10 +44,10 @@ public class ShapeDecoration extends Figure3D implements RotatableDecoration3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#postrender()
+	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void postrender(RenderContext renderContext) {
+	public void render(RenderContext renderContext) {
 
 		m_shape.render(renderContext);
 	}
