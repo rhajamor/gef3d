@@ -42,6 +42,7 @@ import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.widgets.Display;
 import org.lwjgl.opengl.GL11;
 
@@ -49,15 +50,15 @@ import org.lwjgl.opengl.GL11;
  * Allows drawing to a texture object directly using OpenGL. The following
  * OpenGL state is expected:
  * <ul>
- * <li>{@value GL11#GLTEXTURE_2D} enabled</li>
- * <li>{@value GL11#GL_BLEND} enabled</li>
+ * <li>{@link GL11#GL_TEXTURE_2D} enabled</li>
+ * <li>{@link GL11#GL_BLEND} enabled</li>
  * <li>{@link GL11#glBlendFunc(int, int)} with arguments
  * {@link GL11#GL_SRC_ALPHA}, {@link GL11#ONE_MINUS_SRC_ALPHA}</li>
- * <li>GL shade model {@value GL11#GL_FLAT}</li>
- * <li>{@value GL11#GL_DEPTH_TEST} disabled</li>
- * <li>{@value GL11#GL_CULL_FACE} disabled</li>
- * <li>{@value GL11#GL_LINE_SMOOTH} enabled and
- * {@value GL11#GL_LINE_SMOOTH_HINT} set to {@value GL11#GL_NICEST}</li>
+ * <li>GL shade model {@link GL11#GL_FLAT}</li>
+ * <li>{@link GL11#GL_DEPTH_TEST} disabled</li>
+ * <li>{@link GL11#GL_CULL_FACE} disabled</li>
+ * <li>{@link GL11#GL_LINE_SMOOTH} enabled and {@link GL11#GL_LINE_SMOOTH_HINT}
+ * set to {@link GL11#GL_NICEST}</li>
  * <li>viewport and projection matrix must be set up for orthographic 2D
  * projection like this:<br>
  * <code>gluOrtho2D(0, width, height, 0);<br>
@@ -67,8 +68,8 @@ import org.lwjgl.opengl.GL11;
  * not only will rasterization be incorrect, but clipping planes will not work
  * either.</li>
  * </ul>
- * The following matrices and attribute groups may be modified and should be
- * saved:
+ * The following matrices and attribute groups may be modified by this class and
+ * should be saved:
  * <ul>
  * <li>{@link GL11#GL_LIGHTING_BIT}</li>
  * <li>{@link GL11#GL_CURRENT_BIT}</li>
@@ -77,6 +78,37 @@ import org.lwjgl.opengl.GL11;
  * <li>{@link GL11#GL_POLYGON_BIT}</li>
  * <li>{@link GL11#GL_TEXTURE_BIT}</li>
  * </ul>
+ * <h3>Limitations</h3> The following functions are not supported and will throw
+ * an exception:
+ * <ul>
+ * <li>{@link Graphics#drawPath(org.eclipse.swt.graphics.Path)}</li>
+ * <li>{@link Graphics#drawText(String, org.eclipse.draw2d.geometry.Point, int)}
+ * </li>
+ * <li>{@link Graphics#drawText(String, int, int, int)}</li>
+ * <li>
+ * {@link Graphics#drawTextLayout(org.eclipse.swt.graphics.TextLayout, int, int)}
+ * </li>
+ * <li>
+ * {@link Graphics#drawTextLayout(org.eclipse.swt.graphics.TextLayout, int, int, int, int, Color, Color)}
+ * </li>
+ * <li>{@link Graphics#fillPath(org.eclipse.swt.graphics.Path)}</li>
+ * <li>{@link Graphics#rotate(float)}</li>
+ * <li>{@link Graphics#setClip(org.eclipse.swt.graphics.Path)}</li>
+ * <li>{@link Graphics#shear(float, float)}</li>
+ * </ul>
+ * The following functions are implemented, but will be ignored:
+ * <ul>
+ * <li>{@link Graphics#setAntialias(int)}</li>
+ * <li>{@link Graphics#setBackgroundPattern(Pattern)}</li>
+ * <li>{@link Graphics#setInterpolation(int)}</li>
+ * <li>{@link Graphics#setFillRule(int)}</li>
+ * <li>{@link Graphics#setLineCap(int)}</li>
+ * <li>{@link Graphics#setLineJoin(int)}</li>
+ * <li>{@link Graphics#setTextAntialias(int)}</li>
+ * </ul>
+ * Even if a setter is ignored, its corresponding getter will return the value
+ * that was set before, with support for {@link #popState()} and
+ * {@link #restoreState()}.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -84,6 +116,7 @@ import org.lwjgl.opengl.GL11;
  * @todo revisit the method of calculating the number of segments to draw for an
  *       arc, since it will work for small arcs, but it will draw too many
  *       segments for long arcs, resulting in a performance penalty
+ * @todo implement the unsupported methods
  */
 public class LwjglGraphics extends Graphics {
 
@@ -94,31 +127,44 @@ public class LwjglGraphics extends Graphics {
 	 * @author Kristian Duske
 	 * @version $Revision$
 	 * @since 08.03.2008
-	 * @see $HeadURL:
-	 *      https://gorgo.fernuni-hagen.de/OpenglGEF/trunk/org.eclipse.draw3d
-	 *      /src/java/de/feu/draw3d/texture/ChainedGraphicsState.java $
 	 */
 	private class GraphicsState {
 
 		private Integer m_alpha;
 
+		private Integer m_antialias;
+
 		private Color m_backgroundColor;
 
+		private Pattern m_backgroundPattern;
+
 		private Rectangle m_clip;
+
+		private Integer m_fillRule;
 
 		private Font m_font;
 
 		private Color m_foregroundColor;
 
+		private Pattern m_foregroundPattern;
+
+		private Integer m_interpolation;
+
+		private Integer m_lineCap;
+
 		private int[] m_lineDash;
 
 		private int m_lineDashLength;
+
+		private Integer m_lineJoin;
 
 		private Integer m_lineStyle;
 
 		private Integer m_lineWidth;
 
 		private final GraphicsState m_parentState;
+
+		private Integer m_textAntialias;
 
 		private Matrix4fImpl m_transformation;
 
@@ -132,6 +178,27 @@ public class LwjglGraphics extends Graphics {
 		public GraphicsState(GraphicsState i_parentState) {
 
 			m_parentState = i_parentState;
+		}
+
+		public Pattern getForegroundPattern() {
+
+			if (m_foregroundPattern != null)
+				return m_foregroundPattern;
+
+			if (m_parentState != null)
+				return m_parentState.getForegroundPattern();
+
+			return null;
+		}
+
+		/**
+		 * Sets the foreground pattern of this graphics state.
+		 * 
+		 * @param i_foregroundPattern the foreground pattern
+		 */
+		public void setForegroundPattern(Pattern i_foregroundPattern) {
+
+			m_foregroundPattern = i_foregroundPattern;
 		}
 
 		/**
@@ -169,6 +236,19 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		/**
+		 * Returns the antialias value for this graphics state.
+		 * 
+		 * @return the antialias value for this graphics state.
+		 */
+		public int getAntialias() {
+
+			if (m_antialias != null)
+				return m_antialias;
+
+			return m_parentState.getAntialias();
+		}
+
+		/**
 		 * Returns the background color of this graphics state.
 		 * 
 		 * @return the background color
@@ -182,6 +262,22 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		/**
+		 * Returns the background pattern of this graphics state.
+		 * 
+		 * @return the background pattern
+		 */
+		public Pattern getBackgroundPattern() {
+
+			if (m_backgroundPattern != null)
+				return m_backgroundPattern;
+
+			if (m_parentState != null)
+				return m_parentState.getBackgroundPattern();
+
+			return null;
+		}
+
+		/**
 		 * Returns the clip rectangle of this state.
 		 * 
 		 * @return the clip rectangle
@@ -192,6 +288,19 @@ public class LwjglGraphics extends Graphics {
 				return m_clip;
 
 			return m_parentState.getClip();
+		}
+
+		/**
+		 * Returns the fill rule of this graphics state.
+		 * 
+		 * @return the fill rule of this graphics state
+		 */
+		public int getFillRule() {
+
+			if (m_fillRule != null)
+				return m_fillRule;
+
+			return m_parentState.getFillRule();
 		}
 
 		/**
@@ -221,6 +330,27 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		/**
+		 * Returns the interpolation setting for this graphics state.
+		 * 
+		 * @return the interpolation setting
+		 */
+		public int getInterpolation() {
+
+			if (m_interpolation != null)
+				return m_interpolation;
+
+			return m_parentState.getInterpolation();
+		}
+
+		public int getLineCap() {
+
+			if (m_lineCap != null)
+				return m_lineCap;
+
+			return m_parentState.getLineCap();
+		}
+
+		/**
 		 * Returns the custom line dash pattern.
 		 * 
 		 * @return the custom line dash pattern
@@ -246,6 +376,14 @@ public class LwjglGraphics extends Graphics {
 				return m_lineDashLength;
 
 			return m_parentState.getLineDashLength();
+		}
+
+		public int getLineJoin() {
+
+			if (m_lineJoin != null)
+				return m_lineJoin;
+
+			return m_parentState.getLineJoin();
 		}
 
 		/**
@@ -285,6 +423,19 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		/**
+		 * Returns the text antialias value of this graphics state.
+		 * 
+		 * @return the text antialias value
+		 */
+		public int getTextAntialias() {
+
+			if (m_textAntialias != null)
+				return m_textAntialias;
+
+			return m_parentState.getTextAntialias();
+		}
+
+		/**
 		 * Returns the transformation matrix of this graphics state.
 		 * 
 		 * @return the transformation matrix
@@ -310,24 +461,24 @@ public class LwjglGraphics extends Graphics {
 
 		/**
 		 * Scales the current transformation and corrects the clipping rectangle
-		 * by the given factor.
+		 * by the given factors.
 		 * 
-		 * @param i_factor the scaling factor
+		 * @param i_horizontal the horizontal scaling factor
+		 * @param i_vertical the vertical scaling factor
 		 */
-		public void scale(double i_factor) {
+		public void scale(float i_horizontal, float i_vertical) {
 
 			if (m_transformation == null)
 				m_transformation = new Matrix4fImpl();
 
-			float f = (float) i_factor;
-			TMP_V3.set(f, f, 0);
+			TMP_V3.set(i_horizontal, i_vertical, 0);
 
 			Math3D.scale(TMP_V3, m_transformation, m_transformation);
 
 			if (m_clip == null)
 				m_clip = new Rectangle(m_parentState.getClip());
 
-			m_clip.scale(1f / i_factor);
+			m_clip.scale(i_horizontal, i_vertical);
 		}
 
 		/**
@@ -341,6 +492,16 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		/**
+		 * Sets the antialias value for this graphics state.
+		 * 
+		 * @param i_antialias the antialias value
+		 */
+		public void setAntialias(int i_antialias) {
+
+			m_antialias = i_antialias;
+		}
+
+		/**
 		 * Sets the background color of this graphics state.
 		 * 
 		 * @param i_backgroundColor the new background color
@@ -348,6 +509,16 @@ public class LwjglGraphics extends Graphics {
 		public void setBackgroundColor(Color i_backgroundColor) {
 
 			m_backgroundColor = i_backgroundColor;
+		}
+
+		/**
+		 * Sets the background pattern of this graphics state.
+		 * 
+		 * @param i_backgroundPattern the background pattern
+		 */
+		public void setBackgroundPattern(Pattern i_backgroundPattern) {
+
+			m_backgroundPattern = i_backgroundPattern;
 		}
 
 		/**
@@ -371,6 +542,16 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		/**
+		 * Sets the fill rule of this graphics state.
+		 * 
+		 * @param i_fillRule the fill rule of this graphics state
+		 */
+		public void setFillRule(int i_fillRule) {
+
+			m_fillRule = i_fillRule;
+		}
+
+		/**
 		 * Sets the font of this graphics state.
 		 * 
 		 * @param i_font the font
@@ -391,6 +572,26 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		/**
+		 * Sets the interpolation setting for this graphics state.
+		 * 
+		 * @param i_interpolation the interpolation setting
+		 */
+		public void setInterpolation(int i_interpolation) {
+
+			m_interpolation = i_interpolation;
+		}
+
+		/**
+		 * Sets the line cap value of this graphics state.
+		 * 
+		 * @param i_lineCap the line cap value
+		 */
+		public void setLineCap(int i_lineCap) {
+
+			m_lineCap = i_lineCap;
+		}
+
+		/**
 		 * Sets the custom line dash pattern.
 		 * 
 		 * @param i_lineDash the custom line dash pattern
@@ -403,6 +604,16 @@ public class LwjglGraphics extends Graphics {
 			if (m_lineDash != null)
 				for (int i = 0; i < m_lineDash.length; i++)
 					m_lineDashLength += m_lineDash[i];
+		}
+
+		/**
+		 * Sets the line join value of this graphics state.
+		 * 
+		 * @param i_lineJoin the line join value
+		 */
+		public void setLineJoin(int i_lineJoin) {
+
+			m_lineJoin = i_lineJoin;
 		}
 
 		/**
@@ -423,6 +634,16 @@ public class LwjglGraphics extends Graphics {
 		public void setLineWidth(int i_lineWidth) {
 
 			m_lineWidth = i_lineWidth;
+		}
+
+		/**
+		 * Sets the text antialias value of this graphics state.
+		 * 
+		 * @param i_textAntialias the text antialias value
+		 */
+		public void setTextAntialias(int i_textAntialias) {
+
+			m_textAntialias = i_textAntialias;
 		}
 
 		/**
@@ -455,7 +676,7 @@ public class LwjglGraphics extends Graphics {
 		 * @param i_dX the X translation
 		 * @param i_dY the Y translation
 		 */
-		public void translate(int i_dX, int i_dY) {
+		public void translate(float i_dX, float i_dY) {
 
 			if (m_transformation == null)
 				m_transformation = new Matrix4fImpl();
@@ -466,7 +687,9 @@ public class LwjglGraphics extends Graphics {
 			if (m_clip == null)
 				m_clip = new Rectangle(m_parentState.getClip());
 
-			m_clip.translate(-i_dX, -i_dY);
+			// TODO: This could be trouble. We may have to store the clipping
+			// rect differently (with float precisions).
+			m_clip.translate(Math.round(-i_dX), Math.round(-i_dY));
 		}
 	}
 
@@ -553,8 +776,10 @@ public class LwjglGraphics extends Graphics {
 	 * 
 	 * @param i_width the width of this graphics object
 	 * @param i_height the height of this graphics object
+	 * @param i_fontManager to the font manager to use
 	 */
-	public LwjglGraphics(int i_width, int i_height, LwjglFontManager fontManager) {
+	public LwjglGraphics(int i_width, int i_height,
+			LwjglFontManager i_fontManager) {
 
 		setDimensions(i_width, i_height);
 		initDefaultGraphicsState();
@@ -564,7 +789,7 @@ public class LwjglGraphics extends Graphics {
 		glSetLineStyle();
 		glSetXORMode();
 
-		setFontManager(fontManager);
+		setFontManager(i_fontManager);
 	}
 
 	private void checkDisposed() {
@@ -1121,7 +1346,22 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public int getAlpha() {
 
+		checkDisposed();
+
 		return m_state.getAlpha();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#getAntialias()
+	 */
+	@Override
+	public int getAntialias() {
+
+		checkDisposed();
+
+		return m_state.getAntialias();
 	}
 
 	/**
@@ -1151,6 +1391,19 @@ public class LwjglGraphics extends Graphics {
 		i_rect.setBounds(clip);
 
 		return i_rect;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#getFillRule()
+	 */
+	@Override
+	public int getFillRule() {
+
+		checkDisposed();
+
+		return m_state.getFillRule();
 	}
 
 	/**
@@ -1196,6 +1449,32 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#getInterpolation()
+	 */
+	@Override
+	public int getInterpolation() {
+
+		checkDisposed();
+
+		return m_state.getInterpolation();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#getLineJoin()
+	 */
+	@Override
+	public int getLineJoin() {
+
+		checkDisposed();
+
+		return m_state.getLineJoin();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#getLineStyle()
 	 */
 	@Override
@@ -1217,6 +1496,19 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		return m_state.getLineWidth();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#getTextAntialias()
+	 */
+	@Override
+	public int getTextAntialias() {
+
+		checkDisposed();
+
+		return m_state.getTextAntialias();
 	}
 
 	/**
@@ -1700,6 +1992,8 @@ public class LwjglGraphics extends Graphics {
 
 		m_defaultState.setLineWidth(1);
 		m_defaultState.setLineStyle(SWT.LINE_SOLID);
+		m_defaultState.setLineCap(SWT.CAP_FLAT);
+		m_defaultState.setLineJoin(SWT.JOIN_MITER);
 
 		m_defaultState.setFont(display.getSystemFont());
 
@@ -1708,6 +2002,12 @@ public class LwjglGraphics extends Graphics {
 
 		m_defaultState.setTransformation(Matrix4f.IDENTITY);
 		m_defaultState.setXORMode(false);
+
+		m_defaultState.setAntialias(SWT.ON);
+		m_defaultState.setInterpolation(SWT.NONE);
+		m_defaultState.setTextAntialias(SWT.ON);
+
+		m_defaultState.setFillRule(SWT.FILL_WINDING);
 
 		m_state = new GraphicsState(m_defaultState);
 	}
@@ -1771,13 +2071,24 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void scale(double i_amount) {
 
+		scale((float) i_amount, (float) i_amount);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#scale(float, float)
+	 */
+	@Override
+	public void scale(float i_horizontal, float i_vertical) {
+
 		checkDisposed();
 
-		if (i_amount == 0)
+		if (i_horizontal == 0 && i_vertical == 0)
 			return;
 
-		m_state.scale(i_amount);
-		GL11.glScaled(i_amount, i_amount, 0);
+		m_state.scale(i_horizontal, i_vertical);
+		GL11.glScalef(i_horizontal, i_vertical, 0);
 		glSetClip();
 	}
 
@@ -1797,6 +2108,19 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#setAntialias(int)
+	 */
+	@Override
+	public void setAntialias(int i_antialias) {
+
+		checkDisposed();
+
+		m_state.setAntialias(i_antialias);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#setBackgroundColor(org.eclipse.swt.graphics.Color)
 	 */
 	@Override
@@ -1805,6 +2129,19 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		m_state.setBackgroundColor(i_backgroundColor);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setBackgroundPattern(org.eclipse.swt.graphics.Pattern)
+	 */
+	@Override
+	public void setBackgroundPattern(Pattern i_backgroundPattern) {
+
+		checkDisposed();
+
+		m_state.setBackgroundPattern(i_backgroundPattern);
 	}
 
 	/**
@@ -1837,8 +2174,23 @@ public class LwjglGraphics extends Graphics {
 	 */
 	public void setDimensions(int i_width, int i_height) {
 
+		checkDisposed();
+
 		m_width = i_width;
 		m_height = i_height;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setFillRule(int)
+	 */
+	@Override
+	public void setFillRule(int i_fillRule) {
+
+		checkDisposed();
+
+		m_state.setFillRule(i_fillRule);
 	}
 
 	/**
@@ -1889,6 +2241,19 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#setInterpolation(int)
+	 */
+	@Override
+	public void setInterpolation(int i_interpolation) {
+
+		checkDisposed();
+
+		m_state.setInterpolation(i_interpolation);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#setLineDash(int[])
 	 */
 	@Override
@@ -1910,6 +2275,19 @@ public class LwjglGraphics extends Graphics {
 
 		m_state.setLineDash(i_dash);
 		glSetLineStyle();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setLineJoin(int)
+	 */
+	@Override
+	public void setLineJoin(int i_lineJoin) {
+
+		checkDisposed();
+
+		m_state.setLineJoin(i_lineJoin);
 	}
 
 	/**
@@ -1953,6 +2331,19 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#setTextAntialias(int)
+	 */
+	@Override
+	public void setTextAntialias(int i_textAntialias) {
+
+		checkDisposed();
+
+		m_state.setTextAntialias(i_textAntialias);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#setXORMode(boolean)
 	 */
 	@Override
@@ -1975,13 +2366,24 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void translate(int i_dX, int i_dY) {
 
+		translate((float) i_dX, (float) i_dY);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#translate(float, float)
+	 */
+	@Override
+	public void translate(float i_dx, float i_dy) {
+
 		checkDisposed();
 
-		if (i_dX == 0 && i_dY == 0)
+		if (i_dx == 0 && i_dy == 0)
 			return;
 
-		m_state.translate(i_dX, i_dY);
-		GL11.glTranslatef(i_dX, i_dY, 0);
+		m_state.translate(i_dx, i_dy);
+		GL11.glTranslatef(i_dx, i_dy, 0);
 		glSetClip();
 	}
 }
