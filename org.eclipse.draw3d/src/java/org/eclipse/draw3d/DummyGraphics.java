@@ -42,7 +42,7 @@ public class DummyGraphics extends Graphics {
 
 	private Color m_backgroundColor;
 
-	private int m_fillRule = SWT.FILL_EVEN_ODD;
+	private int m_fillRule = SWT.FILL_WINDING;
 
 	private Font m_font;
 
@@ -64,8 +64,6 @@ public class DummyGraphics extends Graphics {
 
 	/**
 	 * Creates a new instance.
-	 * 
-	 * @param i_log specifies whether logging should be enabled
 	 */
 	public DummyGraphics() {
 
@@ -430,12 +428,10 @@ public class DummyGraphics extends Graphics {
 	public Rectangle getClip(Rectangle i_rect) {
 
 		/*
-		i_rect.x = 0;
-		i_rect.y = 0;
-		i_rect.width = Integer.MAX_VALUE;
-		i_rect.height = Integer.MAX_VALUE;
-		*/
-		
+		 * i_rect.x = 0; i_rect.y = 0; i_rect.width = Integer.MAX_VALUE;
+		 * i_rect.height = Integer.MAX_VALUE;
+		 */
+
 		return i_rect;
 	}
 

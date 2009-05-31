@@ -92,9 +92,7 @@ import org.lwjgl.opengl.GL11;
  * {@link Graphics#drawTextLayout(org.eclipse.swt.graphics.TextLayout, int, int, int, int, Color, Color)}
  * </li>
  * <li>{@link Graphics#fillPath(org.eclipse.swt.graphics.Path)}</li>
- * <li>{@link Graphics#rotate(float)}</li>
  * <li>{@link Graphics#setClip(org.eclipse.swt.graphics.Path)}</li>
- * <li>{@link Graphics#shear(float, float)}</li>
  * </ul>
  * The following functions are implemented, but will be ignored:
  * <ul>
@@ -178,27 +176,6 @@ public class LwjglGraphics extends Graphics {
 		public GraphicsState(GraphicsState i_parentState) {
 
 			m_parentState = i_parentState;
-		}
-
-		public Pattern getForegroundPattern() {
-
-			if (m_foregroundPattern != null)
-				return m_foregroundPattern;
-
-			if (m_parentState != null)
-				return m_parentState.getForegroundPattern();
-
-			return null;
-		}
-
-		/**
-		 * Sets the foreground pattern of this graphics state.
-		 * 
-		 * @param i_foregroundPattern the foreground pattern
-		 */
-		public void setForegroundPattern(Pattern i_foregroundPattern) {
-
-			m_foregroundPattern = i_foregroundPattern;
 		}
 
 		/**
@@ -327,6 +304,17 @@ public class LwjglGraphics extends Graphics {
 				return m_foregroundColor;
 
 			return m_parentState.getForegroundColor();
+		}
+
+		public Pattern getForegroundPattern() {
+
+			if (m_foregroundPattern != null)
+				return m_foregroundPattern;
+
+			if (m_parentState != null)
+				return m_parentState.getForegroundPattern();
+
+			return null;
 		}
 
 		/**
@@ -474,11 +462,6 @@ public class LwjglGraphics extends Graphics {
 			TMP_V3.set(i_horizontal, i_vertical, 0);
 
 			Math3D.scale(TMP_V3, m_transformation, m_transformation);
-
-			if (m_clip == null)
-				m_clip = new Rectangle(m_parentState.getClip());
-
-			m_clip.scale(i_horizontal, i_vertical);
 		}
 
 		/**
@@ -572,6 +555,16 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		/**
+		 * Sets the foreground pattern of this graphics state.
+		 * 
+		 * @param i_foregroundPattern the foreground pattern
+		 */
+		public void setForegroundPattern(Pattern i_foregroundPattern) {
+
+			m_foregroundPattern = i_foregroundPattern;
+		}
+
+		/**
 		 * Sets the interpolation setting for this graphics state.
 		 * 
 		 * @param i_interpolation the interpolation setting
@@ -652,6 +645,7 @@ public class LwjglGraphics extends Graphics {
 		 * @param i_transformation the current transformation
 		 */
 		public void setTransformation(IMatrix4f i_transformation) {
+
 			if (m_transformation == null)
 				m_transformation = new Matrix4fImpl(i_transformation);
 			else
@@ -670,6 +664,25 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		/**
+		 * Shears the current transformation and corrects the clipping rectangle
+		 * by the given amounts.
+		 * 
+		 * @param i_horz the horizontal shearing amount
+		 * @param i_vert the vertical shearing amount
+		 */
+		public void shear(float i_horz, float i_vert) {
+
+			if (m_transformation == null)
+				m_transformation = new Matrix4fImpl();
+
+			TMP_M4.setIdentity();
+			TMP_M4.a21 = i_horz;
+			TMP_M4.a12 = i_vert;
+
+			Math3D.mul(TMP_M4, m_transformation, m_transformation);
+		}
+
+		/**
 		 * Translates the current transformation and corrects the clipping
 		 * rectangle by the given amounts.
 		 * 
@@ -683,13 +696,31 @@ public class LwjglGraphics extends Graphics {
 
 			TMP_V3.set(i_dX, i_dY, 0);
 			Math3D.translate(TMP_V3, m_transformation, m_transformation);
+		}
 
-			if (m_clip == null)
-				m_clip = new Rectangle(m_parentState.getClip());
+		/**
+		 * Rotates the coordinates system by the given angle counterclockwise.
+		 * 
+		 * @param i_degrees the rotation angle in degrees
+		 */
+		public void rotate(float i_degrees) {
 
-			// TODO: This could be trouble. We may have to store the clipping
-			// rect differently (with float precisions).
-			m_clip.translate(Math.round(-i_dX), Math.round(-i_dY));
+			if (m_transformation == null)
+				m_transformation = new Matrix4fImpl();
+
+			// don't use Math3d.rotate() here because when rotating about the z
+			// axis, we can use a shorthand:
+			double radians = Math.toRadians(i_degrees);
+			float sin = (float) Math.sin(radians);
+			float cos = (float) Math.cos(radians);
+
+			TMP_M4.setIdentity();
+			TMP_M4.a11 = cos;
+			TMP_M4.a21 = sin;
+			TMP_M4.a22 = cos;
+			TMP_M4.a12 = -sin;
+
+			Math3D.mul(TMP_M4, m_transformation, m_transformation);
 		}
 	}
 
@@ -1050,15 +1081,15 @@ public class LwjglGraphics extends Graphics {
 		if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
 			m_currentLinePattern.activate();
 			try {
-				GL11.glBegin(GL11.GL_POLYGON);
-				glDrawTexturedPointList(i_points);
+				GL11.glBegin(GL11.GL_LINE_STRIP);
+				glDrawTexturedPointList(i_points, true);
 				GL11.glEnd();
 			} finally {
 				m_currentLinePattern.deactivate();
 			}
 		} else {
-			GL11.glBegin(GL11.GL_POLYGON);
-			glDrawPointList(i_points);
+			GL11.glBegin(GL11.GL_LINE_STRIP);
+			glDrawPointList(i_points, true);
 			GL11.glEnd();
 		}
 	}
@@ -1082,14 +1113,14 @@ public class LwjglGraphics extends Graphics {
 			m_currentLinePattern.activate();
 			try {
 				GL11.glBegin(GL11.GL_LINE_STRIP);
-				glDrawTexturedPointList(i_points);
+				glDrawTexturedPointList(i_points, false);
 				GL11.glEnd();
 			} finally {
 				m_currentLinePattern.deactivate();
 			}
 		} else {
 			GL11.glBegin(GL11.GL_LINE_STRIP);
-			glDrawPointList(i_points);
+			glDrawPointList(i_points, false);
 			GL11.glEnd();
 		}
 	}
@@ -1110,14 +1141,16 @@ public class LwjglGraphics extends Graphics {
 		if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
 			m_currentLinePattern.activate();
 			try {
-				GL11.glBegin(GL11.GL_POLYGON);
+				GL11.glBegin(GL11.GL_LINE_STRIP);
 				glDrawTexturedRectangle(i_x, i_y, i_width, i_height);
 				GL11.glEnd();
 			} finally {
 				m_currentLinePattern.deactivate();
 			}
 		} else {
-			glDrawRectangle(i_x, i_y, i_width, i_height);
+			GL11.glBegin(GL11.GL_LINE_STRIP);
+			glDrawRectangle(i_x, i_y, i_width, i_height, true);
+			GL11.glEnd();
 		}
 
 		/*-
@@ -1264,7 +1297,7 @@ public class LwjglGraphics extends Graphics {
 		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 
 		GL11.glBegin(GL11.GL_POLYGON);
-		glDrawPointList(i_points);
+		glDrawPointList(i_points, false);
 		GL11.glEnd();
 	}
 
@@ -1281,7 +1314,7 @@ public class LwjglGraphics extends Graphics {
 		glSetBackgroundColor();
 		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 
-		glDrawRectangle(i_x, i_y, i_width, i_height);
+		glDrawRectangle(i_x, i_y, i_width, i_height, false);
 	}
 
 	/**
@@ -1552,7 +1585,7 @@ public class LwjglGraphics extends Graphics {
 		GL11.glVertex2d(x, y);
 	}
 
-	private void glDrawPointList(PointList i_points) {
+	private void glDrawPointList(PointList i_points, boolean i_close) {
 
 		int[] vertices = i_points.toIntArray();
 		for (int i = 0; i < vertices.length; i = i + 2) {
@@ -1561,16 +1594,26 @@ public class LwjglGraphics extends Graphics {
 
 			GL11.glVertex2i(x, y);
 		}
+
+		if (i_close && vertices.length > 1)
+			GL11.glVertex2i(vertices[0], vertices[1]);
 	}
 
-	private void glDrawRectangle(int i_x, int i_y, int i_width, int i_height) {
+	private void glDrawRectangle(int i_x, int i_y, int i_width, int i_height,
+			boolean i_close) {
 
 		int x1 = i_x;
 		int y1 = i_y + i_height;
 		int x2 = i_x + i_width;
 		int y2 = i_y;
 
-		GL11.glRecti(x1, y1, x2, y2);
+		GL11.glVertex2i(x1, y1);
+		GL11.glVertex2i(x1, y2);
+		GL11.glVertex2i(x2, y2);
+		GL11.glVertex2i(x2, y1);
+
+		if (i_close)
+			GL11.glVertex2i(x1, y1);
 	}
 
 	private void glDrawRoundRectangle(Rectangle i_r, int i_arcWidth,
@@ -1666,7 +1709,8 @@ public class LwjglGraphics extends Graphics {
 		return s;
 	}
 
-	private void glDrawTexturedPointList(PointList i_points) {
+	private void glDrawTexturedPointList(PointList i_points, boolean i_close) {
+
 		int[] vertices = i_points.toIntArray();
 
 		if (vertices.length > 1) {
@@ -1688,6 +1732,15 @@ public class LwjglGraphics extends Graphics {
 
 				lastX = x;
 				lastY = y;
+			}
+
+			if (i_close) {
+				int x = vertices[0];
+				int y = vertices[1];
+				s += m_currentLinePattern.getS(lastX, lastY, x, y);
+
+				GL11.glTexCoord1d(s);
+				GL11.glVertex2i(x, y);
 			}
 		}
 	}
@@ -1715,6 +1768,10 @@ public class LwjglGraphics extends Graphics {
 		s += m_currentLinePattern.getS(x2, y2, x2, y1);
 		GL11.glTexCoord1d(s);
 		GL11.glVertex2i(x2, y1);
+
+		s += m_currentLinePattern.getS(x2, y1, x1, y1);
+		GL11.glTexCoord1d(s);
+		GL11.glVertex2i(x1, y1);
 	}
 
 	private void glDrawTexturedRoundRectangle(Rectangle i_r, int i_arcWidth,
@@ -2089,7 +2146,6 @@ public class LwjglGraphics extends Graphics {
 
 		m_state.scale(i_horizontal, i_vertical);
 		GL11.glScalef(i_horizontal, i_vertical, 0);
-		glSetClip();
 	}
 
 	/**
@@ -2361,12 +2417,40 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw2d.Graphics#translate(int, int)
+	 * @see org.eclipse.draw2d.Graphics#shear(float, float)
 	 */
 	@Override
-	public void translate(int i_dX, int i_dY) {
+	public void shear(float i_horz, float i_vert) {
 
-		translate((float) i_dX, (float) i_dY);
+		checkDisposed();
+
+		if (i_horz == 0 && i_vert == 0)
+			return;
+
+		m_state.shear(i_horz, i_vert);
+		TMP_M4.setIdentity();
+		TMP_M4.a21 = i_horz;
+		TMP_M4.a12 = i_vert;
+
+		BUF_F16.rewind();
+		TMP_M4.toBufferRowMajor(BUF_F16);
+		BUF_F16.rewind();
+
+		GL11.glMultMatrix(BUF_F16);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#rotate(float)
+	 */
+	@Override
+	public void rotate(float i_degrees) {
+
+		checkDisposed();
+
+		m_state.rotate(i_degrees);
+		GL11.glRotatef(i_degrees, 0, 0, 1);
 	}
 
 	/**
@@ -2384,6 +2468,16 @@ public class LwjglGraphics extends Graphics {
 
 		m_state.translate(i_dx, i_dy);
 		GL11.glTranslatef(i_dx, i_dy, 0);
-		glSetClip();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#translate(int, int)
+	 */
+	@Override
+	public void translate(int i_dX, int i_dY) {
+
+		translate((float) i_dX, (float) i_dY);
 	}
 }

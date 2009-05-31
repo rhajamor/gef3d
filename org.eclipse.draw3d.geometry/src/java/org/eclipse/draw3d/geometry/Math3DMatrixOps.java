@@ -263,16 +263,18 @@ public class Math3DMatrixOps extends Math3DMatrix4f {
 	 * Transforms a given coordinate system (matrix) by rotating it through a
 	 * counterclockwise angle about an axis.
 	 * 
-	 * @param angle
-	 * @param i_rotationAxis
-	 * @param i_matrix
-	 * @param o_result
-	 * @return
-	 * @see W. Straßer: Computergrafik I. FernUniversität in Hagen, Kurs 1278,
+	 * @param angle the rotation angle, in radians
+	 * @param i_rotationAxis the rotation axis
+	 * @param i_matrix the matrix that is to be rotated
+	 * @param o_result the result matrix, if <code>null</code>, a new matrix
+	 *            will be returned
+	 * @return the result matrix
+	 * @see W. Strasser: Computergrafik I. FernUniversitaet in Hagen, Kurs 1278,
 	 *      2007 (S. 116 ff)
 	 */
 	public static Matrix4f rotate(float angle, IVector3f i_rotationAxis,
 			IMatrix4f i_matrix, Matrix4f o_result) {
+
 		Matrix4fImpl m = Matrix4fImpl.cast(i_matrix);
 		Vector3fImpl axis = new Vector3fImpl();
 		Matrix4fImpl result;

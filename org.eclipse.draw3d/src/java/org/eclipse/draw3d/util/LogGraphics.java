@@ -476,7 +476,7 @@ public class LogGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics#getAlpha()
+	 * @see Graphics#getAlpha()
 	 */
 	@Override
 	public int getAlpha() {
@@ -772,7 +772,7 @@ public class LogGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics#setAlpha(int)
+	 * @see org.eclipse.draw2d.Graphics#setAlpha(int)
 	 */
 	@Override
 	public void setAlpha(int i_alpha) {
@@ -947,7 +947,7 @@ public class LogGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics#setLineDash(int[])
+	 * @see org.eclipse.draw2d.Graphics#setLineDash(int[])
 	 */
 	@Override
 	public void setLineDash(int[] i_dash) {
