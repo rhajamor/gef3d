@@ -13,6 +13,7 @@ package org.eclipse.draw3d.shapes;
 import java.util.List;
 
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
@@ -30,7 +31,7 @@ public class PolylineShape implements Shape {
 
 	private final float[] m_color = new float[] { 0, 0, 0, 1 };
 
-	private List<Vector3f> m_points;
+	private List<IVector3f> m_points;
 
 	/**
 	 * {@inheritDoc}
@@ -51,8 +52,8 @@ public class PolylineShape implements Shape {
 		g3d.glColor4f(red, green, blue, alpha);
 
 		g3d.glBegin(Graphics3DDraw.GL_LINE_STRIP);
-		for (Vector3f points : m_points)
-			g3d.glVertex3f(points.getX(), points.getY(), points.getZ());
+		for (IVector3f point : m_points)
+			g3d.glVertex3f(point.getX(), point.getY(), point.getZ());
 		g3d.glEnd();
 	}
 
@@ -85,7 +86,7 @@ public class PolylineShape implements Shape {
 	 * @param i_points the points
 	 * @throws NullPointerException if the given list is <code>null</code>
 	 */
-	public void setPoints(List<Vector3f> i_points) {
+	public void setPoints(List<IVector3f> i_points) {
 
 		if (i_points == null)
 			throw new NullPointerException("i_points must not be null");
@@ -96,7 +97,7 @@ public class PolylineShape implements Shape {
 	/**
 	 * @return the points
 	 */
-	public List<Vector3f> getPoints() {
+	public List<IVector3f> getPoints() {
 		return m_points;
 	}
 

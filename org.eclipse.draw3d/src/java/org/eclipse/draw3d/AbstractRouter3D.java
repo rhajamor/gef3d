@@ -47,7 +47,8 @@ public abstract class AbstractRouter3D extends AbstractRouter implements
 	 *            will be created
 	 * @return The endpoint
 	 */
-	protected IVector3f getEndPoint3D(Connection3D connection, Vector3f io_result) {
+	protected IVector3f getEndPoint3D(Connection3D connection,
+		Vector3f io_result) {
 
 		ConnectionAnchor sourceAnchor = connection.getSourceAnchor();
 		ConnectionAnchor targetAnchor = connection.getTargetAnchor();
@@ -58,17 +59,22 @@ public abstract class AbstractRouter3D extends AbstractRouter implements
 	}
 
 	protected IVector3f getLocation3D(ConnectionAnchor anchor,
-			IVector3f reference, Vector3f io_result) {
+		IVector3f reference, Vector3f io_result) {
 
 		if (anchor instanceof ConnectionAnchor3D) {
 			ConnectionAnchor3D anchor3D = (ConnectionAnchor3D) anchor;
 			return anchor3D.getLocation3D(reference, io_result);
 		} else {
 			IFigure owner = anchor.getOwner();
-			Point p = Figure3DHelper.getLocation(owner, reference);
+			if (owner != null) {
+				Point p = Figure3DHelper.getLocation(owner, reference);
 
-			Point location = anchor.getLocation(p);
-			return Figure3DHelper.getLocation3D(owner, location, io_result);
+				Point location = anchor.getLocation(p);
+				return Figure3DHelper.getLocation3D(owner, location, io_result);
+			} else {
+				throw new IllegalStateException(
+					"Cannot calculate the location of a 2D router with no owner");
+			}
 		}
 	}
 
@@ -81,7 +87,7 @@ public abstract class AbstractRouter3D extends AbstractRouter implements
 	 * @return the reference point
 	 */
 	protected IVector3f getReferencePoint3D(ConnectionAnchor anchor,
-			Vector3f io_result) {
+		Vector3f io_result) {
 
 		if (anchor instanceof ConnectionAnchor3D) {
 			ConnectionAnchor3D anchor3D = (ConnectionAnchor3D) anchor;
@@ -89,7 +95,7 @@ public abstract class AbstractRouter3D extends AbstractRouter implements
 		} else {
 			Point p = anchor.getReferencePoint();
 			return Figure3DHelper
-					.getLocation3D(anchor.getOwner(), p, io_result);
+				.getLocation3D(anchor.getOwner(), p, io_result);
 		}
 	}
 
@@ -107,7 +113,7 @@ public abstract class AbstractRouter3D extends AbstractRouter implements
 	 * @return The start point
 	 */
 	protected IVector3f getStartPoint3D(Connection3D connection,
-			Vector3f io_result) {
+		Vector3f io_result) {
 
 		ConnectionAnchor sourceAnchor = connection.getSourceAnchor();
 		ConnectionAnchor targetAnchor = connection.getTargetAnchor();

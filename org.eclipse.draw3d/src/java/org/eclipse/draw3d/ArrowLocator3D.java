@@ -110,7 +110,7 @@ public class ArrowLocator3D implements Locator {
 	 * @return the location
 	 * @throws NullPointerException if the given point list is <code>null</code>
 	 */
-	protected IVector3f getLocation(List<Vector3f> i_points, Vector3f io_result) {
+	protected IVector3f getLocation(List<IVector3f> i_points, Vector3f io_result) {
 
 		if (i_points == null)
 			throw new NullPointerException("i_points must not be null");
@@ -129,8 +129,8 @@ public class ArrowLocator3D implements Locator {
 		case MIDDLE:
 			if ((size % 2) == 0) {
 				int i = size / 2;
-				Vector3f p1 = i_points.get(i - 1);
-				Vector3f p2 = i_points.get(i);
+				IVector3f p1 = i_points.get(i - 1);
+				IVector3f p2 = i_points.get(i);
 				Math3D.sub(p2, p1, io_result);
 				io_result.scale(0.5f);
 				Math3D.add(p1, io_result, io_result);
@@ -152,7 +152,7 @@ public class ArrowLocator3D implements Locator {
 	 */
 	public void relocate(IFigure i_target) {
 
-		List<Vector3f> points = m_connection.getPoints3D();
+		List<IVector3f> points = m_connection.getPoints3D();
 		RotatableDecoration3D arrow = (RotatableDecoration3D) i_target;
 
 		IVector3f location = getLocation(points, null);

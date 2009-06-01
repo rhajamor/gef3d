@@ -12,15 +12,13 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
-import java.util.List;
-
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.ConnectionRouter;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
-import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.geometry.Vector4fImpl;
+import org.eclipse.draw3d.geometryext.PointList3D;
 
 /**
  * ConnectionRouter3D is the 3D version of {@link ConnectionRouter}.
@@ -39,7 +37,7 @@ public interface ConnectionRouter3D extends ConnectionRouter {
 	 * Routes Connections directly from the source anchor to the target anchor
 	 * with no bendpoints in between.
 	 */
-	class NullConnectionRouter3D extends AbstractRouter3D {
+	class NullConnectionRouter3D extends  AbstractRouter3D {
 
 		private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
 
@@ -61,12 +59,12 @@ public interface ConnectionRouter3D extends ConnectionRouter {
 		 */
 		public void route(Connection connection) {
 
-			if (connection instanceof Connection3D) {
+			if (connection instanceof Connection3D ) {
 
 				Connection3D c3D = (Connection3D) connection;
-				List<Vector3f> points = c3D.getPoints3D();
-				points.clear();
-
+				PointList3D points = c3D.getPoints3D();
+				points.removeAllPoints();
+				
 				getStartPoint3D(c3D, TMP_V3);
 				TMP_V4.set(TMP_V3.x, TMP_V3.y, TMP_V3.z, 1);
 				c3D.transformToAbsolute(TMP_V4);

@@ -12,13 +12,12 @@
 package org.eclipse.draw3d;
 
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.geometryext.TempVectors;
 import org.eclipse.draw3d.shapes.ConeFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 
 /**
@@ -69,23 +68,23 @@ public class ShapeDecoration extends Figure3D implements RotatableDecoration3D {
 	 * 
 	 * @see org.eclipse.draw3d.RotatableDecoration3D#setReferencePoint3D(org.eclipse.draw3d.geometry.Vector3f)
 	 */
-	public void setReferencePoint3D(Vector3f i_reference) {
+	public void setReferencePoint3D(IVector3f i_reference) {
 
 		if (i_reference == null) {
 			if (m_lastReference.x == 0 && m_lastReference.y == 0
 					&& m_lastReference.z == 0)
 				return;
 
-			setRotation3D(m_lastReference);
+			getPosition3D().setRotation3D(m_lastReference);
 		} else {
 			if (i_reference.equals(m_lastReference))
 				return;
 
-			TMP_V3.set(getLocation3D());
+			TMP_V3.set(getPosition3D().getLocation3D());
 			Math3D.sub(i_reference, TMP_V3, TMP_V3);
 			TempVectors.getEulerAngles(Z_AXIS_NEG, TMP_V3, TMP_V3);
 
-			setRotation3D(TMP_V3);
+			getPosition3D().setRotation3D(TMP_V3);
 			m_lastReference.set(TMP_V3);
 		}
 	}

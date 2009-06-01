@@ -15,12 +15,13 @@ package org.eclipse.draw3d;
 import java.util.List;
 
 import org.eclipse.draw2d.Connection;
-import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometryext.PointList3D;
 
 /**
- * 3D version of connection, extends from Connection and can be used in a 2D 
+ * 3D version of connection, extends from Connection and can be used in a 2D
  * editor, too.
- *
+ * 
  * @author IBM Corporation (original comments of 2D version)
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -29,18 +30,22 @@ import org.eclipse.draw3d.geometry.Vector3f;
  */
 public interface Connection3D extends IFigure3D, Connection {
 	/**
-	 * Returns the PointList containing the Points that make up this Connection.
-	 * This may be returned by reference.
+	 * Returns the PointList containing the Points that make up this Connection
+	 * by reference. Note that simply changing the points does not update the
+	 * connection, as no notification is generated. In order to update the
+	 * connection, {@link #setPoints3D(List)} must be called, even if the same
+	 * list is returned.
 	 * 
 	 * @return The points for this Connection
 	 */
-	List<Vector3f> getPoints3D();
+	PointList3D getPoints3D();
 
 	/**
-	 * Sets the PointList containing the Points that make up this Connection.
+	 * Sets the PointList containing the Points that make up this Connection,
+	 * erases this figure and erase();notifies attached listeners.
 	 * 
 	 * @param list The points for this Connection
 	 */
-	void setPoints3D(List<Vector3f> list);
+	void setPoints3D(List<IVector3f> list);
 
 }

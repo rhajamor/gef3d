@@ -12,25 +12,21 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.geometry.PointList;
+import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometryext.PointList3D;
 import org.eclipse.draw3d.picking.ColorProvider;
 import org.eclipse.draw3d.shapes.PolylineShape;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
-
 
 /**
  * 3D version of {@link org.eclipse.draw2d.Polyline}.
  * 
  * @todo Derive this figure from Shape3D (when Shape3D is needed)
- * 
  * @author IBM Corporation (original 2D version)
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -46,9 +42,10 @@ public class Polyline3D extends Figure3D {
 	private PolylineShape m_shape = new PolylineShape();
 
 	/**
-	 * @todo Replace this with more efficient collection
+	 * The point list. This list is derived from {@link PointList} and can thus
+	 * be used instead of this 2D version.
 	 */
-	List<Vector3f> points = new ArrayList<Vector3f>(2);
+	PointList3D points = new PointList3D();
 
 	/**
 	 * Adds a copy of the given point to the Polyline. Changes to the given
@@ -58,7 +55,7 @@ public class Polyline3D extends Figure3D {
 	 */
 	public void addPoint(IVector3f i_point) {
 
-		points.add(new Vector3fImpl(i_point));
+		points.add(i_point);
 		// bounds = null;
 		repaint();
 	}
@@ -74,10 +71,10 @@ public class Polyline3D extends Figure3D {
 
 		if (points.size() < 2) {
 			throw new IndexOutOfBoundsException(
-					"pointlist is empty or contains only one point");
+				"pointlist is empty or contains only one point");
 		}
 
-		Vector3f pt = points.get(points.size() - 1);
+		IVector3f pt = points.get(points.size() - 1);
 		log.info("getEnd(): " + pt);
 
 		return pt;
@@ -89,20 +86,20 @@ public class Polyline3D extends Figure3D {
 	 * @see org.eclipse.draw2d.Connection#getPoints()
 	 */
 	public PointList getPoints() {
-		// TODO implement method PolylineConnection3D.getPoints
-		return null;
+		return points;
 	}
 
 	/**
-	 * Returns the points in this Polyline <B>by reference</B>. If the returned
-	 * list is modified, this Polyline must be informed by calling
-	 * {@link #setPoints(PointList)}. Failure to do so will result in layout and
-	 * paint problems.
+	 * Returns the PointList containing the Points that make up this Connection
+	 * by reference. Note that simply changing the points does not update the
+	 * connection, as no notification is generated. In order to update the
+	 * connection, {@link #setPoints3D(List)} must be called, even if the same
+	 * list is returned.
 	 * 
 	 * @return this Polyline's points
 	 * @since 2.0
 	 */
-	public List<Vector3f> getPoints3D() {
+	public PointList3D getPoints3D() {
 		return points;
 	}
 
@@ -129,9 +126,8 @@ public class Polyline3D extends Figure3D {
 	public void insertPoint(IVector3f i_point, int i_index) {
 
 		// bounds = null;
-		log.info("insertPoint(IVector3f, int): " + i_point + ", "
-				+ i_index);
-		points.set(i_index, new Vector3fImpl(i_point));
+		log.info("insertPoint(IVector3f, int): " + i_point + ", " + i_index);
+		points.set(i_index, i_point);
 		repaint();
 	}
 
@@ -151,8 +147,7 @@ public class Polyline3D extends Figure3D {
 	}
 
 	/**
-	 * Erases the Polyline and removes all of its {@link IVector3f
-	 * Points}.
+	 * Erases the Polyline and removes all of its {@link IVector3f Points}.
 	 * 
 	 * @since 2.0
 	 */
@@ -181,7 +176,7 @@ public class Polyline3D extends Figure3D {
 	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void prerender(RenderContext renderContext) {
+	public void render(RenderContext renderContext) {
 
 		m_shape.setPoints(points);
 
@@ -212,7 +207,7 @@ public class Polyline3D extends Figure3D {
 	public void setEnd(IVector3f end) {
 		if (points.size() == 0) {
 			throw new IndexOutOfBoundsException(
-					"line contains no points, set start point before");
+				"line contains no points, set start point before");
 		}
 		if (points.size() < 2) {
 			addPoint(end);
@@ -248,9 +243,9 @@ public class Polyline3D extends Figure3D {
 	}
 
 	/**
-	 * Sets the point at <code>index</code> to the IVector3f
-	 * <code>pt</code>. Calling this method results in a recalculation of the
-	 * polyline's bounding box. If you're going to set multiple Points, use
+	 * Sets the point at <code>index</code> to the IVector3f <code>pt</code>.
+	 * Calling this method results in a recalculation of the polyline's bounding
+	 * box. If you're going to set multiple Points, use
 	 * {@link #setPoints(PointList)}.
 	 * 
 	 * @param pt the point
@@ -258,7 +253,7 @@ public class Polyline3D extends Figure3D {
 	 */
 	public void setPoint(IVector3f pt, int index) {
 		erase();
-		points.get(index).set(pt);
+		points.set(index, pt);
 		// points.set(index, new Vector3f(pt));
 		// bounds = null;
 		repaint();
@@ -270,8 +265,16 @@ public class Polyline3D extends Figure3D {
 	 * @see org.eclipse.draw2d.Connection#setPoints(org.eclipse.draw2d.geometry.PointList)
 	 */
 	public void setPoints(PointList i_list) {
-		// TODO implement method PolylineConnection3D.setPoints
+		erase();
 
+		if (i_list != points) {
+			points.clear();
+			points.addAll(i_list);
+		}
+
+		firePropertyChange(Connection.PROPERTY_POINTS, null, points);
+		repaint();
+		invalidate();
 	}
 
 	/**
@@ -282,9 +285,14 @@ public class Polyline3D extends Figure3D {
 	 * @param points new set of points
 	 * @since 2.0
 	 */
-	public void setPoints3D(List<Vector3f> points) {
+	public void setPoints3D(List<IVector3f> i_list) {
 		erase();
-		this.points = points;
+
+		if (i_list != points) {
+			points.clear();
+			points.addAll(i_list);
+		}
+
 		// TODO what's that?
 		// bounds = null;
 		firePropertyChange(Connection.PROPERTY_POINTS, null, points);

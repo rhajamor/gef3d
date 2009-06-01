@@ -247,9 +247,10 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 	public void layout() {
 		if ( // from PolylineConnection:
 		(getSourceAnchor() != null && getTargetAnchor() != null)
-		// added:
-				&& (getSourceAnchor().getOwner() != null && getTargetAnchor()
-					.getOwner() != null)) {
+		// added -- and removed: XYZAnchor has no owner!:
+		// && (getSourceAnchor().getOwner() != null && getTargetAnchor()
+		// .getOwner() != null)
+		) {
 			connectionRouter.route(this); // from PolylineConnection
 		}
 
@@ -330,7 +331,7 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 	 */
 	public void setConnectionRouter(ConnectionRouter cr) {
 		if (cr == null) {
-			cr = ConnectionRouter.NULL;
+			cr = ConnectionRouter3D.NULL;
 		}
 		ConnectionRouter oldRouter = getConnectionRouter();
 		if (oldRouter != cr) {
@@ -410,8 +411,6 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 			return;
 		}
 		unhookTargetAnchor();
-		// No longer needed, revalidate does this. (original comment)
-		// getConnectionRouter().invalidate(this); (originally uncommented)
 		endAnchor = anchor;
 		if (getParent() != null) {
 			hookTargetAnchor();

@@ -12,7 +12,7 @@
 package org.eclipse.draw3d;
 
 import org.eclipse.draw2d.RotatableDecoration;
-import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.geometry.IVector3f;
 
 /**
  * An IFigure3D that can be rotated by setting a reference point.
@@ -28,5 +28,5 @@ public interface RotatableDecoration3D extends IFigure3D, RotatableDecoration {
 	 * 
 	 * @param i_reference the reference point
 	 */
-	public void setReferencePoint3D(Vector3f i_reference);
+	public void setReferencePoint3D(IVector3f i_reference);
 }
