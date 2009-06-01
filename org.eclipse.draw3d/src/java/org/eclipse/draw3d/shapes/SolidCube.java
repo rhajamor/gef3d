@@ -135,6 +135,7 @@ public class SolidCube extends AbstractModelShape {
 
 				// bottom
 				g3d.glNormal3f(0, -1, 0);
+				g3d.glVertex3f(0, 0, 0);
 				g3d.glVertex3f(1, 0, 0);
 				g3d.glVertex3f(1, 0, 1);
 				g3d.glVertex3f(0, 0, 1);
