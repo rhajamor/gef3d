@@ -8,29 +8,12 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.gef3d.preferences;
-
-import org.eclipse.core.runtime.Preferences;
-import org.eclipse.gef3d.Activator;
-
-
 /**
- * Returns the plugin preferences at runtime.
- * 
- * @author Kristian Duske
- * @version $Revision$
- * @since 06.03.2008
+ * Draw3D Eclipse preferences (mainly for camera).  
+ *  
+ * @author 	Kristian Duske
+ * @version	$Revision$
+ * @since 	Jul 15, 2008
  */
-public class RuntimePreferenceProvider implements PreferenceProvider {
+package org.eclipse.draw3d.ui.preferences.dialog;
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef3d.preferences.PreferenceProvider#getPreferences()
-	 */
-	public Preferences getPreferences() {
-
-		return Activator.getDefault().getPluginPreferences();
-	}
-
-}

@@ -10,7 +10,7 @@
  *    IBM Corporation - initial API and implementation (RadioGroupFieldEditor)
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.gef3d.preferences;
+package org.eclipse.draw3d.ui.preferences.dialog;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.preference.FieldEditor;
@@ -78,17 +78,24 @@ public class BitFieldEditor extends FieldEditor {
 	 * 
 	 * </p>
 	 * 
-	 * @param name the name of the preference this field editor works on
-	 * @param labelText the label text of the field editor
-	 * @param numColumns the number of columns for the checkbox presentation
-	 * @param labels list of checkbox labels
-	 * @param values list of integer values; the returned value is the bitwise
+	 * @param i_name
+	 *            the name of the preference this field editor works on
+	 * @param i_labelText
+	 *            the label text of the field editor
+	 * @param i_numColumns
+	 *            the number of columns for the checkbox presentation
+	 * @param i_labels
+	 *            list of checkbox labels
+	 * @param i_values
+	 *            list of integer values; the returned value is the bitwise
 	 *            combination of these
-	 * @param parent the parent of the field editor's control
+	 * @param i_parent
+	 *            the parent of the field editor's control
 	 */
-	public BitFieldEditor(String name, String labelText, int numColumns,
-			String[] labels, int[] values, Composite parent) {
-		this(name, labelText, numColumns, labels, values, parent, false);
+	public BitFieldEditor(String i_name, String i_labelText, int i_numColumns,
+			String[] i_labels, int[] i_values, Composite i_parent) {
+		this(i_name, i_labelText, i_numColumns, i_labels, i_values, i_parent,
+				false);
 	}
 
 	/**
@@ -110,26 +117,33 @@ public class BitFieldEditor extends FieldEditor {
 	 * 
 	 * </p>
 	 * 
-	 * @param name the name of the preference this field editor works on
-	 * @param labelText the label text of the field editor
-	 * @param numColumns the number of columns for the radio button presentation
-	 * @param labels list of checkbox labels
-	 * @param values list of integer values; the returned value is the bitwise
+	 * @param i_name
+	 *            the name of the preference this field editor works on
+	 * @param i_labelText
+	 *            the label text of the field editor
+	 * @param i_numColumns
+	 *            the number of columns for the radio button presentation
+	 * @param i_labels
+	 *            list of checkbox labels
+	 * @param i_values
+	 *            list of integer values; the returned value is the bitwise
 	 *            combination of these
-	 * @param parent the parent of the field editor's control
-	 * @param useGroup whether to use a Group control to contain the radio
-	 *            buttons
+	 * @param i_parent
+	 *            the parent of the field editor's control
+	 * @param i_useGroup
+	 *            whether to use a Group control to contain the radio buttons
 	 */
-	public BitFieldEditor(String name, String labelText, int numColumns,
-			String[] labels, int[] values, Composite parent, boolean useGroup) {
+	public BitFieldEditor(String i_name, String i_labelText, int i_numColumns,
+			String[] i_labels, int[] i_values, Composite i_parent,
+			boolean i_useGroup) {
 
-		init(name, labelText);
-		Assert.isTrue(labels.length == values.length);
-		this.labels = labels;
-		this.values = values;
-		this.numColumns = numColumns;
-		this.useGroup = useGroup;
-		createControl(parent);
+		init(i_name, i_labelText);
+		Assert.isTrue(i_labels.length == i_values.length);
+		this.labels = i_labels;
+		this.values = i_values;
+		this.numColumns = i_numColumns;
+		this.useGroup = i_useGroup;
+		createControl(i_parent);
 	}
 
 	/**
@@ -154,20 +168,20 @@ public class BitFieldEditor extends FieldEditor {
 	 *      int)
 	 */
 	@Override
-	protected void doFillIntoGrid(Composite parent, int numColumns) {
+	protected void doFillIntoGrid(Composite i_parent, int i_numColumns) {
 
 		if (useGroup) {
-			Control control = getGroupControl(parent);
+			Control control = getGroupControl(i_parent);
 			GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 			control.setLayoutData(gd);
 		} else {
-			Control control = getLabelControl(parent);
+			Control control = getLabelControl(i_parent);
 			GridData gd = new GridData();
-			gd.horizontalSpan = numColumns;
+			gd.horizontalSpan = i_numColumns;
 			control.setLayoutData(gd);
-			control = getGroupControl(parent);
+			control = getGroupControl(i_parent);
 			gd = new GridData();
-			gd.horizontalSpan = numColumns;
+			gd.horizontalSpan = i_numColumns;
 			gd.horizontalIndent = indent;
 			control.setLayoutData(gd);
 		}
@@ -182,24 +196,6 @@ public class BitFieldEditor extends FieldEditor {
 	protected void doLoad() {
 
 		updateValue(getPreferenceStore().getInt(getPreferenceName()));
-	}
-
-	/**
-	 * Updates the checkboxes according to the given value.
-	 * 
-	 * @param newValue the value
-	 */
-	public void updateValue(int newValue) {
-
-		this.value = newValue;
-		if (checkboxes == null)
-			return;
-
-		for (int i = 0; i < checkboxes.length; i++) {
-			Button checkbox = checkboxes[i];
-			int data = (Integer) checkbox.getData();
-			checkbox.setSelection((newValue & data) != 0);
-		}
 	}
 
 	/**
@@ -303,13 +299,13 @@ public class BitFieldEditor extends FieldEditor {
 	 *      org.eclipse.swt.widgets.Composite)
 	 */
 	@Override
-	public void setEnabled(boolean enabled, Composite parent) {
+	public void setEnabled(boolean i_enabled, Composite i_parent) {
 
 		if (!useGroup)
-			super.setEnabled(enabled, parent);
+			super.setEnabled(i_enabled, i_parent);
 
 		for (int i = 0; i < checkboxes.length; i++) {
-			checkboxes[i].setEnabled(enabled);
+			checkboxes[i].setEnabled(i_enabled);
 		}
 
 	}
@@ -317,13 +313,33 @@ public class BitFieldEditor extends FieldEditor {
 	/**
 	 * Sets the indent used for the first column of the checkbox matrix.
 	 * 
-	 * @param indent the indent (in pixels)
+	 * @param i_indent
+	 *            the indent (in pixels)
 	 */
-	public void setIndent(int indent) {
-		if (indent < 0) {
+	public void setIndent(int i_indent) {
+		if (i_indent < 0) {
 			this.indent = 0;
 		} else {
-			this.indent = indent;
+			this.indent = i_indent;
+		}
+	}
+
+	/**
+	 * Updates the checkboxes according to the given value.
+	 * 
+	 * @param i_newValue
+	 *            the value
+	 */
+	public void updateValue(int i_newValue) {
+
+		this.value = i_newValue;
+		if (checkboxes == null)
+			return;
+
+		for (int i = 0; i < checkboxes.length; i++) {
+			Button checkbox = checkboxes[i];
+			int data = (Integer) checkbox.getData();
+			checkbox.setSelection((i_newValue & data) != 0);
 		}
 	}
 

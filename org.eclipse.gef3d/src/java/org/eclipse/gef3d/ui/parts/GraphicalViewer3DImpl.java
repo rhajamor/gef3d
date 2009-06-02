@@ -14,6 +14,7 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.UpdateManager;
 import org.eclipse.draw3d.Draw3DCanvas;
+import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.gef.editparts.ScalableRootEditPart;
@@ -97,7 +98,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef3d.ui.parts.IScene#getCamera()
+	 * @see org.eclipse.draw3d.IScene#getCamera()
 	 */
 	public ICamera getCamera() {
 
@@ -126,7 +127,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef3d.ui.parts.IScene#getUpdateManager()
+	 * @see org.eclipse.draw3d.IScene#getUpdateManager()
 	 */
 	public UpdateManager getUpdateManager() {
 
@@ -140,7 +141,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef3d.ui.parts.IScene#render()
+	 * @see org.eclipse.draw3d.IScene#render()
 	 */
 	public void render() {
 
@@ -162,7 +163,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef3d.ui.parts.IScene#setBackgroundColor(org.eclipse.swt.graphics.Color)
+	 * @see org.eclipse.draw3d.IScene#setBackgroundColor(org.eclipse.swt.graphics.Color)
 	 */
 	public void setBackgroundColor(Color i_backgroundColor) {
 
@@ -176,7 +177,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef3d.ui.parts.IScene#setCamera(org.eclipse.draw3d.camera.ICamera)
+	 * @see org.eclipse.draw3d.IScene#setCamera(org.eclipse.draw3d.camera.ICamera)
 	 */
 	public void setCamera(ICamera i_camera) {
 
@@ -212,7 +213,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef3d.ui.parts.IScene#setDrawAxes(boolean)
+	 * @see org.eclipse.draw3d.IScene#setDrawAxes(boolean)
 	 */
 	public void setDrawAxes(boolean i_drawAxes) {
 

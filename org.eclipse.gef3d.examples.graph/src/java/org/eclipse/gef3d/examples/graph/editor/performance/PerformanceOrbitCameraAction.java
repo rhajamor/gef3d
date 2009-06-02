@@ -20,9 +20,9 @@ package org.eclipse.gef3d.examples.graph.editor.performance;
 import java.util.Timer;
 import java.util.logging.Logger;
 
+import org.eclipse.draw3d.IScene;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.ui.actions.WorkbenchPartAction;
-import org.eclipse.gef3d.ui.parts.IScene;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**

@@ -15,10 +15,10 @@ import java.util.logging.Logger;
 
 import java.util.TimerTask;
 
+import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.gef3d.ui.parts.IScene;
 import org.eclipse.swt.widgets.Display;
 
 

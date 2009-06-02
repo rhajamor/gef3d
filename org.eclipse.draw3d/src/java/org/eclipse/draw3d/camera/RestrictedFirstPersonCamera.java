@@ -37,17 +37,6 @@ public class RestrictedFirstPersonCamera extends AbstractCamera {
 	private static Logger log = Logger
 			.getLogger(RestrictedFirstPersonCamera.class.getName());
 
-	/**
-	 * Matrix4f to use in calculations.
-	 */
-	private final Matrix4fImpl TMP_M = new Matrix4fImpl();
-
-	/**
-	 * Vector3f to use in calculations.
-	 */
-	private final Vector3fImpl TMP_V3 = new Vector3fImpl();
-
-	
 	private final Vector3fImpl m_position = new Vector3fImpl();
 
 	private final Vector3fImpl m_right = new Vector3fImpl();
@@ -61,13 +50,22 @@ public class RestrictedFirstPersonCamera extends AbstractCamera {
 	private int m_viewportWidth;
 
 	/**
+	 * Matrix4f to use in calculations.
+	 */
+	private final Matrix4fImpl TMP_M = new Matrix4fImpl();
+
+	/**
+	 * Vector3f to use in calculations.
+	 */
+	private final Vector3fImpl TMP_V3 = new Vector3fImpl();
+
+	/**
 	 * Creates and initializes a first person camera.
 	 */
 	public RestrictedFirstPersonCamera() {
 		reset();
 	}
 
-	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -106,15 +104,17 @@ public class RestrictedFirstPersonCamera extends AbstractCamera {
 	public void lookAt(IVector3f i_position, IVector3f i_upvector) {
 		// TODO implement lookAt
 		throw new UnsupportedOperationException("lookAt not implemeted yet");
-
 	}
 
 	/**
 	 * Moves the camera by the given distances.
 	 * 
-	 * @param i_dX the distance on the X axis
-	 * @param i_dY the distance on the Y axis
-	 * @param i_dZ the distance on the Z axis
+	 * @param i_dX
+	 *            the distance on the X axis
+	 * @param i_dY
+	 *            the distance on the Y axis
+	 * @param i_dZ
+	 *            the distance on the Z axis
 	 */
 	public void moveBy(float i_dForward, float i_dStrafe, float i_dUp) {
 
@@ -177,10 +177,9 @@ public class RestrictedFirstPersonCamera extends AbstractCamera {
 		Math3D.normalise(m_up, m_up);
 	}
 
-	
-
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.camera.ICamera#render(org.eclipse.draw3d.RenderContext)
 	 */
 	public void render(RenderContext renderContext) {
@@ -192,7 +191,7 @@ public class RestrictedFirstPersonCamera extends AbstractCamera {
 		g3d.glLoadIdentity();
 
 		float aspect = (float) m_viewportWidth / (float) m_viewportHeight;
-		g3d.gluPerspective(45, aspect, 100, 10000);
+		g3d.gluPerspective(45, aspect, getNear(), getFar());
 
 		g3d.glMatrixMode(Graphics3DDraw.GL_MODELVIEW);
 		g3d.glLoadIdentity();

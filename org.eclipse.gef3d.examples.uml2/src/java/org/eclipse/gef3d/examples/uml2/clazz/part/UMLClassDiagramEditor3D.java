@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw3d.LightweightSystem3D;
+import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.GraphicalViewer;
@@ -24,28 +25,22 @@ import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
-import org.eclipse.gef3d.examples.uml2.clazz.providers.UMLClassEditPartProvider3D;
 import org.eclipse.gef3d.ext.multieditor.INestableEditor;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
-import org.eclipse.gef3d.ext.reverselookup.ReverseLookupManager;
 import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gef3d.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer3D;
-import org.eclipse.gef3d.preferences.ScenePreferenceListener;
 import org.eclipse.gef3d.tools.CameraTool;
 import org.eclipse.gef3d.ui.parts.FpsStatusLineItem;
-import org.eclipse.gmf.runtime.common.core.service.IProvider;
 import org.eclipse.gmf.runtime.diagram.ui.actions.ActionIds;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.IDiagramPreferenceSupport;
 import org.eclipse.gmf.runtime.diagram.ui.internal.parts.DiagramGraphicalViewerKeyHandler;
 import org.eclipse.gmf.runtime.diagram.ui.internal.parts.DirectEditKeyHandler;
-import org.eclipse.gmf.runtime.diagram.ui.internal.services.editpart.IEditPartProvider;
 import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.parts.IDiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider;
 import org.eclipse.gmf.runtime.diagram.ui.resources.editor.parts.DiagramDocumentEditor;
 import org.eclipse.gmf.runtime.diagram.ui.services.editpart.EditPartService;
-import org.eclipse.gmf.runtime.diagram.ui.services.editpolicy.IEditPolicyProvider;
 import org.eclipse.gmf.runtime.draw2d.ui.mapmode.MapModeTypes;
 import org.eclipse.gmf.runtime.notation.Diagram;
 import org.eclipse.jface.action.IStatusLineManager;
@@ -55,7 +50,6 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.uml2.diagram.clazz.part.DiagramEditorContextMenuProvider;
 import org.eclipse.uml2.diagram.clazz.part.UMLDiagramEditor;
-import org.eclipse.uml2.diagram.clazz.providers.UMLEditPartProvider;
 
 /**
  * UMLDiagramEditor3D There should really be more documentation here.
@@ -74,7 +68,7 @@ public class UMLClassDiagramEditor3D extends UMLDiagramEditor implements
 	private static final Logger log =
 		Logger.getLogger(UMLClassDiagramEditor3D.class.getName());
 
-	private ScenePreferenceListener sceneListener;
+	private ScenePreferenceDistributor scenePreferenceDistributor;
 
 	/**
 	 * A reference to the 3D diagram graphical viewer.
@@ -202,8 +196,8 @@ public class UMLClassDiagramEditor3D extends UMLDiagramEditor implements
 
 		statusLine.add(fpsCounter);
 
-		sceneListener = new ScenePreferenceListener(viewer3D);
-		sceneListener.start();
+		scenePreferenceDistributor = new ScenePreferenceDistributor(viewer3D);
+		scenePreferenceDistributor.start();
 
 		control.addDisposeListener(lightweightSystem3D);
 	}
@@ -237,8 +231,8 @@ public class UMLClassDiagramEditor3D extends UMLDiagramEditor implements
 	@Override
 	public void dispose() {
 
-		if (sceneListener != null)
-			sceneListener.stop();
+		if (scenePreferenceDistributor != null)
+			scenePreferenceDistributor.stop();
 
 		super.dispose();
 	}

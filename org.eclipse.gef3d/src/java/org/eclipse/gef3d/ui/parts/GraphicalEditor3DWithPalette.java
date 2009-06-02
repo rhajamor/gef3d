@@ -12,10 +12,10 @@
  ******************************************************************************/
 package org.eclipse.gef3d.ui.parts;
 
+import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.LightweightSystem3D;
-import org.eclipse.gef.GraphicalViewer;
+import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithPalette;
-import org.eclipse.gef3d.preferences.ScenePreferenceListener;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -37,7 +37,7 @@ public abstract class GraphicalEditor3DWithPalette extends
 	/**
 	 * The preference listener for this editor.
 	 */
-	protected ScenePreferenceListener sceneListener;
+	protected ScenePreferenceDistributor scenePreferenceDistributor;
 
 	/**
 	 * {@inheritDoc} 
@@ -80,8 +80,8 @@ public abstract class GraphicalEditor3DWithPalette extends
 	 * @param scene
 	 */
 	protected void doRegisterToScene(IScene scene) {
-		sceneListener = new ScenePreferenceListener(scene);
-		sceneListener.start();
+		scenePreferenceDistributor = new ScenePreferenceDistributor(scene);
+		scenePreferenceDistributor.start();
 	}
 
 	/**
@@ -121,8 +121,8 @@ public abstract class GraphicalEditor3DWithPalette extends
 	@Override
 	public void dispose() {
 
-		if (sceneListener != null)
-			sceneListener.stop();
+		if (scenePreferenceDistributor != null)
+			scenePreferenceDistributor.stop();
 
 		super.dispose();
 	}

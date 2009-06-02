@@ -40,18 +40,6 @@ public class FirstPersonCamera extends AbstractCamera {
 	private static Logger log = Logger.getLogger(FirstPersonCamera.class
 			.getName());
 
-	/**
-	 * Matrix4f to use in calculations.
-	 */
-	private final Matrix4fImpl TMP_M = new Matrix4fImpl();
-
-	/**
-	 * Vector3f to use in calculations.
-	 */
-	private final Vector3fImpl TMP_V3 = new Vector3fImpl();
-
-	
-
 	private final Vector3fImpl m_position = new Vector3fImpl();
 
 	private final Vector3fImpl m_right = new Vector3fImpl();
@@ -65,13 +53,22 @@ public class FirstPersonCamera extends AbstractCamera {
 	private int m_viewportWidth;
 
 	/**
+	 * Matrix4f to use in calculations.
+	 */
+	private final Matrix4fImpl TMP_M = new Matrix4fImpl();
+
+	/**
+	 * Vector3f to use in calculations.
+	 */
+	private final Vector3fImpl TMP_V3 = new Vector3fImpl();
+
+	/**
 	 * Creates and initializes a first person camera.
 	 */
 	public FirstPersonCamera() {
 		reset();
 	}
 
-	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -108,12 +105,12 @@ public class FirstPersonCamera extends AbstractCamera {
 	 *      org.eclipse.draw3d.geometry.IVector3f)
 	 */
 	public void lookAt(IVector3f i_to, IVector3f i_upvector) {
-		
+
 		Math3D.sub(i_to, m_position, m_viewDir);
 		Math3D.normalise(m_viewDir, m_viewDir);
-		if (i_upvector!=null)
+		if (i_upvector != null)
 			Math3D.normalise(i_upvector, m_up);
-		
+
 		// p+v=t => v = t-p
 		Math3D.cross(m_up, m_viewDir, m_right);
 		Math3D.normalise(m_right, m_right);
@@ -125,9 +122,12 @@ public class FirstPersonCamera extends AbstractCamera {
 	/**
 	 * Moves the camera by the given distances.
 	 * 
-	 * @param i_dX the distance on the X axis
-	 * @param i_dY the distance on the Y axis
-	 * @param i_dZ the distance on the Z axis
+	 * @param i_dX
+	 *            the distance on the X axis
+	 * @param i_dY
+	 *            the distance on the Y axis
+	 * @param i_dZ
+	 *            the distance on the Z axis
 	 */
 	public void moveBy(float i_dForward, float i_dStrafe, float i_dUp) {
 
@@ -147,8 +147,8 @@ public class FirstPersonCamera extends AbstractCamera {
 	}
 
 	/**
-	 * Sets the position of this camera.
-	 * {@inheritDoc}
+	 * Sets the position of this camera. {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.camera.ICamera#moveTo(float, float, float)
 	 */
 	public void moveTo(float i_x, float i_y, float i_z) {
@@ -181,10 +181,9 @@ public class FirstPersonCamera extends AbstractCamera {
 		fireCameraChanged();
 	}
 
-	
-
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.camera.ICamera#render(org.eclipse.draw3d.RenderContext)
 	 */
 	public void render(RenderContext renderContext) {
@@ -196,7 +195,7 @@ public class FirstPersonCamera extends AbstractCamera {
 		g3d.glLoadIdentity();
 
 		float aspect = (float) m_viewportWidth / (float) m_viewportHeight;
-		g3d.gluPerspective(45, aspect, 100, 40000);
+		g3d.gluPerspective(45, aspect, getNear(), getFar());
 
 		g3d.glMatrixMode(Graphics3DDraw.GL_MODELVIEW);
 		g3d.glLoadIdentity();

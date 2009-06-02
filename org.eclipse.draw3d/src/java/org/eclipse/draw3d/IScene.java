@@ -9,7 +9,7 @@
  *    Jens von Pilgrim - initial API and implementation
  *    Kristian Duske - refactoring and optimizations
  ******************************************************************************/
-package org.eclipse.gef3d.ui.parts;
+package org.eclipse.draw3d;
 
 import org.eclipse.draw2d.UpdateManager;
 import org.eclipse.draw3d.camera.ICamera;
@@ -17,7 +17,7 @@ import org.eclipse.swt.graphics.Color;
 
 
 /**
- * IScene is a graphical viewer which has a camera attached.
+ * A scene has a camera and an input manager.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$

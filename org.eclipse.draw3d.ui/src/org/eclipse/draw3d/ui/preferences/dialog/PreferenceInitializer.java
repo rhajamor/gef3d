@@ -8,15 +8,16 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.gef3d.preferences;
+package org.eclipse.draw3d.ui.preferences.dialog;
 
-import static org.eclipse.gef3d.preferences.PrefNames.*;
+import static org.eclipse.draw3d.ui.preferences.PrefNames.*;
 
-import org.eclipse.core.runtime.Preferences;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.eclipse.gef3d.Activator;
+import org.eclipse.draw3d.ui.Draw3DUIPlugin;
+import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -42,10 +43,11 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	@Override
 	public void initializeDefaultPreferences() {
 
-		Preferences store = Activator.getDefault().getPluginPreferences();
+		IPreferenceStore store = Draw3DUIPlugin.getDefault()
+				.getPreferenceStore();
 
 		store.setDefault(LWS_CAMERA_TYPE,
-				ScenePreferenceListener.DEFAULT_CAMERA_TYPE);
+				ScenePreferenceDistributor.DEFAULT_CAMERA_TYPE);
 
 		Display display = Display.getCurrent();
 		Color backgroundColor = display.getSystemColor(SWT.COLOR_GRAY);
@@ -65,11 +67,10 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		store.setDefault(KEY_LEFT, getSequence(SWT.ARROW_LEFT));
 		store.setDefault(KEY_RIGHT, getSequence(SWT.ARROW_RIGHT));
 
-		store.setDefault(KEY_ROLL_LEFT, getSequence('Y'));
-		store.setDefault(KEY_ROLL_RIGHT, getSequence('X'));
+		store.setDefault(KEY_ROLL_CCW, getSequence('Y'));
+		store.setDefault(KEY_ROLL_CW, getSequence('X'));
 
 		store.setDefault(KEY_CENTER, getSequence(SWT.ESC));
 		store.setDefault(MOD_ORBIT, SWT.ALT);
 	}
-
 }

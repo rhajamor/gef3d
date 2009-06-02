@@ -20,5 +20,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.emf.edit.ui;bundle-version="2.4.1",
  org.eclipse.emf.ecoretools.diagram.ui.outline;bundle-version="0.8.0",
  org.eclipse.gef3d.gmf;bundle-version="0.8.1",
- org.eclipse.gef3d.ext;bundle-version="0.8.1"
+ org.eclipse.gef3d.ext;bundle-version="0.8.1",
+ org.eclipse.draw3d.ui;bundle-version="0.8.1"
 Bundle-ActivationPolicy: lazy

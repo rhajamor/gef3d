@@ -12,9 +12,10 @@
  ******************************************************************************/
 package org.eclipse.gef3d.ui.parts;
 
+import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.LightweightSystem3D;
+import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
-import org.eclipse.gef3d.preferences.ScenePreferenceListener;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -23,7 +24,7 @@ import org.eclipse.ui.IEditorSite;
 
 /**
  * GraphicalEditor3D, overrides
- * {@link GraphicalEditor#createPartControl(org.eclipse.swt.widgets.Composite).
+ * {@link GraphicalEditor#createPartControl(org.eclipse.swt.widgets.Composite)}.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -32,9 +33,9 @@ import org.eclipse.ui.IEditorSite;
 public abstract class GraphicalEditor3D extends GraphicalEditor {
 
 	/**
-	 * The preference listener for this editor.
+	 * The scene preference distributor for this editor.
 	 */
-	protected ScenePreferenceListener sceneListener;
+	protected ScenePreferenceDistributor scenePreferenceDistributor;
 
 	/**
 	 * {@inheritDoc}
@@ -82,8 +83,8 @@ public abstract class GraphicalEditor3D extends GraphicalEditor {
 	 * @param scene
 	 */
 	protected void doRegisterToScene(IScene scene) {
-		sceneListener = new ScenePreferenceListener(scene);
-		sceneListener.start();
+		scenePreferenceDistributor = new ScenePreferenceDistributor(scene);
+		scenePreferenceDistributor.start();
 	}
 
 	/**
@@ -127,8 +128,8 @@ public abstract class GraphicalEditor3D extends GraphicalEditor {
 	@Override
 	public void dispose() {
 
-		if (sceneListener != null)
-			sceneListener.stop();
+		if (scenePreferenceDistributor != null)
+			scenePreferenceDistributor.stop();
 
 		super.dispose();
 	}

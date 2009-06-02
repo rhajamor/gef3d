@@ -31,7 +31,6 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
-import org.eclipse.draw3d.graphics3d.Graphics3DType;
 import org.eclipse.draw3d.graphics3d.x3d.draw.X3DDrawCommand;
 import org.eclipse.draw3d.graphics3d.x3d.draw.X3DDrawTarget;
 import org.eclipse.draw3d.graphics3d.x3d.draw.X3DDrawTargetFactory;
@@ -39,6 +38,7 @@ import org.eclipse.draw3d.graphics3d.x3d.draw.X3DParameterList;
 import org.eclipse.draw3d.graphics3d.x3d.graphics2d.X3DGraphics2DManager;
 import org.eclipse.draw3d.graphics3d.x3d.lists.MethodCallBuffer;
 import org.eclipse.draw3d.graphics3d.x3d.model.X3DModel;
+import org.eclipse.draw3d.util.LogGraphics;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
 
@@ -56,6 +56,17 @@ import org.eclipse.swt.opengl.GLCanvas;
  */
 public class Graphics3DX3D implements Graphics3D {
 	/**
+	 * To remember the current state of the export run.
+	 * 
+	 * @author Matthias Thiele
+	 * @version $Revision$
+	 * @since Dec 15, 2008
+	 */
+	private enum ExportState {
+		DONE, IN_PROGRESS, INITIAL
+	}
+
+	/**
 	 * Logger for this class
 	 */
 	private static final Logger log = Logger.getLogger(Graphics3DX3D.class
@@ -65,33 +76,6 @@ public class Graphics3DX3D implements Graphics3D {
 	 * Descriptor of this instance.
 	 */
 	protected Graphics3DDescriptor descriptor = null;
-
-	/**
-	 * To remember the current state of the export run.
-	 * 
-	 * @author Matthias Thiele
-	 * @version $Revision$
-	 * @since Dec 15, 2008
-	 */
-	private enum ExportState {
-		INITIAL, IN_PROGRESS, DONE
-	}
-
-	/**
-	 * The current export state, for further usage.
-	 */
-	@SuppressWarnings("unused")
-	private ExportState m_exportState;
-
-	/**
-	 * All 2D related calls are forwarded to the graphics2DManager.
-	 */
-	private final X3DGraphics2DManager m_g2dManager;
-
-	/**
-	 * The current rendering properties.
-	 */
-	private final X3DPropertyContainer m_propertyContainer;
 
 	/**
 	 * The graphics primitive currently drawn.
@@ -111,14 +95,43 @@ public class Graphics3DX3D implements Graphics3D {
 	private Object m_context = null;
 
 	/**
+	 * The display list which is current build, or null.
+	 */
+	private MethodCallBuffer m_currentDisplayList = null;
+
+	/**
 	 * The list of "precompiled" rendering calls.
 	 */
 	private final Map<Integer, MethodCallBuffer> m_displayLists;
 
 	/**
-	 * The display list which is current build, or null.
+	 * The export interceptor is notified on specific steps in the rendering
+	 * process.
 	 */
-	private MethodCallBuffer m_currentDisplayList = null;
+	private final X3DExportInterceptor m_exportInterceptor;
+
+	/**
+	 * The current export state, for further usage.
+	 */
+	@SuppressWarnings("unused")
+	private ExportState m_exportState;
+
+	/**
+	 * All 2D related calls are forwarded to the graphics2DManager.
+	 */
+	private final X3DGraphics2DManager m_g2dManager;
+
+	private boolean m_log2D;
+
+	/**
+	 * The current rendering properties.
+	 */
+	private final X3DPropertyContainer m_propertyContainer;
+
+	/**
+	 * The ID of the current texture.
+	 */
+	private int m_texture;
 
 	/**
 	 * All transformation-related calls are forwarded to the transformation
@@ -132,16 +145,7 @@ public class Graphics3DX3D implements Graphics3D {
 	 */
 	private final X3DModel m_x3dModel;
 
-	/**
-	 * The export interceptor is notified on specific steps in the rendering
-	 * process.
-	 */
-	private final X3DExportInterceptor m_exportInterceptor;
-
-	/**
-	 * The ID of the current texture.
-	 */
-	private int m_texture;
+	Properties properties = new Properties();
 
 	/**
 	 * The standard constructor.
@@ -169,8 +173,22 @@ public class Graphics3DX3D implements Graphics3D {
 	public Graphics activateGraphics2D(Object i_key, int i_width, int i_height,
 			int i_alpha, Color i_color) {
 
-		return m_g2dManager.activateGraphics2D(i_key, i_width, i_height,
-				i_alpha, i_color);
+		Graphics graphics = m_g2dManager.activateGraphics2D(i_key, i_width,
+				i_height, i_alpha, i_color);
+		
+		if (m_log2D)
+			return new LogGraphics(graphics);
+		else
+			return graphics;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#createRawPosition(org.eclipse.draw3d.geometryext.IPosition3D)
+	 */
+	public Object createRawPosition(IPosition3D i_position3D) {
+		return i_position3D;
 	}
 
 	/**
@@ -190,6 +208,62 @@ public class Graphics3DX3D implements Graphics3D {
 	 */
 	public void dispose() {
 		// No ressources need to be freed here.
+	}
+
+	/**
+	 * Executes a draw command. If the draw target returns true from the command
+	 * execution, it requests to be exchanged because it's completed. In that
+	 * case, a glEnd and glBegin is simulated. This construction is required due
+	 * to the fact that X3D has not a counterpart to every OpenGL primitive.
+	 * 
+	 * @param i_cmdName
+	 *            The command's name.
+	 * @param parameter
+	 *            A list of the parameter.
+	 */
+	private void executeDraw(String i_cmdName, X3DParameterList parameter) {
+		X3DDrawCommand command = new X3DDrawCommand(i_cmdName, parameter,
+				m_propertyContainer, m_transformationManager
+						.getTransformationNode());
+		if (m_activeDrawTarget.draw(command)) {
+			// The active draw target requested completion. To do this:
+			// IF this was not an end command itself
+			// 1. simulate END
+			if (!i_cmdName.equals(X3DDrawCommand.CMD_NAME_END)) {
+				X3DDrawCommand commandEnd = new X3DDrawCommand(
+						X3DDrawCommand.CMD_NAME_END, new X3DParameterList(
+								new ArrayList<Object>()), m_propertyContainer,
+						m_transformationManager.getTransformationNode());
+				m_activeDrawTarget.draw(commandEnd);
+			}
+
+			// 2. add draw target to scene graph
+			m_x3dModel.getSceneGraph().addDrawTarget(m_activeDrawTarget);
+
+			// IF this was not an end command itself
+			// 3. exchange the active draw target against a new one of the same
+			// type
+			if (!i_cmdName.equals(X3DDrawCommand.CMD_NAME_END)) {
+				m_activeDrawTarget = X3DDrawTargetFactory
+						.createNewInstance(m_activeDrawTarget);
+
+				// 4. simulate BEGIN.
+				X3DDrawCommand commandBegin = new X3DDrawCommand(
+						X3DDrawCommand.CMD_NAME_BEGIN, new X3DParameterList(
+								new ArrayList<Object>()), m_propertyContainer,
+						m_transformationManager.getTransformationNode());
+				m_activeDrawTarget.draw(commandBegin);
+			}
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getDescriptor()
+	 */
+	public Graphics3DDescriptor getDescriptor() {
+		return descriptor;
 	}
 
 	/**
@@ -230,20 +304,10 @@ public class Graphics3DX3D implements Graphics3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#hasGraphics2D(java.lang.Object)
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getID()
 	 */
-	public boolean hasGraphics2D(Object i_key) {
-
-		return m_g2dManager.hasGraphics2D(i_key);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setGLCanvas(org.eclipse.swt.opengl.GLCanvas)
-	 */
-	public void setGLCanvas(GLCanvas i_canvas) {
-		m_canvas = i_canvas;
+	public String getID() {
+		return Graphics3DX3D.class.getName();
 	}
 
 	/**
@@ -264,6 +328,15 @@ public class Graphics3DX3D implements Graphics3D {
 		} else {
 			throw new LinkageError("Unknown platform: " + osName);
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getProperty(java.lang.String)
+	 */
+	public String getProperty(String i_key) {
+		return properties.getProperty(i_key);
 	}
 
 	/**
@@ -843,6 +916,15 @@ public class Graphics3DX3D implements Graphics3D {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glMatrixMode(int)
+	 */
+	public void glMatrixMode(int i_mode) {
+		// No matrix mode for X3D, ignore this call
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glNewList(int, int)
 	 */
 	public void glNewList(int i_list, int i_mode) {
@@ -858,16 +940,6 @@ public class Graphics3DX3D implements Graphics3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glNormal3f(int, int,
-	 *      int)
-	 */
-	public void glNormal3f(int i_nx, int i_ny, int i_nz) {
-		glNormal3f((float) i_nx, (float) i_ny, (float) i_nz);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glNormal3f(float,
 	 *      float, float)
 	 */
@@ -875,6 +947,16 @@ public class Graphics3DX3D implements Graphics3D {
 		Vector3f normal = new Vector3fImpl(i_nx, i_ny, i_nz);
 		m_propertyContainer.getProperties().put(
 				X3DPropertyContainer.PRP_NORMAL, normal);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glNormal3f(int, int,
+	 *      int)
+	 */
+	public void glNormal3f(int i_nx, int i_ny, int i_nz) {
+		glNormal3f((float) i_nx, (float) i_ny, (float) i_nz);
 	}
 
 	/**
@@ -1096,6 +1178,59 @@ public class Graphics3DX3D implements Graphics3D {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DUtil#gluLookAt(float, float,
+	 *      float, float, float, float, float, float, float)
+	 */
+	public void gluLookAt(float i_eyex, float i_eyey, float i_eyez,
+			float i_centerx, float i_centery, float i_centerz, float i_upx,
+			float i_upy, float i_upz) {
+
+		float[] center = { i_centerx, i_centery, i_centerz };
+		float[] position = { i_eyex, i_eyey, i_eyez };
+
+		m_propertyContainer.getProperties().put(
+				X3DPropertyContainer.PRP_VIEWPOINT_CENTER, center);
+		m_propertyContainer.getProperties().put(
+				X3DPropertyContainer.PRP_VIEWPOINT_POSITION, position);
+
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DUtil#gluOrtho2D(int, int,
+	 *      int, int)
+	 */
+	public void gluOrtho2D(int i_left, int i_right, int i_bottom, int i_top) {
+		throw new Graphics3DException("X3D doesn't support gluOrtho2D");
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DUtil#gluPerspective(int,
+	 *      float, int, int)
+	 */
+	public void gluPerspective(int i_fovy, float i_aspect, int i_near, int i_far) {
+		// The X3D perspective is determined by the viewpoint (gluLookAt)
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DUtil#gluUnProject(int, int,
+	 *      float, java.nio.FloatBuffer, java.nio.FloatBuffer,
+	 *      java.nio.IntBuffer, java.nio.FloatBuffer)
+	 */
+	public void gluUnProject(int i_winx, int i_winy, float i_winz,
+			FloatBuffer i_modelMatrix, FloatBuffer i_projMatrix,
+			IntBuffer i_viewport, FloatBuffer i_obj_pos) {
+		throw new Graphics3DException("X3D doesn't support gluUnProject");
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glVertex2f(float,
 	 *      float)
 	 */
@@ -1163,72 +1298,11 @@ public class Graphics3DX3D implements Graphics3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#useContext(java.lang.Object)
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#hasGraphics2D(java.lang.Object)
 	 */
-	public void useContext(Object i_context) throws Graphics3DException {
-		m_context = i_context;
-	}
+	public boolean hasGraphics2D(Object i_key) {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DUtil#gluLookAt(float, float,
-	 *      float, float, float, float, float, float, float)
-	 */
-	public void gluLookAt(float i_eyex, float i_eyey, float i_eyez,
-			float i_centerx, float i_centery, float i_centerz, float i_upx,
-			float i_upy, float i_upz) {
-
-		float[] center = { i_centerx, i_centery, i_centerz };
-		float[] position = { i_eyex, i_eyey, i_eyez };
-
-		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_VIEWPOINT_CENTER, center);
-		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_VIEWPOINT_POSITION, position);
-
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DUtil#gluOrtho2D(int, int,
-	 *      int, int)
-	 */
-	public void gluOrtho2D(int i_left, int i_right, int i_bottom, int i_top) {
-		throw new Graphics3DException("X3D doesn't support gluOrtho2D");
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DUtil#gluPerspective(int,
-	 *      float, int, int)
-	 */
-	public void gluPerspective(int i_fovy, float i_aspect, int i_near, int i_far) {
-		// The X3D perspective is determined by the viewpoint (gluLookAt)
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DUtil#gluUnProject(int, int,
-	 *      float, java.nio.FloatBuffer, java.nio.FloatBuffer,
-	 *      java.nio.IntBuffer, java.nio.FloatBuffer)
-	 */
-	public void gluUnProject(int i_winx, int i_winy, float i_winz,
-			FloatBuffer i_modelMatrix, FloatBuffer i_projMatrix,
-			IntBuffer i_viewport, FloatBuffer i_obj_pos) {
-		throw new Graphics3DException("X3D doesn't support gluUnProject");
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#createRawPosition(org.eclipse.draw3d.geometryext.IPosition3D)
-	 */
-	public Object createRawPosition(IPosition3D i_position3D) {
-		return i_position3D;
+		return m_g2dManager.hasGraphics2D(i_key);
 	}
 
 	/**
@@ -1240,6 +1314,34 @@ public class Graphics3DX3D implements Graphics3D {
 		// X3D does not have a raw position. It accepts only a IPosition3D
 		// itself.
 		return (i_theRawPosition instanceof IPosition3D);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setDescriptor(org.eclipse.draw3d.graphics3d.Graphics3DDescriptor)
+	 */
+	public void setDescriptor(Graphics3DDescriptor i_graphics3DDescriptor) {
+		descriptor = i_graphics3DDescriptor;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setGLCanvas(org.eclipse.swt.opengl.GLCanvas)
+	 */
+	public void setGLCanvas(GLCanvas i_canvas) {
+		m_canvas = i_canvas;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setLog2D(boolean)
+	 */
+	public void setLog2D(boolean i_log2D) {
+
+		m_log2D = i_log2D;
 	}
 
 	/**
@@ -1260,71 +1362,6 @@ public class Graphics3DX3D implements Graphics3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glMatrixMode(int)
-	 */
-	public void glMatrixMode(int i_mode) {
-		// No matrix mode for X3D, ignore this call
-	}
-
-	/**
-	 * Executes a draw command. If the draw target returns true from the command
-	 * execution, it requests to be exchanged because it's completed. In that
-	 * case, a glEnd and glBegin is simulated. This construction is required due
-	 * to the fact that X3D has not a counterpart to every OpenGL primitive.
-	 * 
-	 * @param i_cmdName The command's name.
-	 * @param parameter A list of the parameter.
-	 */
-	private void executeDraw(String i_cmdName, X3DParameterList parameter) {
-		X3DDrawCommand command = new X3DDrawCommand(i_cmdName, parameter,
-				m_propertyContainer, m_transformationManager
-						.getTransformationNode());
-		if (m_activeDrawTarget.draw(command)) {
-			// The active draw target requested completion. To do this:
-			// IF this was not an end command itself
-			// 1. simulate END
-			if (!i_cmdName.equals(X3DDrawCommand.CMD_NAME_END)) {
-				X3DDrawCommand commandEnd = new X3DDrawCommand(
-						X3DDrawCommand.CMD_NAME_END, new X3DParameterList(
-								new ArrayList<Object>()), m_propertyContainer,
-						m_transformationManager.getTransformationNode());
-				m_activeDrawTarget.draw(commandEnd);
-			}
-
-			// 2. add draw target to scene graph
-			m_x3dModel.getSceneGraph().addDrawTarget(m_activeDrawTarget);
-
-			// IF this was not an end command itself
-			// 3. exchange the active draw target against a new one of the same
-			// type
-			if (!i_cmdName.equals(X3DDrawCommand.CMD_NAME_END)) {
-				m_activeDrawTarget = X3DDrawTargetFactory
-						.createNewInstance(m_activeDrawTarget);
-
-				// 4. simulate BEGIN.
-				X3DDrawCommand commandBegin = new X3DDrawCommand(
-						X3DDrawCommand.CMD_NAME_BEGIN, new X3DParameterList(
-								new ArrayList<Object>()), m_propertyContainer,
-						m_transformationManager.getTransformationNode());
-				m_activeDrawTarget.draw(commandBegin);
-			}
-		}
-	}
-
-	Properties properties = new Properties();
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getProperty(java.lang.String)
-	 */
-	public String getProperty(String i_key) {
-		return properties.getProperty(i_key);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setProperty(java.lang.String,
 	 *      java.lang.Object)
 	 */
@@ -1338,26 +1375,9 @@ public class Graphics3DX3D implements Graphics3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getDescriptor()
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#useContext(java.lang.Object)
 	 */
-	public Graphics3DDescriptor getDescriptor() {
-		return descriptor;
+	public void useContext(Object i_context) throws Graphics3DException {
+		m_context = i_context;
 	}
-	
-	/** 
-	 * {@inheritDoc}
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setDescriptor(org.eclipse.draw3d.graphics3d.Graphics3DDescriptor)
-	 */
-	public void setDescriptor(Graphics3DDescriptor i_graphics3DDescriptor) {
-		descriptor = i_graphics3DDescriptor;
-	}
-	
-	/** 
-	 * {@inheritDoc}
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getID()
-	 */
-	public String getID() {
-		return Graphics3DX3D.class.getName();
-	}
-
 }

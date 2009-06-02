@@ -14,6 +14,7 @@ package org.eclipse.gef3d.examples.ecore.diagram.part;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw3d.LightweightSystem3D;
+import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
 import org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramEditor;
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.KeyHandler;
@@ -22,7 +23,6 @@ import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
-import org.eclipse.gef3d.preferences.ScenePreferenceListener;
 import org.eclipse.gef3d.tools.CameraTool;
 import org.eclipse.gef3d.ui.parts.FpsStatusLineItem;
 import org.eclipse.gmf.runtime.diagram.ui.actions.ActionIds;
@@ -64,7 +64,7 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor {
 		getZoomManager().setZoom(1.0);
 	}
 
-	private ScenePreferenceListener sceneListener;
+	private ScenePreferenceDistributor scenePreferenceDistributor;
 
 	/**
 	 * A reference to the 3D diagram graphical viewer.
@@ -160,8 +160,8 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor {
 
 		statusLine.add(fpsCounter);
 
-		sceneListener = new ScenePreferenceListener(viewer3D);
-		sceneListener.start();
+		scenePreferenceDistributor = new ScenePreferenceDistributor(viewer3D);
+		scenePreferenceDistributor.start();
 
 		control.addDisposeListener(lightweightSystem3D);
 	}
@@ -195,8 +195,8 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor {
 	@Override
 	public void dispose() {
 
-		if (sceneListener != null)
-			sceneListener.stop();
+		if (scenePreferenceDistributor != null)
+			scenePreferenceDistributor.stop();
 
 		super.dispose();
 	}

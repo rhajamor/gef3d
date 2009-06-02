@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.eclipse.draw3d.ui.preferences.dialog.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.eclipse.draw3d.ui.preferences.dialog.CameraPreferencePage"
+            id="org.eclipse.draw3d.ui.cameraPreferences"
+            name="Draw3D">
+      </page>
+   </extension>
+
+</plugin>

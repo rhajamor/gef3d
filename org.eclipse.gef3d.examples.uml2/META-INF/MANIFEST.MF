@@ -46,7 +46,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.gef3d.ext;bundle-version="0.8.1",
  org.eclipse.gef3d.gmf;bundle-version="0.8.1",
  org.eclipse.uml2.diagram.activity;bundle-version="0.8.1",
- org.eclipse.uml2.diagram.usecase;bundle-version="0.8.1"
+ org.eclipse.uml2.diagram.usecase;bundle-version="0.8.1",
+ org.eclipse.draw3d.ui;bundle-version="0.8.1"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.gef3d.examples.uml2,

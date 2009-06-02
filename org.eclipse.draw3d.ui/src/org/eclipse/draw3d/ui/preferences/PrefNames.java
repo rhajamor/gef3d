@@ -8,7 +8,7 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.gef3d.preferences;
+package org.eclipse.draw3d.ui.preferences;
 
 /**
  * Constants for the GEF 3D preferences.
@@ -17,7 +17,7 @@ package org.eclipse.gef3d.preferences;
  * @version $Revision$
  * @since 4.3.2008
  */
-public class PrefNames {
+public interface PrefNames {
 
 	/**
 	 * Preference name for the backward key binding.
@@ -52,12 +52,12 @@ public class PrefNames {
 	/**
 	 * Preference name for the roll left key binding.
 	 */
-	public static final String KEY_ROLL_LEFT = "rollLeftKey";
+	public static final String KEY_ROLL_CCW = "rollLeftKey";
 
 	/**
 	 * Preference name for the roll right key binding.
 	 */
-	public static final String KEY_ROLL_RIGHT = "rollRightKey";
+	public static final String KEY_ROLL_CW = "rollRightKey";
 
 	/**
 	 * Preference name for the up key binding.

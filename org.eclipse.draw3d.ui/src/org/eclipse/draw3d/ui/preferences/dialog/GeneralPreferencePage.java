@@ -7,12 +7,12 @@
  *
  * Contributors:
  *    Kristian Duske - initial API and implementation
- ******************************************************************************/package org.eclipse.gef3d.preferences;
+ ******************************************************************************/package org.eclipse.draw3d.ui.preferences.dialog;
 
-import org.eclipse.gef3d.Activator;
-import org.eclipse.jface.preference.*;
-import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.draw3d.ui.Draw3DUIPlugin;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
  * Provides the implementation of the general GEF 3D preferences.
@@ -26,7 +26,7 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements
 
 	public GeneralPreferencePage() {
 		super(GRID);
-		setPreferenceStore(Activator.getDefault().getPreferenceStore());
+		setPreferenceStore(Draw3DUIPlugin.getDefault().getPreferenceStore());
 		setDescription("A demonstration of a preference page implementation");
 	}
 

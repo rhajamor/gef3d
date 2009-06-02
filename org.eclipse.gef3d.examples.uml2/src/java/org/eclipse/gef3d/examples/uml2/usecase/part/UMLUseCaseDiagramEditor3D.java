@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw3d.LightweightSystem3D;
+import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.GraphicalViewer;
@@ -24,13 +25,11 @@ import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
-import org.eclipse.gef3d.examples.uml2.usecase.providers.UMLUseCaseEditPartProvider3D;
 import org.eclipse.gef3d.ext.multieditor.INestableEditor;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
 import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gef3d.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer3D;
-import org.eclipse.gef3d.preferences.ScenePreferenceListener;
 import org.eclipse.gef3d.tools.CameraTool;
 import org.eclipse.gef3d.ui.parts.FpsStatusLineItem;
 import org.eclipse.gmf.runtime.diagram.ui.actions.ActionIds;
@@ -68,7 +67,7 @@ public class UMLUseCaseDiagramEditor3D extends UMLDiagramEditor implements INest
 	private static final Logger log = Logger.getLogger(UMLUseCaseDiagramEditor3D.class.getName());
 
 	
-	private ScenePreferenceListener sceneListener;
+	private ScenePreferenceDistributor scenePreferenceDistributor;
 
 	/**
 	 * A reference to the 3D diagram graphical viewer.
@@ -191,8 +190,8 @@ public class UMLUseCaseDiagramEditor3D extends UMLDiagramEditor implements INest
 
 		statusLine.add(fpsCounter);
 
-		sceneListener = new ScenePreferenceListener(viewer3D);
-		sceneListener.start();
+		scenePreferenceDistributor = new ScenePreferenceDistributor(viewer3D);
+		scenePreferenceDistributor.start();
 
 		control.addDisposeListener(lightweightSystem3D);
 	}
@@ -226,8 +225,8 @@ public class UMLUseCaseDiagramEditor3D extends UMLDiagramEditor implements INest
 	@Override
 	public void dispose() {
 
-		if (sceneListener != null)
-			sceneListener.stop();
+		if (scenePreferenceDistributor != null)
+			scenePreferenceDistributor.stop();
 
 		super.dispose();
 	}

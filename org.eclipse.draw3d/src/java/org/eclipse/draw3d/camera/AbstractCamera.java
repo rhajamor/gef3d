@@ -22,7 +22,11 @@ import java.util.Vector;
  */
 public abstract class AbstractCamera implements ICamera {
 
+	private int m_far = 40000;
+
 	private final List<ICameraListener> m_listeners;
+
+	private int m_near = 100;
 
 	/**
 	 * @param i_lightweightSystem3D
@@ -43,17 +47,40 @@ public abstract class AbstractCamera implements ICamera {
 	}
 
 	/**
+	 * Notifies all camera listeners that this camera has changed.
+	 */
+	protected void fireCameraChanged() {
+		for (ICameraListener listener : m_listeners)
+			listener.cameraChanged();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.camera.ICamera#getFar()
+	 */
+	public int getFar() {
+
+		return m_far;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.camera.ICamera#getNear()
+	 */
+	public int getNear() {
+
+		return m_near;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.camera.ICamera#removeCameraListener(org.eclipse.draw3d.camera.ICameraListener)
 	 */
 	public void removeCameraListener(ICameraListener i_listener) {
 		m_listeners.remove(i_listener);
-	}
-
-	protected void fireCameraChanged() {
-		for (ICameraListener listener : m_listeners)
-			listener.cameraChanged();
 	}
 
 }
