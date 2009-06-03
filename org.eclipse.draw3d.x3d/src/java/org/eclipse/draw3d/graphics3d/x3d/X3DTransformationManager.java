@@ -58,7 +58,7 @@ public class X3DTransformationManager {
 	 * @param i_y Translation in Y
 	 * @param i_z Translation in Z
 	 */
-	public void translate(float i_x, float i_y, int i_z) {
+	public void translate(float i_x, float i_y, float i_z) {
 
 		if (m_currentPosition == null) {
 			throw new Graphics3DException(

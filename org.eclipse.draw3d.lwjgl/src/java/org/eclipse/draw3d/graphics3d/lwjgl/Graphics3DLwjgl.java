@@ -572,9 +572,9 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glTranslatef(float,
-	 *      float, int)
+	 *      float, infloatt)
 	 */
-	public void glTranslatef(float x, float y, int z) {
+	public void glTranslatef(float x, float y, float z) {
 		org.lwjgl.opengl.GL11.glTranslatef(x, y, z);
 	}
 

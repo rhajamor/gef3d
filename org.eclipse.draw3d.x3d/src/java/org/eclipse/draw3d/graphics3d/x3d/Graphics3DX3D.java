@@ -1161,9 +1161,9 @@ public class Graphics3DX3D implements Graphics3D {
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glTranslatef(float,
-	 *      float, int)
+	 *      float, float)
 	 */
-	public void glTranslatef(float i_x, float i_y, int i_z) {
+	public void glTranslatef(float i_x, float i_y, float i_z) {
 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {

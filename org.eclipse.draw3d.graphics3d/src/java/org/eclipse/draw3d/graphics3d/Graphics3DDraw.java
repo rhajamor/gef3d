@@ -410,7 +410,7 @@ public interface Graphics3DDraw {
 
 	public abstract void glLineStipple(int factor, short pattern);
 
-	public abstract void glTranslatef(float x, float y, int z);
+	public abstract void glTranslatef(float x, float y, float z);
 
 	public abstract String glGetString(int name);
 
