@@ -1314,7 +1314,9 @@ public class LwjglGraphics extends Graphics {
 		glSetBackgroundColor();
 		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 
+		GL11.glBegin(GL11.GL_POLYGON);
 		glDrawRectangle(i_x, i_y, i_width, i_height, false);
+		GL11.glEnd();
 	}
 
 	/**
