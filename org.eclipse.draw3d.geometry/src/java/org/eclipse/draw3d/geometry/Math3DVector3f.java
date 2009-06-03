@@ -11,7 +11,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.geometry;
 
-
 /**
  * Bais vector operations.
  * 
@@ -19,15 +18,17 @@ package org.eclipse.draw3d.geometry;
  * @version $Revision$
  * @since 19.10.2008
  */
-public class Math3DVector3f extends Math3DBase {
+public class Math3DVector3f extends Math3DVector2f {
 
 	/**
 	 * Calculates the negative value for each component of the given vector. The
 	 * source and result vector may be the same object.
 	 * 
-	 * @param i_source the source vector
-	 * @param o_result the result vector, if <code>null</code>, a new vector
-	 *            will be created and returned
+	 * @param i_source
+	 *            the source vector
+	 * @param o_result
+	 *            the result vector, if <code>null</code>, a new vector will be
+	 *            created and returned
 	 * @return the result vector
 	 */
 	public static Vector3f negate(IVector3f i_source, Vector3f o_result) {
@@ -157,26 +158,6 @@ public class Math3DVector3f extends Math3DBase {
 	}
 
 	/**
-	 * Calculates the negative value for each component of the given vector. The
-	 * source and result vector may be the same object.
-	 * 
-	 * @param i_source the source vector
-	 * @param o_result the result vector, if <code>null</code>, a new vector
-	 *            will be created and returned
-	 * @return the result vector
-	 */
-	public static Vector4f negate(IVector4f i_source, Vector4f o_result) {
-		if (o_result == null) {
-			return new Vector4fImpl(-i_source.getX(), -i_source.getY(),
-					-i_source.getZ(), -i_source.getW());
-		} else {
-			o_result.set(-i_source.getX(), -i_source.getY(), -i_source.getZ(),
-					-i_source.getW());
-			return o_result;
-		}
-	}
-
-	/**
 	 * Multiplies all elements of the vector with the given scale value.
 	 * 
 	 * @param scale
@@ -223,9 +204,11 @@ public class Math3DVector3f extends Math3DBase {
 	 * Calculates the absolute value for each component of the given vector. The
 	 * source and result vector may be the same object.
 	 * 
-	 * @param i_source the source vector
-	 * @param io_result the result vector, if <code>null</code>, a new vector
-	 *            will be created and returned
+	 * @param i_source
+	 *            the source vector
+	 * @param io_result
+	 *            the result vector, if <code>null</code>, a new vector will be
+	 *            created and returned
 	 * @return the result vector
 	 */
 	public static Vector3f abs(IVector3f i_source, Vector3f io_result) {
@@ -235,27 +218,6 @@ public class Math3DVector3f extends Math3DBase {
 		else
 			io_result.set(Math.abs(i_source.getX()), Math.abs(i_source.getY()),
 					Math.abs(i_source.getZ()));
-
-		return io_result;
-	}
-
-	/**
-	 * Calculates the absolute value for each component of the given vector. The
-	 * source and result vector may be the same object.
-	 * 
-	 * @param i_source the source vector
-	 * @param io_result the result vector, if <code>null</code>, a new vector
-	 *            will be created and returned
-	 * @return the result vector
-	 */
-	public static Vector4f abs(IVector4f i_source, Vector4f io_result) {
-		if (io_result == null)
-			io_result = new Vector4fImpl(Math.abs(i_source.getX()), Math
-					.abs(i_source.getY()), Math.abs(i_source.getZ()), Math
-					.abs(i_source.getW()));
-		else
-			io_result.set(Math.abs(i_source.getX()), Math.abs(i_source.getY()),
-					Math.abs(i_source.getZ()), Math.abs(i_source.getW()));
 
 		return io_result;
 	}

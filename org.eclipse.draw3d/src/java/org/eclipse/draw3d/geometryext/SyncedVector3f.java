@@ -13,8 +13,9 @@ package org.eclipse.draw3d.geometryext;
 
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw2d.geometry.Ray;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Vector2f;
+import org.eclipse.draw3d.geometry.Vector2fImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 
@@ -27,38 +28,36 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
  * @version $Revision$
  * @since 24.10.2008
  */
-public class SyncedVector3f
-{
-	/**
-	 * float values of x and y values
-	 */
-	public Ray m_vecDelta;
-
+public class SyncedVector3f {
 	/**
 	 * z-value and cached x,y values
 	 */
 	public Vector3f m_vec3D;
 
 	/**
+	 * float values of x and y values
+	 */
+	public Vector2f m_vecDelta;
+
+	/**
 	 * The standard constructor
 	 */
-	public SyncedVector3f()
-	{
+	public SyncedVector3f() {
 		this.m_vec3D = new Vector3fImpl();
-		this.m_vecDelta = new Ray();
+		this.m_vecDelta = new Vector2fImpl();
 	}
 
 	/**
 	 * Returns the 3D position synced to the 2D position specified by the given
 	 * 2D bounds.
 	 * 
-	 * @param i_dim2D the 2D dimension to sync to
+	 * @param i_dim2D
+	 *            the 2D dimension to sync to
 	 * @return the synced 3d vector
 	 */
-	public IVector3f getVector3f(Dimension i_dim2D)
-	{
-		this.m_vec3D.setX(i_dim2D.width + m_vecDelta.x);
-		this.m_vec3D.setY(i_dim2D.height + m_vecDelta.y);
+	public IVector3f getVector3f(Dimension i_dim2D) {
+		this.m_vec3D.setX(i_dim2D.width + m_vecDelta.getX());
+		this.m_vec3D.setY(i_dim2D.height + m_vecDelta.getY());
 
 		return this.m_vec3D;
 	}
@@ -67,13 +66,13 @@ public class SyncedVector3f
 	 * Returns the 3D position synced to the 2D position specified by the given
 	 * 2D bounds.
 	 * 
-	 * @param i_point2D the 2D point to sync to
+	 * @param i_point2D
+	 *            the 2D point to sync to
 	 * @return the synced 3d vector
 	 */
-	public IVector3f getVector3f(Point i_point2D)
-	{
-		this.m_vec3D.setX(i_point2D.x + m_vecDelta.x);
-		this.m_vec3D.setY(i_point2D.y + m_vecDelta.y);
+	public IVector3f getVector3f(Point i_point2D) {
+		this.m_vec3D.setX(i_point2D.x + m_vecDelta.getX());
+		this.m_vec3D.setY(i_point2D.y + m_vecDelta.getY());
 
 		return this.m_vec3D;
 
@@ -84,11 +83,11 @@ public class SyncedVector3f
 	 * point based on this 3D vector, integer values of 2D point are simply the
 	 * integer parts of the given x and y values.
 	 * 
-	 * @param i_sourceVector3f The source vector
+	 * @param i_sourceVector3f
+	 *            The source vector
 	 * @return the new 2D point based on the given vector
 	 */
-	public Point setVector3f(IVector3f i_sourceVector3f)
-	{
+	public Point setVector3f(IVector3f i_sourceVector3f) {
 		int x = (int) i_sourceVector3f.getX();
 		int y = (int) i_sourceVector3f.getY();
 
@@ -96,8 +95,8 @@ public class SyncedVector3f
 		float yDelta = i_sourceVector3f.getY() - y;
 		float z = i_sourceVector3f.getZ();
 
-		m_vecDelta.x = (int) xDelta;
-		m_vecDelta.y = (int) yDelta;
+		m_vecDelta.setX(xDelta);
+		m_vecDelta.setY(yDelta);
 		m_vec3D.setZ(z);
 
 		return new Point(x, y);
@@ -108,12 +107,13 @@ public class SyncedVector3f
 	 * returned as Dimension (x is interpreted as width, y as height, and z as
 	 * depth).
 	 * 
-	 * @param i_sourceVector3f The source vector
+	 * @param i_sourceVector3f
+	 *            The source vector
 	 * @return the new 2D dimension based on the given vector
-	 * @throws NullPointerException, if give parameter is null
+	 * @throws NullPointerException
+	 *             , if give parameter is null
 	 */
-	public Dimension setVector3fAsDimension(IVector3f i_sourceVector3f)
-	{
+	public Dimension setVector3fAsDimension(IVector3f i_sourceVector3f) {
 		int x = (int) i_sourceVector3f.getX();
 		int y = (int) i_sourceVector3f.getY();
 
@@ -121,8 +121,8 @@ public class SyncedVector3f
 		float yDelta = i_sourceVector3f.getY() - y;
 		float z = i_sourceVector3f.getZ();
 
-		m_vecDelta.x = (int) xDelta;
-		m_vecDelta.y = (int) yDelta;
+		m_vecDelta.setX(xDelta);
+		m_vecDelta.setY(yDelta);
 		m_vec3D.setZ(z);
 
 		return new Dimension(x, y);
@@ -131,10 +131,10 @@ public class SyncedVector3f
 	/**
 	 * Sets the synced vector's z value.
 	 * 
-	 * @param i_z The new Z value.
+	 * @param i_z
+	 *            The new Z value.
 	 */
-	public void setZ(float i_z)
-	{
+	public void setZ(float i_z) {
 		this.m_vec3D.setZ(i_z);
 	}
 
