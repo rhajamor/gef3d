@@ -33,10 +33,19 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
  */
 public interface ICamera {
 
+	/**
+	 * Right reference vector.
+	 */
 	public static final IVector3f RIGHT_REF = new Vector3fImpl(1, 0, 0);
 
+	/**
+	 * Up reference vector.
+	 */
 	public static final IVector3f UP_REF = new Vector3fImpl(0, -1, 0);
 
+	/**
+	 * View direction reference vector.
+	 */
 	public static final IVector3f VIEW_REF = new Vector3fImpl(0, 0, 1);
 
 	/**
@@ -143,6 +152,9 @@ public interface ICamera {
 
 	/**
 	 * Renders the camera.
+	 * 
+	 * @param renderContext
+	 *            the current render context
 	 */
 	public void render(RenderContext renderContext);
 

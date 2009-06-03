@@ -6,7 +6,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Kristian Duske - initial API and implementation
+ *    Jens von Pilgrim - initial API and implementation
+ *    Kristian Duske - refactoring and cleanup
  ******************************************************************************/
 package org.eclipse.gef3d.tools;
 
@@ -21,12 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.PaletteData;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -36,6 +32,7 @@ import org.eclipse.swt.widgets.Event;
  * instance of {@link CameraInputHandler} and this class only delegates SWT
  * events to that class.
  * 
+ * @author Jens von Pilgrim
  * @author Kristian Duske
  * @version $Revision$
  * @since 02.06.2009
@@ -46,15 +43,10 @@ public class CameraTool extends AbstractTool {
 	private static final Logger logger = Logger.getLogger(CameraTool.class
 			.getName());
 
-	private Point m_cursorLocation;
-
 	/**
 	 * The camera input handler.
 	 */
 	protected CameraInputHandler m_handler;
-
-	// TODO needs to be disposed somehow
-	private Cursor m_invisibleCursor;
 
 	/**
 	 * The camera preference distributor.
@@ -131,7 +123,7 @@ public class CameraTool extends AbstractTool {
 		return true;
 	}
 
-	private void hideCursor() {
+	private void setCursor(int i_cursorId) {
 
 		// save current cursor
 		Control ctrl = getCurrentViewer().getControl();
@@ -151,20 +143,8 @@ public class CameraTool extends AbstractTool {
 		ctrl = getCurrentViewer().getControl();
 		Display display = ctrl.getDisplay();
 
-		if (m_invisibleCursor == null) {
-			Color white = display.getSystemColor(SWT.COLOR_WHITE);
-			Color black = display.getSystemColor(SWT.COLOR_BLACK);
-
-			PaletteData palette = new PaletteData(new RGB[] { white.getRGB(),
-					black.getRGB() });
-			ImageData sourceData = new ImageData(16, 16, 1, palette);
-			sourceData.transparentPixel = 0;
-
-			m_invisibleCursor = new Cursor(display, sourceData, 0, 0);
-		}
-
-		ctrl.setCursor(m_invisibleCursor);
-		m_cursorLocation = display.getCursorLocation();
+		Cursor cursor = display.getSystemCursor(i_cursorId);
+		ctrl.setCursor(cursor);
 	}
 
 	/**
@@ -208,7 +188,7 @@ public class CameraTool extends AbstractTool {
 
 		super.mouseDown(i_me, i_viewer);
 
-		hideCursor();
+		setCursor(SWT.CURSOR_CROSS);
 		m_handler.setScene(getScene());
 		m_handler.buttonDown(i_me);
 	}
@@ -303,21 +283,15 @@ public class CameraTool extends AbstractTool {
 
 		super.nativeDragStarted(i_event, i_viewer);
 
-		hideCursor();
+		setCursor(SWT.CURSOR_CROSS);
 		m_handler.setScene(getScene());
 		m_handler.nativeDragStarted(i_event);
 	}
 
 	private void restoreCursor() {
 
-		Control ctrl = getCurrentViewer().getControl();
-		if (m_cursorLocation != null) {
-			Display display = ctrl.getDisplay();
-			display.setCursorLocation(m_cursorLocation);
-			m_cursorLocation = null;
-		}
-
 		if (m_pushedCursor != null) {
+			Control ctrl = getCurrentViewer().getControl();
 			ctrl.setCursor(m_pushedCursor);
 			m_pushedCursor = null;
 		}

@@ -7,6 +7,8 @@
  *
  * Contributors:
  *    Jens von Pilgrim - initial API and implementation
+ *    Kristian Duske - refactoring and cleanup, support for multiple camera 
+ *    	implementations
  ******************************************************************************/
 package org.eclipse.draw3d.camera;
 
@@ -17,6 +19,7 @@ import java.util.Vector;
  * This abstract camera is to be subclassed by concrete cameras.
  * 
  * @author Jens von Pilgrim
+ * @author Kristian Duske
  * @version $Revision$
  * @since Apr 10, 2009
  */
