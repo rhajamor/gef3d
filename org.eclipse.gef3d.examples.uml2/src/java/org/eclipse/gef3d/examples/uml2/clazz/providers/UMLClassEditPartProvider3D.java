@@ -76,15 +76,15 @@ public class UMLClassEditPartProvider3D extends UMLEditPartProvider {
 			bIsAccepted &= super.provides(i_operation);
 				
 			
-			if (bIsAccepted!=bIsSupported) {
-				if (log.isLoggable(Level.INFO)) {
-					log.info("Warning, isSupported = " + bIsSupported + 
-							", acceptor says " + bIsAccepted +
-							", acceptor: " + providerAcceptor +
-							", model: " + op.getView().getElement()
-							); //$NON-NLS-1$
-				}
-			}
+//			if (bIsAccepted!=bIsSupported) {
+//				if (log.isLoggable(Level.INFO)) {
+//					log.info("Warning, isSupported = " + bIsSupported + 
+//							", acceptor says " + bIsAccepted +
+//							", acceptor: " + providerAcceptor +
+//							", model: " + op.getView().getElement()
+//							); //$NON-NLS-1$
+//				}
+//			}
 			
 			return bIsAccepted;
 			
