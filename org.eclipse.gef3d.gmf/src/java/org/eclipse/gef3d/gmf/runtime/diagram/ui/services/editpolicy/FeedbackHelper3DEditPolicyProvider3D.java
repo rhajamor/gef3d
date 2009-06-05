@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Kristian Duske - initial API and implementation
+ *    Jens von Pilgrim - initial API and implementation
  ******************************************************************************/
 package org.eclipse.gef3d.gmf.runtime.diagram.ui.services.editpolicy;
 
@@ -15,8 +15,9 @@ import java.util.logging.Logger;
 
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
-import org.eclipse.gef.GraphicalEditPart;
+import org.eclipse.gef.NodeEditPart;
 import org.eclipse.gef3d.editpolicies.Handles3DEditPolicy;
+import org.eclipse.gef3d.editpolicies.ShowSourceFeedback3DEditPolicy;
 import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gmf.runtime.common.core.service.AbstractProvider;
 import org.eclipse.gmf.runtime.common.core.service.IOperation;
@@ -25,17 +26,24 @@ import org.eclipse.gmf.runtime.diagram.ui.services.editpolicy.CreateEditPolicies
 import org.eclipse.gmf.runtime.diagram.ui.services.editpolicy.IEditPolicyProvider;
 
 /**
- * Adds policies for 3D handles.
+ * Adds policy for enabling 3D feedbck when creating or reconnecting
+ * connections.
+ * <p>
+ * This provider uses the {@link ProviderAcceptor} in order to check whether
+ * is has to provide the functionality in the given context. Here, the
+ * acceptor must accept 3D policies, i.e.
+ * {@link ProviderAcceptor#isGEF3D()} must return true.
+ * </p>
  * 
- * @author Kristian Duske, Jens von Pilgrim
+ * @author Jens von Pilgrim
  * @version $Revision$
  * @since 06.01.2009
  */
-public class Handles3DEditPolicyProvider3D extends AbstractProvider implements
-		IEditPolicyProvider {
+public class FeedbackHelper3DEditPolicyProvider3D extends AbstractProvider
+		implements IEditPolicyProvider {
 
 	private static final Logger log =
-		Logger.getLogger(Handles3DEditPolicyProvider3D.class.getName());
+		Logger.getLogger(FeedbackHelper3DEditPolicyProvider3D.class.getName());
 
 	/**
 	 * {@inheritDoc}
@@ -48,8 +56,8 @@ public class Handles3DEditPolicyProvider3D extends AbstractProvider implements
 			log.fine("modifying edit policies of "
 				+ i_editPart.getClass().getName());
 
-		i_editPart.installEditPolicy(EditPolicy.PRIMARY_DRAG_ROLE,
-			new Handles3DEditPolicy());
+		i_editPart.installEditPolicy(ShowSourceFeedback3DEditPolicy.ROLE,
+			new ShowSourceFeedback3DEditPolicy());
 	}
 
 	/**
@@ -62,13 +70,8 @@ public class Handles3DEditPolicyProvider3D extends AbstractProvider implements
 			EditPart editPart =
 				((CreateEditPoliciesOperation) i_operation).getEditPart();
 
-			if (editPart instanceof GraphicalEditPart) { // DiagramEditPart) {
-				if (ProviderAcceptor.evaluate3DAcceptance(this, i_operation))
-					return true;
-			} else {
-				if (log.isLoggable(Level.INFO)) {
-					log.info("Do not support this kind of edit part - editPart=" + editPart); //$NON-NLS-1$
-				}
+			if (editPart instanceof NodeEditPart) {
+				return ProviderAcceptor.evaluate3DAcceptance(this, i_operation);
 			}
 		}
 
