@@ -6,35 +6,60 @@
 	<property name="draw3d" value="org.eclipse.draw3d" />
 	<property name="draw3d.geometry" value="org.eclipse.draw3d.geometry" />
 	<property name="draw3d.graphics3d" value="org.eclipse.draw3d.graphics3d" />
+	<property name="draw3d.ui" value="org.eclipse.draw3d.ui" />
 	<property name="draw3d.lwjgl" value="org.eclipse.draw3d.lwjgl" />
+	<property name="draw3d.x3d" value="org.eclipse.draw3d.x3d" />
 	<property name="draw3d.test" value="org.eclipse.draw3d.test" />
 	<property name="gef3d" value="org.eclipse.gef3d" />
 	<property name="gef3d.ext" value="org.eclipse.gef3d.ext" />
 	<property name="gef3d.gmf" value="org.eclipse.gef3d.gmf" />
 	<property name="gef3d.examples.graph" value="org.eclipse.gef3d.examples.graph" />
-	
+	<property name="gef3d.examples.ecore" value="org.eclipse.gef3d.examples.ecore" />
+	<property name="gef3d.examples.uml2" value="org.eclipse.gef3d.examples.uml2" />
+
+
 
 	<target name="build_srczip">
 		<mkdir dir="src/${draw3d}_${version}" />
 		<zip destfile="src/${draw3d}_${version}/src.zip" basedir="../${draw3d}/src/java" />
+
 		<mkdir dir="src/${draw3d.geometry}_${version}" />
-		<zip destfile="src/${draw3d.geometry}_${version}/src.zip" basedir="../${draw3d.lwjgl}/src/java" />
+		<zip destfile="src/${draw3d.geometry}_${version}/src.zip" basedir="../${draw3d.geometry}/src/java" />
+
+		<mkdir dir="src/${draw3d.ui}_${version}" />
+		<zip destfile="src/${draw3d.ui}_${version}/src.zip" basedir="../${draw3d.ui}/src/java" />
+
 		<mkdir dir="src/${draw3d.graphics3d}_${version}" />
-		<zip destfile="src/${draw3d.graphics3d}_${version}/src.zip" basedir="../${draw3d.lwjgl}/src/java" />
+		<zip destfile="src/${draw3d.graphics3d}_${version}/src.zip" basedir="../${draw3d.graphics3d}/src/java" />
+
 		<mkdir dir="src/${draw3d.lwjgl}_${version}" />
 		<zip destfile="src/${draw3d.lwjgl}_${version}/src.zip" basedir="../${draw3d.lwjgl}/src/java" />
+
+		<mkdir dir="src/${draw3d.x3d}_${version}" />
+		<zip destfile="src/${draw3d.x3d}_${version}/src.zip" basedir="../${draw3d.x3d}/src/java" />
+
 		<mkdir dir="src/${draw3d.test}_${version}" />
 		<zip destfile="src/${draw3d.test}_${version}/src.zip" basedir="../${draw3d.test}/src/java" />
+
 		<mkdir dir="src/${gef3d}_${version}" />
 		<zip destfile="src/${gef3d}_${version}/src.zip" basedir="../${gef3d}/src/java" />
+
 		<mkdir dir="src/${gef3d.ext}_${version}" />
 		<zip destfile="src/${gef3d.ext}_${version}/src.zip" basedir="../${gef3d.ext}/src/java" />
+
 		<mkdir dir="src/${gef3d.gmf}_${version}" />
 		<zip destfile="src/${gef3d.gmf}_${version}/src.zip" basedir="../${gef3d.gmf}/src/java" />
+
 		<mkdir dir="src/${gef3d.examples.graph}_${version}" />
 		<zip destfile="src/${gef3d.examples.graph}_${version}/src.zip" basedir="../${gef3d.examples.graph}/src/java" />
+
+		<mkdir dir="src/${gef3d.examples.ecore}_${version}" />
+		<zip destfile="src/${gef3d.examples.ecore}_${version}/src.zip" basedir="../${gef3d.examples.ecore}/src/java" />
+
+		<mkdir dir="src/${gef3d.examples.uml2}_${version}" />
+		<zip destfile="src/${gef3d.examples.uml2}_${version}/src.zip" basedir="../${gef3d.examples.uml2}/src/java" />
 	</target>
-	
+
 	<target name="clean">
 		<delete dir="src" />
 		<mkdir dir="src" />
