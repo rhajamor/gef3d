@@ -48,7 +48,9 @@
 		<path id="classpath">
 			<pathelement path="../org.eclipse.draw3d/build/classes" />
 			<pathelement path="../org.eclipse.draw3d.geometry/build/classes" />
+			<pathelement path="../org.eclipse.draw3d.ui/build/classes" />
 			<pathelement path="../org.eclipse.draw3d.lwjgl/build/classes" />
+			<pathelement path="../org.eclipse.draw3d.x3d/build/classes" />
 			<!--
 			<pathelement path="../org.eclipse.draw3d.test/build/classes" />
 			-->
@@ -56,6 +58,8 @@
 			<pathelement path="../org.eclipse.gef3d.ext/build/classes" />
 			<pathelement path="../org.eclipse.gef3d.gmf/build/classes" />
 			<pathelement path="../org.eclipse.gef3d.examples.graph/build/classes" />
+			<pathelement path="../org.eclipse.gef3d.examples.ecore/build/classes" />
+			<pathelement path="../org.eclipse.gef3d.examples.uml2/build/classes" />
 			<!--
 			<pathelement path="/Devel/Applications/Eclipse3.3.1.1/plugins/org.eclipse.draw2d_3.2.100.v20070529.jar" />
 			<pathelement path="/Devel/Applications/Eclipse3.3.1.1/plugins/org.eclipse.gef_3.2.101.v20070814.jar" />
@@ -67,13 +71,17 @@
 		<path id="srcpath">
 			<pathelement path="../org.eclipse.draw3d/src/java" />
 			<pathelement path="../org.eclipse.draw3d.geometry/src/java" />
+			<pathelement path="../org.eclipse.draw3d.ui/src/java" />
 			<pathelement path="../org.eclipse.draw3d.graphics3d/src/java" />
 			<pathelement path="../org.eclipse.draw3d.lwjgl/src/java" />
+			<pathelement path="../org.eclipse.draw3d.x3d/src/java" />
 			<!-- <pathelement path="../org.eclipse.draw3d.test/src/java" /> -->
 			<pathelement path="../org.eclipse.gef3d/src/java" />
 			<pathelement path="../org.eclipse.gef3d.ext/src/java" />
 			<pathelement path="../org.eclipse.gef3d.gmf/src/java" />
 			<pathelement path="../org.eclipse.gef3d.examples.graph/src/java" />
+			<pathelement path="../org.eclipse.gef3d.examples.ecore/src/java" />
+			<pathelement path="../org.eclipse.gef3d.examples.uml2/src/java" />
 			<!--
 			<pathelement path="Devel/Applications/Eclipse3.3.1.1/plugins/org.eclipse.gef.source_3.3.1.v20070814/src/org.eclipse.gef_3.2.101.v20070814/src.zip" />
 			-->
