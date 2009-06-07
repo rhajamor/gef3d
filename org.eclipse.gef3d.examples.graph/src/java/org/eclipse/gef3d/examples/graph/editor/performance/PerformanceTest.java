@@ -95,8 +95,10 @@ public class PerformanceTest extends GraphEditor2_5D {
 				int source = (int) (c);
 				int target = (int) (c);
 
-				intermodel.add(new Edge(graphs[p - 1].getVerteces().get(source),
-						graphs[p].getVerteces().get(target)));
+				Edge e = new Edge();
+				e.setSource(graphs[p - 1].getVertices().get(source));
+				e.setTarget(graphs[p].getVertices().get(target));
+				
 			}
 		}
 		

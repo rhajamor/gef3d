@@ -10,17 +10,17 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.graph.editor.editparts;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.NodeEditPart;
 import org.eclipse.gef3d.editparts.AbstractGraphicalNodeEditPart;
+import org.eclipse.gef3d.examples.graph.editor.editpolicies.VertexEditPolicy;
 import org.eclipse.gef3d.examples.graph.model.Vertex;
 import org.eclipse.gef3d.factories.IConnectionAnchorFactory;
 import org.eclipse.gef3d.factories.SingleAnchorConnectionAnchorFactory;
@@ -49,8 +49,7 @@ public class VertexPart extends AbstractGraphicalNodeEditPart implements
 	 */
 	@Override
 	protected void createEditPolicies() {
-		// installEditPolicy(EditPolicy.NODE_ROLE, new VertexEditPolicy());
-
+		installEditPolicy(EditPolicy.NODE_ROLE, new VertexEditPolicy());
 	}
 
 	/**
@@ -124,7 +123,7 @@ public class VertexPart extends AbstractGraphicalNodeEditPart implements
 	 */
 	@Override
 	protected List getModelTargetConnections() {
-		return ((Vertex) getModel()).getDestinations();
+		return ((Vertex) getModel()).getTargets();
 	}
 
 	/**

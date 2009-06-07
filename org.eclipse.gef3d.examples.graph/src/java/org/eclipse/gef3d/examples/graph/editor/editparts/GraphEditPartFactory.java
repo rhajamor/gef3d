@@ -22,7 +22,7 @@ import org.eclipse.gef3d.examples.graph.model.Vertex;
 
 
 /**
- * GraphEditPartFactory There should really be more documentation here.
+ * Edit part factory, create edit parts by given (Graph) model elements.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -36,7 +36,9 @@ public class GraphEditPartFactory implements EditPartFactory {
 			.getLogger(GraphEditPartFactory.class.getName());
 
 	/**
-	 * {@inheritDoc}
+	 * Creates parts matching given model element and set the model
+	 * of the edit part. The context is ignored here.
+	 * 
 	 * 
 	 * @see org.eclipse.gef.EditPartFactory#createEditPart(org.eclipse.gef.EditPart,
 	 *      java.lang.Object)
@@ -55,16 +57,6 @@ public class GraphEditPartFactory implements EditPartFactory {
 		} else {
 			log.warning("EditPart, No part created for model=" + i_model); 
 		}
-
-//		if (log.isLoggable(Level.INFO)) {
-//			log.info("Created new part: " + part + " for model " + i_model); //$NON-NLS-1$
-//		}
-		
-		
-		
-		
-		
-		
 		return part;
 	}
 

@@ -7,22 +7,31 @@
  *
  * Contributors:
  *    Jens von Pilgrim - initial API and implementation
- ******************************************************************************/package org.eclipse.gef3d.examples.graph.model;
+ ******************************************************************************/
+package org.eclipse.gef3d.examples.graph.model;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Labeled vertex model class.  Observer pattern is implemented using
+ * Labeled vertex model class. Observer pattern is implemented using
  * {@link PropertyChangeSupport}.
  * 
  * @author jpilgrim
  * @version $Revision$
  * @since 26.09.2004
  */
-public class Vertex {
+public class Vertex implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6167394567950527021L;
+
+	Graph m_graph;
 
 	// Properties
 	float m_fX;
@@ -53,7 +62,7 @@ public class Vertex {
 
 	List<Edge> m_listSources;
 
-	List<Edge> m_listDestinations;
+	List<Edge> m_listTargets;
 
 	public final static String PROPERTY_SOURCES = "sources";
 
@@ -75,7 +84,7 @@ public class Vertex {
 		m_iWidth = 0;
 		m_iHeight = 0;
 		m_listSources = new ArrayList<Edge>();
-		m_listDestinations = new ArrayList<Edge>();
+		m_listTargets = new ArrayList<Edge>();
 		m_strName = "Vertex_" + ++COUNT;
 	}
 
@@ -95,6 +104,23 @@ public class Vertex {
 	 */
 	public void removePropertyChangeListener(PropertyChangeListener i_Listener) {
 		m_Listeners.removePropertyChangeListener(i_Listener);
+	}
+
+	/**
+	 * @return the graph
+	 */
+	public Graph getGraph() {
+		return m_graph;
+	}
+
+	/**
+	 * Sets the graph of the vertex, this is package visible only and called by
+	 * {@link Graph#addVertex(Vertex)}.
+	 * 
+	 * @param graph the graph to set
+	 */
+	void setGraph(Graph graph) {
+		m_graph = graph;
 	}
 
 	/**
@@ -194,43 +220,58 @@ public class Vertex {
 	}
 
 	/**
+	 * Called by {@link Edge#setTarget(Vertex)}.
 	 * @param i_Edge
 	 * @return
 	 */
-	public boolean addDestination(Edge i_Edge) {
-		boolean bFlag = m_listDestinations.add(i_Edge);
-		m_Listeners.firePropertyChange(PROPERTY_DESTS, null, i_Edge);
-		return bFlag;
+	boolean addTarget(Edge i_Edge) {
+		if (!m_listTargets.contains(i_Edge)) {
+			m_listTargets.add(i_Edge);
+			m_Listeners.firePropertyChange(PROPERTY_DESTS, null, i_Edge);
+			return true;
+		}
+		return false;
+
 	}
 
 	/**
+	 * Called by {@link Edge#setSource(Vertex)}
 	 * @param i_Edge
 	 * @return
 	 */
-	public boolean addSource(Edge i_Edge) {
-		boolean bFlag = m_listSources.add(i_Edge);
-		m_Listeners.firePropertyChange(PROPERTY_SOURCES, null, i_Edge);
-		return bFlag;
+	boolean addSource(Edge i_Edge) {
+		if (!m_listSources.contains(i_Edge)) {
+			m_listSources.add(i_Edge);
+			m_Listeners.firePropertyChange(PROPERTY_SOURCES, null, i_Edge);
+			return true;
+		}
+		return false;
 	}
 
 	/**
+	 * Called by {@link Edge#setSource(Vertex)}
 	 * @param i_Edge
 	 * @return
 	 */
-	public boolean removeSource(Edge i_Edge) {
-		boolean bFlag = m_listSources.remove(i_Edge);
-		m_Listeners.firePropertyChange(PROPERTY_SOURCES, i_Edge, null);
-		return bFlag;
+	boolean removeSource(Edge i_Edge) {
+		if (m_listSources.remove(i_Edge)) {
+			m_Listeners.firePropertyChange(PROPERTY_SOURCES, i_Edge, null);
+			return true;
+		}
+		return false;
 	}
 
 	/**
+	 * Called by {@link Edge#setTarget(Vertex)}.
 	 * @param i_Edge
 	 * @return
 	 */
-	public boolean removeDestination(Edge i_Edge) {
-		boolean bFlag = m_listDestinations.remove(i_Edge);
-		m_Listeners.firePropertyChange(PROPERTY_DESTS, i_Edge, null);
-		return bFlag;
+	boolean removeTarget(Edge i_Edge) {
+		if (m_listTargets.remove(i_Edge)) {
+			m_Listeners.firePropertyChange(PROPERTY_DESTS, i_Edge, null);
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -238,8 +279,8 @@ public class Vertex {
 	 * 
 	 * @return Returns the <code>dests</code>.
 	 */
-	public List<Edge> getDestinations() {
-		return m_listDestinations;
+	public List<Edge> getTargets() {
+		return m_listTargets;
 	}
 
 	/**
@@ -259,7 +300,7 @@ public class Vertex {
 	@Override
 	public String toString() {
 		return ("v(" + m_fX + "," + m_fY + "," + m_fZ + "; w=" + m_iWidth
-				+ ", h=" + m_iHeight + ")");
+			+ ", h=" + m_iHeight + ")");
 	}
 
 	public String getName() {

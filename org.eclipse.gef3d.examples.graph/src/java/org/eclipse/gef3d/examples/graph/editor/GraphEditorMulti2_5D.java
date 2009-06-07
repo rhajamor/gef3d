@@ -11,6 +11,10 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.graph.editor;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,10 +25,9 @@ import org.eclipse.gef3d.examples.graph.editor.editparts.GraphEditPartFactory;
 import org.eclipse.gef3d.examples.graph.model.Edge;
 import org.eclipse.gef3d.examples.graph.model.Graph;
 import org.eclipse.gef3d.examples.graph.model.IntermodelContainer;
-import org.eclipse.gef3d.examples.graph.model.Vertex;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
-
+import org.eclipse.ui.IFileEditorInput;
 
 /**
  * GraphEditorMulti2_5D displays two graphs in Dia3D mode with intermodel
@@ -38,7 +41,8 @@ public class GraphEditorMulti2_5D extends GraphEditor2_5D {
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger.getLogger(GraphEditorMulti2_5D.class.getName());
+	private static final Logger log =
+		Logger.getLogger(GraphEditorMulti2_5D.class.getName());
 
 	/**
 	 * {@inheritDoc}
@@ -53,7 +57,7 @@ public class GraphEditorMulti2_5D extends GraphEditor2_5D {
 		MultiEditorPartFactory multiFactory = new MultiEditorPartFactory();
 		getGraphicalViewer().setEditPartFactory(multiFactory);
 	}
-	
+
 	/**
 	 * Creates actions using the {@link ActionBuilder}.
 	 * 
@@ -74,83 +78,103 @@ public class GraphEditorMulti2_5D extends GraphEditor2_5D {
 	 */
 	@Override
 	protected void initializeGraphicalViewer() {
+		Graph graphs[] = load();
+		if (graphs == null) {
+			graphs = createGraphs();
+		}
+		
+		
+		MultiEditorModelContainer container = new MultiEditorModelContainer();
+		GraphicalViewer viewer = getGraphicalViewer();
+		MultiEditorPartFactory multiFactory =
+			(MultiEditorPartFactory) viewer.getEditPartFactory();
+		GraphEditPartFactory graphFactory = new GraphEditPartFactory();
 
+		IntermodelContainer intermodel = new IntermodelContainer();
+		IntermodelEditPartFactory intermodelFactory =
+			new IntermodelEditPartFactory();
+		multiFactory.prepare(intermodel, intermodelFactory);
+
+		
+		for (int p = 0; p < graphs.length; p++) {
+			container.add(graphs[p]);
+			multiFactory.prepare(graphs[p], graphFactory);
+			multiFactory.prepare(graphs[p], intermodelFactory,
+				MultiEditorPartFactory.HIGHEST_PRIORITY);
+		}
+
+		viewer.setContents(container);
+	}
+	
+	
+	protected Graph[] createGraphs() {
 		int planes = 10; // max 50
 		int nodesPerPlane = 20; // max: 200;
 		Graph[] graphs = new Graph[planes];
 
-		MultiEditorModelContainer container = new MultiEditorModelContainer();
-		GraphicalViewer viewer = getGraphicalViewer();
-		MultiEditorPartFactory multiFactory = (MultiEditorPartFactory) viewer
-				.getEditPartFactory();
-		GraphEditPartFactory graphFactory = new GraphEditPartFactory();
-
-		IntermodelContainer intermodel = new IntermodelContainer();
-		IntermodelEditPartFactory intermodelFactory = new IntermodelEditPartFactory();
-		multiFactory.prepare(intermodel, intermodelFactory);
-
 		for (int p = 0; p < planes; p++) {
-			Graph g = Graph.getSample(nodesPerPlane, 0, 0, 65, 30, 5);
-			container.add(g);
-			multiFactory.prepare(g, graphFactory);
-			multiFactory.prepare(g, intermodelFactory,
-					MultiEditorPartFactory.HIGHEST_PRIORITY);
-
-			graphs[p] = g;
+			graphs[p] = Graph.getSample(nodesPerPlane, 0, 0, 65, 30, 5);
 		}
-		
-		
-		
-//		for (int p = 1; p < planes; p++) {
-//			for (int c = 0; c < nodesPerPlane / 2; c++) {
-//				int source = (int) (Math.random() * nodesPerPlane);
-//				int target = (int) (Math.random() * nodesPerPlane);
-//
-//				intermodel.add(new Edge(graphs[p - 1].getVerteces().get(source),
-//						graphs[p].getVerteces().get(target)));
-//			}
-//		}
-		
+
 		for (int p = 1; p < planes; p++) {
-			for (int c = 0; c < nodesPerPlane; c+=20 ) {
+			for (int c = 0; c < nodesPerPlane; c += 20) {
 				int source = (int) (c);
 				int target = (int) (c);
 
-				intermodel.add(new Edge(graphs[p - 1].getVerteces().get(source),
-						graphs[p].getVerteces().get(target)));
+				Edge e = new Edge();
+				e.setSource(graphs[p - 1].getVertices().get(source));
+				e.setTarget(graphs[p].getVertices().get(target));
 			}
 		}
-		
 
-		int vPerGraph = graphs[0].getVerteces().size();
-		int ePerGraph = 0; // with 3D edges
-		for (Vertex v: graphs[0].getVerteces()) {
-			ePerGraph += v.getSources().size();
-		}
-		
-		
-		int connections3D = intermodel.getConnections().size();
-
-		if (log.isLoggable(Level.INFO)) {
-			
-			log.info("3D Nodes, " +
-					"3D Edges, " +
-					"2D Nodes per Plane, " +
-					"2D Nodes, " + 
-					"Edges"
-					);
-			log.info( planes
-					+ ", " + connections3D
-					+ ", " + vPerGraph
-					+ ", " + planes * vPerGraph
-					+ ", " + planes * ePerGraph 
-					); //$NON-NLS-1$
-		}
-		
-		
-		
-		viewer.setContents(container);
+		return graphs;
 	}
 
-	
+	/**
+	 * Loads a graph or a multi graph from a file, this is simply done via
+	 * object serialization. In a real example, you probably would like to use
+	 * EMF and a resource set.
+	 * <p>
+	 * Note: This method is protected. If declared private, it would become
+	 * difficult for subclasses to reuse its functionality. From implementing
+	 * GEF3D, which includes hacking GEF in many ways, we have learned to prefer
+	 * protected over private.
+	 * </p>
+	 * 
+	 * @return the loaded graph
+	 */
+	protected Graph[] load() {
+		Object model = null;
+		File f =
+			((IFileEditorInput) getEditorInput()).getFile().getLocation()
+				.toFile();
+
+		FileInputStream fis = null;
+		ObjectInputStream ois = null;
+		try {
+			fis = new FileInputStream(f);
+			ois = new ObjectInputStream(fis);
+			model = ois.readObject();
+		} catch (Exception ex) {
+			if (log.isLoggable(Level.INFO)) {
+				log.info("Error loading graph - ex=" + ex); //$NON-NLS-1$
+			}
+		} finally {
+			if (ois != null) {
+				try {
+					ois.close();
+				} catch (IOException ex) {
+					// TODO Implement catch block for IOException
+					ex.printStackTrace();
+				}
+			}
+		}
+		if (model instanceof Graph) {
+			return new Graph[] { (Graph) model };
+		} else if (model instanceof Graph[]) {
+			return (Graph[]) model;
+		}
+		return null;
+	}
+
 }

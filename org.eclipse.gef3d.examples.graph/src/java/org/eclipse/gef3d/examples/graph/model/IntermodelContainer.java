@@ -13,6 +13,7 @@ package org.eclipse.gef3d.examples.graph.model;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +27,12 @@ import java.util.List;
  * @version $Revision$
  * @since 04.04.2008
  */
-public class IntermodelContainer {
+public class IntermodelContainer implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2028784355201487881L;
 
 	public final static String PROPERTY_CONNECTIONS = "connections";
 

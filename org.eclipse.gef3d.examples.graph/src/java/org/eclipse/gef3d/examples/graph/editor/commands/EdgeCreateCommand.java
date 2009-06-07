@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008 Jens von Pilgrim and others.
+ * Copyright (c) 2009 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,34 +11,31 @@
 package org.eclipse.gef3d.examples.graph.editor.commands;
 
 import org.eclipse.gef.commands.Command;
+import org.eclipse.gef3d.examples.graph.model.Edge;
 import org.eclipse.gef3d.examples.graph.model.Graph;
 import org.eclipse.gef3d.examples.graph.model.Vertex;
 
-
 /**
- * CreateVertexCommand creates a new vertex.
+ * EdgeCreateCommand There should really be more documentation here.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
- * @since Jul 9, 2008
+ * @since May 22, 2009
  */
-public class CreateVertexCommand extends Command {
+public class EdgeCreateCommand extends Command {
 
-	float x; float y;
+	Vertex source;
 
-	Graph m_graph;
+	Vertex target;
 
-	Vertex m_newVertex;
+	Edge edge;
 
 	/**
-	 * @param i_g
-	 * @param i_location
+	 * @param i_source
 	 */
-	public CreateVertexCommand(Graph i_g, float x, float y) {
-		this.x = x;
-		this.y = y;
-		m_graph = i_g;
-		m_newVertex = null;
+	public EdgeCreateCommand(Edge edge, Vertex source) {
+		this.edge = edge;
+		this.source = source;
 	}
 
 	/**
@@ -48,14 +45,8 @@ public class CreateVertexCommand extends Command {
 	 */
 	@Override
 	public void execute() {
-		if (m_newVertex == null) {
-			m_newVertex = new Vertex();
-			m_newVertex.setX(x);
-			m_newVertex.setY(y);
-			m_newVertex.setWidth(80);
-			m_newVertex.setHeight(30);
-		}
-		m_graph.addVertex(m_newVertex);
+		edge.setSource(source);
+		edge.setTarget(target);
 	}
 
 	/**
@@ -65,8 +56,15 @@ public class CreateVertexCommand extends Command {
 	 */
 	@Override
 	public void undo() {
-		if (m_newVertex != null) {
-			m_graph.removeVertex(m_newVertex);
-		}
+		edge.setSource(null);
+		edge.setTarget(null);
 	}
+
+	/**
+	 * @param i_target the target to set
+	 */
+	public void setTarget(Vertex i_target) {
+		target = i_target;
+	}
+
 }

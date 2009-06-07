@@ -12,6 +12,7 @@ package org.eclipse.gef3d.examples.graph.model;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 
 /**
  * Edge connecting two vertices. Observer pattern is implemented using
@@ -21,33 +22,36 @@ import java.beans.PropertyChangeSupport;
  * @version $Revision$
  * @since 27.09.2004
  */
-public class Edge {
+public class Edge implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4697499045248470082L;
 
 	PropertyChangeSupport m_Listeners;
 
 	public final static String PROPERTY_SOURCE = "source";
 
-	public final static String PROPERTY_DESTINATION = "destination";
+	public final static String PROPERTY_DESTINATION = "target";
 
 	Vertex m_vertexSource;
 
-	Vertex m_vertexDestination;
+	Vertex m_vertexTarget;
 
-	public Edge(Vertex i_vertexSource, Vertex i_vertexDestination) {
+	public Edge() {
 		m_Listeners = new PropertyChangeSupport(this);
-		m_vertexSource = i_vertexSource;
-		m_vertexDestination = i_vertexDestination;
-		m_vertexSource.addSource(this);
-		m_vertexDestination.addDestination(this);
 	}
+	
+	
 
 	/**
-	 * Simple getter, returns property <code>destination</code>.
+	 * Simple getter, returns property <code>target</code>.
 	 * 
-	 * @return Returns the <code>destinations</code>.
+	 * @return Returns the <code>targets</code>.
 	 */
-	public Vertex getDestination() {
-		return m_vertexDestination;
+	public Vertex getTarget() {
+		return m_vertexTarget;
 	}
 
 	/**
@@ -72,5 +76,69 @@ public class Edge {
 	public void removePropertyChangeListener(PropertyChangeListener i_Listener) {
 		m_Listeners.removePropertyChangeListener(i_Listener);
 	}
+
+
+
+	/**
+	 * @param vertexSource the vertexSource to set
+	 */
+	public void setSource(Vertex vertexSource) {
+		if (m_vertexSource!=null) {
+			m_vertexSource.removeSource(this);
+		}
+		m_vertexSource = vertexSource;
+		if (m_vertexSource!=null) {
+			m_vertexSource.addSource(this);
+		}
+	}
+
+
+
+	/**
+	 * @param vertexTarget the vertexTarget to set
+	 */
+	public void setTarget(Vertex vertexTarget) {
+		if (m_vertexTarget!=null) {
+			m_vertexTarget.removeTarget(this);
+		}
+		m_vertexTarget = vertexTarget;
+		if (m_vertexTarget!=null) {
+			m_vertexTarget.addTarget(this);
+		}
+	}
+
+
+
+	/** 
+	 * {@inheritDoc}
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj==this) return true;
+		if (obj instanceof Edge) {
+			return (((Edge) obj).getSource()==getSource() &&
+					((Edge) obj).getTarget()==getTarget());
+		}
+		return false;
+	}
+
+
+
+	/** 
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder("Edge from ");
+		result.append(String.valueOf(getSource()));
+		result.append(" to ");
+		result.append(String.valueOf(getTarget()));
+		return result.toString();
+	}
+
+
+	
 
 }

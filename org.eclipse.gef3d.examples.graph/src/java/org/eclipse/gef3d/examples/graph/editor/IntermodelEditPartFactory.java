@@ -43,8 +43,8 @@ public class IntermodelEditPartFactory implements EditPartFactory {
 			Edge edge = (Edge) i_model;
 			Graph graph = findGraph(i_context);
 			if (graph == null
-					|| (graph.getVerteces().contains(edge.getSource()) && graph
-							.getVerteces().contains(edge.getDestination())))
+					|| (graph.getVertices().contains(edge.getSource()) && graph
+							.getVertices().contains(edge.getTarget())))
 				return null; // 2D connection or graph not found
 
 			part = new IntermodelEdgePart();

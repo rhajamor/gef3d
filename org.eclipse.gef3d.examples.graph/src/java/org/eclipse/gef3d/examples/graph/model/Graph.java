@@ -7,37 +7,51 @@
  *
  * Contributors:
  *    Jens von Pilgrim - initial API and implementation
- ******************************************************************************/package org.eclipse.gef3d.examples.graph.model;
+ ******************************************************************************/
+package org.eclipse.gef3d.examples.graph.model;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Graph, container for vertices.  Observer pattern is implemented using
+ * Graph, container for vertices. Observer pattern is implemented using
  * {@link PropertyChangeSupport}.
  * 
  * @author jpilgrim
  * @version $Revision$
  * @since 26.09.2004
  */
-public class Graph {
+public class Graph implements Serializable {
 
-	ArrayList<Vertex> m_listVertices;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5331044043892750827L;
+
+	List<Vertex> m_Vertices;
 
 	// Observer-Pattern (Subject)
 	PropertyChangeSupport m_Listeners;
 
 	public final static String PROPERTY_VERTECES = "verteces";
 
+	public final static String PROPERTY_EDGES = "edges";
+
 	/**
 	 * 
 	 */
 	public Graph() {
 		m_Listeners = new PropertyChangeSupport(this);
-		m_listVertices = new ArrayList<Vertex>();
+		m_Vertices = new ArrayList<Vertex>();
 	}
+
+	/*--------------------------------------------------------------------------
+	 * Property change support
+	 * -----------------------------------------------------------------------*/
 
 	/**
 	 * @param i_Listener
@@ -53,19 +67,32 @@ public class Graph {
 		m_Listeners.removePropertyChangeListener(i_Listener);
 	}
 
+	/*--------------------------------------------------------------------------
+	 * getter and setter
+	 * -----------------------------------------------------------------------*/
+
 	public void addVertex(Vertex i_Vertex) {
-		m_listVertices.add(i_Vertex);
-		m_Listeners.firePropertyChange(PROPERTY_VERTECES, null, i_Vertex);
+		if (!m_Vertices.contains(i_Vertex)) {
+			m_Vertices.add(i_Vertex);
+			i_Vertex.setGraph(this);
+			m_Listeners.firePropertyChange(PROPERTY_VERTECES, null, i_Vertex);
+		}
 	}
 
-	public void removeVertex(Object i_Vertex) {
-		m_listVertices.remove(i_Vertex);
-		m_Listeners.firePropertyChange(PROPERTY_VERTECES, i_Vertex, null);
+	public void removeVertex(Vertex i_Vertex) {
+		if (m_Vertices.remove(i_Vertex)) {
+			i_Vertex.setGraph(null);
+			m_Listeners.firePropertyChange(PROPERTY_VERTECES, i_Vertex, null);
+		}
 	}
 
-	public List<Vertex> getVerteces() {
-		return m_listVertices;
+	public List<Vertex> getVertices() {
+		return Collections.unmodifiableList(m_Vertices);
 	}
+
+	/*--------------------------------------------------------------------------
+	 * Sample creator
+	 * -----------------------------------------------------------------------*/
 
 	public static Graph getSample() {
 		Graph G = new Graph();
@@ -86,7 +113,9 @@ public class Graph {
 		v1.setZ(0);
 		G.addVertex(v1);
 
-		new Edge(v, v1);
+		Edge e = new Edge();
+		e.setSource(v);
+		e.setTarget(v1);
 
 		return G;
 	}
@@ -105,7 +134,7 @@ public class Graph {
 	 * @return
 	 */
 	public static Graph getSample(int iNumberOfVertices, float x0, float y0,
-			float width, float height, float spacing) {
+		float width, float height, float spacing) {
 		int cols = (int) Math.sqrt(iNumberOfVertices);
 		float x = x0, y = y0 - height - spacing;
 
@@ -133,11 +162,16 @@ public class Graph {
 			G.addVertex(v);
 
 			if (x != x0) {
-				new Edge(prev, v);
+				Edge e = new Edge();
+				e.setSource(prev);
+				e.setTarget(v);
 			}
 			if (i >= cols) {
-				Vertex vupper = G.getVerteces().get(i - cols);
-				new Edge(vupper, v);
+				Vertex vupper = G.getVertices().get(i - cols);
+				Edge e = new Edge();
+				e.setSource(vupper);
+				e.setTarget(v);
+
 			}
 
 		}

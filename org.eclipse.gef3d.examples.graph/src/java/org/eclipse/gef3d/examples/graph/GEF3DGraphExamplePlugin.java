@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.graph;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.LogManager;
@@ -25,17 +24,17 @@ import org.osgi.framework.BundleContext;
  * @version $Revision$
  * @since 16.11.2007
  */
-public class Activator extends AbstractUIPlugin {
+public class GEF3DGraphExamplePlugin extends AbstractUIPlugin {
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.eclipse.gef3d.examples.graph";
 
 	// The shared instance
-	private static Activator plugin;
+	private static GEF3DGraphExamplePlugin plugin;
 
 	/**
 	 * The constructor
 	 */
-	public Activator() {
+	public GEF3DGraphExamplePlugin() {
 		plugin = this;
 	}
 
@@ -95,7 +94,7 @@ public class Activator extends AbstractUIPlugin {
 	 * 
 	 * @return the shared instance
 	 */
-	public static Activator getDefault() {
+	public static GEF3DGraphExamplePlugin getDefault() {
 		return plugin;
 	}
 }

@@ -22,11 +22,13 @@ import org.eclipse.gef3d.editparts.AbstractGraphicalEditPartEx;
 import org.eclipse.gef3d.examples.graph.editor.editpolicies.Graph3DLayoutPolicy;
 import org.eclipse.gef3d.examples.graph.model.Graph;
 import org.eclipse.gef3d.examples.graph.model.Vertex;
-
+import org.eclipse.gef3d.factories.IFigureFactory;
 
 /**
- * GraphPart for managing graphs. Graphs are the root elements, i.e. the
- * diagram plane. This part can be using in 2D, 2.5D, and 3D mode.
+ * GraphPart for managing graphs. Graphs are the root elements, i.e. the diagram
+ * plane. This part can be using in 2D, 2.5D, and 3D mode, since it uses a
+ * {@link IFigureFactory} to create the figure. This is a little bit different
+ * from normal GEF based editors, which usually create the figure themselves.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -35,26 +37,7 @@ import org.eclipse.gef3d.examples.graph.model.Vertex;
 public class GraphPart extends AbstractGraphicalEditPartEx implements
 		PropertyChangeListener {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef.editparts.AbstractEditPart#getModelChildren()
-	 */
-	@Override
-	protected List getModelChildren() {
-		return ((Graph) getModel()).getVerteces();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see de.fernuni.gef3d.editparts.AbstractEditPart#createEditPolicies()
-	 */
-	@Override
-	protected void createEditPolicies() {
-		installEditPolicy(EditPolicy.LAYOUT_ROLE, new Graph3DLayoutPolicy());
-	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -78,9 +61,12 @@ public class GraphPart extends AbstractGraphicalEditPartEx implements
 		((Graph) getModel()).removePropertyChangeListener(this);
 		super.deactivate();
 	}
-
+	
 	/**
-	 * {@inheritDoc}
+	 * This method get notified by the model (the graph) if new elements were
+	 * added or elements have been removed. In order to reflect the changes, the
+	 * children have to be refreshed. Since we also want to optimize the plane,
+	 * we call {@link #refresh()} in order to update the size.
 	 * 
 	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
 	 */
@@ -94,43 +80,56 @@ public class GraphPart extends AbstractGraphicalEditPartEx implements
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.gef.editparts.AbstractEditPart#getModelChildren()
+	 */
+	@Override
+	protected List getModelChildren() {
+		return ((Graph) getModel()).getVertices();
+	}
+
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see de.fernuni.gef3d.editparts.AbstractEditPart#createEditPolicies()
+	 */
+	@Override
+	protected void createEditPolicies() {
+		installEditPolicy(EditPolicy.LAYOUT_ROLE, new Graph3DLayoutPolicy());
+	}
+
+	
+	
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.gef.editparts.AbstractEditPart#refreshVisuals()
 	 */
 	@Override
 	protected void refreshVisuals() {
-		
 
 		IFigure fig = getFigure();
-
-		int numberOfVertices = ((Graph) getModel()).getVerteces().size();
-
-//		if (numberOfVertices > 50) {
-//			if (numberOfVertices > 210)
-//				fig.setSize(new Dimension(1500, 1300));
-//			else
-//				fig.setSize(new Dimension(1000, 700));
-//		} else {
-//			fig.setSize(new Dimension(400, 300));
-//		}
 		fig.setSize(getMaxPosition());
-		
+
 		super.refreshVisuals();
 	}
 
-	
 	protected Dimension getMaxPosition() {
 		Graph g = (Graph) getModel();
-		Dimension dim = new Dimension(100,100);
+		Dimension dim = new Dimension(100, 100);
 		int f;
-		for (Vertex v: g.getVerteces()) {
-			f = (int) (v.getX()+v.getWidth());
-			if (f>dim.width) dim.width = f;
-			f = (int) (v.getY()+v.getHeight());
-			if (f>dim.height) dim.height = f;
+		for (Vertex v : g.getVertices()) {
+			f = (int) (v.getX() + v.getWidth());
+			if (f > dim.width)
+				dim.width = f;
+			f = (int) (v.getY() + v.getHeight());
+			if (f > dim.height)
+				dim.height = f;
 		}
 		dim.width += 5;
 		dim.height += 5;
 		return dim;
 	}
-	
+
 }

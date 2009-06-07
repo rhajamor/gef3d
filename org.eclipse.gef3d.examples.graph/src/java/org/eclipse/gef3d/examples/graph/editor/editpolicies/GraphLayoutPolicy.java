@@ -10,15 +10,9 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.graph.editor.editpolicies;
 
-import static org.eclipse.draw3d.util.CoordinateConverter.screenToSurface;
-
 import java.util.logging.Logger;
 
-import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw3d.Figure3DHelper;
-import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.requests.CreateRequest;
@@ -29,19 +23,19 @@ import org.eclipse.gef3d.examples.graph.model.Graph;
 import org.eclipse.gef3d.examples.graph.model.Vertex;
 
 /**
- * Graph3DLayoutPolicy There should really be more documentation here.
+ * GraphLayoutPolicy There should really be more documentation here.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Mar 28, 2008
  */
-public class Graph3DLayoutPolicy extends XY3DLayoutPolicy {
+public class GraphLayoutPolicy extends XY3DLayoutPolicy {
 
 	/**
 	 * Logger for this class
 	 */
 	private static final Logger log =
-		Logger.getLogger(Graph3DLayoutPolicy.class.getName());
+		Logger.getLogger(GraphLayoutPolicy.class.getName());
 
 	/**
 	 * {@inheritDoc}
@@ -69,25 +63,16 @@ public class Graph3DLayoutPolicy extends XY3DLayoutPolicy {
 	@Override
 	protected Command getCreateCommand(CreateRequest i_request) {
 		Object obj = i_request.getNewObject();
+		// Host == Context in strategy pattern
+		Graph graph = (Graph) getHost().getModel();
+		
 
 		if (obj instanceof Vertex) {
-			Graph g = (Graph) this.getHost().getModel();
 			Rectangle rect = (Rectangle) getConstraintFor(i_request);
-			
-			IFigure3D f3D = Figure3DHelper.getAncestor3D(getHostFigure());
-			if (f3D != null) {
-				Point p0 = new Point();
-				screenToSurface(rect.x, rect.y, f3D, p0);
-				Point p1 = new Point();
-				screenToSurface(rect.x+rect.width, rect.y+rect.height, f3D, p1);
-				return new VertexCreateCommand((Vertex) obj, g, p0.x,
-					p0.y, p1.x - p0.x, p1.y - p0.y);
-			} else {
-				// 2D only:
-				return new VertexCreateCommand((Vertex) obj, g, rect.x,
-					rect.y, rect.width, rect.height);
-			}
+			return new VertexCreateCommand((Vertex) obj, graph, rect.x, rect.y,
+				rect.width, rect.height);
 		}
+		// type not supported:
 		return null;
 	}
 
