@@ -27,7 +27,7 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
  * orbit are expensive!
  * <p>
  * This camera behaves like a camera in first-person shooters, except an orbit
- * feature is implemented (since rev. 236).
+ * feature is implemented .
  * </p>
  * 
  * @author Jens von Pilgrim
@@ -37,8 +37,8 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 public class FirstPersonCamera extends AbstractCamera {
 
 	@SuppressWarnings("unused")
-	private static Logger log = Logger.getLogger(FirstPersonCamera.class
-			.getName());
+	private static Logger log =
+		Logger.getLogger(FirstPersonCamera.class.getName());
 
 	private final Vector3fImpl m_position = new Vector3fImpl();
 
@@ -122,12 +122,9 @@ public class FirstPersonCamera extends AbstractCamera {
 	/**
 	 * Moves the camera by the given distances.
 	 * 
-	 * @param i_dX
-	 *            the distance on the X axis
-	 * @param i_dY
-	 *            the distance on the Y axis
-	 * @param i_dZ
-	 *            the distance on the Z axis
+	 * @param i_dX the distance on the X axis
+	 * @param i_dY the distance on the Y axis
+	 * @param i_dZ the distance on the Z axis
 	 */
 	public void moveBy(float i_dForward, float i_dStrafe, float i_dUp) {
 
@@ -205,7 +202,7 @@ public class FirstPersonCamera extends AbstractCamera {
 		float viewZ = m_position.z + m_viewDir.z;
 
 		g3d.gluLookAt(m_position.x, m_position.y, m_position.z, viewX, viewY,
-				viewZ, m_up.x, m_up.y, m_up.z);
+			viewZ, m_up.x, m_up.y, m_up.z);
 	}
 
 	public void reset() {
@@ -252,19 +249,31 @@ public class FirstPersonCamera extends AbstractCamera {
 		fireCameraChanged();
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.camera.ICamera#getUpVector(org.eclipse.draw3d.geometry.Vector3f)
 	 */
 	public IVector3f getUpVector(Vector3f io_result) {
-		return m_up;
+		if (io_result != null) {
+			io_result.set(m_up);
+			return io_result;
+		} else {
+			return m_up;
+		}
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.camera.ICamera#getViewDirection(org.eclipse.draw3d.geometry.Vector3f)
 	 */
 	public IVector3f getViewDirection(Vector3f io_result) {
-		return m_viewDir;
+		if (io_result!=null) {
+			io_result.set(m_viewDir);
+			return io_result;
+		} else {
+			return m_viewDir;
+		}
 	}
 }

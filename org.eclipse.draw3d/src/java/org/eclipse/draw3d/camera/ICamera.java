@@ -95,7 +95,7 @@ public interface ICamera {
 	 * vector possibly passed to {@link #lookAt(IVector3f, IVector3f)}.
 	 * 
 	 * @param io_result the result vector, if <code>null</code>, a new vector
-	 *            will be returned
+	 *            will be returned (or an immutable reference to internal field.
 	 * @return the current view direction
 	 */
 	public IVector3f getViewDirection(Vector3f io_result);
@@ -106,7 +106,7 @@ public interface ICamera {
 	 * possibly passed to {@link #lookAt(IVector3f, IVector3f)}.
 	 * 
 	 * @param io_result the result vector, if <code>null</code>, a new vector
-	 *            will be returned
+	 *            will be returned (or an immutable reference to internal field.
 	 * @return the current view direction
 	 */
 	public IVector3f getUpVector(Vector3f io_result);
