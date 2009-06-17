@@ -251,4 +251,20 @@ public class FirstPersonCamera extends AbstractCamera {
 
 		fireCameraChanged();
 	}
+
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.camera.ICamera#getUpVector(org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	public IVector3f getUpVector(Vector3f io_result) {
+		return m_up;
+	}
+
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.camera.ICamera#getViewDirection(org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	public IVector3f getViewDirection(Vector3f io_result) {
+		return m_viewDir;
+	}
 }

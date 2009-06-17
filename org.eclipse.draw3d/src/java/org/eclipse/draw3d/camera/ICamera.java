@@ -52,19 +52,16 @@ public interface ICamera {
 	 * Registers the given listener with this camera. If the listener is already
 	 * registered, it will be registered again.
 	 * 
-	 * @param i_listener
-	 *            the listener to register
+	 * @param i_listener the listener to register
 	 */
 	public void addCameraListener(ICameraListener i_listener);
 
 	/**
 	 * Calculates the distance from this camera to a given point.
 	 * 
-	 * @param i_point
-	 *            the point
+	 * @param i_point the point
 	 * @return the distance from this camera to the given point
-	 * @throws NullPointerException
-	 *             if the given point is <code>null</code>
+	 * @throws NullPointerException if the given point is <code>null</code>
 	 */
 	public float getDistance(Vector3f i_point);
 
@@ -85,45 +82,59 @@ public interface ICamera {
 	/**
 	 * Returns the camera's current position.
 	 * 
-	 * @param io_result
-	 *            the result vector, if <code>null</code>, a new vector will be
-	 *            returned
+	 * @param io_result the result vector, if <code>null</code>, a new vector
+	 *            will be returned
 	 * @return the current position
 	 */
-	public Vector3f getPosition(Vector3f io_result);
+	public IVector3f getPosition(Vector3f io_result);
+
+	/**
+	 * Returns the current view direction. Adding this vector to the current
+	 * position returns the point to which the camera is looking (look at). Note
+	 * that the result calculated this way is not necessarily equal to the
+	 * vector possibly passed to {@link #lookAt(IVector3f, IVector3f)}.
+	 * 
+	 * @param io_result the result vector, if <code>null</code>, a new vector
+	 *            will be returned
+	 * @return the current view direction
+	 */
+	public IVector3f getViewDirection(Vector3f io_result);
+
+	/**
+	 * Returns the current up vector of the camera. This is (if no camera
+	 * movement has been occurred inbetween) usually the normalize vector
+	 * possibly passed to {@link #lookAt(IVector3f, IVector3f)}.
+	 * 
+	 * @param io_result the result vector, if <code>null</code>, a new vector
+	 *            will be returned
+	 * @return the current view direction
+	 */
+	public IVector3f getUpVector(Vector3f io_result);
 
 	/**
 	 * Look at the given position. If the up vector is not <code>null</code>,
 	 * the camera is adjusted accordingly.
 	 * 
-	 * @param i_position
-	 *            the position to look at
-	 * @param i_upvector
-	 *            the new up vector, which may be <code>null</code>
+	 * @param i_position the position to look at
+	 * @param i_upvector the new up vector, which may be <code>null</code>
 	 */
 	public void lookAt(IVector3f i_position, IVector3f i_upvector);
 
 	/**
 	 * Moves camera by given distances.
 	 * 
-	 * @param i_dForward
-	 *            the distance in the view direction
-	 * @param i_dStrafe
-	 *            the sideways distance in the right direction
-	 * @param i_dUp
-	 *            the distance on the Z axis
+	 * @param i_dForward the distance in the view direction
+	 * @param i_dStrafe the sideways distance in the right direction
+	 * @param i_dUp the distance on the Z axis
 	 */
 	public void moveBy(float i_dForward, float i_dStrafe, float i_dUp);
 
 	/**
 	 * Moves the camera to the given position.
 	 * 
-	 * @param i_x
-	 *            the X coordinate of the new position
-	 * @param i_y
-	 *            the Y coordinate of the new position
-	 * @param i_z
-	 *            the Z coordinate of the new position
+	 * @param i_x the X coordinate of the new position
+	 * @param i_y the Y coordinate of the new position
+	 * @param i_z the Z coordinate of the new position
 	 */
 	public void moveTo(float i_x, float i_y, float i_z);
 
@@ -131,12 +142,9 @@ public interface ICamera {
 	 * Moves the camera around a location (called orbit center) by a given
 	 * angle.
 	 * 
-	 * @param i_center
-	 *            the orbit center
-	 * @param i_hAngle
-	 *            the horizontal orbit angle, in radians
-	 * @param i_vAngle
-	 *            the vertical orbit angle, in radians
+	 * @param i_center the orbit center
+	 * @param i_hAngle the horizontal orbit angle, in radians
+	 * @param i_vAngle the vertical orbit angle, in radians
 	 */
 	public void orbit(Vector3f i_center, float i_hAngle, float i_vAngle);
 
@@ -145,16 +153,14 @@ public interface ICamera {
 	 * is not registered, nothing happens. If the given listener has been
 	 * registered more than once, the oldest registration will be removed.
 	 * 
-	 * @param i_listener
-	 *            the listener to remove
+	 * @param i_listener the listener to remove
 	 */
 	public void removeCameraListener(ICameraListener i_listener);
 
 	/**
 	 * Renders the camera.
 	 * 
-	 * @param renderContext
-	 *            the current render context
+	 * @param renderContext the current render context
 	 */
 	public void render(RenderContext renderContext);
 
@@ -166,22 +172,17 @@ public interface ICamera {
 	/**
 	 * Rotates camera by the given angles.
 	 * 
-	 * @param i_roll
-	 *            the roll angle (rotates about the view direction)
-	 * @param i_pitch
-	 *            the pitch angle (nods the camera)
-	 * @param i_yaw
-	 *            the yaw angle (looks sideways)
+	 * @param i_roll the roll angle (rotates about the view direction)
+	 * @param i_pitch the pitch angle (nods the camera)
+	 * @param i_yaw the yaw angle (looks sideways)
 	 */
 	public void rotate(float i_roll, float i_pitch, float i_yaw);
 
 	/**
 	 * Sets the currently visible viewport dimensions.
 	 * 
-	 * @param i_width
-	 *            the width of the viewport
-	 * @param i_height
-	 *            the height of the viewport
+	 * @param i_width the width of the viewport
+	 * @param i_height the height of the viewport
 	 */
 	public void setViewport(int i_width, int i_height);
 }
