@@ -19,8 +19,6 @@ import java.util.logging.Logger;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
-
 /**
  * Manages display lists during a render operation in the current GL context.
  * 
@@ -33,51 +31,48 @@ public class DisplayListManager {
 	@SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(DisplayListManager.class
 			.getName());
-	
-	
+
 	private static final int RANGE = 10;
+
+	HashMap<Graphics3D, Map<String, Integer>> displayLists;
 
 	private List<Integer> m_baseIds = new ArrayList<Integer>();
 
-	HashMap<Graphics3D, Map<String, Integer>> displayLists;
-	
-	
-	private Map<String, Integer> m_displayLists = new HashMap<String, Integer>();
+	private Map<Object, Integer> m_displayLists = new HashMap<Object, Integer>();
 
 	private final boolean m_disposed = false;
 
+	private Graphics3D m_graphics3D;
+
 	private int m_index = RANGE;
-	
-	
-	private RenderContext m_renderContext;
-		
+
 	/**
-	 * @param i_renderContext
+	 * Creates a new display list manager for the given graphics3D object.
+	 * 
+	 * @param i_graphics3D
+	 *            the graphics3D object that contains this manager
 	 */
-	public DisplayListManager(RenderContext i_renderContext) {
-		if (i_renderContext == null) // parameter precondition
-			throw new NullPointerException("i_renderContext must not be null");
-		
-		m_renderContext = i_renderContext;
-	}
-	
-	protected RenderContext getRenderContext() {
-		return m_renderContext;
+	public DisplayListManager(Graphics3D i_graphics3D) {
+
+		if (i_graphics3D == null)
+			throw new NullPointerException("i_graphics3D must not be null");
+
+		m_graphics3D = i_graphics3D;
 	}
 
 	/**
 	 * Clears all displays lists in this manager.
 	 * 
-	 * @throws IllegalStateException if this display list manager is disposed
+	 * @throws IllegalStateException
+	 *             if this display list manager is disposed
 	 */
 	public void clear() {
 
 		if (m_disposed)
 			throw new IllegalStateException("display list manager is disposed");
 
-		Graphics3D g3d = getRenderContext().getGraphics3D();
 		for (int baseId : m_baseIds)
-			g3d.glDeleteLists(baseId, RANGE);
+			m_graphics3D.glDeleteLists(baseId, RANGE);
 
 		m_index = RANGE;
 		m_baseIds.clear();
@@ -85,38 +80,39 @@ public class DisplayListManager {
 	}
 
 	/**
-	 * Creates a new display lists with the given name. The display lists will
+	 * Creates a new display lists with the given key. The display lists will
 	 * contain the GL commands that are executed by the given runnable. If there
-	 * already is a display list with the given name, it will be overwritten.
+	 * already is a display list with the given key, it will be overwritten.
 	 * 
-	 * @param i_name the name of the new display list
-	 * @param i_runnable the code that generates the GL commands for the display
-	 *            list
-	 * @throws NullPointerException if either of the given arguments is
-	 *             <code>null</code>
-	 * @throws IllegalStateException if this display list manager is disposed
+	 * @param i_key
+	 *            the key of the new display list
+	 * @param i_runnable
+	 *            the code that generates the GL commands for the display list
+	 * @throws NullPointerException
+	 *             if either of the given arguments is <code>null</code>
+	 * @throws IllegalStateException
+	 *             if this display list manager is disposed
 	 */
-	public void createDisplayList(String i_name, Runnable i_runnable) {
+	public void createDisplayList(Object i_key, Runnable i_runnable) {
 
 		if (m_disposed)
 			throw new IllegalStateException("display list manager is disposed");
 
-		if (i_name == null)
-			throw new NullPointerException("i_name must not be null");
+		if (i_key == null)
+			throw new NullPointerException("i_key must not be null");
 
 		if (i_runnable == null)
 			throw new NullPointerException("i_runnable must not be null");
 
-		Integer id = m_displayLists.get(i_name);
+		Integer id = m_displayLists.get(i_key);
 		if (id == null)
 			id = getNewId();
 
-		Graphics3D g3d = getRenderContext().getGraphics3D();
-		g3d.glNewList(id, Graphics3DDraw.GL_COMPILE);
+		m_graphics3D.glNewList(id, Graphics3DDraw.GL_COMPILE);
 		i_runnable.run();
-		g3d.glEndList();
+		m_graphics3D.glEndList();
 
-		m_displayLists.put(i_name, id);
+		m_displayLists.put(i_key, id);
 	}
 
 	/**
@@ -133,38 +129,41 @@ public class DisplayListManager {
 	}
 
 	/**
-	 * Executes the display list with the given name.
+	 * Executes the display list with the given key.
 	 * 
-	 * @param i_name the name of the display list to execute
-	 * @throws NullPointerException if the given name is <code>null</code>
-	 * @throws IllegalArgumentException if there is no display list with the
-	 *             given name
-	 * @throws IllegalStateException if the display list with the given name was
-	 *             created before, but has since been discarded
-	 * @throws IllegalStateException if this display list manager is disposed
+	 * @param i_key
+	 *            the key of the display list to execute
+	 * @throws NullPointerException
+	 *             if the given name is <code>null</code>
+	 * @throws IllegalArgumentException
+	 *             if there is no display list with the given name
+	 * @throws IllegalStateException
+	 *             if the display list with the given name was created before,
+	 *             but has since been discarded
+	 * @throws IllegalStateException
+	 *             if this display list manager is disposed
 	 */
-	public void executeDisplayList(String i_name) {
+	public void executeDisplayList(Object i_key) {
 
 		if (m_disposed)
 			throw new IllegalStateException("display list manager is disposed");
 
-		if (i_name == null)
-			throw new NullPointerException("i_name must not be null");
+		if (i_key == null)
+			throw new NullPointerException("i_key must not be null");
 
-		Integer id = m_displayLists.get(i_name);
+		Integer id = m_displayLists.get(i_key);
 		if (id == null)
-			throw new IllegalArgumentException("unknown display list: "
-					+ i_name);
+			throw new IllegalArgumentException("unknown display list: " + i_key);
 
-		Graphics3D g3d = getRenderContext().getGraphics3D();
-		g3d.glCallList(id);
+		m_graphics3D.glCallList(id);
 	}
 
 	/**
 	 * Returns an unused display list ID.
 	 * 
 	 * @return an unused display list ID
-	 * @throws IllegalStateException if this display list manager is disposed
+	 * @throws IllegalStateException
+	 *             if this display list manager is disposed
 	 */
 	private int getNewId() {
 
@@ -172,8 +171,7 @@ public class DisplayListManager {
 			throw new IllegalStateException("display list manager is disposed");
 
 		if (m_index == RANGE) {
-			Graphics3D g3d = getRenderContext().getGraphics3D();
-			int baseId = g3d.glGenLists(RANGE);
+			int baseId = m_graphics3D.glGenLists(RANGE);
 			m_baseIds.add(baseId);
 			m_index = 0;
 		}
@@ -186,24 +184,24 @@ public class DisplayListManager {
 	 * Indicates whether a number of display lists have been registered with
 	 * this manager.
 	 * 
-	 * @param i_names the names of the display lists to check for
-	 * @return <code>true</code> if all display lists with the given names are
+	 * @param i_keys
+	 *            the keys of the display lists to check for
+	 * @return <code>true</code> if all display lists with the given keys are
 	 *         ready to use or <code>false</code> otherwise
-	 * @throws IllegalStateException if this display list manager is disposed
+	 * @throws IllegalStateException
+	 *             if this display list manager is disposed
 	 */
-	public boolean isDisplayList(String... i_names) {
+	public boolean isDisplayList(Object... i_keys) {
 
 		if (m_disposed)
 			throw new IllegalStateException("display list manager is disposed");
 
-		if (i_names != null && i_names.length > 0)
-			for (String name : i_names)
+		if (i_keys != null && i_keys.length > 0)
+			for (Object name : i_keys)
 				if (!m_displayLists.containsKey(name))
 					return false;
 
 		return true;
 	}
 
-	
-	
 }

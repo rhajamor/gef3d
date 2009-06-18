@@ -182,6 +182,7 @@ public class RenderContext {
 	 * @throws IllegalStateException if no display list manager is set
 	 */
 	public DisplayListManager getDisplayListManager() {
+		
 		if (getGraphics3D() == null) {
 			throw new IllegalStateException("no graphcis 3D instance set yet");
 		}
@@ -191,7 +192,7 @@ public class RenderContext {
 		// throw new IllegalStateException(
 		// "display list manager was not set for this graphics3D instane");
 		if (manager == null) {
-			manager = new DisplayListManager(this);
+			manager = new DisplayListManager(getGraphics3D());
 			m_displayListManagers.put(getGraphics3D(), manager);
 		}
 

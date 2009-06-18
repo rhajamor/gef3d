@@ -20,6 +20,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.LineAttributes;
 import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.graphics.TextLayout;
@@ -35,6 +36,8 @@ import org.eclipse.swt.widgets.Display;
 public class DummyGraphics extends Graphics {
 
 	private double m_absoluteScale = 1;
+
+	private boolean m_advanced = true;
 
 	private int m_alpha = 255;
 
@@ -54,9 +57,11 @@ public class DummyGraphics extends Graphics {
 
 	private int m_lineJoin = SWT.JOIN_MITER;
 
-	private int m_lineStyle = LINE_SOLID;
+	private float m_lineMiterLimit = 11;
 
-	private int m_lineWidth = 1;
+	private int m_lineStyle = SWT.LINE_SOLID;
+
+	private float m_lineWidth = 1;
 
 	private int m_textAntialias = SWT.DEFAULT;
 
@@ -389,6 +394,17 @@ public class DummyGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#getAdvanced()
+	 */
+	@Override
+	public boolean getAdvanced() {
+
+		return m_advanced;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#getAlpha()
 	 */
 	@Override
@@ -493,6 +509,18 @@ public class DummyGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#getLineAttributes()
+	 */
+	@Override
+	public LineAttributes getLineAttributes() {
+
+		return new LineAttributes(m_lineWidth, m_lineCap, m_lineJoin,
+				m_lineStyle, null, 0, m_lineMiterLimit);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#getLineCap()
 	 */
 	@Override
@@ -515,6 +543,17 @@ public class DummyGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#getLineMiterLimit()
+	 */
+	@Override
+	public float getLineMiterLimit() {
+
+		return m_lineMiterLimit;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#getLineStyle()
 	 */
 	@Override
@@ -530,6 +569,17 @@ public class DummyGraphics extends Graphics {
 	 */
 	@Override
 	public int getLineWidth() {
+
+		return Math.round(m_lineWidth);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#getLineWidthFloat()
+	 */
+	@Override
+	public float getLineWidthFloat() {
 
 		return m_lineWidth;
 	}
@@ -620,6 +670,17 @@ public class DummyGraphics extends Graphics {
 	public void scale(float i_horizontal, float i_vertical) {
 
 		// nothing to do
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setAdvanced(boolean)
+	 */
+	@Override
+	public void setAdvanced(boolean i_advanced) {
+
+		m_advanced = i_advanced;
 	}
 
 	/**
@@ -746,12 +807,38 @@ public class DummyGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#setLineAttributes(org.eclipse.swt.graphics.LineAttributes)
+	 */
+	@Override
+	public void setLineAttributes(LineAttributes i_attributes) {
+
+		m_lineCap = i_attributes.cap;
+		m_lineJoin = i_attributes.join;
+		m_lineMiterLimit = i_attributes.miterLimit;
+		m_lineStyle = i_attributes.style;
+		m_lineWidth = i_attributes.width;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#setLineCap(int)
 	 */
 	@Override
 	public void setLineCap(int i_cap) {
 
 		m_lineCap = i_cap;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setLineDash(float[])
+	 */
+	@Override
+	public void setLineDash(float[] i_value) {
+
+		// ignore
 	}
 
 	/**
@@ -779,6 +866,17 @@ public class DummyGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#setLineMiterLimit(float)
+	 */
+	@Override
+	public void setLineMiterLimit(float i_miterLimit) {
+
+		m_lineMiterLimit = i_miterLimit;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#setLineStyle(int)
 	 */
 	@Override
@@ -794,6 +892,17 @@ public class DummyGraphics extends Graphics {
 	 */
 	@Override
 	public void setLineWidth(int i_width) {
+
+		m_lineWidth = i_width;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setLineWidthFloat(float)
+	 */
+	@Override
+	public void setLineWidthFloat(float i_width) {
 
 		m_lineWidth = i_width;
 	}

@@ -11,14 +11,10 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
-import java.nio.FloatBuffer;
-
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
-import org.eclipse.draw3d.util.BufferUtils;
 
 /**
  * An abstract base class for shapes.
@@ -29,11 +25,24 @@ import org.eclipse.draw3d.util.BufferUtils;
  */
 public abstract class AbstractModelShape implements Shape {
 
-	private Position3D position3D = null;
-	
 	private Object cachedRawPosition;
 
 	private boolean m_useModelMatrix = false;
+
+	private Position3D position3D = null;
+
+	/**
+	 * returns the position of this shape, may be null
+	 */
+	public Position3D getPosition3D() {
+		return position3D;
+	}
+
+	/**
+	 * Perform the actual rendering. Extenders of this class must override and
+	 * implement this method.
+	 */
+	protected abstract void performRender(RenderContext renderContext);
 
 	/**
 	 * {@inheritDoc}
@@ -52,14 +61,13 @@ public abstract class AbstractModelShape implements Shape {
 		try {
 			if (m_useModelMatrix) {
 
-				
-				if (! g3d.isPositionRawCompatible(cachedRawPosition)) {
+				if (!g3d.isPositionRawCompatible(cachedRawPosition)) {
 					cachedRawPosition = g3d.createRawPosition(position3D);
 				}
 				g3d.setPosition(cachedRawPosition);
-				
-//				cachedRawPosition.rewind();				
-//				g3d.glMultMatrix(cachedRawPosition);
+
+				// cachedRawPosition.rewind();
+				// g3d.glMultMatrix(cachedRawPosition);
 			}
 
 			performRender(renderContext);
@@ -70,10 +78,35 @@ public abstract class AbstractModelShape implements Shape {
 	}
 
 	/**
-	 * Perform the actual rendering. Extenders of this class must override and
-	 * implement this method.
+	 * Sets the position of this shape.
+	 * 
+	 * @param io_positionAsRef
+	 *            the position, this parameter is directly set and not copied
+	 *            here
 	 */
-	protected abstract void performRender(RenderContext renderContext);
+	public void setPosition(Position3D io_positionAsRef) {
+
+		cachedRawPosition = null;
+
+		if (io_positionAsRef == null) {
+			m_useModelMatrix = false;
+			return;
+		}
+
+		// if (cachedRawPosition == null)
+		// cachedRawPosition = BufferUtils.createFloatBuffer(16);
+		// else
+		// cachedRawPosition.rewind();
+		//
+		// i_modelMatrix.toBufferRowMajor(cachedRawPosition);
+		position3D = io_positionAsRef;
+		m_useModelMatrix = true;
+	}
+
+	// was:
+	// Sets the model matrix for this shape. If the specified model matrix is
+	// <code>null</code>, the identity matrix is used as the model matrix.
+	// public void setModelMatrix(IMatrix4f i_modelMatrix) {
 
 	/**
 	 * Do some setup. Extenders of this class can override and implement this
@@ -82,45 +115,6 @@ public abstract class AbstractModelShape implements Shape {
 	protected void setup(RenderContext renderContext) {
 		// nothing to setup
 	}
-
-	/**
-	 * Sets the position of this shape. 
-	 * 
-	 * @param io_positionAsRef the position, this parameter is directly set and
-	 * not copied here
-	 */
-	public void setPosition(Position3D io_positionAsRef) {
-
-		cachedRawPosition = null; 
-		
-		if (io_positionAsRef == null) {
-			m_useModelMatrix = false;
-			return;
-		}
-
-//		if (cachedRawPosition == null)
-//			cachedRawPosition = BufferUtils.createFloatBuffer(16);
-//		else
-//			cachedRawPosition.rewind();
-//
-//		i_modelMatrix.toBufferRowMajor(cachedRawPosition);
-		position3D = io_positionAsRef;
-		m_useModelMatrix = true;
-	}
-	// was:
-//	  Sets the model matrix for this shape. If the specified model matrix is
-//	  <code>null</code>, the identity matrix is used as the model matrix.
-//	public void setModelMatrix(IMatrix4f i_modelMatrix) {
-
-	
-	/**
-	 * returns the position of this shape, may be null
-	 */
-	public Position3D getPosition3D() {
-		return position3D;
-	}
-	
-	
 
 	/**
 	 * {@inheritDoc}
