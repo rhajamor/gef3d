@@ -178,6 +178,21 @@ public class Figure3D extends Figure implements IFigure3D {
 
 	/**
 	 * {@inheritDoc}
+	 * <p>
+	 * Overriden to invalidate position 3D after the figure moved.
+	 * {@link #invalidate()} is only called after a resize.
+	 * </p>
+	 * 
+	 * @see org.eclipse.draw2d.Figure#fireFigureMoved()
+	 */
+	@Override
+	protected void fireFigureMoved() {
+		position3D.invalidateMatrices();
+		super.fireFigureMoved();
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.IFigure3D#getAlpha()
 	 */
@@ -209,19 +224,6 @@ public class Figure3D extends Figure implements IFigure3D {
 		return super.getBounds();
 	}
 
-	/**
-	 * {@inheritDoc} Returns bounds, i.e. lower left back corner and size. The
-	 * coordinates are parent relative coordinates.
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getBounds3D()
-	 * @deprecated use {@link Position3D#getBounds3D()
-	 *             getPosition3D().getBounds3D()}, or simply
-	 *             {@link #getPosition3D()}
-	 */
-	public IBoundingBox getBounds3D() {
-		return position3D.getBounds3D();
-	}
-
 	// /**
 	// * Returns the object matrix of this figure's closest 3D ancestor. If this
 	// * figure does not have any 3D ancestors, the identity matrix is returned.
@@ -236,6 +238,19 @@ public class Figure3D extends Figure implements IFigure3D {
 	//
 	// return fig.getLocationMatrix();
 	// }
+
+	/**
+	 * {@inheritDoc} Returns bounds, i.e. lower left back corner and size. The
+	 * coordinates are parent relative coordinates.
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#getBounds3D()
+	 * @deprecated use {@link Position3D#getBounds3D()
+	 *             getPosition3D().getBounds3D()}, or simply
+	 *             {@link #getPosition3D()}
+	 */
+	public IBoundingBox getBounds3D() {
+		return position3D.getBounds3D();
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -373,6 +388,15 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#getRenderContext()
+	 */
+	public RenderContext getRenderContext() {
+		return getAncestor3D().getRenderContext();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.IFigure3D#getRotation3D()
 	 * @deprecated use {@link Position3D#getRotation3D()
 	 *             getPosition3D().getRotation3D()}
@@ -446,8 +470,8 @@ public class Figure3D extends Figure implements IFigure3D {
 		position3D.invalidateMatrices();
 		super.invalidate();
 	}
-	
-	/** 
+
+	/**
 	 * {@inheritDoc}
 	 * <p>
 	 * Overridden to mark 2D components invalid, too.
@@ -551,20 +575,13 @@ public class Figure3D extends Figure implements IFigure3D {
 
 	}
 
-	/** 
+	/**
 	 * The default implementation renders nothing.
-	 * @see org.eclipse.draw3d.Renderable#render(org.eclipse.draw3d.RenderContext)
-	 */
-	public void render(RenderContext renderContext) {
-	}
-	
-	/** 
-	 * The default implementation renders nothing.
+	 * 
 	 * @see org.eclipse.draw3d.Renderable#prerender(org.eclipse.draw3d.RenderContext)
 	 */
 	public void prerender(RenderContext renderContext) {
 	}
-
 
 	@Override
 	public void remove(IFigure i_figure) {
@@ -575,6 +592,13 @@ public class Figure3D extends Figure implements IFigure3D {
 		}
 	}
 
+	/**
+	 * The default implementation renders nothing.
+	 * 
+	 * @see org.eclipse.draw3d.Renderable#render(org.eclipse.draw3d.RenderContext)
+	 */
+	public void render(RenderContext renderContext) {
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -613,8 +637,9 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * created before
 	 * </p>
 	 * 
-	 * @param i_preferredSize3D new preferred size, must not be null and all
-	 *            values must not be less 0
+	 * @param i_preferredSize3D
+	 *            new preferred size, must not be null and all values must not
+	 *            be less 0
 	 * @see org.eclipse.draw3d.IFigure3D#setPreferredSize3D(org.eclipse.draw3d.geometry.IVector3f)
 	 */
 	public void setPreferredSize3D(IVector3f i_preferredSize3D) {
@@ -650,7 +675,8 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @param i_size new size, must not be null, no value must be less 0
+	 * @param i_size
+	 *            new size, must not be null, no value must be less 0
 	 * @see org.eclipse.draw3d.IFigure3D#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
 	 * @deprecated use {@link Position3D#setSize3D(IVector3f)
 	 *             getPosition3D().setSize3D(size)}
@@ -757,13 +783,5 @@ public class Figure3D extends Figure implements IFigure3D {
 	public void validate() {
 		super.validate();
 		repaint2DComponents = true;
-	}
-
-	/** 
-	 * {@inheritDoc}
-	 * @see org.eclipse.draw3d.IFigure3D#getRenderContext()
-	 */
-	public RenderContext getRenderContext() {
-		return getAncestor3D().getRenderContext();
 	}
 }
