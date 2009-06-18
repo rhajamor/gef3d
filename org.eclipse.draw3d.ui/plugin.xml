@@ -15,5 +15,16 @@
             name="Draw3D">
       </page>
    </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.draw3d.ui.viewer.ShapeViewer"
+            contributorClass="org.eclipse.draw3d.ui.viewer.Draw3DViewerActionBarContributor"
+            default="false"
+            extensions="shape"
+            id="org.eclipse.draw3d.ui.ShapeViewer"
+            name="Shape Viewer">
+      </editor>
+   </extension>
 
 </plugin>

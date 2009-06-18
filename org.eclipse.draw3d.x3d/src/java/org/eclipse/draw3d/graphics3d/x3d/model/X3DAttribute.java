@@ -32,10 +32,12 @@ public class X3DAttribute implements Cloneable {
 	private final String m_strValue;
 
 	/**
-	 * Constructs a new X3DAttribute.
+	 * Creates a new attribute with the given key and value.
 	 * 
 	 * @param i_strKey
+	 *            the attribute key
 	 * @param i_strValue
+	 *            the attribute value
 	 */
 	public X3DAttribute(String i_strKey, String i_strValue) {
 
@@ -44,17 +46,17 @@ public class X3DAttribute implements Cloneable {
 	}
 
 	/**
-	 * @return the key
+	 * Constructs a new X3DAttribute with the given values.
+	 * 
+	 * @param i_strKey
+	 *            the attribute key
+	 * @param i_values
+	 *            the values
 	 */
-	public String getKey() {
-		return this.m_strKey;
-	}
+	public X3DAttribute(String i_strKey, Object... i_values) {
 
-	/**
-	 * @return the value
-	 */
-	public String getValue() {
-		return this.m_strValue;
+		m_strKey = i_strKey;
+		m_strValue = X3DDefaultEncoder.INSTANCE.encode(i_values);
 	}
 
 	/**
@@ -69,5 +71,19 @@ public class X3DAttribute implements Cloneable {
 
 		return other;
 
+	}
+
+	/**
+	 * @return the key
+	 */
+	public String getKey() {
+		return this.m_strKey;
+	}
+
+	/**
+	 * @return the value
+	 */
+	public String getValue() {
+		return this.m_strValue;
 	}
 }

@@ -34,6 +34,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.GLContext;
+import org.lwjgl.util.glu.Cylinder;
+import org.lwjgl.util.glu.Sphere;
 
 /**
  * Graphics3DLwjgl is the implementor of the Graphics3D interface for the LWJGL
@@ -66,18 +68,12 @@ public class Graphics3DLwjgl implements Graphics3D {
 
 	private boolean m_log2D;
 
-	// Constants for controlling draw behavior *********************************
-
 	/**
 	 * The texture manager handles OpenGL texture as GL's mechanism to render 2D
 	 * content. It is lazily created in
 	 * {@link #activateGraphics2D(Object, int, int, int, Color)}.
 	 */
 	public LwjglTextureManager m_textureManager = null;
-
-	/*
-	 * Abstracted methods
-	 */
 
 	Properties properties = new Properties();
 
@@ -716,7 +712,7 @@ public class Graphics3DLwjgl implements Graphics3D {
 
 		m_log2D = i_log2D;
 	}
-
+	
 	/**
 	 * Sets the position, the given raw position is expected to be a FloatBuffer
 	 * (size=16).
@@ -729,7 +725,7 @@ public class Graphics3DLwjgl implements Graphics3D {
 		((FloatBuffer) i_theRawPosition).rewind();
 		org.lwjgl.opengl.GL11.glMultMatrix((FloatBuffer) i_theRawPosition);
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * 

@@ -175,7 +175,7 @@ public class Graphics3DX3D implements Graphics3D {
 
 		Graphics graphics = m_g2dManager.activateGraphics2D(i_key, i_width,
 				i_height, i_alpha, i_color);
-		
+
 		if (m_log2D)
 			return new LogGraphics(graphics);
 		else
@@ -380,6 +380,21 @@ public class Graphics3DX3D implements Graphics3D {
 		case Graphics3DDraw.GL_QUADS:
 			m_activeDrawTarget = X3DDrawTargetFactory
 					.createDrawTarget(X3DDrawTargetFactory.DRAW_TARGET_QUAD);
+			break;
+
+		case Graphics3DDraw.GL_TRIANGLES:
+			m_activeDrawTarget = X3DDrawTargetFactory
+					.createDrawTarget(X3DDrawTargetFactory.DRAW_TARGET_TRIANGLE_SET);
+			break;
+
+		case Graphics3DDraw.GL_TRIANGLE_STRIP:
+			m_activeDrawTarget = X3DDrawTargetFactory
+					.createDrawTarget(X3DDrawTargetFactory.DRAW_TARGET_TRIANGLE_STRIP_SET);
+			break;
+
+		case Graphics3DDraw.GL_TRIANGLE_FAN:
+			m_activeDrawTarget = X3DDrawTargetFactory
+					.createDrawTarget(X3DDrawTargetFactory.DRAW_TARGET_TRIANGLE_FAN_SET);
 			break;
 
 		default:
@@ -1004,6 +1019,9 @@ public class Graphics3DX3D implements Graphics3D {
 			if (i_mode == Graphics3DDraw.GL_FILL) {
 				m_propertyContainer.getProperties().put(
 						X3DPropertyContainer.PRP_POLYGON_MODE_DO_FILL, true);
+			} else if (i_mode == Graphics3DDraw.GL_LINE) {
+				m_propertyContainer.getProperties().put(
+						X3DPropertyContainer.PRP_POLYGON_MODE_DO_FILL, false);
 			} else {
 				if (log.isLoggable(Level.INFO)) {
 					log

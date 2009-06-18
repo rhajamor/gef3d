@@ -12,8 +12,12 @@
 package org.eclipse.draw3d.graphics3d.x3d.model;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+
+import org.eclipse.draw3d.geometry.IVector2f;
+import org.eclipse.draw3d.geometry.IVector3f;
 
 /**
  * An object of this class represents a node in the X3D structure. A node may
@@ -24,21 +28,6 @@ import java.util.ListIterator;
  * @since Dec 15, 2008
  */
 public class X3DNode {
-
-	/**
-	 * THe name of this node.
-	 */
-	private final String m_strName;
-
-	/**
-	 * A list with the children of this node.
-	 */
-	private final List<X3DNode> m_children;
-
-	/**
-	 * A ist with the attributes of this nodes.
-	 */
-	private final List<X3DAttribute> m_attributes;
 
 	/**
 	 * Each node has an ID, which is also an attribute. This is the key of the
@@ -53,6 +42,36 @@ public class X3DNode {
 	private static int nextID = 1;
 
 	/**
+	 * Creates a new coordinate node with the given coordinates.
+	 * 
+	 * @param i_coords
+	 *            the coordinate list
+	 * @return the node
+	 */
+	public static X3DNode createCoordinateNode(List<IVector3f> i_coords) {
+
+		X3DNode node = new X3DNode("Coordinate");
+		node.addAttribute(new X3DAttribute("points", i_coords));
+
+		return node;
+	}
+
+	/**
+	 * Creates a new texture coordinate node with the given texture coordinates.
+	 * 
+	 * @param i_coords
+	 *            the coordinate list
+	 * @return the node
+	 */
+	public static X3DNode createTextureCoordinateNode(List<IVector2f> i_coords) {
+
+		X3DNode node = new X3DNode("TextureCoordinate");
+		node.addAttribute(new X3DAttribute("points", i_coords));
+
+		return node;
+	}
+
+	/**
 	 * Gets the next free ID to use for a new node.
 	 */
 	private static Integer getNextID() {
@@ -60,9 +79,25 @@ public class X3DNode {
 	}
 
 	/**
+	 * A ist with the attributes of this nodes.
+	 */
+	private final List<X3DAttribute> m_attributes;
+
+	/**
+	 * A list with the children of this node.
+	 */
+	private final List<X3DNode> m_children;
+
+	/**
+	 * THe name of this node.
+	 */
+	private final String m_strName;
+
+	/**
 	 * Constructs a new node with the given name.
 	 * 
-	 * @param i_strName The node's name.
+	 * @param i_strName
+	 *            The node's name.
 	 */
 	public X3DNode(String i_strName) {
 		m_strName = i_strName;
@@ -78,7 +113,8 @@ public class X3DNode {
 	/**
 	 * Adds a new attribute to the node.
 	 * 
-	 * @param i_attribute The attribute to add.
+	 * @param i_attribute
+	 *            The attribute to add.
 	 */
 	public void addAttribute(X3DAttribute i_attribute) {
 		m_attributes.add(i_attribute);
@@ -87,10 +123,34 @@ public class X3DNode {
 	/**
 	 * Adds a new node as a child to this node.
 	 * 
-	 * @param i_node The node to add as a child.
+	 * @param i_node
+	 *            The node to add as a child.
 	 */
 	public void addNode(X3DNode i_node) {
 		m_children.add(i_node);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#clone()
+	 */
+	@Override
+	public Object clone() {
+
+		X3DNode other = new X3DNode(this.m_strName);
+
+		for (X3DAttribute attr : m_attributes) {
+			if (attr.getKey() != ATTRIBUTE_ID) {
+				other.m_attributes.add((X3DAttribute) attr.clone());
+			}
+		}
+
+		for (X3DNode node : m_children) {
+			other.m_children.add((X3DNode) node.clone());
+		}
+
+		return other;
 	}
 
 	/**
@@ -109,19 +169,11 @@ public class X3DNode {
 	}
 
 	/**
-	 * Returns an iterator over the list of children nodes.
-	 * 
-	 * @return The iterator.
-	 */
-	public ListIterator<X3DNode> getNodeIterator() {
-		return m_children.listIterator();
-	}
-
-	/**
 	 * Gets a node by it's ID. Can be this node or any direct or indirect child
 	 * of this node.
 	 * 
-	 * @param i_id The ID to search for.
+	 * @param i_id
+	 *            The ID to search for.
 	 * @return The found node or null, if none is found.
 	 */
 	public X3DNode getNodeByID(int i_id) {
@@ -143,7 +195,8 @@ public class X3DNode {
 	 * Gets a node by it's name. Can be this node or any direct or indirect
 	 * child of this node.
 	 * 
-	 * @param i_name The name of the node to search for.
+	 * @param i_name
+	 *            The name of the node to search for.
 	 * @return The found node or null, if none is found.
 	 */
 
@@ -160,6 +213,15 @@ public class X3DNode {
 
 			return null;
 		}
+	}
+
+	/**
+	 * Returns an iterator over the list of children nodes.
+	 * 
+	 * @return The iterator.
+	 */
+	public ListIterator<X3DNode> getNodeIterator() {
+		return m_children.listIterator();
 	}
 
 	/**
@@ -198,28 +260,5 @@ public class X3DNode {
 		}
 
 		return sb.toString();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#clone()
-	 */
-	@Override
-	public Object clone() {
-
-		X3DNode other = new X3DNode(this.m_strName);
-
-		for (X3DAttribute attr : m_attributes) {
-			if (attr.getKey() != ATTRIBUTE_ID) {
-				other.m_attributes.add((X3DAttribute) attr.clone());
-			}
-		}
-
-		for (X3DNode node : m_children) {
-			other.m_children.add((X3DNode) node.clone());
-		}
-
-		return other;
 	}
 }

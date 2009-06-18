@@ -84,6 +84,8 @@ public interface Graphics3DDraw {
 	public static final float PI = (float) Math.PI;
 
 	public static final int GL_FILL = 0x1b02; // org.lwjgl.opengl.GL11.GL_FILL;
+	
+	public static final int GL_LINE = 0x1b01;
 
 	public static final int GL_FRONT_AND_BACK = 0x408; // org.lwjgl.opengl.GL11.
 
@@ -104,7 +106,18 @@ public interface Graphics3DDraw {
 	// GL_MODELVIEW;
 
 	public static final int GL_QUADS = 0x7; // org.lwjgl.opengl.GL11.GL_QUADS;
+	
+	public static final int GL_POLYGON = 0x9;
+	
+	///TODO implement in X3D
+	public static final int GL_TRIANGLES = 0x4;
+	
+	// TODO: implement in X3D
+	public static final int GL_TRIANGLE_STRIP = 0x5;
 
+	// TODO: implement in X3D
+	public static final int GL_TRIANGLE_FAN = 0x6;
+	
 	public static final int GL_REPLACE = 0x1e01; // org.lwjgl.opengl.GL11.
 
 	// GL_REPLACE;
