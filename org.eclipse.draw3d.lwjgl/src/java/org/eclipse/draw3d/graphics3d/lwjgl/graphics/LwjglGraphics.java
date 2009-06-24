@@ -42,6 +42,7 @@ import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.LineAttributes;
 import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.widgets.Display;
 import org.lwjgl.opengl.GL11;
@@ -96,6 +97,7 @@ import org.lwjgl.opengl.GL11;
  * </ul>
  * The following functions are implemented, but will be ignored:
  * <ul>
+ * <li>{@link Graphics#setAdvanced(boolean)} (GEF 3.5)</li>
  * <li>{@link Graphics#setAntialias(int)}</li>
  * <li>{@link Graphics#setBackgroundPattern(Pattern)}</li>
  * <li>{@link Graphics#setInterpolation(int)}</li>
@@ -128,6 +130,8 @@ public class LwjglGraphics extends Graphics {
 	 */
 	private class GraphicsState {
 
+		private Boolean m_advanced;
+
 		private Integer m_alpha;
 
 		private Integer m_antialias;
@@ -156,9 +160,11 @@ public class LwjglGraphics extends Graphics {
 
 		private Integer m_lineJoin;
 
+		private Float m_lineMiterLimit;
+
 		private Integer m_lineStyle;
 
-		private Integer m_lineWidth;
+		private Float m_lineWidth;
 
 		private final GraphicsState m_parentState;
 
@@ -171,7 +177,8 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Creates a new chained graphics state with the given parent.
 		 * 
-		 * @param i_parentState the parent of this state
+		 * @param i_parentState
+		 *            the parent of this state
 		 */
 		public GraphicsState(GraphicsState i_parentState) {
 
@@ -181,7 +188,8 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Intersects the current clipping rectangle with the given rectangle.
 		 * 
-		 * @param i_clip the rectangle to intersect with
+		 * @param i_clip
+		 *            the rectangle to intersect with
 		 */
 		public void clipRect(Rectangle i_clip) {
 
@@ -197,6 +205,20 @@ public class LwjglGraphics extends Graphics {
 			} else {
 				m_clip = new Rectangle(i_clip);
 			}
+		}
+
+		/**
+		 * Indicates whether the graphics system is in advanced graphics mode.
+		 * 
+		 * @return <code>true</code> if the graphics subsystem is in advanced
+		 *         graphics mode and <code>false</code> otherwise
+		 */
+		public boolean getAdvanced() {
+
+			if (m_advanced != null)
+				return m_advanced;
+
+			return m_parentState.getAdvanced();
 		}
 
 		/**
@@ -330,6 +352,11 @@ public class LwjglGraphics extends Graphics {
 			return m_parentState.getInterpolation();
 		}
 
+		/**
+		 * Returns the line cap setting for this graphics state
+		 * 
+		 * @return the line cap setting
+		 */
 		public int getLineCap() {
 
 			if (m_lineCap != null)
@@ -348,7 +375,10 @@ public class LwjglGraphics extends Graphics {
 			if (m_lineDash != null)
 				return m_lineDash;
 
-			return m_parentState.getLineDash();
+			if (m_parentState != null)
+				return m_parentState.getLineDash();
+
+			return null;
 		}
 
 		/**
@@ -375,6 +405,19 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		/**
+		 * Returns the line miter limit of this graphics state.
+		 * 
+		 * @return the line miter limit of this graphics state
+		 */
+		public float getLineMiterLimit() {
+
+			if (m_lineMiterLimit != null)
+				return m_lineMiterLimit;
+
+			return m_parentState.getLineMiterLimit();
+		}
+
+		/**
 		 * Returns the line style of this graphics state.
 		 * 
 		 * @return the line style
@@ -392,7 +435,7 @@ public class LwjglGraphics extends Graphics {
 		 * 
 		 * @return the line width
 		 */
-		public int getLineWidth() {
+		public float getLineWidth() {
 
 			if (m_lineWidth != null)
 				return m_lineWidth;
@@ -448,260 +491,10 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		/**
-		 * Scales the current transformation and corrects the clipping rectangle
-		 * by the given factors.
-		 * 
-		 * @param i_horizontal the horizontal scaling factor
-		 * @param i_vertical the vertical scaling factor
-		 */
-		public void scale(float i_horizontal, float i_vertical) {
-
-			if (m_transformation == null)
-				m_transformation = new Matrix4fImpl();
-
-			TMP_V3.set(i_horizontal, i_vertical, 0);
-
-			Math3D.scale(TMP_V3, m_transformation, m_transformation);
-		}
-
-		/**
-		 * Sets the alpha value of this graphics state.
-		 * 
-		 * @param i_alpha the alpha value
-		 */
-		public void setAlpha(int i_alpha) {
-
-			m_alpha = i_alpha;
-		}
-
-		/**
-		 * Sets the antialias value for this graphics state.
-		 * 
-		 * @param i_antialias the antialias value
-		 */
-		public void setAntialias(int i_antialias) {
-
-			m_antialias = i_antialias;
-		}
-
-		/**
-		 * Sets the background color of this graphics state.
-		 * 
-		 * @param i_backgroundColor the new background color
-		 */
-		public void setBackgroundColor(Color i_backgroundColor) {
-
-			m_backgroundColor = i_backgroundColor;
-		}
-
-		/**
-		 * Sets the background pattern of this graphics state.
-		 * 
-		 * @param i_backgroundPattern the background pattern
-		 */
-		public void setBackgroundPattern(Pattern i_backgroundPattern) {
-
-			m_backgroundPattern = i_backgroundPattern;
-		}
-
-		/**
-		 * Sets the clip rectangleof this state.
-		 * 
-		 * @param i_clip the clip rectangle
-		 */
-		public void setClip(Rectangle i_clip) {
-
-			if (i_clip == null) {
-				m_clip = null;
-				return;
-			}
-
-			if (m_clip == null) {
-				m_clip = new Rectangle(i_clip);
-				return;
-			}
-
-			m_clip.setBounds(i_clip);
-		}
-
-		/**
-		 * Sets the fill rule of this graphics state.
-		 * 
-		 * @param i_fillRule the fill rule of this graphics state
-		 */
-		public void setFillRule(int i_fillRule) {
-
-			m_fillRule = i_fillRule;
-		}
-
-		/**
-		 * Sets the font of this graphics state.
-		 * 
-		 * @param i_font the font
-		 */
-		public void setFont(Font i_font) {
-
-			m_font = i_font;
-		}
-
-		/**
-		 * Sets the foreground color of this graphics state.
-		 * 
-		 * @param i_foregroundColor the foreground color
-		 */
-		public void setForegroundColor(Color i_foregroundColor) {
-
-			m_foregroundColor = i_foregroundColor;
-		}
-
-		/**
-		 * Sets the foreground pattern of this graphics state.
-		 * 
-		 * @param i_foregroundPattern the foreground pattern
-		 */
-		public void setForegroundPattern(Pattern i_foregroundPattern) {
-
-			m_foregroundPattern = i_foregroundPattern;
-		}
-
-		/**
-		 * Sets the interpolation setting for this graphics state.
-		 * 
-		 * @param i_interpolation the interpolation setting
-		 */
-		public void setInterpolation(int i_interpolation) {
-
-			m_interpolation = i_interpolation;
-		}
-
-		/**
-		 * Sets the line cap value of this graphics state.
-		 * 
-		 * @param i_lineCap the line cap value
-		 */
-		public void setLineCap(int i_lineCap) {
-
-			m_lineCap = i_lineCap;
-		}
-
-		/**
-		 * Sets the custom line dash pattern.
-		 * 
-		 * @param i_lineDash the custom line dash pattern
-		 */
-		public void setLineDash(int[] i_lineDash) {
-
-			m_lineDash = i_lineDash;
-			m_lineDashLength = 0;
-
-			if (m_lineDash != null)
-				for (int i = 0; i < m_lineDash.length; i++)
-					m_lineDashLength += m_lineDash[i];
-		}
-
-		/**
-		 * Sets the line join value of this graphics state.
-		 * 
-		 * @param i_lineJoin the line join value
-		 */
-		public void setLineJoin(int i_lineJoin) {
-
-			m_lineJoin = i_lineJoin;
-		}
-
-		/**
-		 * Sets the line style of this graphics state.
-		 * 
-		 * @param i_lineStyle the line style
-		 */
-		public void setLineStyle(int i_lineStyle) {
-
-			m_lineStyle = i_lineStyle;
-		}
-
-		/**
-		 * Sets the line width of this graphics state.
-		 * 
-		 * @param i_lineWidth the line width
-		 */
-		public void setLineWidth(int i_lineWidth) {
-
-			m_lineWidth = i_lineWidth;
-		}
-
-		/**
-		 * Sets the text antialias value of this graphics state.
-		 * 
-		 * @param i_textAntialias the text antialias value
-		 */
-		public void setTextAntialias(int i_textAntialias) {
-
-			m_textAntialias = i_textAntialias;
-		}
-
-		/**
-		 * Sets the current transformation.
-		 * 
-		 * @param i_transformation the current transformation
-		 */
-		public void setTransformation(IMatrix4f i_transformation) {
-
-			if (m_transformation == null)
-				m_transformation = new Matrix4fImpl(i_transformation);
-			else
-				m_transformation.set(i_transformation);
-		}
-
-		/**
-		 * Specifies whether XOR mode drawing is enabled.
-		 * 
-		 * @param i_xorMode <code>true</code> if XOR mode should be enabled or
-		 *            <code>false</code> otherwise
-		 */
-		public void setXORMode(boolean i_xorMode) {
-
-			m_xorMode = i_xorMode;
-		}
-
-		/**
-		 * Shears the current transformation and corrects the clipping rectangle
-		 * by the given amounts.
-		 * 
-		 * @param i_horz the horizontal shearing amount
-		 * @param i_vert the vertical shearing amount
-		 */
-		public void shear(float i_horz, float i_vert) {
-
-			if (m_transformation == null)
-				m_transformation = new Matrix4fImpl();
-
-			TMP_M4.setIdentity();
-			TMP_M4.a21 = i_horz;
-			TMP_M4.a12 = i_vert;
-
-			Math3D.mul(TMP_M4, m_transformation, m_transformation);
-		}
-
-		/**
-		 * Translates the current transformation and corrects the clipping
-		 * rectangle by the given amounts.
-		 * 
-		 * @param i_dX the X translation
-		 * @param i_dY the Y translation
-		 */
-		public void translate(float i_dX, float i_dY) {
-
-			if (m_transformation == null)
-				m_transformation = new Matrix4fImpl();
-
-			TMP_V3.set(i_dX, i_dY, 0);
-			Math3D.translate(TMP_V3, m_transformation, m_transformation);
-		}
-
-		/**
 		 * Rotates the coordinates system by the given angle counterclockwise.
 		 * 
-		 * @param i_degrees the rotation angle in degrees
+		 * @param i_degrees
+		 *            the rotation angle in degrees
 		 */
 		public void rotate(float i_degrees) {
 
@@ -721,6 +514,304 @@ public class LwjglGraphics extends Graphics {
 			TMP_M4.a12 = -sin;
 
 			Math3D.mul(TMP_M4, m_transformation, m_transformation);
+		}
+
+		/**
+		 * Scales the current transformation and corrects the clipping rectangle
+		 * by the given factors.
+		 * 
+		 * @param i_horizontal
+		 *            the horizontal scaling factor
+		 * @param i_vertical
+		 *            the vertical scaling factor
+		 */
+		public void scale(float i_horizontal, float i_vertical) {
+
+			if (m_transformation == null)
+				m_transformation = new Matrix4fImpl();
+
+			TMP_V3.set(i_horizontal, i_vertical, 0);
+
+			Math3D.scale(TMP_V3, m_transformation, m_transformation);
+		}
+
+		/**
+		 * Specifies whether the graphics system is in advanced graphics mode.
+		 * 
+		 * @param i_advanced
+		 *            <code>true</code> if the graphics system is in advanced
+		 *            graphics mode and <code>false</code> otherwise
+		 */
+		public void setAdvanced(boolean i_advanced) {
+
+			m_advanced = i_advanced;
+		}
+
+		/**
+		 * Sets the alpha value of this graphics state.
+		 * 
+		 * @param i_alpha
+		 *            the alpha value
+		 */
+		public void setAlpha(int i_alpha) {
+
+			m_alpha = i_alpha;
+		}
+
+		/**
+		 * Sets the antialias value for this graphics state.
+		 * 
+		 * @param i_antialias
+		 *            the antialias value
+		 */
+		public void setAntialias(int i_antialias) {
+
+			m_antialias = i_antialias;
+		}
+
+		/**
+		 * Sets the background color of this graphics state.
+		 * 
+		 * @param i_backgroundColor
+		 *            the new background color
+		 */
+		public void setBackgroundColor(Color i_backgroundColor) {
+
+			m_backgroundColor = i_backgroundColor;
+		}
+
+		/**
+		 * Sets the background pattern of this graphics state.
+		 * 
+		 * @param i_backgroundPattern
+		 *            the background pattern
+		 */
+		public void setBackgroundPattern(Pattern i_backgroundPattern) {
+
+			m_backgroundPattern = i_backgroundPattern;
+		}
+
+		/**
+		 * Sets the clip rectangleof this state.
+		 * 
+		 * @param i_clip
+		 *            the clip rectangle
+		 */
+		public void setClip(Rectangle i_clip) {
+
+			if (i_clip == null) {
+				m_clip = null;
+				return;
+			}
+
+			if (m_clip == null) {
+				m_clip = new Rectangle(i_clip);
+				return;
+			}
+
+			m_clip.setBounds(i_clip);
+		}
+
+		/**
+		 * Sets the fill rule of this graphics state.
+		 * 
+		 * @param i_fillRule
+		 *            the fill rule of this graphics state
+		 */
+		public void setFillRule(int i_fillRule) {
+
+			m_fillRule = i_fillRule;
+		}
+
+		/**
+		 * Sets the font of this graphics state.
+		 * 
+		 * @param i_font
+		 *            the font
+		 */
+		public void setFont(Font i_font) {
+
+			m_font = i_font;
+		}
+
+		/**
+		 * Sets the foreground color of this graphics state.
+		 * 
+		 * @param i_foregroundColor
+		 *            the foreground color
+		 */
+		public void setForegroundColor(Color i_foregroundColor) {
+
+			m_foregroundColor = i_foregroundColor;
+		}
+
+		/**
+		 * Sets the foreground pattern of this graphics state.
+		 * 
+		 * @param i_foregroundPattern
+		 *            the foreground pattern
+		 */
+		public void setForegroundPattern(Pattern i_foregroundPattern) {
+
+			m_foregroundPattern = i_foregroundPattern;
+		}
+
+		/**
+		 * Sets the interpolation setting for this graphics state.
+		 * 
+		 * @param i_interpolation
+		 *            the interpolation setting
+		 */
+		public void setInterpolation(int i_interpolation) {
+
+			m_interpolation = i_interpolation;
+		}
+
+		/**
+		 * Sets the line cap value of this graphics state.
+		 * 
+		 * @param i_lineCap
+		 *            the line cap value
+		 */
+		public void setLineCap(int i_lineCap) {
+
+			m_lineCap = i_lineCap;
+		}
+
+		/**
+		 * Sets the custom line dash pattern.
+		 * 
+		 * @param i_lineDash
+		 *            the custom line dash pattern
+		 */
+		public void setLineDash(int[] i_lineDash) {
+
+			m_lineDash = i_lineDash;
+			m_lineDashLength = 0;
+
+			if (m_lineDash != null)
+				for (int i = 0; i < m_lineDash.length; i++)
+					m_lineDashLength += m_lineDash[i];
+		}
+
+		/**
+		 * Sets the line join value of this graphics state.
+		 * 
+		 * @param i_lineJoin
+		 *            the line join value
+		 */
+		public void setLineJoin(int i_lineJoin) {
+
+			m_lineJoin = i_lineJoin;
+		}
+
+		/**
+		 * Sets the line miter limit of this graphics state.
+		 * 
+		 * @param i_lineMiterLimit
+		 *            the new line miter limit
+		 */
+		public void setLineMiterLimit(float i_lineMiterLimit) {
+
+			m_lineMiterLimit = i_lineMiterLimit;
+		}
+
+		/**
+		 * Sets the line style of this graphics state.
+		 * 
+		 * @param i_lineStyle
+		 *            the line style
+		 */
+		public void setLineStyle(int i_lineStyle) {
+
+			m_lineStyle = i_lineStyle;
+		}
+
+		/**
+		 * Sets the line width of this graphics state.
+		 * 
+		 * @param i_lineWidth
+		 *            the line width
+		 */
+		public void setLineWidth(float i_lineWidth) {
+
+			m_lineWidth = i_lineWidth;
+		}
+
+		/**
+		 * Sets the text antialias value of this graphics state.
+		 * 
+		 * @param i_textAntialias
+		 *            the text antialias value
+		 */
+		public void setTextAntialias(int i_textAntialias) {
+
+			m_textAntialias = i_textAntialias;
+		}
+
+		/**
+		 * Sets the current transformation.
+		 * 
+		 * @param i_transformation
+		 *            the current transformation
+		 */
+		public void setTransformation(IMatrix4f i_transformation) {
+
+			if (m_transformation == null)
+				m_transformation = new Matrix4fImpl(i_transformation);
+			else
+				m_transformation.set(i_transformation);
+		}
+
+		/**
+		 * Specifies whether XOR mode drawing is enabled.
+		 * 
+		 * @param i_xorMode
+		 *            <code>true</code> if XOR mode should be enabled or
+		 *            <code>false</code> otherwise
+		 */
+		public void setXORMode(boolean i_xorMode) {
+
+			m_xorMode = i_xorMode;
+		}
+
+		/**
+		 * Shears the current transformation and corrects the clipping rectangle
+		 * by the given amounts.
+		 * 
+		 * @param i_horz
+		 *            the horizontal shearing amount
+		 * @param i_vert
+		 *            the vertical shearing amount
+		 */
+		public void shear(float i_horz, float i_vert) {
+
+			if (m_transformation == null)
+				m_transformation = new Matrix4fImpl();
+
+			TMP_M4.setIdentity();
+			TMP_M4.a21 = i_horz;
+			TMP_M4.a12 = i_vert;
+
+			Math3D.mul(TMP_M4, m_transformation, m_transformation);
+		}
+
+		/**
+		 * Translates the current transformation and corrects the clipping
+		 * rectangle by the given amounts.
+		 * 
+		 * @param i_dX
+		 *            the X translation
+		 * @param i_dY
+		 *            the Y translation
+		 */
+		public void translate(float i_dX, float i_dY) {
+
+			if (m_transformation == null)
+				m_transformation = new Matrix4fImpl();
+
+			TMP_V3.set(i_dX, i_dY, 0);
+			Math3D.translate(TMP_V3, m_transformation, m_transformation);
 		}
 	}
 
@@ -805,9 +896,12 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * Creates a new OpenGL graphics object with the given width and height;
 	 * 
-	 * @param i_width the width of this graphics object
-	 * @param i_height the height of this graphics object
-	 * @param i_fontManager to the font manager to use
+	 * @param i_width
+	 *            the width of this graphics object
+	 * @param i_height
+	 *            the height of this graphics object
+	 * @param i_fontManager
+	 *            to the font manager to use
 	 */
 	public LwjglGraphics(int i_width, int i_height,
 			LwjglFontManager i_fontManager) {
@@ -1081,15 +1175,15 @@ public class LwjglGraphics extends Graphics {
 		if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
 			m_currentLinePattern.activate();
 			try {
-				GL11.glBegin(GL11.GL_LINE_STRIP);
-				glDrawTexturedPointList(i_points, true);
+				GL11.glBegin(GL11.GL_LINE_LOOP);
+				glDrawTexturedPointList(i_points);
 				GL11.glEnd();
 			} finally {
 				m_currentLinePattern.deactivate();
 			}
 		} else {
-			GL11.glBegin(GL11.GL_LINE_STRIP);
-			glDrawPointList(i_points, true);
+			GL11.glBegin(GL11.GL_LINE_LOOP);
+			glDrawPointList(i_points);
 			GL11.glEnd();
 		}
 	}
@@ -1113,14 +1207,14 @@ public class LwjglGraphics extends Graphics {
 			m_currentLinePattern.activate();
 			try {
 				GL11.glBegin(GL11.GL_LINE_STRIP);
-				glDrawTexturedPointList(i_points, false);
+				glDrawTexturedPointList(i_points);
 				GL11.glEnd();
 			} finally {
 				m_currentLinePattern.deactivate();
 			}
 		} else {
 			GL11.glBegin(GL11.GL_LINE_STRIP);
-			glDrawPointList(i_points, false);
+			glDrawPointList(i_points);
 			GL11.glEnd();
 		}
 	}
@@ -1141,15 +1235,15 @@ public class LwjglGraphics extends Graphics {
 		if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
 			m_currentLinePattern.activate();
 			try {
-				GL11.glBegin(GL11.GL_LINE_STRIP);
+				GL11.glBegin(GL11.GL_LINE_LOOP);
 				glDrawTexturedRectangle(i_x, i_y, i_width, i_height);
 				GL11.glEnd();
 			} finally {
 				m_currentLinePattern.deactivate();
 			}
 		} else {
-			GL11.glBegin(GL11.GL_LINE_STRIP);
-			glDrawRectangle(i_x, i_y, i_width, i_height, true);
+			GL11.glBegin(GL11.GL_LINE_LOOP);
+			glDrawRectangle(i_x, i_y, i_width, i_height);
 			GL11.glEnd();
 		}
 
@@ -1181,14 +1275,14 @@ public class LwjglGraphics extends Graphics {
 		if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
 			m_currentLinePattern.activate();
 			try {
-				GL11.glBegin(GL11.GL_LINE_STRIP);
+				GL11.glBegin(GL11.GL_LINE_LOOP);
 				glDrawTexturedRoundRectangle(i_r, i_arcWidth, i_arcHeight);
 				GL11.glEnd();
 			} finally {
 				m_currentLinePattern.deactivate();
 			}
 		} else {
-			GL11.glBegin(GL11.GL_LINE_STRIP);
+			GL11.glBegin(GL11.GL_LINE_LOOP);
 			glDrawRoundRectangle(i_r, i_arcWidth, i_arcHeight);
 			GL11.glEnd();
 		}
@@ -1297,7 +1391,7 @@ public class LwjglGraphics extends Graphics {
 		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 
 		GL11.glBegin(GL11.GL_POLYGON);
-		glDrawPointList(i_points, false);
+		glDrawPointList(i_points);
 		GL11.glEnd();
 	}
 
@@ -1314,8 +1408,8 @@ public class LwjglGraphics extends Graphics {
 		glSetBackgroundColor();
 		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 
-		GL11.glBegin(GL11.GL_POLYGON);
-		glDrawRectangle(i_x, i_y, i_width, i_height, false);
+		GL11.glBegin(GL11.GL_QUADS);
+		glDrawRectangle(i_x, i_y, i_width, i_height);
 		GL11.glEnd();
 	}
 
@@ -1371,6 +1465,19 @@ public class LwjglGraphics extends Graphics {
 
 		fillRectangle(i_x, i_y, extent.x, extent.y);
 		drawText(i_s, i_x, i_y);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#getAdvanced()
+	 */
+	@Override
+	public boolean getAdvanced() {
+
+		checkDisposed();
+
+		return m_state.getAdvanced();
 	}
 
 	/**
@@ -1497,6 +1604,48 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#getLineAttributes()
+	 */
+	@Override
+	public LineAttributes getLineAttributes() {
+
+		checkDisposed();
+
+		LineAttributes attrs = new LineAttributes(m_state.getLineWidth());
+		attrs.cap = m_state.getLineCap();
+		attrs.dashOffset = 0;
+		attrs.join = m_state.getLineJoin();
+		attrs.miterLimit = m_state.getLineMiterLimit();
+		attrs.style = m_state.getLineStyle();
+
+		int[] lineDash = m_state.getLineDash();
+		if (lineDash == null)
+			attrs.dash = null;
+		else {
+			attrs.dash = new float[lineDash.length];
+			for (int i = 0; i < lineDash.length; i++)
+				attrs.dash[i] = lineDash[i];
+		}
+
+		return attrs;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#getLineCap()
+	 */
+	@Override
+	public int getLineCap() {
+
+		checkDisposed();
+
+		return m_state.getLineCap();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#getLineJoin()
 	 */
 	@Override
@@ -1505,6 +1654,19 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		return m_state.getLineJoin();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#getLineMiterLimit()
+	 */
+	@Override
+	public float getLineMiterLimit() {
+
+		checkDisposed();
+
+		return m_state.getLineMiterLimit();
 	}
 
 	/**
@@ -1527,6 +1689,19 @@ public class LwjglGraphics extends Graphics {
 	 */
 	@Override
 	public int getLineWidth() {
+
+		checkDisposed();
+
+		return Math.round(m_state.getLineWidth());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#getLineWidthFloat()
+	 */
+	@Override
+	public float getLineWidthFloat() {
 
 		checkDisposed();
 
@@ -1587,7 +1762,7 @@ public class LwjglGraphics extends Graphics {
 		GL11.glVertex2d(x, y);
 	}
 
-	private void glDrawPointList(PointList i_points, boolean i_close) {
+	private void glDrawPointList(PointList i_points) {
 
 		int[] vertices = i_points.toIntArray();
 		for (int i = 0; i < vertices.length; i = i + 2) {
@@ -1596,13 +1771,9 @@ public class LwjglGraphics extends Graphics {
 
 			GL11.glVertex2i(x, y);
 		}
-
-		if (i_close && vertices.length > 1)
-			GL11.glVertex2i(vertices[0], vertices[1]);
 	}
 
-	private void glDrawRectangle(int i_x, int i_y, int i_width, int i_height,
-			boolean i_close) {
+	private void glDrawRectangle(int i_x, int i_y, int i_width, int i_height) {
 
 		int x1 = i_x;
 		int y1 = i_y + i_height;
@@ -1613,9 +1784,6 @@ public class LwjglGraphics extends Graphics {
 		GL11.glVertex2i(x1, y2);
 		GL11.glVertex2i(x2, y2);
 		GL11.glVertex2i(x2, y1);
-
-		if (i_close)
-			GL11.glVertex2i(x1, y1);
 	}
 
 	private void glDrawRoundRectangle(Rectangle i_r, int i_arcWidth,
@@ -1711,7 +1879,7 @@ public class LwjglGraphics extends Graphics {
 		return s;
 	}
 
-	private void glDrawTexturedPointList(PointList i_points, boolean i_close) {
+	private void glDrawTexturedPointList(PointList i_points) {
 
 		int[] vertices = i_points.toIntArray();
 
@@ -1734,15 +1902,6 @@ public class LwjglGraphics extends Graphics {
 
 				lastX = x;
 				lastY = y;
-			}
-
-			if (i_close) {
-				int x = vertices[0];
-				int y = vertices[1];
-				s += m_currentLinePattern.getS(lastX, lastY, x, y);
-
-				GL11.glTexCoord1d(s);
-				GL11.glVertex2i(x, y);
 			}
 		}
 	}
@@ -1770,10 +1929,6 @@ public class LwjglGraphics extends Graphics {
 		s += m_currentLinePattern.getS(x2, y2, x2, y1);
 		GL11.glTexCoord1d(s);
 		GL11.glVertex2i(x2, y1);
-
-		s += m_currentLinePattern.getS(x2, y1, x1, y1);
-		GL11.glTexCoord1d(s);
-		GL11.glVertex2i(x1, y1);
 	}
 
 	private void glDrawTexturedRoundRectangle(Rectangle i_r, int i_arcWidth,
@@ -1871,8 +2026,24 @@ public class LwjglGraphics extends Graphics {
 
 		if (i_state.getXORMode() != m_state.getXORMode())
 			glSetXORMode();
+		
+		if (i_state.getAntialias() != m_state.getAntialias())
+			glSetAntialias();
 
 		m_lastColor = LastColor.UNKNOWN;
+	}
+
+	private void glSetAntialias() {
+
+		if (m_state.getAntialias() == SWT.ON) {
+			GL11.glEnable(GL11.GL_LINE_SMOOTH);
+			GL11.glEnable(GL11.GL_POINT_SMOOTH);
+			GL11.glEnable(GL11.GL_POLYGON_SMOOTH);
+		} else {
+			GL11.glDisable(GL11.GL_LINE_SMOOTH);
+			GL11.glDisable(GL11.GL_POINT_SMOOTH);
+			GL11.glDisable(GL11.GL_POLYGON_SMOOTH);
+		}
 	}
 
 	private void glSetBackgroundColor() {
@@ -2022,7 +2193,7 @@ public class LwjglGraphics extends Graphics {
 
 	private void glSetLineWidth() {
 
-		int lineWidth = m_state.getLineWidth();
+		float lineWidth = m_state.getLineWidth();
 		GL11.glLineWidth(lineWidth);
 	}
 
@@ -2045,6 +2216,8 @@ public class LwjglGraphics extends Graphics {
 
 		m_defaultState = new GraphicsState(null);
 
+		m_defaultState.setAdvanced(true);
+
 		m_defaultState.setForegroundColor(foregroundColor);
 		m_defaultState.setBackgroundColor(backgroundColor);
 		m_defaultState.setAlpha(255);
@@ -2053,6 +2226,7 @@ public class LwjglGraphics extends Graphics {
 		m_defaultState.setLineStyle(SWT.LINE_SOLID);
 		m_defaultState.setLineCap(SWT.CAP_FLAT);
 		m_defaultState.setLineJoin(SWT.JOIN_MITER);
+		m_defaultState.setLineMiterLimit(11);
 
 		m_defaultState.setFont(display.getSystemFont());
 
@@ -2125,6 +2299,20 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#rotate(float)
+	 */
+	@Override
+	public void rotate(float i_degrees) {
+
+		checkDisposed();
+
+		m_state.rotate(i_degrees);
+		GL11.glRotatef(i_degrees, 0, 0, 1);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#scale(double)
 	 */
 	@Override
@@ -2153,6 +2341,19 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#setAdvanced(boolean)
+	 */
+	@Override
+	public void setAdvanced(boolean i_advanced) {
+
+		checkDisposed();
+
+		m_state.setAdvanced(i_advanced);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#setAlpha(int)
 	 */
 	@Override
@@ -2174,6 +2375,7 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		m_state.setAntialias(i_antialias);
+		glSetAntialias();
 	}
 
 	/**
@@ -2227,8 +2429,10 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * Sets the dimensions of this graphics object.
 	 * 
-	 * @param i_width the new width
-	 * @param i_height the new height
+	 * @param i_width
+	 *            the new width
+	 * @param i_height
+	 *            the new height
 	 */
 	public void setDimensions(int i_width, int i_height) {
 
@@ -2267,9 +2471,10 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * Sets the font manager to be used by this graphics.
 	 * 
-	 * @param i_fontManager the font manager
-	 * @throws NullPointerException if the given font manager is
-	 *             <code>null</code>
+	 * @param i_fontManager
+	 *            the font manager
+	 * @throws NullPointerException
+	 *             if the given font manager is <code>null</code>
 	 */
 	public void setFontManager(LwjglFontManager i_fontManager) {
 
@@ -2307,6 +2512,60 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		m_state.setInterpolation(i_interpolation);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setLineAttributes(org.eclipse.swt.graphics.LineAttributes)
+	 */
+	@Override
+	public void setLineAttributes(LineAttributes i_attributes) {
+
+		checkDisposed();
+
+		if (i_attributes == null)
+			return;
+
+		setLineCap(i_attributes.cap);
+		setLineJoin(i_attributes.join);
+		setLineMiterLimit(i_attributes.miterLimit);
+		setLineStyle(i_attributes.style);
+		setLineWidthFloat(i_attributes.width);
+		setLineDash(i_attributes.dash);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setLineCap(int)
+	 */
+	@Override
+	public void setLineCap(int i_cap) {
+
+		checkDisposed();
+
+		m_state.setLineCap(i_cap);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setLineDash(float[])
+	 */
+	@Override
+	public void setLineDash(float[] i_dash) {
+
+		checkDisposed();
+
+		if (i_dash == null)
+			setLineDash((int[]) null);
+		else {
+			int[] newDash = new int[i_dash.length];
+			for (int i = 0; i < i_dash.length; i++)
+				newDash[i] = (int) i_dash[i];
+			setLineDash(newDash);
+		}
 	}
 
 	/**
@@ -2351,6 +2610,19 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw2d.Graphics#setLineMiterLimit(float)
+	 */
+	@Override
+	public void setLineMiterLimit(float i_lineMiterLimit) {
+
+		checkDisposed();
+
+		m_state.setLineMiterLimit(i_lineMiterLimit);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Graphics#setLineStyle(int)
 	 */
 	@Override
@@ -2384,6 +2656,19 @@ public class LwjglGraphics extends Graphics {
 
 		m_state.setLineWidth(i_lineWidth);
 		glSetLineWidth();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setLineWidthFloat(float)
+	 */
+	@Override
+	public void setLineWidthFloat(float i_lineWidth) {
+
+		checkDisposed();
+
+		m_state.setLineWidth(i_lineWidth);
 	}
 
 	/**
@@ -2439,20 +2724,6 @@ public class LwjglGraphics extends Graphics {
 		BUF_F16.rewind();
 
 		GL11.glMultMatrix(BUF_F16);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#rotate(float)
-	 */
-	@Override
-	public void rotate(float i_degrees) {
-
-		checkDisposed();
-
-		m_state.rotate(i_degrees);
-		GL11.glRotatef(i_degrees, 0, 0, 1);
 	}
 
 	/**
