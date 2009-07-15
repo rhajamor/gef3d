@@ -177,8 +177,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Creates a new chained graphics state with the given parent.
 		 * 
-		 * @param i_parentState
-		 *            the parent of this state
+		 * @param i_parentState the parent of this state
 		 */
 		public GraphicsState(GraphicsState i_parentState) {
 
@@ -188,8 +187,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Intersects the current clipping rectangle with the given rectangle.
 		 * 
-		 * @param i_clip
-		 *            the rectangle to intersect with
+		 * @param i_clip the rectangle to intersect with
 		 */
 		public void clipRect(Rectangle i_clip) {
 
@@ -493,8 +491,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Rotates the coordinates system by the given angle counterclockwise.
 		 * 
-		 * @param i_degrees
-		 *            the rotation angle in degrees
+		 * @param i_degrees the rotation angle in degrees
 		 */
 		public void rotate(float i_degrees) {
 
@@ -520,10 +517,8 @@ public class LwjglGraphics extends Graphics {
 		 * Scales the current transformation and corrects the clipping rectangle
 		 * by the given factors.
 		 * 
-		 * @param i_horizontal
-		 *            the horizontal scaling factor
-		 * @param i_vertical
-		 *            the vertical scaling factor
+		 * @param i_horizontal the horizontal scaling factor
+		 * @param i_vertical the vertical scaling factor
 		 */
 		public void scale(float i_horizontal, float i_vertical) {
 
@@ -538,9 +533,8 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Specifies whether the graphics system is in advanced graphics mode.
 		 * 
-		 * @param i_advanced
-		 *            <code>true</code> if the graphics system is in advanced
-		 *            graphics mode and <code>false</code> otherwise
+		 * @param i_advanced <code>true</code> if the graphics system is in
+		 *            advanced graphics mode and <code>false</code> otherwise
 		 */
 		public void setAdvanced(boolean i_advanced) {
 
@@ -550,8 +544,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the alpha value of this graphics state.
 		 * 
-		 * @param i_alpha
-		 *            the alpha value
+		 * @param i_alpha the alpha value
 		 */
 		public void setAlpha(int i_alpha) {
 
@@ -561,8 +554,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the antialias value for this graphics state.
 		 * 
-		 * @param i_antialias
-		 *            the antialias value
+		 * @param i_antialias the antialias value
 		 */
 		public void setAntialias(int i_antialias) {
 
@@ -572,8 +564,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the background color of this graphics state.
 		 * 
-		 * @param i_backgroundColor
-		 *            the new background color
+		 * @param i_backgroundColor the new background color
 		 */
 		public void setBackgroundColor(Color i_backgroundColor) {
 
@@ -583,8 +574,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the background pattern of this graphics state.
 		 * 
-		 * @param i_backgroundPattern
-		 *            the background pattern
+		 * @param i_backgroundPattern the background pattern
 		 */
 		public void setBackgroundPattern(Pattern i_backgroundPattern) {
 
@@ -594,8 +584,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the clip rectangleof this state.
 		 * 
-		 * @param i_clip
-		 *            the clip rectangle
+		 * @param i_clip the clip rectangle
 		 */
 		public void setClip(Rectangle i_clip) {
 
@@ -615,8 +604,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the fill rule of this graphics state.
 		 * 
-		 * @param i_fillRule
-		 *            the fill rule of this graphics state
+		 * @param i_fillRule the fill rule of this graphics state
 		 */
 		public void setFillRule(int i_fillRule) {
 
@@ -626,8 +614,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the font of this graphics state.
 		 * 
-		 * @param i_font
-		 *            the font
+		 * @param i_font the font
 		 */
 		public void setFont(Font i_font) {
 
@@ -637,8 +624,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the foreground color of this graphics state.
 		 * 
-		 * @param i_foregroundColor
-		 *            the foreground color
+		 * @param i_foregroundColor the foreground color
 		 */
 		public void setForegroundColor(Color i_foregroundColor) {
 
@@ -648,8 +634,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the foreground pattern of this graphics state.
 		 * 
-		 * @param i_foregroundPattern
-		 *            the foreground pattern
+		 * @param i_foregroundPattern the foreground pattern
 		 */
 		public void setForegroundPattern(Pattern i_foregroundPattern) {
 
@@ -659,8 +644,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the interpolation setting for this graphics state.
 		 * 
-		 * @param i_interpolation
-		 *            the interpolation setting
+		 * @param i_interpolation the interpolation setting
 		 */
 		public void setInterpolation(int i_interpolation) {
 
@@ -670,8 +654,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the line cap value of this graphics state.
 		 * 
-		 * @param i_lineCap
-		 *            the line cap value
+		 * @param i_lineCap the line cap value
 		 */
 		public void setLineCap(int i_lineCap) {
 
@@ -681,8 +664,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the custom line dash pattern.
 		 * 
-		 * @param i_lineDash
-		 *            the custom line dash pattern
+		 * @param i_lineDash the custom line dash pattern
 		 */
 		public void setLineDash(int[] i_lineDash) {
 
@@ -697,8 +679,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the line join value of this graphics state.
 		 * 
-		 * @param i_lineJoin
-		 *            the line join value
+		 * @param i_lineJoin the line join value
 		 */
 		public void setLineJoin(int i_lineJoin) {
 
@@ -708,8 +689,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the line miter limit of this graphics state.
 		 * 
-		 * @param i_lineMiterLimit
-		 *            the new line miter limit
+		 * @param i_lineMiterLimit the new line miter limit
 		 */
 		public void setLineMiterLimit(float i_lineMiterLimit) {
 
@@ -719,8 +699,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the line style of this graphics state.
 		 * 
-		 * @param i_lineStyle
-		 *            the line style
+		 * @param i_lineStyle the line style
 		 */
 		public void setLineStyle(int i_lineStyle) {
 
@@ -730,8 +709,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the line width of this graphics state.
 		 * 
-		 * @param i_lineWidth
-		 *            the line width
+		 * @param i_lineWidth the line width
 		 */
 		public void setLineWidth(float i_lineWidth) {
 
@@ -741,8 +719,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the text antialias value of this graphics state.
 		 * 
-		 * @param i_textAntialias
-		 *            the text antialias value
+		 * @param i_textAntialias the text antialias value
 		 */
 		public void setTextAntialias(int i_textAntialias) {
 
@@ -752,8 +729,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Sets the current transformation.
 		 * 
-		 * @param i_transformation
-		 *            the current transformation
+		 * @param i_transformation the current transformation
 		 */
 		public void setTransformation(IMatrix4f i_transformation) {
 
@@ -766,8 +742,7 @@ public class LwjglGraphics extends Graphics {
 		/**
 		 * Specifies whether XOR mode drawing is enabled.
 		 * 
-		 * @param i_xorMode
-		 *            <code>true</code> if XOR mode should be enabled or
+		 * @param i_xorMode <code>true</code> if XOR mode should be enabled or
 		 *            <code>false</code> otherwise
 		 */
 		public void setXORMode(boolean i_xorMode) {
@@ -779,10 +754,8 @@ public class LwjglGraphics extends Graphics {
 		 * Shears the current transformation and corrects the clipping rectangle
 		 * by the given amounts.
 		 * 
-		 * @param i_horz
-		 *            the horizontal shearing amount
-		 * @param i_vert
-		 *            the vertical shearing amount
+		 * @param i_horz the horizontal shearing amount
+		 * @param i_vert the vertical shearing amount
 		 */
 		public void shear(float i_horz, float i_vert) {
 
@@ -800,10 +773,8 @@ public class LwjglGraphics extends Graphics {
 		 * Translates the current transformation and corrects the clipping
 		 * rectangle by the given amounts.
 		 * 
-		 * @param i_dX
-		 *            the X translation
-		 * @param i_dY
-		 *            the Y translation
+		 * @param i_dX the X translation
+		 * @param i_dY the Y translation
 		 */
 		public void translate(float i_dX, float i_dY) {
 
@@ -840,23 +811,24 @@ public class LwjglGraphics extends Graphics {
 	 */
 	private static final double ARC_SEGMENTS_FACTOR = 5 * Math.PI;
 
-	private static final FloatBuffer BUF_F16 = BufferUtils
-			.createFloatBuffer(16);
+	private static final FloatBuffer BUF_F16 =
+		BufferUtils.createFloatBuffer(16);
 
 	/**
 	 * This value is used as the base for clipping plane equations.
 	 */
 	private static final double CLIP_BASE = 1000000d;
 
-	private static final DoubleBuffer DBL_BUF = BufferUtils
-			.createDoubleBuffer(4);
+	private static final DoubleBuffer DBL_BUF =
+		BufferUtils.createDoubleBuffer(4);
 
-	private static final int LINE_STYLES = SWT.LINE_SOLID | SWT.LINE_DASH
-			| SWT.LINE_DOT | SWT.LINE_DASHDOT | SWT.LINE_DASHDOTDOT;
+	private static final int LINE_STYLES =
+		SWT.LINE_SOLID | SWT.LINE_DASH | SWT.LINE_DOT | SWT.LINE_DASHDOT
+			| SWT.LINE_DASHDOTDOT;
 
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(LwjglGraphics.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(LwjglGraphics.class.getName());
 
 	/**
 	 * Offset value needed for correct rasterization.
@@ -887,7 +859,8 @@ public class LwjglGraphics extends Graphics {
 
 	private LastColor m_lastColor = LastColor.UNKNOWN;
 
-	private Map<Object, LwjglLinePattern> m_linePatterns = new HashMap<Object, LwjglLinePattern>();
+	private Map<Object, LwjglLinePattern> m_linePatterns =
+		new HashMap<Object, LwjglLinePattern>();
 
 	private GraphicsState m_state;
 
@@ -896,12 +869,9 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * Creates a new OpenGL graphics object with the given width and height;
 	 * 
-	 * @param i_width
-	 *            the width of this graphics object
-	 * @param i_height
-	 *            the height of this graphics object
-	 * @param i_fontManager
-	 *            to the font manager to use
+	 * @param i_width the width of this graphics object
+	 * @param i_height the height of this graphics object
+	 * @param i_fontManager to the font manager to use
 	 */
 	public LwjglGraphics(int i_width, int i_height,
 			LwjglFontManager i_fontManager) {
@@ -980,7 +950,7 @@ public class LwjglGraphics extends Graphics {
 	 */
 	@Override
 	public void drawArc(int i_x, int i_y, int i_w, int i_h, int i_offset,
-			int i_length) {
+		int i_length) {
 
 		checkDisposed();
 
@@ -1055,7 +1025,7 @@ public class LwjglGraphics extends Graphics {
 	 */
 	@Override
 	public void drawImage(Image i_srcImage, int i_x1, int i_y1, int i_w1,
-			int i_h1, int i_x2, int i_y2, int i_w2, int i_h2) {
+		int i_h1, int i_x2, int i_y2, int i_w2, int i_h2) {
 
 		checkDisposed();
 
@@ -1063,15 +1033,16 @@ public class LwjglGraphics extends Graphics {
 		specs.foregroundAlpha = 255;
 		specs.textureWidth = i_w1;
 		specs.textureHeight = i_h1;
-		specs.clip = new org.eclipse.swt.graphics.Rectangle(i_x1, i_y1, i_w1,
-				i_h1);
+		specs.clip =
+			new org.eclipse.swt.graphics.Rectangle(i_x1, i_y1, i_w1, i_h1);
 
-		BufferInfo info = new BufferInfo(m_width, m_height, GL11.GL_RGBA,
+		BufferInfo info =
+			new BufferInfo(m_width, m_height, GL11.GL_RGBA,
 				GL11.GL_UNSIGNED_BYTE, 1);
 
 		ImageConverter converter = ImageConverter.getInstance();
-		ByteBuffer buffer = converter.imageToBuffer(i_srcImage, info, null,
-				false);
+		ByteBuffer buffer =
+			converter.imageToBuffer(i_srcImage, info, null, false);
 
 		IntBuffer nameBuffer = IntBuffer.allocate(1);
 		GL11.glGenTextures(nameBuffer);
@@ -1080,18 +1051,18 @@ public class LwjglGraphics extends Graphics {
 
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
 			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, i_w1, i_h1,
-					0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+				0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
 
 			GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 			try {
 				GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+					GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 				GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
+					GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
 				GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
+					GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
 				GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE,
-						GL11.GL_REPLACE);
+					GL11.GL_REPLACE);
 
 				GL11.glBegin(GL11.GL_QUADS);
 				GL11.glTexCoord2f(0, 0);
@@ -1265,7 +1236,7 @@ public class LwjglGraphics extends Graphics {
 	 */
 	@Override
 	public void drawRoundRectangle(Rectangle i_r, int i_arcWidth,
-			int i_arcHeight) {
+		int i_arcHeight) {
 
 		checkDisposed();
 
@@ -1337,7 +1308,7 @@ public class LwjglGraphics extends Graphics {
 	 */
 	@Override
 	public void fillArc(int i_x, int i_y, int i_w, int i_h, int i_offset,
-			int i_length) {
+		int i_length) {
 
 		checkDisposed();
 
@@ -1357,13 +1328,29 @@ public class LwjglGraphics extends Graphics {
 	 *      boolean)
 	 */
 	@Override
-	public void fillGradient(int i_x, int i_y, int i_w, int i_h,
-			boolean i_vertical) {
+	public void fillGradient(int i_x, int i_y, int i_width, int i_height,
+		boolean i_vertical) {
 
 		checkDisposed();
+		// TODO evaluate i_vertical
+		int x1 = i_x;
+		int y1 = i_y;
+		int x2 = i_x + i_width;
+		int y2 = i_y + i_height;
 
-		throw new UnsupportedOperationException(
-				"fillGradient(int, int, int, int, boolean)");
+		GL11.glBegin(GL11.GL_QUADS);
+		// GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+		// GL11.glColor3f(1.0f,0.0f,0.0f); -- test
+		glSetForegroundColor(); // from
+		GL11.glVertex2i(x1, y1);
+		GL11.glVertex2i(x2, y1);
+
+		glSetBackgroundColor(); // to
+		// GL11.glColor3f(0.0f,1.0f,0.0f); -- test
+		GL11.glVertex2i(x2, y2);
+		GL11.glVertex2i(x1, y2);
+		GL11.glEnd();
+
 	}
 
 	/**
@@ -1421,7 +1408,7 @@ public class LwjglGraphics extends Graphics {
 	 */
 	@Override
 	public void fillRoundRectangle(Rectangle i_r, int i_arcWidth,
-			int i_arcHeight) {
+		int i_arcHeight) {
 
 		checkDisposed();
 
@@ -1735,7 +1722,7 @@ public class LwjglGraphics extends Graphics {
 	}
 
 	private void glDrawArc(int i_x, int i_y, int i_w, int i_h, int i_offset,
-			int i_length) {
+		int i_length) {
 
 		double start = Math.toRadians(i_offset);
 		double length = Math.toRadians(i_length);
@@ -1787,7 +1774,7 @@ public class LwjglGraphics extends Graphics {
 	}
 
 	private void glDrawRoundRectangle(Rectangle i_r, int i_arcWidth,
-			int i_arcHeight) {
+		int i_arcHeight) {
 
 		int x1 = i_r.x;
 		int y1 = i_r.y;
@@ -1828,13 +1815,13 @@ public class LwjglGraphics extends Graphics {
 	}
 
 	private void glDrawTexturedArc(int i_x, int i_y, int i_w, int i_h,
-			int i_offset, int i_length) {
+		int i_offset, int i_length) {
 
 		glDrawTexturedArc(i_x, i_y, i_w, i_h, i_offset, i_length, 0);
 	}
 
 	private double glDrawTexturedArc(int i_x, int i_y, int i_w, int i_h,
-			int i_offset, int i_length, double i_s) {
+		int i_offset, int i_length, double i_s) {
 
 		double start = Math.toRadians(i_offset);
 		double length = Math.toRadians(i_length);
@@ -1907,7 +1894,7 @@ public class LwjglGraphics extends Graphics {
 	}
 
 	private void glDrawTexturedRectangle(int i_x, int i_y, int i_width,
-			int i_height) {
+		int i_height) {
 
 		int x1 = i_x;
 		int y1 = i_y + i_height;
@@ -1932,7 +1919,7 @@ public class LwjglGraphics extends Graphics {
 	}
 
 	private void glDrawTexturedRoundRectangle(Rectangle i_r, int i_arcWidth,
-			int i_arcHeight) {
+		int i_arcHeight) {
 
 		int x1 = i_r.x;
 		int y1 = i_r.y;
@@ -2019,14 +2006,14 @@ public class LwjglGraphics extends Graphics {
 			glSetLineWidth();
 
 		if (i_state.getLineStyle() != m_state.getLineStyle()
-				|| (i_state.getLineStyle() == SWT.LINE_CUSTOM
-						&& m_state.getLineStyle() == SWT.LINE_CUSTOM && !Arrays
-						.equals(i_state.getLineDash(), m_state.getLineDash())))
+			|| (i_state.getLineStyle() == SWT.LINE_CUSTOM
+				&& m_state.getLineStyle() == SWT.LINE_CUSTOM && !Arrays.equals(
+				i_state.getLineDash(), m_state.getLineDash())))
 			glSetLineStyle();
 
 		if (i_state.getXORMode() != m_state.getXORMode())
 			glSetXORMode();
-		
+
 		if (i_state.getAntialias() != m_state.getAntialias())
 			glSetAntialias();
 
@@ -2187,7 +2174,7 @@ public class LwjglGraphics extends Graphics {
 			break;
 		default:
 			throw new IllegalArgumentException("unknown line style: "
-					+ lineStyle);
+				+ lineStyle);
 		}
 	}
 
@@ -2429,10 +2416,8 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * Sets the dimensions of this graphics object.
 	 * 
-	 * @param i_width
-	 *            the new width
-	 * @param i_height
-	 *            the new height
+	 * @param i_width the new width
+	 * @param i_height the new height
 	 */
 	public void setDimensions(int i_width, int i_height) {
 
@@ -2471,10 +2456,9 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * Sets the font manager to be used by this graphics.
 	 * 
-	 * @param i_fontManager
-	 *            the font manager
-	 * @throws NullPointerException
-	 *             if the given font manager is <code>null</code>
+	 * @param i_fontManager the font manager
+	 * @throws NullPointerException if the given font manager is
+	 *             <code>null</code>
 	 */
 	public void setFontManager(LwjglFontManager i_fontManager) {
 
@@ -2578,13 +2562,13 @@ public class LwjglGraphics extends Graphics {
 
 		if (i_dash != null) {
 			if (m_state.getLineStyle() == SWT.LINE_CUSTOM
-					&& Arrays.equals(i_dash, m_state.getLineDash()))
+				&& Arrays.equals(i_dash, m_state.getLineDash()))
 				return;
 
 			m_state.setLineStyle(SWT.LINE_CUSTOM);
 		} else {
 			if (m_state.getLineStyle() != SWT.LINE_CUSTOM
-					&& m_state.getLineDash() == null)
+				&& m_state.getLineDash() == null)
 				return;
 
 			m_state.setLineStyle(SWT.LINE_SOLID);
@@ -2632,7 +2616,7 @@ public class LwjglGraphics extends Graphics {
 
 		if ((i_lineStyle & LINE_STYLES) == 0)
 			throw new IllegalArgumentException("unknown line style: "
-					+ i_lineStyle);
+				+ i_lineStyle);
 
 		if (m_state.getLineStyle() == i_lineStyle)
 			return;
