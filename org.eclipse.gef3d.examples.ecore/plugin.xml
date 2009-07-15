@@ -20,6 +20,7 @@
          </Priority>
       </editpartProvider>
    </extension>
+   <!--
    <extension
          point="org.eclipse.gmf.runtime.diagram.ui.editpolicyProviders">
       <editpolicyProvider
@@ -29,5 +30,5 @@
          </Priority>
       </editpolicyProvider>
    </extension>
-
+  -->
 </plugin>
