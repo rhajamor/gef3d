@@ -200,7 +200,28 @@ public class LwjglGraphics extends Graphics {
 				if (m_clip == null) {
 					m_clip = new Rectangle(currentClip);
 				}
-				m_clip.intersect(i_clip);
+
+				// clipping in SWTGraphics is working slightly differently as
+				// Rectangle clipping, so we emulate the SWTClipping here:
+				int left = Math.max(m_clip.x, i_clip.x);
+				int right =
+					Math.min(m_clip.x + m_clip.width, i_clip.x + i_clip.width);
+				int top = Math.max(m_clip.y, i_clip.y);
+				int bottom =
+					Math
+						.min(m_clip.y + m_clip.height, i_clip.y + i_clip.height);
+				if (right < left || bottom < top) {
+					// width and height of -1 to avoid ceiling function from
+					// re-adding a pixel.
+					right = left - 1;
+					bottom = top - 1;
+				}
+				m_clip.x = left;
+				m_clip.y = top;
+				m_clip.width = right - left;
+				m_clip.height = bottom - top;
+
+				// m_clip.intersect(i_clip);
 			} else {
 				m_clip = new Rectangle(i_clip);
 			}
@@ -784,6 +805,12 @@ public class LwjglGraphics extends Graphics {
 
 			TMP_V3.set(i_dX, i_dY, 0);
 			Math3D.translate(TMP_V3, m_transformation, m_transformation);
+
+			Rectangle clip = new Rectangle(getClip());
+			clip.x -= (int) i_dX;
+			clip.y -= (int) i_dY;
+			setClip(clip);
+
 		}
 	}
 
@@ -893,8 +920,7 @@ public class LwjglGraphics extends Graphics {
 		if (m_disposed)
 			throw new IllegalStateException("graphics is disposed");
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -1291,21 +1317,24 @@ public class LwjglGraphics extends Graphics {
 		LwjglFont glFont = glGetFont();
 		glFont.renderString(i_s, i_x, i_y, true);
 	}
-	
-	/** 
+
+	/**
 	 * {@inheritDoc}
-	 * @see org.eclipse.draw2d.Graphics#drawTextLayout(org.eclipse.swt.graphics.TextLayout, int, int, int, int, org.eclipse.swt.graphics.Color, org.eclipse.swt.graphics.Color)
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#drawTextLayout(org.eclipse.swt.graphics.TextLayout,
+	 *      int, int, int, int, org.eclipse.swt.graphics.Color,
+	 *      org.eclipse.swt.graphics.Color)
 	 */
 	@Override
 	public void drawTextLayout(TextLayout layout, int x, int y,
 		int selectionStart, int selectionEnd, Color selectionForeground,
 		Color selectionBackground) {
 		drawText(layout.getText(), x, y);
-//		checkText();
-//		layout.draw(gc, x + translateX, y + translateY, selectionStart, selectionEnd,
-//				selectionForeground, selectionBackground);
+		// checkText();
+		// layout.draw(gc, x + translateX, y + translateY, selectionStart,
+		// selectionEnd,
+		// selectionForeground, selectionBackground);
 	}
-	
 
 	/**
 	 * Enables clipping.
@@ -2734,7 +2763,6 @@ public class LwjglGraphics extends Graphics {
 	 */
 	@Override
 	public void translate(float i_dx, float i_dy) {
-
 		checkDisposed();
 
 		if (i_dx == 0 && i_dy == 0)
@@ -2751,9 +2779,7 @@ public class LwjglGraphics extends Graphics {
 	 */
 	@Override
 	public void translate(int i_dX, int i_dY) {
-
 		translate((float) i_dX, (float) i_dY);
 	}
 
-	
 }
