@@ -44,6 +44,7 @@ import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.LineAttributes;
 import org.eclipse.swt.graphics.Pattern;
+import org.eclipse.swt.graphics.TextLayout;
 import org.eclipse.swt.widgets.Display;
 import org.lwjgl.opengl.GL11;
 
@@ -892,7 +893,8 @@ public class LwjglGraphics extends Graphics {
 		if (m_disposed)
 			throw new IllegalStateException("graphics is disposed");
 	}
-
+	
+	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -1289,6 +1291,21 @@ public class LwjglGraphics extends Graphics {
 		LwjglFont glFont = glGetFont();
 		glFont.renderString(i_s, i_x, i_y, true);
 	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw2d.Graphics#drawTextLayout(org.eclipse.swt.graphics.TextLayout, int, int, int, int, org.eclipse.swt.graphics.Color, org.eclipse.swt.graphics.Color)
+	 */
+	@Override
+	public void drawTextLayout(TextLayout layout, int x, int y,
+		int selectionStart, int selectionEnd, Color selectionForeground,
+		Color selectionBackground) {
+		drawText(layout.getText(), x, y);
+//		checkText();
+//		layout.draw(gc, x + translateX, y + translateY, selectionStart, selectionEnd,
+//				selectionForeground, selectionBackground);
+	}
+	
 
 	/**
 	 * Enables clipping.
@@ -1512,14 +1529,14 @@ public class LwjglGraphics extends Graphics {
 	 * @see org.eclipse.draw2d.Graphics#getClip(org.eclipse.draw2d.geometry.Rectangle)
 	 */
 	@Override
-	public Rectangle getClip(Rectangle i_rect) {
+	public Rectangle getClip(Rectangle o_rect) {
 
 		checkDisposed();
 
 		Rectangle clip = m_state.getClip();
-		i_rect.setBounds(clip);
+		o_rect.setBounds(clip);
 
-		return i_rect;
+		return o_rect;
 	}
 
 	/**
@@ -2737,4 +2754,6 @@ public class LwjglGraphics extends Graphics {
 
 		translate((float) i_dX, (float) i_dY);
 	}
+
+	
 }
