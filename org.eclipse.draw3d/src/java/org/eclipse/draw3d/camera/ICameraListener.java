@@ -19,9 +19,9 @@ package org.eclipse.draw3d.camera;
  */
 public interface ICameraListener {
 
-	/**
-	 * Fired whenever any camera parameter (position, view direction or
-	 * viewport) has been changed.
-	 */
-	public void cameraChanged();
+    /**
+     * Fired whenever any camera parameter (position, view direction or
+     * viewport) has been changed.
+     */
+    public void cameraChanged();
 }

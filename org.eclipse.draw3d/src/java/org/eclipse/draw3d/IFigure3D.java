@@ -14,13 +14,11 @@ import java.util.List;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.geometry.IBoundingBox;
-import org.eclipse.draw3d.geometry.IHost3D;
 import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
-import org.eclipse.draw3d.geometryext.Plane;
 import org.eclipse.draw3d.geometryext.SyncHost3D;
 
 /**
@@ -30,17 +28,8 @@ import org.eclipse.draw3d.geometryext.SyncHost3D;
  * @version $Revision$
  * @since 24.10.2007
  */
-public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHost3D {
-
-	
-	/**
-	 * Returns the render context, usually by calling the 3D ancestor in the
-	 * figure tree. The render context is assumed to be contained in the 
-	 * {@link LightweightSystem3D}, its root figure returns the context. 
-	 * @return
-	 */
-	public RenderContext getRenderContext();
-	
+public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable,
+		SyncHost3D {
 
 	/**
 	 * Returns the alpha value of this figure.
@@ -67,7 +56,7 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	 * object, here an immutable class (interface) is returned avoiding these
 	 * problems.
 	 * 
-	 * @return
+	 * @return the bounding box of this figure
 	 */
 	public IBoundingBox getBounds3D();
 
@@ -84,19 +73,21 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	 * this figure. The result may be cached by the figure, the cache becomes
 	 * invalid if successors are modified.
 	 * <p>
-	 * If a child is an IFigure3D, it is added to the result list. Otherwise,
-	 * the children of the (2D) child are checked and added, if they are
-	 * instances of IFigure3D. If a child branch contains no IFigure3D
+	 * If a child is an instance of IFigure3D, it is added to the result list.
+	 * Otherwise, the children of the (2D) child are checked and added, if they
+	 * are instances of IFigure3D. If a child branch contains no IFigure3D
 	 * instances, it is ignored.
 	 * 
-	 * @return
+	 * @return the 3D descendents of this figure
 	 * @see Figure3DHelper#getDescendants3D()
 	 */
 	List<IFigure3D> getDescendants3D();
 
 	/**
-	 * @return
-	 * @deprecated use {@link IHost3D#getPosition3D()#getLocation3D()} 
+	 * Returns the location of this figure in world coordinates.
+	 * 
+	 * @return the location of this figure
+	 * @deprecated use {@link IPosition3D#getLocation3D()}
 	 */
 	public IVector3f getLocation3D();
 
@@ -112,7 +103,7 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	/**
 	 * Returns matrix state of internal matrices
 	 * 
-	 * @return
+	 * @return the matrix state
 	 */
 	public MatrixState getMatrixState();
 
@@ -128,61 +119,56 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	 * Returns preferred size of this figure. The preferred size is synchronized
 	 * with the preferred 2D size.
 	 * 
-	 * @return
+	 * @return the preferred size
 	 */
 	public IVector3f getPreferredSize3D();
 
 	/**
-	 * @return
-	 * @deprecated use {@link IHost3D#getPosition3D()#getRotation3D()}
+	 * Returns the render context, usually by calling the 3D ancestor in the
+	 * figure tree. The render context is assumed to be contained in the
+	 * {@link LightweightSystem3D}, so the root figure returns the context.
+	 * 
+	 * @return the render context of this figure
+	 */
+	public RenderContext getRenderContext();
+
+	/**
+	 * Returns the rotation angles of this figure as a vector (a,b,c) where a is
+	 * the angle of rotation about the X axis, b is the angle of rotation about
+	 * the Y axis and c is the angle of rotation about the Z axis.
+	 * 
+	 * @return the rotation angles
+	 * @deprecated use {@link IPosition3D#getRotation3D()}
 	 */
 	public IVector3f getRotation3D();
 
 	/**
-	 * Sets width, height and depth of the figure. This is the 3D equivalent to
-	 * {@link }
+	 * Returns the 3D dimensions of the figure.
 	 * 
-	 * @return
-	 * @deprecated use {@link IHost3D#getPosition3D()#getSize3D()}
+	 * @return the 3D dimensions
+	 * @deprecated use {@link IPosition3D#getSize3D()}
 	 */
 	public IVector3f getSize3D();
-
-	/**
-	 * Returns a plane that is parallel to this figure's surface. The given Z
-	 * value specifies the vertical offset of the plane where
-	 * <ul>
-	 * <li>Z &lt; 0: the plane is behind the figure's back face</li>
-	 * <li>Z &eq; 0: the plane is coplanar with the figure's back face</li>
-	 * <li>0 &lt Z &lt; 1: the plane intersects the figure's volume (e.g. it is
-	 * between the figure's back and front face)</li>
-	 * <li>Z &eq; 1: the plane is coplanar with the figure's front face</li>
-	 * <li>1 &lt; Z: the plane is in front of the figure's front face</li>
-	 * </ul>
-	 * 
-	 * @param i_z the vertical offset of the plane
-	 * @param io_result the result plane, if <code>null</code>, a new one will
-	 *            be created
-	 * @return the plane
-	 */
-	public Plane getSurfacePlane(float i_z, Plane io_result);
 
 	/**
 	 * Sets the alpha value of this figure. This value controls the transparency
 	 * of this figure, where 0 means translucent and 255 means opaque.
 	 * 
-	 * @param alpha the new alpha value (should be between 0 and 255, inclusive)
+	 * @param alpha
+	 *            the new alpha value (should be between 0 and 255, inclusive)
 	 * @author Kristian Duske
 	 * @todo See if maybe there is a better place for this method.
 	 */
 	public void setAlpha(int alpha);
 
 	/**
-	 * Sets the location of this IFigure.
+	 * Sets the location of this figure in world coordinates.
 	 * 
-	 * @param point The new location, this is usually the lower left corner.
-	 * @deprecated use {@link IHost3D#getPosition3D()#setLocation3D(IVector3f)}
+	 * @param location
+	 *            the new location
+	 * @deprecated use {@link IPosition3D#setLocation3D(IVector3f)}
 	 */
-	public void setLocation3D(IVector3f point);
+	public void setLocation3D(IVector3f location);
 
 	/**
 	 * Sets preferred size of this figure. The preferred size is synchronized
@@ -193,17 +179,21 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	public void setPreferredSize3D(IVector3f i_preferredSize3D);
 
 	/**
-	 * Sets rotation of figure, i.e. angles for X, Y and Z axis. Rotations are
-	 * applied in the following order: Y first, then Z and finally X.
+	 * Sets the rotation angles of this figure. Rotations are applied in the
+	 * following order: Y first, then Z and finally X.
 	 * 
 	 * @param rotation
-	 * @deprecated use {@link IHost3D#getPosition3D()#setRotation3D(IVector3f)}
+	 *            the rotation angles
+	 * @deprecated use {@link IPosition3D#setRotation3D(IVector3f)}
 	 */
 	public void setRotation3D(IVector3f rotation);
 
 	/**
+	 * Sets the 3D dimensions of this figure.
+	 * 
 	 * @param size
-	 * @deprecated use {@link IHost3D#getPosition3D()#setSize3D(IVector3f)}
+	 *            the dimensions of this figure
+	 * @deprecated use {@link IPosition3D#setSize3D(IVector3f)}
 	 */
 	public void setSize3D(IVector3f size);
 
@@ -213,9 +203,10 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	 * coordinates were relative to the parent's coordinates, they will be
 	 * relative to this figure's coordinates afterwards.
 	 * 
-	 * @param i_transformable the transformable
-	 * @throws NullPointerException if the given transformable is
-	 *             <code>null</code>
+	 * @param i_transformable
+	 *            the transformable
+	 * @throws NullPointerException
+	 *             if the given transformable is <code>null</code>
 	 */
 	public void transformFromParent(Transformable i_transformable);
 
@@ -225,9 +216,10 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	 * coordinates were relative to this figure's parent's coordinates, they
 	 * will be absolute afterwards.
 	 * 
-	 * @param io_transformable the transformable
-	 * @throws NullPointerException if the given transformable is
-	 *             <code>null</code>
+	 * @param io_transformable
+	 *            the transformable
+	 * @throws NullPointerException
+	 *             if the given transformable is <code>null</code>
 	 */
 	public void transformToAbsolute(Transformable io_transformable);
 
@@ -237,9 +229,10 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	 * this figure's coordinates, it will be relative to this figure's parent's
 	 * coordinates afterwards.
 	 * 
-	 * @param io_transformable the transformable
-	 * @throws NullPointerException if the given transformable is
-	 *             <code>null</code>
+	 * @param io_transformable
+	 *            the transformable
+	 * @throws NullPointerException
+	 *             if the given transformable is <code>null</code>
 	 */
 	public void transformToParent(Transformable io_transformable);
 
@@ -249,9 +242,10 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable, SyncHos
 	 * origin, it will be relative to this figure's parent's coordinates
 	 * afterwards.
 	 * 
-	 * @param io_transformable the transformable
-	 * @throws NullPointerException if the given transformable is
-	 *             <code>null</code>
+	 * @param io_transformable
+	 *            the transformable
+	 * @throws NullPointerException
+	 *             if the given transformable is <code>null</code>
 	 */
 	public void transformToRelative(Transformable io_transformable);
 }

@@ -91,8 +91,8 @@ public class Draw3DCanvas extends GLCanvas {
 	 * startup to initialize the renderer. The renderer can be exchanged
 	 * whenever it makes sense by creating (see Graphics3DRegistry) another
 	 * instance and setting it to this context.
-	 * 
-	 * @param i_canvas The rendering context.
+
+	 * @param lightweightSystem3D the lightweight system 
 	 */
 	protected void setDefaultRenderer(LightweightSystem3D lightweightSystem3D) {
 

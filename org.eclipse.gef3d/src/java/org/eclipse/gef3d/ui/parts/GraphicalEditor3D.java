@@ -101,7 +101,7 @@ public abstract class GraphicalEditor3D extends GraphicalEditor {
 		FpsStatusLineItem fpsCounter = new FpsStatusLineItem();
 		LightweightSystem3D lightweightSystem3D = viewer3D
 				.getLightweightSystem3D();
-		lightweightSystem3D.addRendererListener(fpsCounter);
+		lightweightSystem3D.addSceneListener(fpsCounter);
 		statusLine.add(fpsCounter);
 	}
 

@@ -108,7 +108,7 @@ public class Position3DImpl extends AbstractPosition3D {
 
 		invalidateMatrices();
 
-		firePositionChanged(PositionHint.location, delta);
+		firePositionChanged(PositionHint.LOCATION, delta);
 
 	}
 
@@ -146,7 +146,7 @@ public class Position3DImpl extends AbstractPosition3D {
 
 		invalidateMatrices();
 
-		firePositionChanged(PositionHint.size, delta);
+		firePositionChanged(PositionHint.SIZE, delta);
 	}
 
 }

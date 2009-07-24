@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.graph.editor.commands;
 
+import java.util.logging.Logger;
+
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef3d.examples.graph.model.Vertex;
@@ -29,6 +31,7 @@ public class VertexResizeCommand extends Command {
 	private Rectangle boundsOld;
 
 	public VertexResizeCommand(Vertex vertex, Rectangle bounds) {
+	    
 		this.vertex = vertex;
 		this.bounds = new Rectangle(bounds);
 		this.boundsOld =

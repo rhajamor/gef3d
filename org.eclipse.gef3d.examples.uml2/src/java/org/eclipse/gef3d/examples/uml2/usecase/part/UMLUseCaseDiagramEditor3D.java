@@ -52,248 +52,251 @@ import org.eclipse.uml2.diagram.usecase.part.DiagramEditorContextMenuProvider;
 import org.eclipse.uml2.diagram.usecase.part.UMLDiagramEditor;
 
 /**
- * UMLDiagramEditor3D
- * There should really be more documentation here.
- *
+ * UMLDiagramEditor3D There should really be more documentation here.
+ * 
  * @author mgoyal (original {@link DiagramDocumentEditor})
- * @author 	Jens von Pilgrim
- * @version	$Revision$
- * @since 	Apr 7, 2009
+ * @author Jens von Pilgrim
+ * @version $Revision$
+ * @since Apr 7, 2009
  */
-public class UMLUseCaseDiagramEditor3D extends UMLDiagramEditor implements INestableEditor {
-	/**
-	 * Logger for this class
-	 */
-	private static final Logger log = Logger.getLogger(UMLUseCaseDiagramEditor3D.class.getName());
+public class UMLUseCaseDiagramEditor3D extends UMLDiagramEditor implements
+        INestableEditor {
 
-	
-	private ScenePreferenceDistributor scenePreferenceDistributor;
+    /**
+     * Logger for this class
+     */
+    private static final Logger log = Logger.getLogger(UMLUseCaseDiagramEditor3D.class.getName());
 
-	/**
-	 * A reference to the 3D diagram graphical viewer.
-	 */
-	protected DiagramGraphicalViewer3D viewer3D;
-	
-	
-	/**
+    private ScenePreferenceDistributor scenePreferenceDistributor;
+
+    /**
+     * A reference to the 3D diagram graphical viewer.
+     */
+    protected DiagramGraphicalViewer3D viewer3D;
+
+    /**
 	 * 
 	 */
-	public UMLUseCaseDiagramEditor3D() {
-		// this is a hack:
-		MapModeTypes.DEFAULT_MM = MapModeTypes.IDENTITY_MM;
-	}
-	
-	/**
-	 * {@inheritDoc}
+    public UMLUseCaseDiagramEditor3D() {
+
+        // this is a hack:
+        MapModeTypes.DEFAULT_MM = MapModeTypes.IDENTITY_MM;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.uml2.diagram.clazz.part.UMLDiagramEditor#configureGraphicalViewer()
+     */
+    @Override
+    protected void configureGraphicalViewer() {
+
+        configureProviderAcceptor();
+
+        { // GraphicalEditor
+            getGraphicalViewer().getControl().setBackground(
+                ColorConstants.listBackground);
+        }
+        { // DiagramEditor
+            IDiagramGraphicalViewer viewer = getDiagramGraphicalViewer();
+
+            RootEditPart rootEP = EditPartService.getInstance().createRootEditPart(
+                getDiagram());
+            if (rootEP instanceof IDiagramPreferenceSupport) {
+                ((IDiagramPreferenceSupport) rootEP).setPreferencesHint(getPreferencesHint());
+            }
+
+            if (getDiagramGraphicalViewer() instanceof DiagramGraphicalViewer) {
+                ((DiagramGraphicalViewer) getDiagramGraphicalViewer()).hookWorkspacePreferenceStore(getWorkspaceViewerPreferenceStore());
+            }
+
+            viewer.setRootEditPart(rootEP);
+
+            viewer.setEditPartFactory(EditPartService.getInstance());
+            ContextMenuProvider provider = new DiagramContextMenuProvider(this,
+                viewer);
+            viewer.setContextMenu(provider);
+            getSite().registerContextMenu(
+                ActionIds.DIAGRAM_EDITOR_CONTEXT_MENU, provider, viewer);
+            KeyHandler viewerKeyHandler = new DiagramGraphicalViewerKeyHandler(
+                viewer).setParent(getKeyHandler());
+            viewer.setKeyHandler(new DirectEditKeyHandler(viewer).setParent(viewerKeyHandler));
+            // ((FigureCanvas) viewer.getControl())
+            // .setScrollBarVisibility(FigureCanvas.ALWAYS);
+        }
+
+        { // org.eclipse.uml2.diagram.clazz.part.UMLDiagramEditor#configureGraphicalViewer()
+            DiagramEditorContextMenuProvider provider = new DiagramEditorContextMenuProvider(
+                this, getDiagramGraphicalViewer());
+            getDiagramGraphicalViewer().setContextMenu(provider);
+            getSite().registerContextMenu(
+                ActionIds.DIAGRAM_EDITOR_CONTEXT_MENU, provider,
+                getDiagramGraphicalViewer());
+        }
+    }
+
+    /* 
 	 * 
-	 * @see org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramEditor#initializeGraphicalViewerContents()
 	 */
-	@Override
-	protected void initializeGraphicalViewerContents() {
+    protected void configureProviderAcceptor() {
 
-		// zoom needs to be 1
-		super.initializeGraphicalViewerContents();
-		getZoomManager().setZoom(1.0);
-	}
-	
-	/* 
-	 * 
-	 */
-	protected void configureProviderAcceptor() {
-		// set special provider acceptor
-		ProviderAcceptor providerAcceptor = new ProviderAcceptor(true);
-		providerAcceptor.setProperty(ProviderAcceptor.GRAPHICAL_EDITOR, this);
-		getGraphicalViewer().setProperty(
-			ProviderAcceptor.PROVIDER_ACCEPTOR_PROPERTY_KEY, providerAcceptor);
-		getDiagram().eAdapters().add(providerAcceptor);
-	}
+        // set special provider acceptor
+        ProviderAcceptor providerAcceptor = new ProviderAcceptor(true);
+        providerAcceptor.setProperty(ProviderAcceptor.GRAPHICAL_EDITOR, this);
+        getGraphicalViewer().setProperty(
+            ProviderAcceptor.PROVIDER_ACCEPTOR_PROPERTY_KEY, providerAcceptor);
+        getDiagram().eAdapters().add(providerAcceptor);
+    }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.gef3d.ui.parts.GraphicalEditor3DWithPalette#createGraphicalViewer(org.eclipse.swt.widgets.Composite)
+     */
+    @Override
+    protected void createGraphicalViewer(Composite i_parent) {
 
-	/** 
-	 * {@inheritDoc}
-	 * @see org.eclipse.uml2.diagram.clazz.part.UMLDiagramEditor#configureGraphicalViewer()
-	 */
-	@Override
-	protected void configureGraphicalViewer() {
-		
-		configureProviderAcceptor();
-		
-		{ // GraphicalEditor
-			getGraphicalViewer().getControl().setBackground(ColorConstants.listBackground);
-		}
-		{ // DiagramEditor
-			IDiagramGraphicalViewer viewer = getDiagramGraphicalViewer();
+        viewer3D = new DiagramGraphicalViewer3D();
 
-	        RootEditPart rootEP = EditPartService.getInstance().createRootEditPart(
-	            getDiagram());
-	        if (rootEP instanceof IDiagramPreferenceSupport) {
-	            ((IDiagramPreferenceSupport) rootEP)
-	                .setPreferencesHint(getPreferencesHint());
-	        }
+        // 1:1 from GraphicalEditor.createGraphicalViewer(Composite)
+        Control control = viewer3D.createControl3D(i_parent);
+        setGraphicalViewer(viewer3D);
+        configureGraphicalViewer();
+        hookGraphicalViewer();
+        initializeGraphicalViewer();
 
-	        if (getDiagramGraphicalViewer() instanceof DiagramGraphicalViewer) {
-	            ((DiagramGraphicalViewer) getDiagramGraphicalViewer())
-	                .hookWorkspacePreferenceStore(getWorkspaceViewerPreferenceStore());
-	        }
-	   
-	        viewer.setRootEditPart(rootEP);
-	  
-	        viewer.setEditPartFactory(EditPartService.getInstance());
-	        ContextMenuProvider provider = new DiagramContextMenuProvider(this,
-	            viewer);
-	        viewer.setContextMenu(provider);
-	        getSite().registerContextMenu(ActionIds.DIAGRAM_EDITOR_CONTEXT_MENU,
-	            provider, viewer);
-	        KeyHandler viewerKeyHandler = new DiagramGraphicalViewerKeyHandler(viewer)
-	            .setParent(getKeyHandler());
-	        viewer.setKeyHandler(new DirectEditKeyHandler(viewer)
-	            .setParent(viewerKeyHandler));
-//	        ((FigureCanvas) viewer.getControl())
-//            .setScrollBarVisibility(FigureCanvas.ALWAYS);
-		}
-		
-		
-		{ // org.eclipse.uml2.diagram.clazz.part.UMLDiagramEditor#configureGraphicalViewer()
-			DiagramEditorContextMenuProvider provider = new DiagramEditorContextMenuProvider(this, getDiagramGraphicalViewer());
-			getDiagramGraphicalViewer().setContextMenu(provider);
-			getSite().registerContextMenu(ActionIds.DIAGRAM_EDITOR_CONTEXT_MENU, provider, getDiagramGraphicalViewer());
-		}
-	}
-	
-	
-	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef3d.ui.parts.GraphicalEditor3DWithPalette#createGraphicalViewer(org.eclipse.swt.widgets.Composite)
-	 */
-	@Override
-	protected void createGraphicalViewer(Composite i_parent) {
+        IEditorSite editorSite = getEditorSite();
+        IActionBars actionBars = editorSite.getActionBars();
+        IStatusLineManager statusLine = actionBars.getStatusLineManager();
 
-		viewer3D = new DiagramGraphicalViewer3D();
+        FpsStatusLineItem fpsCounter = new FpsStatusLineItem();
+        LightweightSystem3D lightweightSystem3D = viewer3D.getLightweightSystem3D();
+        lightweightSystem3D.addSceneListener(fpsCounter);
 
-		// 1:1 from GraphicalEditor.createGraphicalViewer(Composite)
-		Control control = viewer3D.createControl3D(i_parent);
-		setGraphicalViewer(viewer3D);
-		configureGraphicalViewer();
-		hookGraphicalViewer();
-		initializeGraphicalViewer();
+        statusLine.add(fpsCounter);
 
-		IEditorSite editorSite = getEditorSite();
-		IActionBars actionBars = editorSite.getActionBars();
-		IStatusLineManager statusLine = actionBars.getStatusLineManager();
+        scenePreferenceDistributor = new ScenePreferenceDistributor(
+            lightweightSystem3D);
+        scenePreferenceDistributor.start();
 
-		FpsStatusLineItem fpsCounter = new FpsStatusLineItem();
-		LightweightSystem3D lightweightSystem3D = viewer3D
-				.getLightweightSystem3D();
-		lightweightSystem3D.addRendererListener(fpsCounter);
+        control.addDisposeListener(lightweightSystem3D);
+    }
 
-		statusLine.add(fpsCounter);
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.gef3d.ext.multieditor.INestableEditor#createPaletteDrawer()
+     */
+    public PaletteDrawer createPaletteDrawer() {
 
-		scenePreferenceDistributor = new ScenePreferenceDistributor(viewer3D);
-		scenePreferenceDistributor.start();
+        PaletteRoot root = createPaletteRoot(null);
+        if (root.getChildren().size() == 1
+                && root.getChildren().get(0) instanceof PaletteDrawer) {
+            return (PaletteDrawer) root.getChildren().get(0);
+        } else {
+            PaletteDrawer drawer = new PaletteDrawer("Use Case Diagram");
+            drawer.setChildren(root.getChildren());
+            return drawer;
 
-		control.addDisposeListener(lightweightSystem3D);
-	}
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see de.feu.gef3d.ecoretools.diagram.part.EcoreDiagramEditor#createPaletteRoot(org.eclipse.gef.palette.PaletteRoot)
-	 */
-	@Override
-	protected PaletteRoot createPaletteRoot(PaletteRoot i_existingPaletteRoot) {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see de.feu.gef3d.ecoretools.diagram.part.EcoreDiagramEditor#createPaletteRoot(org.eclipse.gef.palette.PaletteRoot)
+     */
+    @Override
+    protected PaletteRoot createPaletteRoot(PaletteRoot i_existingPaletteRoot) {
 
-		PaletteRoot root = super.createPaletteRoot(i_existingPaletteRoot);
+        PaletteRoot root = super.createPaletteRoot(i_existingPaletteRoot);
 
-		PaletteDrawer drawer = new PaletteDrawer("GEF3D");
-		drawer.setDescription("GEF3D tools");
-		drawer.add(new ToolEntry("Camera", "Camera Tool", null, null,
-				CameraTool.class) {
-			// nothing to implement
-		});
-		root.add(0, drawer);
+        PaletteDrawer drawer = new PaletteDrawer("GEF3D");
+        drawer.setDescription("GEF3D tools");
+        drawer.add(new ToolEntry("Camera", "Camera Tool", null, null,
+            CameraTool.class) {
+            // nothing to implement
+        });
+        root.add(0, drawer);
 
-		return root;
-	}
+        return root;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef.ui.parts.GraphicalEditorWithPalette#dispose()
-	 */
-	@Override
-	public void dispose() {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.gef.ui.parts.GraphicalEditorWithPalette#dispose()
+     */
+    @Override
+    public void dispose() {
 
-		if (scenePreferenceDistributor != null)
-			scenePreferenceDistributor.stop();
+        if (scenePreferenceDistributor != null)
+            scenePreferenceDistributor.stop();
 
-		super.dispose();
-	}
+        super.dispose();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor#getGraphicalControl()
-	 */
-	@Override
-	protected Control getGraphicalControl() {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor#getGraphicalControl()
+     */
+    @Override
+    protected Control getGraphicalControl() {
 
-		return getGraphicalViewer().getControl();
-	}
-	
-	/*
-	 * *************************************************************************
-	 * Nested
-	 * **********************************************************************
-	 */
+        return getGraphicalViewer().getControl();
+    }
 
-	public void initializeAsNested(GraphicalViewer viewer,
-		MultiEditorPartFactory i_multiEditorPartFactory,
-		MultiEditorModelContainer i_multiEditorModelContainer) {
-		try {
-//			setGraphicalViewer(viewer);
+    /*
+     * *************************************************************************
+     * Nested
+     * **********************************************************************
+     */
 
-			// initializeGraphicalViewerContents():
-			Diagram diagram = getDiagram();
-			
-			// set provider acceptor in nested content diagram
-			diagram.eAdapters().add(
-				ProviderAcceptor.retrieveProviderSelector(viewer));
-			
-			EditPartFactory factory = EditPartService.getInstance();
+    public void initializeAsNested(GraphicalViewer viewer,
+            MultiEditorPartFactory i_multiEditorPartFactory,
+            MultiEditorModelContainer i_multiEditorModelContainer) {
 
-			// EditPart editPart = getDiagramEditPart();
+        try {
+            // setGraphicalViewer(viewer);
 
-			i_multiEditorPartFactory.prepare(diagram, factory);
-			i_multiEditorModelContainer.add(diagram);
+            // initializeGraphicalViewerContents():
+            Diagram diagram = getDiagram();
 
-			// we need this only during initialization, views
-			// are shared between multiple editor instances, even
-			// between 3D and 2D instances!
-			diagram.eAdapters().remove(
-				ProviderAcceptor.retrieveProviderSelector(viewer));
-		
-		} catch (Exception ex) {
-			log.warning("GraphicalViewer exception: " + ex); //$NON-NLS-1$ 
-		}
+            // set provider acceptor in nested content diagram
+            diagram.eAdapters().add(
+                ProviderAcceptor.retrieveProviderSelector(viewer));
 
-	}
-	
-	/** 
-	 * {@inheritDoc}
-	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditor#createPaletteDrawer()
-	 */
-	public PaletteDrawer createPaletteDrawer() {
-		PaletteRoot root = createPaletteRoot(null);
-		if (root.getChildren().size()==1 && root.getChildren().get(0) instanceof PaletteDrawer) {
-			return (PaletteDrawer) root.getChildren().get(0);
-		} else {
-			PaletteDrawer drawer = new PaletteDrawer("Use Case Diagram");
-			drawer.setChildren(root.getChildren());
-			return drawer;
-			
-		}
-	}
+            EditPartFactory factory = EditPartService.getInstance();
+
+            // EditPart editPart = getDiagramEditPart();
+
+            i_multiEditorPartFactory.prepare(diagram, factory);
+            i_multiEditorModelContainer.add(diagram);
+
+            // we need this only during initialization, views
+            // are shared between multiple editor instances, even
+            // between 3D and 2D instances!
+            diagram.eAdapters().remove(
+                ProviderAcceptor.retrieveProviderSelector(viewer));
+
+        } catch (Exception ex) {
+            log.warning("GraphicalViewer exception: " + ex); //$NON-NLS-1$ 
+        }
+
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramEditor#initializeGraphicalViewerContents()
+     */
+    @Override
+    protected void initializeGraphicalViewerContents() {
+
+        // zoom needs to be 1
+        super.initializeGraphicalViewerContents();
+        getZoomManager().setZoom(1.0);
+    }
 
 }

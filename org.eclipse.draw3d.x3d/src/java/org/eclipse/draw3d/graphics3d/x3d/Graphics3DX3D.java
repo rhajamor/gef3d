@@ -522,7 +522,7 @@ public class Graphics3DX3D implements Graphics3D {
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glColor3f(float, float,
 	 *      float)
 	 */
-	public void glColor3f(int i_red, int i_green, int i_blue) {
+	public void glColor3f(float i_red, float i_green, float i_blue) {
 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {

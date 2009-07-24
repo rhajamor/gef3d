@@ -16,7 +16,6 @@ import java.util.HashSet;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw3d.Draw3DCanvas;
 import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.XYZLayout;
 import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
@@ -46,210 +45,205 @@ import org.eclipse.ui.part.EditorPart;
  */
 public abstract class Draw3DViewer extends EditorPart {
 
-	/**
-	 * Distributes camera preference changes.
-	 */
-	protected CameraPreferenceDistributor m_cameraPreferenceDistributor;
+    /**
+     * Distributes camera preference changes.
+     */
+    protected CameraPreferenceDistributor m_cameraPreferenceDistributor;
 
-	/**
-	 * The canvas.
-	 */
-	protected Draw3DCanvas m_canvas;
+    /**
+     * The canvas.
+     */
+    protected Draw3DCanvas m_canvas;
 
-	/**
-	 * The 3D export actions for this viewer.
-	 */
-	protected Collection<Export3DAction> m_export3DActions = new HashSet<Export3DAction>();
+    /**
+     * The 3D export actions for this viewer.
+     */
+    protected Collection<Export3DAction> m_export3DActions = new HashSet<Export3DAction>();
 
-	private CameraInputListener m_inputListener;
+    private CameraInputListener m_inputListener;
 
-	/**
-	 * The lightweight system.
-	 */
-	protected LightweightSystem3D m_lightweightSystem;
+    /**
+     * The lightweight system.
+     */
+    protected LightweightSystem3D m_lightweightSystem;
 
-	/**
-	 * The scene that contains the lightweight system.
-	 */
-	protected IScene m_scene;
+    /**
+     * Distributes scene preference changes.
+     */
+    protected ScenePreferenceDistributor m_scenePreferenceDistributor;
 
-	/**
-	 * Distributes scene preference changes.
-	 */
-	protected ScenePreferenceDistributor m_scenePreferenceDistributor;
+    /**
+     * Creates the root figure of this viewer.
+     * 
+     * @return the root figure
+     */
+    protected abstract IFigure3D createContents();
 
-	/**
-	 * Creates the root figure of this viewer.
-	 * 
-	 * @return the root figure
-	 */
-	protected abstract IFigure3D createContents();
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
+     */
+    @Override
+    public void createPartControl(Composite i_parent) {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
-	 */
-	@Override
-	public void createPartControl(Composite i_parent) {
+        Composite c = new Composite(i_parent, SWT.NONE);
+        c.setLayout(new FillLayout());
 
-		Composite c = new Composite(i_parent, SWT.NONE);
-		c.setLayout(new FillLayout());
+        // create a Draw3DCanvas inside:
+        m_lightweightSystem = new LightweightSystem3D();
+        m_lightweightSystem.setDrawAxes(true);
+        m_canvas = Draw3DCanvas.createCanvas(c, SWT.NONE, m_lightweightSystem);
+        m_lightweightSystem.setControl(m_canvas);
+        m_lightweightSystem.getRootFigure().setLayoutManager(new XYZLayout());
 
-		// create a Draw3DCanvas inside:
-		m_lightweightSystem = new LightweightSystem3D();
-		m_lightweightSystem.setDrawAxes(true);
-		m_canvas = Draw3DCanvas.createCanvas(c, SWT.NONE, m_lightweightSystem);
-		m_lightweightSystem.setControl(m_canvas);
-		m_lightweightSystem.getRootFigure().setLayoutManager(new XYZLayout());
+        IFigure3D figure = createContents();
+        m_lightweightSystem.setContents(figure);
 
-		IFigure3D figure = createContents();
-		m_lightweightSystem.setContents(figure);
+        m_canvas.addDisposeListener(m_lightweightSystem);
 
-		m_canvas.addDisposeListener(m_lightweightSystem);
+        m_scenePreferenceDistributor = new ScenePreferenceDistributor(
+            m_lightweightSystem);
 
-		m_scene = new StandaloneScene(m_lightweightSystem);
-		m_scenePreferenceDistributor = new ScenePreferenceDistributor(m_scene);
+        CameraInputHandler handler = new CameraInputHandler();
+        handler.setScene(m_lightweightSystem);
+        m_cameraPreferenceDistributor = new CameraPreferenceDistributor(handler);
 
-		CameraInputHandler handler = new CameraInputHandler();
-		handler.setScene(m_scene);
-		m_cameraPreferenceDistributor = new CameraPreferenceDistributor(handler);
+        m_scenePreferenceDistributor.start();
+        m_cameraPreferenceDistributor.start();
 
-		m_scenePreferenceDistributor.start();
-		m_cameraPreferenceDistributor.start();
+        m_inputListener = new CameraInputListener(handler);
+        m_canvas.addKeyListener(m_inputListener);
+        m_canvas.addMouseListener(m_inputListener);
+        m_canvas.addMouseMoveListener(m_inputListener);
+        m_canvas.addMouseWheelListener(m_inputListener);
 
-		m_inputListener = new CameraInputListener(handler);
-		m_canvas.addKeyListener(m_inputListener);
-		m_canvas.addMouseListener(m_inputListener);
-		m_canvas.addMouseMoveListener(m_inputListener);
-		m_canvas.addMouseWheelListener(m_inputListener);
+        m_canvas.addDisposeListener(new DisposeListener() {
 
-		m_canvas.addDisposeListener(new DisposeListener() {
+            public void widgetDisposed(DisposeEvent i_e) {
 
-			public void widgetDisposed(DisposeEvent i_e) {
+                if (m_inputListener != null) {
+                    m_canvas.removeKeyListener(m_inputListener);
+                    m_canvas.removeMouseListener(m_inputListener);
+                    m_canvas.removeMouseMoveListener(m_inputListener);
+                    m_canvas.removeMouseWheelListener(m_inputListener);
+                    m_inputListener = null;
+                }
+            }
+        });
 
-				if (m_inputListener != null) {
-					m_canvas.removeKeyListener(m_inputListener);
-					m_canvas.removeMouseListener(m_inputListener);
-					m_canvas.removeMouseMoveListener(m_inputListener);
-					m_canvas.removeMouseWheelListener(m_inputListener);
-					m_inputListener = null;
-				}
-			}
-		});
+        Export3DFigureProvider figureProvider = new Export3DFigureProvider() {
 
-		Export3DFigureProvider figureProvider = new Export3DFigureProvider() {
+            public IFigure3D getFigure() {
 
-			public IFigure3D getFigure() {
-				return (IFigure3D) m_lightweightSystem.getRootFigure();
-			}
-		};
+                return (IFigure3D) m_lightweightSystem.getRootFigure();
+            }
+        };
 
-		for (Graphics3DDescriptor descr : Graphics3DRegistry
-				.getRenderersForType(Graphics3DType.EXPORT)) {
+        for (Graphics3DDescriptor descr : Graphics3DRegistry.getRenderersForType(Graphics3DType.EXPORT)) {
 
-			String id = descr.getRendererID();
-			Export3DAction action = new Export3DAction(id, figureProvider);
+            String id = descr.getRendererID();
+            Export3DAction action = new Export3DAction(id, figureProvider);
 
-			m_export3DActions.add(action);
-		}
-	}
+            m_export3DActions.add(action);
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.ui.part.WorkbenchPart#dispose()
-	 */
-	@Override
-	public void dispose() {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.ui.part.WorkbenchPart#dispose()
+     */
+    @Override
+    public void dispose() {
 
-		if (m_scenePreferenceDistributor != null) {
-			m_scenePreferenceDistributor.stop();
-			m_scenePreferenceDistributor = null;
-		}
+        if (m_scenePreferenceDistributor != null) {
+            m_scenePreferenceDistributor.stop();
+            m_scenePreferenceDistributor = null;
+        }
 
-		if (m_cameraPreferenceDistributor != null) {
-			m_cameraPreferenceDistributor.stop();
-			m_cameraPreferenceDistributor = null;
-		}
-	}
+        if (m_cameraPreferenceDistributor != null) {
+            m_cameraPreferenceDistributor.stop();
+            m_cameraPreferenceDistributor = null;
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
-	 */
-	@Override
-	public void doSave(IProgressMonitor i_monitor) {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
+     */
+    @Override
+    public void doSave(IProgressMonitor i_monitor) {
 
-		// nothing to save
-	}
+        // nothing to save
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.ui.part.EditorPart#doSaveAs()
-	 */
-	@Override
-	public void doSaveAs() {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.ui.part.EditorPart#doSaveAs()
+     */
+    @Override
+    public void doSaveAs() {
 
-		// nothing to save
-	}
+        // nothing to save
+    }
 
-	/**
-	 * Returns the export actions for the action bar contributor.
-	 * 
-	 * @return a collection containing the export actions
-	 */
-	public Collection<Export3DAction> getExportActions() {
+    /**
+     * Returns the export actions for the action bar contributor.
+     * 
+     * @return a collection containing the export actions
+     */
+    public Collection<Export3DAction> getExportActions() {
 
-		return m_export3DActions;
-	}
+        return m_export3DActions;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.ui.part.EditorPart#init(org.eclipse.ui.IEditorSite,
-	 *      org.eclipse.ui.IEditorInput)
-	 */
-	@Override
-	public void init(IEditorSite i_site, IEditorInput i_input)
-			throws PartInitException {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.ui.part.EditorPart#init(org.eclipse.ui.IEditorSite,
+     *      org.eclipse.ui.IEditorInput)
+     */
+    @Override
+    public void init(IEditorSite i_site, IEditorInput i_input)
+            throws PartInitException {
 
-		setSite(i_site);
-		setInput(i_input);
-	}
+        setSite(i_site);
+        setInput(i_input);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.ui.part.EditorPart#isDirty()
-	 */
-	@Override
-	public boolean isDirty() {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.ui.part.EditorPart#isDirty()
+     */
+    @Override
+    public boolean isDirty() {
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.ui.part.EditorPart#isSaveAsAllowed()
-	 */
-	@Override
-	public boolean isSaveAsAllowed() {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.ui.part.EditorPart#isSaveAsAllowed()
+     */
+    @Override
+    public boolean isSaveAsAllowed() {
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
-	 */
-	@Override
-	public void setFocus() {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
+     */
+    @Override
+    public void setFocus() {
 
-		// nothing to do
-	}
+        // nothing to do
+    }
 }

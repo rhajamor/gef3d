@@ -23,18 +23,9 @@ import java.util.EnumSet;
  */
 public abstract class AbstractPosition3D implements Position3D {
 
-	/**
-	 * The rotation angles ofthis figure.
-	 */
-	protected Vector3f rotation;
+	protected transient Matrix4fImpl locationMatrix;
 
 	protected MatrixState matrixState;
-
-	/**
-	 * Boolean semaphore used by {@link #syncSize()} and {@link #syncSize3D()}
-	 * to avoid infinite loop.
-	 */
-	protected boolean updatingBounds;
 
 	/**
 	 * The object matrix is the matrix that transforms a unit cube into the
@@ -50,7 +41,16 @@ public abstract class AbstractPosition3D implements Position3D {
 	 */
 	protected transient Matrix4fImpl modelMatrix;
 
-	protected transient Matrix4fImpl locationMatrix;
+	/**
+	 * The rotation angles ofthis figure.
+	 */
+	protected Vector3f rotation;
+
+	/**
+	 * Boolean semaphore used by {@link #syncSize()} and {@link #syncSize3D()}
+	 * to avoid infinite loop.
+	 */
+	protected boolean updatingBounds;
 
 	/**
 	 * 
@@ -64,44 +64,24 @@ public abstract class AbstractPosition3D implements Position3D {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Notifies host if present.
 	 * 
-	 * @see org.eclipse.draw3d.geometry.Position3D#setPosition(org.eclipse.draw3d.geometry.IPosition3D)
+	 * @param hint
+	 * @param delta
 	 */
-	public void setPosition(IPosition3D i_source) {
-		setRotation3D(i_source.getRotation3D());
-		setSize3D(i_source.getSize3D());
-		setLocation3D(i_source.getLocation3D());
+	protected void firePositionChanged(PositionHint hint, IVector3f delta) {
+		if (getHost() != null)
+			getHost().positionChanged(EnumSet.of(hint), delta);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometry.IPosition3D#getRotation3D()
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getLocationMatrix()
 	 */
-	public IVector3f getRotation3D() {
-		return rotation;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.geometry.Position3D#setRotation3D(org.eclipse.draw3d.geometry.IVector3f)
-	 */
-	public void setRotation3D(IVector3f i_rotation) {
-		if (i_rotation == null) // parameter precondition
-			throw new NullPointerException("i_rotation must not be null");
-
-		if (rotation.equals(i_rotation))
-			return;
-
-		Vector3fImpl delta = new Vector3fImpl();
-		Math3D.sub(i_rotation, rotation, delta);
-
-		rotation.set(i_rotation);
-		invalidateMatrices();
-
-		firePositionChanged(PositionHint.rotation, delta);
+	public IMatrix4f getLocationMatrix() {
+		recalculateMatrices();
+		return locationMatrix;
 	}
 
 	/**
@@ -124,6 +104,25 @@ public abstract class AbstractPosition3D implements Position3D {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getModelMatrix()
+	 */
+	public IMatrix4f getModelMatrix() {
+		recalculateMatrices();
+		return modelMatrix;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getRotation3D()
+	 */
+	public IVector3f getRotation3D() {
+		return rotation;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.geometry.Position3D#invalidateMatrices()
 	 */
 	public void invalidateMatrices() {
@@ -131,23 +130,19 @@ public abstract class AbstractPosition3D implements Position3D {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.geometry.IPosition3D#getLocationMatrix()
+	 * Recalculates the location matrix.
 	 */
-	public IMatrix4f getLocationMatrix() {
-		recalculateMatrices();
-		return locationMatrix;
-	}
+	private void recalculateLocationMatrix() {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.geometry.IPosition3D#getModelMatrix()
-	 */
-	public IMatrix4f getModelMatrix() {
-		recalculateMatrices();
-		return modelMatrix;
+		IMatrix4f parentLocationMatrix = Position3DUtil
+				.getParentLocationMatrix(this);
+
+		locationMatrix.set(parentLocationMatrix);
+
+		IVector3f location = getLocation3D();
+		Math3D.translate(locationMatrix, location, locationMatrix);
+
+        Math3D.rotate(rotation, locationMatrix, locationMatrix);
 	}
 
 	/**
@@ -166,22 +161,6 @@ public abstract class AbstractPosition3D implements Position3D {
 	}
 
 	/**
-	 * Recalculates the location matrix.
-	 */
-	private void recalculateLocationMatrix() {
-
-		IMatrix4f parentLocationMatrix = Position3DUtil
-				.getParentLocationMatrix(this);
-
-		locationMatrix.set(parentLocationMatrix);
-
-		IVector3f location = getLocation3D();
-		Math3D.translate(location, locationMatrix, locationMatrix);
-
-		rotate(locationMatrix, rotation);
-	}
-
-	/**
 	 * Recalculates the model matrix. Make sure that
 	 * {@link #recalculateLocationMatrix()} has been called before calling this
 	 * method.
@@ -193,38 +172,35 @@ public abstract class AbstractPosition3D implements Position3D {
 	}
 
 	/**
-	 * Rotates serially the given matrix by angles defined in rotation vector.
-	 * First, the matrix is rotated around the x axis by the x value of the
-	 * vector, then around the y axis by the y value and so on.
+	 * {@inheritDoc}
 	 * 
-	 * @param io_matrix
-	 * @param i_rotate
+	 * @see org.eclipse.draw3d.geometry.Position3D#setPosition(org.eclipse.draw3d.geometry.IPosition3D)
 	 */
-	private static void rotate(Matrix4f io_matrix, IVector3f i_rotate) {
-
-		float yAngle = i_rotate.getY();
-		if (yAngle != 0)
-			Math3D.rotate(yAngle, IVector3f.Y_AXIS, io_matrix, io_matrix);
-
-		float zAngle = i_rotate.getZ();
-		if (zAngle != 0)
-			Math3D.rotate(zAngle, IVector3f.Z_AXIS, io_matrix, io_matrix);
-
-		float xAngle = i_rotate.getX();
-		if (xAngle != 0)
-			Math3D.rotate(xAngle, IVector3f.X_AXIS, io_matrix, io_matrix);
-
+	public void setPosition(IPosition3D i_source) {
+		setRotation3D(i_source.getRotation3D());
+		setSize3D(i_source.getSize3D());
+		setLocation3D(i_source.getLocation3D());
 	}
 
 	/**
-	 * Notifies host if present.
+	 * {@inheritDoc}
 	 * 
-	 * @param hint
-	 * @param delta
+	 * @see org.eclipse.draw3d.geometry.Position3D#setRotation3D(org.eclipse.draw3d.geometry.IVector3f)
 	 */
-	protected void firePositionChanged(PositionHint hint, IVector3f delta) {
-		if (getHost() != null)
-			getHost().positionChanged(EnumSet.of(hint), delta);
+	public void setRotation3D(IVector3f i_rotation) {
+		if (i_rotation == null) // parameter precondition
+			throw new NullPointerException("i_rotation must not be null");
+
+		if (rotation.equals(i_rotation))
+			return;
+
+		Vector3fImpl delta = new Vector3fImpl();
+		Math3D.sub(i_rotation, rotation, delta);
+
+		rotation.set(i_rotation);
+		invalidateMatrices();
+
+		firePositionChanged(PositionHint.ROTATION, delta);
 	}
 
 	/**

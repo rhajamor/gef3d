@@ -36,6 +36,43 @@ public interface IVector4f {
 			+ NF + ", " + NF + ")";
 
 	/**
+	 * Compares two vectors. A vector v0 equals a vector v1 iff v0==v1
+	 * (identical instance) or (v0!=null && v1!=null && v0.x=v1.x && v0.y=v1.y
+	 * && v0.z=v1.z && v0.w=v1.w)
+	 * 
+	 * @param i_AnotherVector4f
+	 *            The vector4f to compare with, may be null
+	 * @return True on equality, false otherwise
+	 */
+	public boolean equals(IVector4f i_anotherVector4f);
+
+	/**
+	 * Compares two vectors using a delta value. A vector v0 equals a vector v1
+	 * iff v0==v1 (identical instance) or (v0!=null && v1!=null &&
+	 * Math.abs(v0.x-v1.x)<=epsilon && Math.abs(v0.y-v1.y)<=epsilon &&
+	 * Math.abs(v0.z-v1.z)<=epsilon && Math.abs(v0.w-v1.w)<=epsilon Note that
+	 * there are other possible strategies for comparing two vectors using a
+	 * delta value, such as
+	 * <code>Vector4fImpl.sub(v0,v1,null).length()<=epsilon</code>. The solution
+	 * used here is primarly used for test cases.
+	 * 
+	 * @param i_AnotherVector4f
+	 *            The vector4f to compare with, may be null
+	 * @param epsilon
+	 *            the maximum difference between each component of the given
+	 *            vectors
+	 * @return True on equality, false otherwise
+	 */
+	public boolean equals(IVector4f i_anotherVector4f, float epsilon);
+
+	/**
+	 * Returns the value of attribute w.
+	 * 
+	 * @return
+	 */
+	public float getW();
+
+	/**
 	 * Returns the value of attribute x.
 	 * 
 	 * @return
@@ -57,11 +94,18 @@ public interface IVector4f {
 	public float getZ();
 
 	/**
-	 * Returns the value of attribute w.
+	 * Returns a hash code. Two instances a0 and a1 will return the same hash
+	 * code, if a0.equals(a1)==true.
+	 * <p>
+	 * <p>
+	 * All implementations must use the same strategy for computing the hash
+	 * code: The entries of the structure are converted into an array, and then
+	 * Arrays#hashCode(float[]) is used for calculating the code.
+	 * </p>
 	 * 
-	 * @return
+	 * @return the hash code
 	 */
-	public float getW();
+	public int hashCode();
 
 	/**
 	 * Returns the length of the vector.
@@ -78,69 +122,43 @@ public interface IVector4f {
 	public float lengthSquared();
 
 	/**
-	 * Store this vector in a FloatBuffer. The buffer is <em>not</em> rewinded
-	 * (neither before nor after storing the vector). The entries are
-	 * stored in the following order: x, y, z, w.
-	 * 
-	 * @param buf The buffer to store it in, at the current position
-	 */
-	public void toBuffer(FloatBuffer o_floatBuffer);
-
-	/**
 	 * Stores this vector in an array of float with x at index 0, y at index 1,
 	 * and z at index 2, and w at index 3.
 	 * 
-	 * @param o_arrayOfFloat The array to store in.
+	 * @param o_arrayOfFloat
+	 *            The array to store in.
 	 */
 	public void toArray(float[] o_arrayOfFloat);
 
 	/**
 	 * Stores this vector in an array of float, starting at given offset.
 	 * 
-	 * @param o_arrayOfFloat The array to store in.
-	 * @param i_iOffset The offset to start storing at.
+	 * @param o_arrayOfFloat
+	 *            The array to store in.
+	 * @param i_iOffset
+	 *            The offset to start storing at.
 	 */
 	public void toArray(float[] o_arrayOfFloat, int i_iOffset);
 
 	/**
-	 * Compares two vectors. A vector v0 equals a vector v1 iff v0==v1
-	 * (identical instance) or (v0!=null && v1!=null && v0.x=v1.x && v0.y=v1.y
-	 * && v0.z=v1.z && v0.w=v1.w)
+	 * Store this vector in a FloatBuffer. The buffer is <em>not</em> rewinded
+	 * (neither before nor after storing the vector). The entries are stored in
+	 * the following order: x, y, z, w.
 	 * 
-	 * @param i_AnotherVector4f The vector4f to compare with, may be null
-	 * @return True on equality, false otherwise
+	 * @param buf
+	 *            The buffer to store it in, at the current position
 	 */
-	public boolean equals(IVector4f i_anotherVector4f);
+	public void toBuffer(FloatBuffer o_floatBuffer);
 
 	/**
-	 * Compares two vectors using a delta value. A vector v0 equals a vector v1
-	 * iff v0==v1 (identical instance) or (v0!=null && v1!=null &&
-	 * Math.abs(v0.x-v1.x)<=epsilon && Math.abs(v0.y-v1.y)<=epsilon &&
-	 * Math.abs(v0.z-v1.z)<=epsilon && Math.abs(v0.w-v1.w)<=epsilon Note that
-	 * there are other possible strategies for comparing two vectors using a
-	 * delta value, such as
-	 * <code>Vector4fImpl.sub(v0,v1,null).length()<=epsilon</code>. The solution
-	 * used here is primarly used for test cases.
+	 * Converts this fourdimensional vector to a three dimensional vector by
+	 * dividing X, Y and Z by W.
 	 * 
-	 * @param i_AnotherVector4f The vector4f to compare with, may be null
-	 * @param epsilon the maximum difference between each component of the given
-	 *            vectors
-	 * @return True on equality, false otherwise
+	 * @param io_vector
+	 *            the result vector, if <code>null</code>, a new one will be
+	 *            created
+	 * @return the result vector
 	 */
-	public boolean equals(IVector4f i_anotherVector4f, float epsilon);
-
-	/**
-	 * Returns a hash code. Two instances a0 and a1 will return the same hash
-	 * code, if a0.equals(a1)==true.
-	 * <p>
-	 * <p>
-	 * All implementations must use the same strategy for computing the hash
-	 * code: The entries of the structure are converted into an array, and then
-	 * Arrays#hashCode(float[]) is used for calculating the code.
-	 * </p>
-	 * 
-	 * @return the hash code
-	 */
-	public int hashCode();
+	public Vector3f toVector3f(Vector3f io_result);
 
 }

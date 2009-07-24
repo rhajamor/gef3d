@@ -368,4 +368,20 @@ public class Vector4fImpl implements Vector4f, Serializable, Cloneable {
 	public void transform(final IMatrix4f i_transformationMatrix4f) {
 		Math3D.transform(i_transformationMatrix4f, this, this);
 	}
+
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.geometry.IVector4f#toVector3f(org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	public Vector3f toVector3f(Vector3f io_result) {
+		
+		Vector3f result = io_result;
+		if (result == null)
+			result = new Vector3fImpl();
+		
+		result.set(x, y, z);
+		result.scale(1 / w);
+		
+		return result;
+	}
 }

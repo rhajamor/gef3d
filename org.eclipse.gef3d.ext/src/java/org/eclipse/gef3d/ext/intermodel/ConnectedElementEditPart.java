@@ -23,6 +23,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.ChopboxAnchor3D;
 import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
+import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -36,7 +37,6 @@ import org.eclipse.gef3d.ext.IConnectionAnchorFactory;
 import org.eclipse.gef3d.ext.SingletonConnectionAnchorFactory;
 import org.eclipse.swt.graphics.Color;
 
-
 /**
  * ConnectedElementEditPart.
  * 
@@ -46,8 +46,7 @@ import org.eclipse.swt.graphics.Color;
  */
 public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 		implements NodeEditPart {
-	private static final Color COLOR = ColorConstants.green; 
-		
+	private static final Color COLOR = ColorConstants.green;
 
 	/**
 	 * Logger for this class
@@ -61,12 +60,14 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 	/**
 	 * Returns the center point of a figure (2D or 3D).
 	 * 
-	 * @param i_fig the figure
-	 * @param io_result the result vector, if <code>null</code>, a new vector
-	 *            will be returned
+	 * @param i_fig
+	 *            the figure
+	 * @param io_result
+	 *            the result vector, if <code>null</code>, a new vector will be
+	 *            returned
 	 * @return the center point
 	 */
-	public static Vector3f getTopCenter3D(IFigure i_fig, Vector3f io_result) {
+	public static IVector3f getTopCenter3D(IFigure i_fig, Vector3f io_result) {
 
 		if (i_fig instanceof IFigure3D) {
 
@@ -86,8 +87,12 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 			if (i_fig instanceof Connection) {
 				if (!(i_fig instanceof IFigure3D)) {
 					Connection conn = (Connection) i_fig;
-					return Figure3DHelper.getLocation3D(i_fig, conn.getPoints()
-							.getMidpoint(), io_result);
+					Point midpoint = conn.getPoints().getMidpoint();
+
+					IFigure3D host = Figure3DHelper.getAncestor3D(i_fig);
+					ISurface surface = host.getSurface();
+					
+					return surface.getWorldLocation(midpoint, io_result);
 				} else {
 					throw new UnsupportedOperationException(
 							"getCenter3D not implemented for 3D connections yet");
@@ -95,9 +100,12 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 			} else {
 				Rectangle rect = i_fig.getBounds();
 				Point point = new Point(rect.x + rect.width / 2, rect.y);
-				return Figure3DHelper.getLocation3D(i_fig, point, io_result);
-			}
 
+				IFigure3D host = Figure3DHelper.getAncestor3D(i_fig);
+				ISurface surface = host.getSurface();
+				
+				return surface.getWorldLocation(point, io_result);
+			}
 		}
 	}
 
@@ -289,7 +297,7 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 		fig.setSize3D(new Vector3fImpl(size, size, size));
 
 		IFigure connectedFig = getModelEditPart().getFigure();
-		Vector3f v = getTopCenter3D(connectedFig, TMP_V3);
+		IVector3f v = getTopCenter3D(connectedFig, TMP_V3);
 		fig.setLocation3D(new Vector3fImpl(v.getX() - size / 2, v.getY() - size
 				+ size / 2, v.getZ() - size / 2));
 	}

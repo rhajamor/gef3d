@@ -13,17 +13,16 @@ package org.eclipse.gef3d.ui.parts;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+import org.eclipse.draw3d.ISceneListener;
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.RenderListener;
+import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.StatusLineLayoutData;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-
 
 /**
  * Displays FPS information in the Eclipse status bar.
@@ -33,132 +32,138 @@ import org.eclipse.swt.widgets.Label;
  * @since 22.05.2008
  */
 public class FpsStatusLineItem extends ContributionItem implements
-		RenderListener {
+        ISceneListener {
 
-	private static final int CHAR_WIDTH = 8;
+    private static final int CHAR_WIDTH = 8;
 
-	private static final int INDENT = 3;
+    private static final int INDENT = 3;
 
-	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(FpsStatusLineItem.class
-			.getName());
+    @SuppressWarnings("unused")
+    private static final Logger log = Logger.getLogger(FpsStatusLineItem.class.getName());
 
-	private static final int NUM_FRAMES = 10;
+    private static final int NUM_FRAMES = 20;
 
-	private static final long TIMEOUT = 300;
+    private static final long TIMEOUT = 50;
 
-	private int m_fixedHeight = -1;
+    private int m_fixedHeight = -1;
 
-	private int m_fixedWidth = -1;
+    private int m_fixedWidth = -1;
 
-	private LinkedList<Long> m_frames = new LinkedList<Long>();
+    private LinkedList<Long> m_frames = new LinkedList<Long>();
 
-	private CLabel m_label;
+    private CLabel m_label;
 
-	private long m_lastFrame = -1;
+    private long m_lastFrame = -1;
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.jface.action.ContributionItem#fill(org.eclipse.swt.widgets.Composite)
-	 */
-	@Override
-	public void fill(Composite i_parent) {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.ISceneListener#cameraChanged(org.eclipse.draw3d.camera.ICamera,
+     *      org.eclipse.draw3d.camera.ICamera)
+     */
+    public void cameraChanged(ICamera i_oldCamera, ICamera i_newCamera) {
 
-		Label sep = new Label(i_parent, SWT.SEPARATOR);
-		m_label = new CLabel(i_parent, SWT.SHADOW_NONE);
+        // nothing to do
+    }
 
-		StatusLineLayoutData data = new StatusLineLayoutData();
-		data.widthHint = getWidthHint(i_parent);
-		m_label.setLayoutData(data);
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.jface.action.ContributionItem#fill(org.eclipse.swt.widgets.Composite)
+     */
+    @Override
+    public void fill(Composite i_parent) {
 
-		data = new StatusLineLayoutData();
-		data.heightHint = getHeightHint(i_parent);
-		sep.setLayoutData(data);
+        Label sep = new Label(i_parent, SWT.SEPARATOR);
+        m_label = new CLabel(i_parent, SWT.SHADOW_NONE);
 
-		updateCounter();
-	}
+        StatusLineLayoutData data = new StatusLineLayoutData();
+        data.widthHint = getWidthHint(i_parent);
+        m_label.setLayoutData(data);
 
-	private int getHeightHint(Composite control) {
+        data = new StatusLineLayoutData();
+        data.heightHint = getHeightHint(i_parent);
+        sep.setLayoutData(data);
 
-		if (m_fixedHeight < 0) {
-			GC gc = new GC(control);
-			gc.setFont(control.getFont());
-			m_fixedHeight = gc.getFontMetrics().getHeight();
-			gc.dispose();
-		}
-		return m_fixedHeight;
-	}
+        updateCounter();
+    }
 
-	private int getWidthHint(Composite control) {
+    private int getHeightHint(Composite control) {
 
-		if (m_fixedWidth < 0) {
-			GC gc = new GC(control);
-			gc.setFont(control.getFont());
-			m_fixedWidth = gc.getFontMetrics().getAverageCharWidth()
-					* CHAR_WIDTH;
-			m_fixedWidth += INDENT * 2;
-			gc.dispose();
-		}
-		return m_fixedWidth;
-	}
+        if (m_fixedHeight < 0) {
+            GC gc = new GC(control);
+            gc.setFont(control.getFont());
+            m_fixedHeight = gc.getFontMetrics().getHeight();
+            gc.dispose();
+        }
+        return m_fixedHeight;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.RenderListener#renderPassFinished()
-	 */
-	public void renderPassFinished(RenderContext renderContext) {
-		if (!renderContext.getMode().isPaint())
-			return;
+    private int getWidthHint(Composite control) {
 
-		long time = System.currentTimeMillis();
-		if (m_lastFrame == -1) {
-			m_lastFrame = time;
-			return;
-		}
+        if (m_fixedWidth < 0) {
+            GC gc = new GC(control);
+            gc.setFont(control.getFont());
+            m_fixedWidth = gc.getFontMetrics().getAverageCharWidth()
+                    * CHAR_WIDTH;
+            m_fixedWidth += INDENT * 2;
+            gc.dispose();
+        }
+        return m_fixedWidth;
+    }
 
-		long frameTime = time - m_lastFrame;
-		m_lastFrame = time;
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.ISceneListener#renderPassFinished()
+     */
+    public void renderPassFinished(RenderContext renderContext) {
 
-		if (frameTime <= TIMEOUT) {
-			if (m_frames.size() == NUM_FRAMES)
-				m_frames.removeLast();
+        if (!renderContext.getMode().isPaint())
+            return;
 
-			m_frames.addFirst(frameTime);
-		}
+        long time = System.currentTimeMillis();
+        if (m_lastFrame == -1) {
+            m_lastFrame = time;
+            return;
+        }
 
-		updateCounter();
-	}
+        long frameTime = time - m_lastFrame;
+        m_lastFrame = time;
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.RenderListener#renderPassStarted()
-	 */
-	public void renderPassStarted(RenderContext renderContext) {
+        if (frameTime <= TIMEOUT) {
+            if (m_frames.size() == NUM_FRAMES)
+                m_frames.removeLast();
 
-		// nothing to do
-	}
+            m_frames.addFirst(frameTime);
+        }
 
-	private void updateCounter() {
+        updateCounter();
+    }
 
-		long fps = 0;
-		if (m_frames.size() > 0) {
-			double avg = 0;
-			for (long frameTime : m_frames)
-				avg += frameTime;
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.ISceneListener#renderPassStarted()
+     */
+    public void renderPassStarted(RenderContext renderContext) {
 
-			avg /= m_frames.size();
-			fps = (long) (1000 / avg);
-		}
+        // nothing to do
+    }
 
-		if (m_label != null && !m_label.isDisposed()) {
-			Display display = m_label.getDisplay();
+    private void updateCounter() {
 
-			m_label.setForeground(display
-					.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
-			m_label.setText(fps + " FPS");
-		}
-	}
+        long fps = 0;
+        if (m_frames.size() > 0) {
+            double avg = 0;
+            for (long frameTime : m_frames)
+                avg += frameTime;
+
+            avg /= m_frames.size();
+            fps = (long) (1000 / avg);
+        }
+
+        if (m_label != null && !m_label.isDisposed())
+            m_label.setText(fps + " FPS");
+    }
 }

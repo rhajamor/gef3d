@@ -6,21 +6,28 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Kristian Duske - initial API and implementation
+ *    Kristian Duske - refactoring and cleanup, orbit
  *    Jens von Pilgrim - initial API and implementation
  ******************************************************************************/
 package org.eclipse.draw3d.camera;
 
+import java.nio.FloatBuffer;
 import java.util.logging.Logger;
 
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Matrix4f;
 import org.eclipse.draw3d.geometry.Matrix4fImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.geometryext.Ray;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
+import org.eclipse.draw3d.util.BufferUtils;
 
 /**
  * Implements ICamera interface using a "first person" view strategy. lookAt and
@@ -31,249 +38,475 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
  * </p>
  * 
  * @author Jens von Pilgrim
+ * @author Kristian Duske
  * @version $Revision$
  * @since 19.11.2007
  */
 public class FirstPersonCamera extends AbstractCamera {
 
-	@SuppressWarnings("unused")
-	private static Logger log =
-		Logger.getLogger(FirstPersonCamera.class.getName());
+    @SuppressWarnings("unused")
+    private static Logger log = Logger.getLogger(FirstPersonCamera.class.getName());
 
-	private final Vector3fImpl m_position = new Vector3fImpl();
+    /**
+     * Distance of the far clipping plane.
+     */
+    protected int m_far = 40000;
 
-	private final Vector3fImpl m_right = new Vector3fImpl();
+    /**
+     * The field of vision angle in degrees.
+     */
+    protected int m_fov = 45;
 
-	private final Vector3fImpl m_up = new Vector3fImpl();
+    /**
+     * Distance of the near clipping plane.
+     */
+    protected int m_near = 100;
 
-	private final Vector3fImpl m_viewDir = new Vector3fImpl();
+    /**
+     * The current camera position.
+     */
+    protected final Vector3fImpl m_position = new Vector3fImpl();
 
-	private int m_viewportHeight;
+    private final Matrix4fImpl m_projectionMatrix = new Matrix4fImpl();
 
-	private int m_viewportWidth;
+    /**
+     * The current camera right vector.
+     */
+    protected final Vector3fImpl m_right = new Vector3fImpl();
 
-	/**
-	 * Matrix4f to use in calculations.
-	 */
-	private final Matrix4fImpl TMP_M = new Matrix4fImpl();
+    /**
+     * The current camera up vector.
+     */
+    protected final Vector3fImpl m_up = new Vector3fImpl();
 
-	/**
-	 * Vector3f to use in calculations.
-	 */
-	private final Vector3fImpl TMP_V3 = new Vector3fImpl();
+    private boolean m_matricesValid = false;
 
-	/**
-	 * Creates and initializes a first person camera.
-	 */
-	public FirstPersonCamera() {
-		reset();
-	}
+    /**
+     * The current viewing direction.
+     */
+    protected final Vector3fImpl m_viewDir = new Vector3fImpl();
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#getDistance(org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	public float getDistance(Vector3f i_point) {
+    private final Matrix4fImpl m_viewMatrix = new Matrix4fImpl();
 
-		if (i_point == null)
-			throw new NullPointerException("i_point must not be null");
+    /**
+     * The current viewport.
+     */
+    protected final Rectangle m_viewport = new Rectangle();
 
-		Math3D.sub(i_point, m_position, TMP_V3);
-		return TMP_V3.length();
-	}
+    /**
+     * Creates and initializes a first person camera.
+     */
+    public FirstPersonCamera() {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#getPosition(Vector3f)
-	 */
-	public Vector3f getPosition(Vector3f io_result) {
+        reset();
+    }
 
-		Vector3f result = io_result;
-		if (result == null)
-			result = new Vector3fImpl();
+    private IMatrix4f calculateInversionMatrix(IMatrix4f i_modelMatrix,
+            Matrix4f io_result) {
 
-		result.set(m_position);
-		return result;
-	}
+        calculateMatrix(i_modelMatrix, io_result);
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#lookAt(org.eclipse.draw3d.geometry.IVector3f,
-	 *      org.eclipse.draw3d.geometry.IVector3f)
-	 */
-	public void lookAt(IVector3f i_to, IVector3f i_upvector) {
+        Math3D.invert(io_result, io_result);
+        return io_result;
+    }
 
-		Math3D.sub(i_to, m_position, m_viewDir);
-		Math3D.normalise(m_viewDir, m_viewDir);
-		if (i_upvector != null)
-			Math3D.normalise(i_upvector, m_up);
+    private IMatrix4f calculateMatrix(IMatrix4f i_modelMatrix,
+            Matrix4f io_result) {
 
-		// p+v=t => v = t-p
-		Math3D.cross(m_up, m_viewDir, m_right);
-		Math3D.normalise(m_right, m_right);
+        Matrix4f tmp = Math3D.getMatrix4f();
+        try {
+            if (i_modelMatrix != null)
+                Math3D.mul(m_projectionMatrix, i_modelMatrix, tmp);
+            else
+                tmp.set(m_projectionMatrix);
 
-		fireCameraChanged();
+            Math3D.mul(tmp, m_viewMatrix, io_result);
+            return io_result;
+        } finally {
+            Math3D.returnMatrix4f(tmp);
+        }
+    }
 
-	}
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.AbstractCamera#fireCameraChanged()
+     */
+    @Override
+    protected void fireCameraChanged() {
 
-	/**
-	 * Moves the camera by the given distances.
-	 * 
-	 * @param i_dX the distance on the X axis
-	 * @param i_dY the distance on the Y axis
-	 * @param i_dZ the distance on the Z axis
-	 */
-	public void moveBy(float i_dForward, float i_dStrafe, float i_dUp) {
+        super.fireCameraChanged();
+        m_matricesValid = false;
+    }
 
-		TMP_V3.set(m_viewDir);
-		TMP_V3.scale(i_dForward);
-		Math3D.add(m_position, TMP_V3, m_position);
+    private float getAspect() {
 
-		TMP_V3.set(m_right);
-		TMP_V3.scale(i_dStrafe);
-		Math3D.add(m_position, TMP_V3, m_position);
+        if (m_viewport.height == 0)
+            return 0;
 
-		TMP_V3.set(m_up);
-		TMP_V3.scale(i_dUp);
-		Math3D.add(m_position, TMP_V3, m_position);
+        return m_viewport.width / (float) m_viewport.height;
+    }
 
-		fireCameraChanged();
-	}
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#getDistance(org.eclipse.draw3d.geometry.Vector3f)
+     */
+    public float getDistance(Vector3f i_point) {
 
-	/**
-	 * Sets the position of this camera. {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#moveTo(float, float, float)
-	 */
-	public void moveTo(float i_x, float i_y, float i_z) {
+        if (i_point == null)
+            throw new NullPointerException("i_point must not be null");
 
-		m_position.set(i_x, i_y, i_z);
+        Vector3f tmp = Math3D.getVector3f();
+        try {
+            Math3D.sub(i_point, m_position, tmp);
+            return tmp.length();
+        } finally {
+            Math3D.returnVector3f(tmp);
+        }
+    }
 
-		fireCameraChanged();
-	}
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#getNear()
+     */
+    public float getNear() {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#orbit(Vector3f, float, float)
-	 */
-	public void orbit(Vector3f i_center, float i_hAngle, float i_vAngle) {
+        return m_near;
+    }
 
-		TMP_M.setIdentity();
-		if (i_hAngle != 0)
-			Math3D.rotate(i_hAngle, m_up, TMP_M, TMP_M);
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#getPosition(Vector3f)
+     */
+    public Vector3f getPosition(Vector3f io_result) {
 
-		if (i_vAngle != 0)
-			Math3D.rotate(i_vAngle, m_right, TMP_M, TMP_M);
+        Vector3f result = io_result;
+        if (result == null)
+            result = new Vector3fImpl();
 
-		// camera position
-		Math3D.sub(m_position, i_center, TMP_V3);
-		TMP_V3.transform(TMP_M);
-		Math3D.add(TMP_V3, i_center, m_position);
+        result.set(m_position);
+        return result;
+    }
 
-		rotate(0, i_vAngle, i_hAngle);
-		fireCameraChanged();
-	}
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#getRay(int, int,
+     *      org.eclipse.draw3d.geometryext.Ray)
+     */
+    public Ray getRay(int i_xm, int i_ym, Ray io_result) {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#render(org.eclipse.draw3d.RenderContext)
-	 */
-	public void render(RenderContext renderContext) {
+        Ray result = io_result;
+        if (result == null)
+            result = new Ray();
 
-		Graphics3D g3d = renderContext.getGraphics3D();
-		g3d.glViewport(0, 0, m_viewportWidth, m_viewportHeight);
+        Vector3f direction = Math3D.getVector3f();
+        try {
+            unProject(i_xm, i_ym, 0, null, direction);
+            Math3D.sub(direction, m_position, direction);
 
-		g3d.glMatrixMode(Graphics3DDraw.GL_PROJECTION);
-		g3d.glLoadIdentity();
+            result.set(m_position, direction);
+            return result;
+        } finally {
+            Math3D.returnVector3f(direction);
+        }
+    }
 
-		float aspect = (float) m_viewportWidth / (float) m_viewportHeight;
-		g3d.gluPerspective(45, aspect, getNear(), getFar());
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#getRightVector(org.eclipse.draw3d.geometry.Vector3f)
+     */
+    public Vector3f getRightVector(Vector3f io_result) {
 
-		g3d.glMatrixMode(Graphics3DDraw.GL_MODELVIEW);
-		g3d.glLoadIdentity();
+        Vector3f result = io_result;
+        if (result == null)
+            result = new Vector3fImpl();
 
-		float viewX = m_position.x + m_viewDir.x;
-		float viewY = m_position.y + m_viewDir.y;
-		float viewZ = m_position.z + m_viewDir.z;
+        result.set(m_right);
+        return result;
+    }
 
-		g3d.gluLookAt(m_position.x, m_position.y, m_position.z, viewX, viewY,
-			viewZ, m_up.x, m_up.y, m_up.z);
-	}
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#getUpVector(org.eclipse.draw3d.geometry.Vector3f)
+     */
+    public Vector3f getUpVector(Vector3f io_result) {
 
-	public void reset() {
+        Vector3f result = io_result;
+        if (result == null)
+            result = new Vector3fImpl();
 
-		m_position.set(0, 0, -1000);
+        result.set(m_up);
+        return result;
+    }
 
-		m_viewDir.set(VIEW_REF);
-		m_right.set(RIGHT_REF);
-		m_up.set(UP_REF);
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#getViewDirection(org.eclipse.draw3d.geometry.Vector3f)
+     */
+    public Vector3f getViewDirection(Vector3f io_result) {
 
-		fireCameraChanged();
-	}
+        Vector3f result = io_result;
+        if (result == null)
+            result = new Vector3fImpl();
 
-	public void rotate(float i_roll, float i_pitch, float i_yaw) {
+        result.set(m_viewDir);
+        return result;
+    }
 
-		TMP_M.setIdentity();
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#lookAt(org.eclipse.draw3d.geometry.IVector3f,
+     *      org.eclipse.draw3d.geometry.IVector3f)
+     */
+    public void lookAt(IVector3f i_to, IVector3f i_upvector) {
 
-		if (i_roll != 0)
-			Math3D.rotate(i_roll, m_viewDir, TMP_M, TMP_M);
+        Math3D.sub(i_to, m_position, m_viewDir);
+        Math3D.normalise(m_viewDir, m_viewDir);
+        if (i_upvector != null)
+            Math3D.normalise(i_upvector, m_up);
 
-		if (i_pitch != 0)
-			Math3D.rotate(i_pitch, m_right, TMP_M, TMP_M);
+        // p+v=t => v = t-p
+        Math3D.cross(m_up, m_viewDir, m_right);
+        Math3D.normalise(m_right, m_right);
 
-		if (i_yaw != 0)
-			Math3D.rotate(i_yaw, m_up, TMP_M, TMP_M);
+        fireCameraChanged();
 
-		m_viewDir.transform(TMP_M);
-		m_right.transform(TMP_M);
-		m_up.transform(TMP_M);
+    }
 
-		fireCameraChanged();
-	}
+    /**
+     * Moves the camera by the given distances.
+     * 
+     * @param i_dX
+     *            the distance on the X axis
+     * @param i_dY
+     *            the distance on the Y axis
+     * @param i_dZ
+     *            the distance on the Z axis
+     */
+    public void moveBy(float i_dForward, float i_dStrafe, float i_dUp) {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#setViewport(int, int)
-	 */
-	public void setViewport(int i_width, int i_height) {
+        Vector3f tmp = Math3D.getVector3f();
+        try {
+            tmp.set(m_viewDir);
+            tmp.scale(i_dForward);
+            Math3D.add(m_position, tmp, m_position);
 
-		m_viewportWidth = i_width;
-		m_viewportHeight = i_height;
+            tmp.set(m_right);
+            tmp.scale(i_dStrafe);
+            Math3D.add(m_position, tmp, m_position);
 
-		fireCameraChanged();
-	}
+            tmp.set(m_up);
+            tmp.scale(i_dUp);
+            Math3D.add(m_position, tmp, m_position);
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#getUpVector(org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	public IVector3f getUpVector(Vector3f io_result) {
-		if (io_result != null) {
-			io_result.set(m_up);
-			return io_result;
-		} else {
-			return m_up;
-		}
-	}
+            fireCameraChanged();
+        } finally {
+            Math3D.returnVector3f(tmp);
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#getViewDirection(org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	public IVector3f getViewDirection(Vector3f io_result) {
-		if (io_result!=null) {
-			io_result.set(m_viewDir);
-			return io_result;
-		} else {
-			return m_viewDir;
-		}
-	}
+    /**
+     * Sets the position of this camera. {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#moveTo(float, float, float)
+     */
+    public void moveTo(float i_x, float i_y, float i_z) {
+
+        m_position.set(i_x, i_y, i_z);
+
+        fireCameraChanged();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#orbit(IVector3f, float, float)
+     */
+    public void orbit(IVector3f i_center, float i_hAngle, float i_vAngle) {
+
+        Matrix4f rot = Math3D.getMatrix4f();
+        Vector3f tmp = Math3D.getVector3f();
+
+        try {
+            rot.setIdentity();
+            if (i_hAngle != 0)
+                Math3D.rotate(i_hAngle, m_up, rot, rot);
+
+            if (i_vAngle != 0)
+                Math3D.rotate(i_vAngle, m_right, rot, rot);
+
+            // camera position
+            Math3D.sub(m_position, i_center, tmp);
+            tmp.transform(rot);
+            Math3D.add(tmp, i_center, m_position);
+
+            rotate(0, i_vAngle, i_hAngle);
+            fireCameraChanged();
+        } finally {
+            Math3D.returnMatrix4f(rot);
+            Math3D.returnVector3f(tmp);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#project(float, float, float,
+     *      org.eclipse.draw2d.geometry.Point)
+     */
+    public Point project(float i_wx, float i_wy, float i_wz, Point io_result) {
+
+        Point result = io_result;
+        if (result == null)
+            result = new Point();
+
+        Matrix4f transformation = Math3D.getMatrix4f();
+        Vector3f tmp = Math3D.getVector3f();
+
+        try {
+            calculateMatrix(null, transformation);
+            tmp.set(i_wx, i_wy, i_wz);
+
+            tmp.transform(transformation);
+
+            result.x = Math.round((tmp.getX() + 1) * m_viewport.width / 2f);
+            result.y = Math.round((-1* tmp.getY() + 1)
+                    * m_viewport.height / 2f);
+
+            return result;
+        } finally {
+            Math3D.returnMatrix4f(transformation);
+            Math3D.returnVector3f(tmp);
+        }
+    }
+
+    private static final FloatBuffer BUF_F16 = BufferUtils.createFloatBuffer(16);
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#render(org.eclipse.draw3d.RenderContext)
+     */
+    public void render(RenderContext renderContext) {
+
+        Graphics3D g3d = renderContext.getGraphics3D();
+        g3d.glViewport(0, 0, m_viewport.width, m_viewport.height);
+
+        g3d.glMatrixMode(Graphics3DDraw.GL_PROJECTION);
+        g3d.glLoadIdentity();
+
+        g3d.gluPerspective(m_fov, getAspect(), m_near, m_far);
+
+        g3d.glMatrixMode(Graphics3DDraw.GL_MODELVIEW);
+        g3d.glLoadIdentity();
+
+        float viewX = m_position.x + m_viewDir.x;
+        float viewY = m_position.y + m_viewDir.y;
+        float viewZ = m_position.z + m_viewDir.z;
+
+        g3d.gluLookAt(m_position.x, m_position.y, m_position.z, viewX, viewY,
+            viewZ, m_up.x, m_up.y, m_up.z);
+
+        if (!m_matricesValid) {
+            BUF_F16.rewind();
+            g3d.glGetFloat(Graphics3DDraw.GL_PROJECTION_MATRIX, BUF_F16);
+            m_projectionMatrix.setColumnMajor(BUF_F16);
+            Math3D.transpose(m_projectionMatrix, m_projectionMatrix);
+
+            BUF_F16.rewind();
+            g3d.glGetFloat(Graphics3DDraw.GL_MODELVIEW_MATRIX, BUF_F16);
+            m_viewMatrix.setColumnMajor(BUF_F16);
+            Math3D.transpose(m_viewMatrix, m_viewMatrix);
+            
+            m_matricesValid = true;
+        }
+    }
+
+    public void reset() {
+
+        m_position.set(0, 0, -1000);
+
+        m_viewDir.set(VIEW_REF);
+        m_right.set(RIGHT_REF);
+        m_up.set(UP_REF);
+
+        fireCameraChanged();
+    }
+
+    public void rotate(float i_roll, float i_pitch, float i_yaw) {
+
+        Matrix4f rot = Math3D.getMatrix4f();
+        try {
+            rot.setIdentity();
+
+            if (i_roll != 0)
+                Math3D.rotate(i_roll, m_viewDir, rot, rot);
+
+            if (i_pitch != 0)
+                Math3D.rotate(i_pitch, m_right, rot, rot);
+
+            if (i_yaw != 0)
+                Math3D.rotate(i_yaw, m_up, rot, rot);
+
+            m_viewDir.transform(rot);
+            m_right.transform(rot);
+            m_up.transform(rot);
+
+            fireCameraChanged();
+        } finally {
+            Math3D.returnMatrix4f(rot);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#setViewport(int, int, int, int)
+     */
+    public void setViewport(int i_x, int i_y, int i_width, int i_height) {
+
+        m_viewport.setLocation(i_x, i_y);
+        m_viewport.setSize(i_width, i_height);
+
+        fireCameraChanged();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#unProject(int, int, float,
+     *      org.eclipse.draw3d.geometry.IMatrix4f,
+     *      org.eclipse.draw3d.geometry.Vector3f)
+     */
+    public Vector3f unProject(int i_xm, int i_ym, float i_d,
+            IMatrix4f i_modelMatrix, Vector3f io_result) {
+
+        Matrix4f inversion = Math3D.getMatrix4f();
+        try {
+            Vector3f result = io_result;
+            if (result == null)
+                result = new Vector3fImpl();
+
+            // invert viewport transformation
+            result.setX(2 * i_xm / (float) m_viewport.width - 1);
+            result.setY(2 * (m_viewport.height - i_ym)
+                    / (float) m_viewport.height - 1);
+            result.setZ(2 * i_d - 1);
+
+            calculateInversionMatrix(i_modelMatrix, inversion);
+
+            result.transform(inversion);
+            return result;
+        } finally {
+            Math3D.returnMatrix4f(inversion);
+        }
+    }
 }

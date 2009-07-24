@@ -21,7 +21,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.LabelRetargetAction;
 import org.eclipse.ui.actions.RetargetAction;
 import org.eclipse.ui.part.EditorActionBarContributor;

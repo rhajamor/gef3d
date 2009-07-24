@@ -31,7 +31,4 @@ public interface Matrix2f extends IMatrix2f, Matrix {
 	 * @param i_sourceMatrix2f must not be null
 	 */
 	public void set(IMatrix2f i_sourceMatrix2f);
-
-		
-	
 }

@@ -10,42 +10,30 @@
  ******************************************************************************/
 package org.eclipse.draw3d.geometry;
 
-
 /**
- * Stores location, size, and rotation of an 3D object. 
- * Immutable triple of position properties for 3D objects, that is location,
- * size (scale), and rotation. These three properties can be combined in a so
- * called transformation matrix, which can then be passed to OpenGL or renderes
- * able to handle these kind of information.
+ * Stores location, size, and rotation of an 3D object. Immutable triple of
+ * position properties for 3D objects, that is location, size (scale), and
+ * rotation. These three properties can be combined in a so called
+ * transformation matrix, which can then be passed to OpenGL or renderes able to
+ * handle these kind of information.
  * <p>
- * This interface and its subinterfaces and implementations were created in 
+ * This interface and its subinterfaces and implementations were created in
  * order to resolve the problem stated in bug 261775.
  * </p>
  * <p>
  * Every Position is expected to have a host, i.e. @link{#getHost()} must not
- * return null. If you do not have a host (e.g. you only need a temporary 
+ * return null. If you do not have a host (e.g. you only need a temporary
  * position of the position is absolute), you can use
- * {@link Position3DImpl#Position3DImpl()} in order to create a position
- * with a dummy host.</p> 
+ * {@link Position3DImpl#Position3DImpl()} in order to create a position with a
+ * dummy host.
+ * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Jan 21, 2009
- * @see https://bugs.eclipse.org/bugs/show_bug.cgi?id=261775
+ * @href https://bugs.eclipse.org/bugs/show_bug.cgi?id=261775
  */
 public interface IPosition3D {
-
-	/**
-	 * Hint passed in events, see Host3D#positionChanged
-	 * 
-	 * @author Jens von Pilgrim
-	 * @version $Revision$
-	 * @since Jan 21, 2009
-	 */
-	public enum PositionHint {
-		location, size, rotation;
-
-	};
 
 	/**
 	 * Defines the state of the internal matrices.
@@ -66,11 +54,26 @@ public interface IPosition3D {
 	}
 
 	/**
-	 * Returns the host (or context) of this position
+	 * Hint passed in events, see Host3D#positionChanged
 	 * 
-	 * @return returns the host, must not be null
+	 * @author Jens von Pilgrim
+	 * @version $Revision$
+	 * @since Jan 21, 2009
 	 */
-	public IHost3D getHost();
+	public enum PositionHint {
+		/**
+		 * Location has changed.
+		 */
+		LOCATION,
+		/**
+		 * Rotation has changed.
+		 */
+		ROTATION,
+		/**
+		 * Size has changed.
+		 */
+		SIZE;
+	}
 
 	/**
 	 * Returns the smallest box completely enclosing the IFigure. This method is
@@ -87,37 +90,32 @@ public interface IPosition3D {
 	 * size, and rotation in {@link Position3D}.
 	 * </p>
 	 * 
+	 * @return the bounding box
+	 * 
 	 * @see org.eclipse.draw3d.IFigure3D#getBounds3D()
 	 */
 	public IBoundingBox getBounds3D();
 
 	/**
+	 * Returns the host (or context) of this position
+	 * 
+	 * @return returns the host, must not be null
+	 */
+	public IHost3D getHost();
+
+	/**
 	 * Returns the lower left corner of the bounding box.
 	 * 
-	 * @return
+	 * @return the location
 	 */
 	public IVector3f getLocation3D();
-
-	/**
-	 * Returns the rotation vector of this figure.
-	 * 
-	 * @return
-	 */
-	public IVector3f getRotation3D();
-
-	/**
-	 * Gets the size.
-	 * 
-	 * @return
-	 */
-	public IVector3f getSize3D();
 
 	/**
 	 * Returns the matrix that performs the absolute transformation to this
 	 * figure's location. This is the matrix that transforms (0, 0, 0) to this
 	 * figure's origin.
 	 * 
-	 * @return
+	 * @return the location matrix
 	 */
 	public IMatrix4f getLocationMatrix();
 
@@ -133,7 +131,7 @@ public interface IPosition3D {
 	 * reasons.
 	 * </p>
 	 * 
-	 * @return
+	 * @return the current matrix state
 	 */
 	public MatrixState getMatrixState();
 
@@ -141,8 +139,22 @@ public interface IPosition3D {
 	 * Returns the matrix that performs the transformation of this figure's
 	 * basic shape to it's intended shape.
 	 * 
-	 * @return
+	 * @return the model matrix
 	 */
 	public IMatrix4f getModelMatrix();
+
+	/**
+	 * Returns the rotation angles of the figure.
+	 * 
+	 * @return the rotation angles
+	 */
+	public IVector3f getRotation3D();
+
+	/**
+	 * Returns the 3D dimensions.
+	 * 
+	 * @return the dimensions
+	 */
+	public IVector3f getSize3D();
 
 }
