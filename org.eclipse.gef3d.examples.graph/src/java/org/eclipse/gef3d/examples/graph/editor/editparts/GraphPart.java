@@ -14,10 +14,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
+import org.eclipse.draw2d.FreeformLayeredPane;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.gef.EditPolicy;
-import org.eclipse.gef.editparts.AbstractEditPart;
 import org.eclipse.gef3d.editparts.AbstractGraphicalEditPartEx;
 import org.eclipse.gef3d.examples.graph.editor.editpolicies.Graph3DLayoutPolicy;
 import org.eclipse.gef3d.examples.graph.model.Graph;
@@ -82,7 +82,6 @@ public class GraphPart extends AbstractGraphicalEditPartEx implements
 	 * 
 	 * @see org.eclipse.gef.editparts.AbstractEditPart#getModelChildren()
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	protected List getModelChildren() {
 		return ((Graph) getModel()).getVertices();
@@ -92,7 +91,7 @@ public class GraphPart extends AbstractGraphicalEditPartEx implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see AbstractEditPart#createEditPolicies()
+	 * @see de.fernuni.gef3d.editparts.AbstractEditPart#createEditPolicies()
 	 */
 	@Override
 	protected void createEditPolicies() {

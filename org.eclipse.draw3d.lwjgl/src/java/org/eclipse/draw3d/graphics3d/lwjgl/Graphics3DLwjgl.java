@@ -297,10 +297,10 @@ public class Graphics3DLwjgl implements Graphics3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glColor3f(float, float,
-	 *      float)
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glColor3f(int, int,
+	 *      int)
 	 */
-	public void glColor3f(float red, float green, float blue) {
+	public void glColor3f(int red, int green, int blue) {
 		org.lwjgl.opengl.GL11.glColor3f(red, green, blue);
 	}
 

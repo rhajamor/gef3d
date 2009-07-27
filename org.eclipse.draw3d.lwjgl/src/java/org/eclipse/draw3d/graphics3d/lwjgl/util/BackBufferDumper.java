@@ -10,14 +10,17 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.util;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_RGBA;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11.GL_VIEWPORT;
+import static org.lwjgl.opengl.GL11.glGetInteger;
+import static org.lwjgl.opengl.GL11.glReadPixels;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-import org.eclipse.draw3d.ISceneListener;
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.camera.ICamera;
+import org.eclipse.draw3d.RenderListener;
 import org.eclipse.draw3d.util.ImageConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageData;
@@ -31,71 +34,61 @@ import org.lwjgl.BufferUtils;
  * @version $Revision$
  * @since 24.05.2009
  */
-public class BackBufferDumper implements ISceneListener {
+public class BackBufferDumper implements RenderListener {
 
-    private ByteBuffer m_pBuffer;
+	private IntBuffer m_vpBuffer = BufferUtils.createIntBuffer(16);
 
-    private int m_pBufferSize = 0;
+	private ByteBuffer m_pBuffer;
 
-    private IntBuffer m_vpBuffer = BufferUtils.createIntBuffer(16);
+	private int m_pBufferSize = 0;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.ISceneListener#cameraChanged(org.eclipse.draw3d.camera.ICamera,
-     *      org.eclipse.draw3d.camera.ICamera)
-     */
-    public void cameraChanged(ICamera i_oldCamera, ICamera i_newCamera) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.RenderListener#renderPassFinished(org.eclipse.draw3d.RenderContext)
+	 */
+	public void renderPassFinished(RenderContext i_renderContext) {
 
-        // nothing to do
-    }
+		m_vpBuffer.rewind();
+		glGetInteger(GL_VIEWPORT, m_vpBuffer);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.ISceneListener#renderPassFinished(org.eclipse.draw3d.RenderContext)
-     */
-    public void renderPassFinished(RenderContext i_renderContext) {
+		int x = m_vpBuffer.get(0);
+		int y = m_vpBuffer.get(1);
+		int width = m_vpBuffer.get(2);
+		int height = m_vpBuffer.get(3);
 
-        m_vpBuffer.rewind();
-        glGetInteger(GL_VIEWPORT, m_vpBuffer);
+		if (width == 0 || height == 0)
+			return;
+		
+		int size = width * height * 4;
+		if (m_pBuffer == null || size > m_pBufferSize) {
+			m_pBuffer = BufferUtils.createByteBuffer(size);
+			m_pBufferSize = size;
+		} else
+			m_pBuffer.limit(size);
 
-        int x = m_vpBuffer.get(0);
-        int y = m_vpBuffer.get(1);
-        int width = m_vpBuffer.get(2);
-        int height = m_vpBuffer.get(3);
+		glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, m_pBuffer);
 
-        if (width == 0 || height == 0)
-            return;
+		ImageData imageData = ImageConverter.colorBufferToImage(m_pBuffer,
+				GL_RGBA, GL_UNSIGNED_BYTE, width, height);
 
-        int size = width * height * 4;
-        if (m_pBuffer == null || size > m_pBufferSize) {
-            m_pBuffer = BufferUtils.createByteBuffer(size);
-            m_pBufferSize = size;
-        } else
-            m_pBuffer.limit(size);
+		ImageLoader imageLoader = new ImageLoader();
+		imageLoader.data = new ImageData[] { imageData };
 
-        glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, m_pBuffer);
+		String home = System.getProperty("user.home");
+		String path = home + "/backbuffer_" + System.currentTimeMillis()
+				+ ".png";
+		imageLoader.save(path, SWT.IMAGE_PNG);
+	}
 
-        ImageData imageData = ImageConverter.colorBufferToImage(m_pBuffer,
-            GL_RGBA, GL_UNSIGNED_BYTE, width, height);
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.RenderListener#renderPassStarted(org.eclipse.draw3d.RenderContext)
+	 */
+	public void renderPassStarted(RenderContext i_renderContext) {
+		// TODO implement method BackBufferDumper.renderPassStarted
 
-        ImageLoader imageLoader = new ImageLoader();
-        imageLoader.data = new ImageData[] { imageData };
+	}
 
-        String home = System.getProperty("user.home");
-        String path = home + "/backbuffer_" + System.currentTimeMillis()
-                + ".png";
-        imageLoader.save(path, SWT.IMAGE_PNG);
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.ISceneListener#renderPassStarted(org.eclipse.draw3d.RenderContext)
-     */
-    public void renderPassStarted(RenderContext i_renderContext) {
-
-        // nothing to do
-    }
 }

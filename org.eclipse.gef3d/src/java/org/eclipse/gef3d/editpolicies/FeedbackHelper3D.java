@@ -11,16 +11,16 @@
 package org.eclipse.gef3d.editpolicies;
 
 import org.eclipse.draw2d.ConnectionAnchor;
-import org.eclipse.draw2d.UpdateManager;
+import org.eclipse.draw2d.XYAnchor;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.Figure3D;
+import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.XYZAnchor;
-import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.util.CoordinateConverter;
 import org.eclipse.gef.editpolicies.FeedbackHelper;
 
 /**
@@ -32,79 +32,64 @@ import org.eclipse.gef.editpolicies.FeedbackHelper;
  */
 public class FeedbackHelper3D extends FeedbackHelper {
 
-    /**
-     * The color picker, which can be <code>null</code>.
-     */
-    protected ColorPicker m_colorPicker;
+	protected XYZAnchor m_dummyAnchor;
 
-    /**
-     * The default figure.
-     */
-    protected IFigure3D m_defaultFigure;
+	protected ColorPicker m_colorPicker;
 
-    /**
-     * A dummy anchor.
-     */
-    protected XYZAnchor m_dummyAnchor;
+	protected IFigure3D m_defaultFigure;
 
-    /**
-     * Creates a new feedback helper. The given default figure is used to
-     * convert world coordinates to surface coordinates and vice versa.
-     * 
-     * @param i_defaultFigure
-     *            the default figure
-     */
-    public FeedbackHelper3D(IFigure3D i_defaultFigure) {
+	/**
+	 * @param colorPicker
+	 */
+	public FeedbackHelper3D(IFigure3D defaultFigure) {
+		m_dummyAnchor = createDummyAnchor();
+		if (defaultFigure.getUpdateManager() instanceof PickingUpdateManager3D) {
+			m_colorPicker =
+				((PickingUpdateManager3D) defaultFigure.getUpdateManager())
+					.getPicker();
+		} else {
+			m_colorPicker = null;
+		}
+		m_defaultFigure = defaultFigure;
+	}
 
-        m_defaultFigure = i_defaultFigure;
-        m_dummyAnchor = createDummyAnchor();
+	/**
+	 * @return
+	 */
+	protected XYZAnchor createDummyAnchor() {
+		return new XYZAnchor(new Vector3fImpl(10, 10, 10));
+	}
 
-        UpdateManager updateManager = m_defaultFigure.getUpdateManager();
-        if (updateManager instanceof PickingUpdateManager3D)
-            m_colorPicker = ((PickingUpdateManager3D) updateManager).getPicker();
-    }
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * This method is a duplicate of the original one, using the newly defined
+	 * anchor here.
+	 * 
+	 * @see org.eclipse.gef.editpolicies.FeedbackHelper#update(org.eclipse.draw2d.ConnectionAnchor,
+	 *      org.eclipse.draw2d.geometry.Point)
+	 */
+	@Override
+	public void update(ConnectionAnchor anchor, Point p) {
+		if (anchor != null)
+			setAnchor(anchor);
+		else {
+			IFigure3D last3DFigure =
+				(m_colorPicker != null) ? m_colorPicker.getLastValidFigure()
+					: null;
+			if (last3DFigure == null) {
+				last3DFigure = m_defaultFigure;
+			}
+			Vector3fImpl v = new Vector3fImpl();
+			Point surface = new Point();
 
-    /**
-     * Creates a dummy anchor.
-     * 
-     * @return a dummy anchor
-     */
-    protected XYZAnchor createDummyAnchor() {
-
-        return new XYZAnchor(new Vector3fImpl(10, 10, 10));
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * This method is a duplicate of the original one, using the newly defined
-     * anchor here.
-     * 
-     * @see org.eclipse.gef.editpolicies.FeedbackHelper#update(org.eclipse.draw2d.ConnectionAnchor,
-     *      org.eclipse.draw2d.geometry.Point)
-     */
-    @Override
-    public void update(ConnectionAnchor anchor, Point p) {
-
-        if (anchor != null)
-            setAnchor(anchor);
-        else {
-            ISurface surface = null;
-            if (m_colorPicker != null)
-                surface = m_colorPicker.getCurrentSurface();
-
-            if (surface == null)
-                surface = m_defaultFigure.getSurface();
-
-            Vector3f w = Math3D.getVector3f();
-            try {
-                surface.getWorldLocation(p, w);
-                m_dummyAnchor.setLocation3D(w);
-                setAnchor(m_dummyAnchor);
-            } finally {
-                Math3D.returnVector3f(w);
-            }
-        }
-    }
+			CoordinateConverter
+				.screenToSurface(p.x, p.y, last3DFigure, surface);
+			CoordinateConverter.surfaceToWorld(surface.x, surface.y,
+				last3DFigure, v);
+			m_dummyAnchor.setLocation3D(v);
+			setAnchor(m_dummyAnchor);
+		}
+	}
 
 }

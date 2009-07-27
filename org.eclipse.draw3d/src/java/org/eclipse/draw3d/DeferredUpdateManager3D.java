@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.DeferredUpdateManager;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.opengl.GLCanvas;
 
 /**
@@ -76,24 +75,12 @@ public class DeferredUpdateManager3D extends DeferredUpdateManager {
 
 	}
 
-	/** 
-	 * {@inheritDoc}
-	 * @see org.eclipse.draw2d.DeferredUpdateManager#performUpdate()
-	 */
-	@Override
-	public synchronized void performUpdate() {
-
-		super.performUpdate();
-		canvas.redraw();
-	}
-	
 	/**
 	 * Called after repair damage is done. Here, buffers are swapped. Override
 	 * this method if buffers or other things have to be read after rendering.
 	 * (Reading buffers is extremly expensive)
 	 */
 	protected void repairDamageFinish() {
-		
 		canvas.swapBuffers();
 	}
 

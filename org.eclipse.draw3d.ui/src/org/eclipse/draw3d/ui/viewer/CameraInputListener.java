@@ -17,9 +17,10 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.widgets.Event;
 
 /**
- * Distributes input events to a {@link CameraInputHandler}.
+ * CameraInputListener There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -85,8 +86,7 @@ public class CameraInputListener implements KeyListener, MouseListener,
 	 */
 	public void mouseDown(MouseEvent i_event) {
 
-		m_handler.buttonDown(i_event.button, i_event.stateMask, i_event.x,
-				i_event.y);
+		m_handler.buttonDown(i_event);
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class CameraInputListener implements KeyListener, MouseListener,
 	 */
 	public void mouseMove(MouseEvent i_event) {
 
-		m_handler.mouseMove(i_event.stateMask, i_event.x, i_event.y);
+		m_handler.mouseMove(i_event);
 	}
 
 	/**
@@ -106,7 +106,18 @@ public class CameraInputListener implements KeyListener, MouseListener,
 	 */
 	public void mouseScrolled(MouseEvent i_mouseEvent) {
 
-		m_handler.mouseWheelScrolled(i_mouseEvent.count);
+		Event event = new Event();
+		event.button = i_mouseEvent.button;
+		event.count = i_mouseEvent.count;
+		event.data = i_mouseEvent.data;
+		event.display = i_mouseEvent.display;
+		event.time = i_mouseEvent.time;
+		event.x = i_mouseEvent.x;
+		event.y = i_mouseEvent.y;
+		event.widget = i_mouseEvent.widget;
+		event.stateMask = i_mouseEvent.stateMask;
+
+		m_handler.mouseWheelScrolled(event);
 	}
 
 	/**
@@ -116,7 +127,6 @@ public class CameraInputListener implements KeyListener, MouseListener,
 	 */
 	public void mouseUp(MouseEvent i_event) {
 
-		m_handler.buttonUp(i_event.button, i_event.stateMask, i_event.x,
-				i_event.y);
+		m_handler.buttonUp(i_event);
 	}
 }

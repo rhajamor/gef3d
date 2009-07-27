@@ -32,99 +32,98 @@ import org.eclipse.ui.IEditorSite;
  * @since 16.11.2007
  */
 public abstract class GraphicalEditor3DWithFlyoutPalette extends
-        GraphicalEditorWithFlyoutPalette {
+		GraphicalEditorWithFlyoutPalette {
 
-    /**
-     * The preference listener for this editor.
-     */
-    protected ScenePreferenceDistributor scenePreferenceDistributor;
+	/**
+	 * The preference listener for this editor.
+	 */
+	protected ScenePreferenceDistributor scenePreferenceDistributor;
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * This method calls several helper methods which could be overridden by
-     * subclasses:
-     * <ol>
-     * <li>{@link #doCreateGraphicalViewer()}</li>
-     * <li>{@link #doAttachFPSCounter(GraphicalViewer3D)}</li>
-     * <li>{@link #doRegisterToScene(IScene)}</li>
-     * </ol>
-     * </p>
-     * 
-     * @see org.eclipse.gef.ui.parts.GraphicalEditor#createGraphicalViewer(org.eclipse.swt.widgets.Composite)
-     */
-    @Override
-    protected void createGraphicalViewer(Composite i_parent) {
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * This method calls several helper methods which could be overridden by
+	 * subclasses:
+	 * <ol>
+	 * <li>{@link #doCreateGraphicalViewer()}</li>
+	 * <li>{@link #doAttachFPSCounter(GraphicalViewer3D)}</li>
+	 * <li>{@link #doRegisterToScene(IScene)}</li>
+	 * </ol>
+	 * </p>
+	 * 
+	 * @see org.eclipse.gef.ui.parts.GraphicalEditor#createGraphicalViewer(org.eclipse.swt.widgets.Composite)
+	 */
+	@Override
+	protected void createGraphicalViewer(Composite i_parent) {
+		GraphicalViewer3D viewer = doCreateGraphicalViewer();
 
-        GraphicalViewer3D viewer = doCreateGraphicalViewer();
+		// 1:1 from GraphicalEditor.createGraphicalViewer(Composite),
+		// instead of createControl, createControl3D is called!
+		Control control = viewer.createControl3D(i_parent);
+		setGraphicalViewer(viewer);
+		configureGraphicalViewer();
+		hookGraphicalViewer();
+		initializeGraphicalViewer();
 
-        // 1:1 from GraphicalEditor.createGraphicalViewer(Composite),
-        // instead of createControl, createControl3D is called!
-        Control control = viewer.createControl3D(i_parent);
-        setGraphicalViewer(viewer);
-        configureGraphicalViewer();
-        hookGraphicalViewer();
-        initializeGraphicalViewer();
+		doAttachFPSCounter(viewer);
+		control.addDisposeListener(viewer.getLightweightSystem3D());
 
-        doAttachFPSCounter(viewer);
-        control.addDisposeListener(viewer.getLightweightSystem3D());
+		if (viewer instanceof IScene) {
+			doRegisterToScene((IScene) viewer);
+		}
+	}
 
-        if (viewer instanceof IScene)
-            doRegisterToScene((IScene) viewer);
-    }
+	/**
+	 * Called by {@link #createGraphicalViewer(Composite)} if created viewer is
+	 * an instance of {@link IScene}.
+	 * 
+	 * @param scene
+	 */
+	protected void doRegisterToScene(IScene scene) {
+		scenePreferenceDistributor = new ScenePreferenceDistributor(scene);
+		scenePreferenceDistributor.start();
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette#dispose()
-     */
-    @Override
-    public void dispose() {
+	/**
+	 * Called by {@link #createGraphicalViewer(Composite)} if created viewer is
+	 * an instanceof {@link GraphicalViewer3D}.
+	 * 
+	 * @param viewer3D
+	 */
+	protected void doAttachFPSCounter(GraphicalViewer3D viewer3D) {
+		IEditorSite editorSite = getEditorSite();
+		IActionBars actionBars = editorSite.getActionBars();
+		IStatusLineManager statusLine = actionBars.getStatusLineManager();
 
-        if (scenePreferenceDistributor != null)
-            scenePreferenceDistributor.stop();
+		FpsStatusLineItem fpsCounter = new FpsStatusLineItem();
+		LightweightSystem3D lightweightSystem3D =
+			viewer3D.getLightweightSystem3D();
+		lightweightSystem3D.addRendererListener(fpsCounter);
+		statusLine.add(fpsCounter);
+	}
 
-        super.dispose();
-    }
+	/**
+	 * Here, a {@link GraphicalViewer3DImpl} is created instead of a
+	 * ScrollingGraphicalViewer.
+	 * 
+	 * @return
+	 */
+	protected GraphicalViewer3D doCreateGraphicalViewer() {
+		GraphicalViewer3DImpl viewer = new GraphicalViewer3DImpl();
+		return viewer;
+	}
 
-    /**
-     * Called by {@link #createGraphicalViewer(Composite)} if created viewer is
-     * an instanceof {@link GraphicalViewer3D}.
-     * 
-     * @param viewer3D
-     */
-    protected void doAttachFPSCounter(GraphicalViewer3D viewer3D) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette#dispose()
+	 */
+	@Override
+	public void dispose() {
 
-        IEditorSite editorSite = getEditorSite();
-        IActionBars actionBars = editorSite.getActionBars();
-        IStatusLineManager statusLine = actionBars.getStatusLineManager();
+		if (scenePreferenceDistributor != null)
+			scenePreferenceDistributor.stop();
 
-        FpsStatusLineItem fpsCounter = new FpsStatusLineItem();
-        LightweightSystem3D lightweightSystem3D = viewer3D.getLightweightSystem3D();
-        lightweightSystem3D.addSceneListener(fpsCounter);
-        statusLine.add(fpsCounter);
-    }
-
-    /**
-     * Here, a {@link GraphicalViewer3DImpl} is created instead of a
-     * ScrollingGraphicalViewer.
-     * 
-     * @return
-     */
-    protected GraphicalViewer3D doCreateGraphicalViewer() {
-
-        return new GraphicalViewer3DImpl();
-    }
-
-    /**
-     * Called by {@link #createGraphicalViewer(Composite)} if created viewer is
-     * an instance of {@link IScene}.
-     * 
-     * @param scene
-     */
-    protected void doRegisterToScene(IScene scene) {
-
-        scenePreferenceDistributor = new ScenePreferenceDistributor(scene);
-        scenePreferenceDistributor.start();
-    }
+		super.dispose();
+	}
 }

@@ -26,6 +26,10 @@
  * ... which may be overlooked at first glance (and which are not necessarily
  * located in this package ;-) ).
  * <dl>
+ * <dt>{@link org.eclipse.draw3d.util.CoordinateConverter}</dt>
+ * 	<dd>Converts 2D to 3D coodinates and vice versa. This class is also
+ * 	used by policies to create appropriate coordinates for commands based
+ * 	on the request coordinates.</dd>
  * <dt>{@link org.eclipse.draw3d.shapes.Shape}</dt>
  * 	<dd>Super interface for shapes, that are 3D objects to be rendered. See
  * 	shapes package description for details. Figure3D usually use shapes to

@@ -17,10 +17,11 @@ import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.ui.camera.CameraInputHandler;
 import org.eclipse.draw3d.ui.preferences.CameraPreferenceDistributor;
 import org.eclipse.gef.EditPartViewer;
-import org.eclipse.gef3d.ui.parts.GraphicalViewer3D;
+import org.eclipse.gef.tools.AbstractTool;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -36,291 +37,263 @@ import org.eclipse.swt.widgets.Event;
  * @version $Revision$
  * @since 02.06.2009
  */
-public class CameraTool extends AbstractTool3D {
+public class CameraTool extends AbstractTool {
 
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger.getLogger(CameraTool.class.getName());
+	@SuppressWarnings("unused")
+	private static final Logger logger = Logger.getLogger(CameraTool.class
+			.getName());
 
-    /**
-     * The camera input handler.
-     */
-    protected CameraInputHandler m_handler;
+	/**
+	 * The camera input handler.
+	 */
+	protected CameraInputHandler m_handler;
 
-    /**
-     * The camera preference distributor.
-     */
-    protected CameraPreferenceDistributor m_prefDistributor;
+	/**
+	 * The camera preference distributor.
+	 */
+	protected CameraPreferenceDistributor m_prefDistributor;
 
-    private Cursor m_pushedCursor;
+	private Cursor m_pushedCursor;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#activate()
-     */
-    @Override
-    public void activate() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#activate()
+	 */
+	@Override
+	public void activate() {
 
-        super.activate();
+		super.activate();
 
-        if (m_handler == null)
-            m_handler = new CameraInputHandler();
+		if (m_handler == null)
+			m_handler = new CameraInputHandler();
 
-        if (m_prefDistributor == null)
-            m_prefDistributor = new CameraPreferenceDistributor(m_handler);
+		if (m_prefDistributor == null)
+			m_prefDistributor = new CameraPreferenceDistributor(m_handler);
 
-        m_prefDistributor.start();
-    }
+		m_prefDistributor.start();
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#deactivate()
-     */
-    @Override
-    public void deactivate() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#deactivate()
+	 */
+	@Override
+	public void deactivate() {
 
-        super.deactivate();
-        m_prefDistributor.stop();
-    }
+		super.deactivate();
+		m_prefDistributor.stop();
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#getCommandName()
-     */
-    @Override
-    protected String getCommandName() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#getCommandName()
+	 */
+	@Override
+	protected String getCommandName() {
 
-        return "Camera Tool";
-    }
+		return "Camera Tool";
+	}
 
-    /**
-     * Returns the scene which contains the camera.
-     * 
-     * @return the scene
-     * 
-     * @throws AssertionError
-     *             if no scene is available
-     */
-    protected IScene getScene() {
+	/**
+	 * Returns the scene which contains the camera.
+	 * 
+	 * @return the scene or <code>null</code> if no scene is available
+	 */
+	protected IScene getScene() {
 
-        EditPartViewer viewer = getCurrentViewer();
-        if (!(viewer instanceof GraphicalViewer3D))
-            throw new AssertionError(
-                "camera tool can only be used with a 3D graphical viewer");
+		EditPartViewer viewer = getCurrentViewer();
+		if (viewer != null && viewer instanceof IScene)
+			return (IScene) viewer;
 
-        return ((GraphicalViewer3D) viewer).getLightweightSystem3D();
-    }
+		return null;
+	}
 
-    private int getStateMask(Input i_input) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#handleKeyDown(org.eclipse.swt.events.KeyEvent)
+	 */
+	@Override
+	protected boolean handleKeyDown(KeyEvent i_e) {
 
-        int stateMask = 0;
-        if (i_input.isAltKeyDown())
-            stateMask |= SWT.ALT;
-        if (i_input.isControlKeyDown())
-            stateMask |= SWT.CONTROL;
-        if (i_input.isShiftKeyDown())
-            stateMask |= SWT.SHIFT;
-        if (i_input.isModKeyDown(SWT.MOD1))
-            stateMask |= SWT.MOD1;
-        if (i_input.isModKeyDown(SWT.MOD2))
-            stateMask |= SWT.MOD2;
-        if (i_input.isModKeyDown(SWT.MOD3))
-            stateMask |= SWT.MOD3;
-        if (i_input.isModKeyDown(SWT.MOD4))
-            stateMask |= SWT.MOD4;
-        if (i_input.isMouseButtonDown(SWT.BUTTON1))
-            stateMask |= SWT.BUTTON1;
-        if (i_input.isMouseButtonDown(SWT.BUTTON2))
-            stateMask |= SWT.BUTTON2;
-        if (i_input.isMouseButtonDown(SWT.BUTTON3))
-            stateMask |= SWT.BUTTON3;
-        if (i_input.isMouseButtonDown(SWT.BUTTON4))
-            stateMask |= SWT.BUTTON4;
-        if (i_input.isMouseButtonDown(SWT.BUTTON5))
-            stateMask |= SWT.BUTTON5;
+		// need to override this to allow ESC as center view key
+		return true;
+	}
 
-        return stateMask;
-    }
+	private void setCursor(int i_cursorId) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#handleButtonDown(int)
-     */
-    @Override
-    protected boolean handleButtonDown(int i_button) {
+		// save current cursor
+		Control ctrl = getCurrentViewer().getControl();
+		while (ctrl != null) {
+			if (ctrl.getCursor() != null) {
+				m_pushedCursor = ctrl.getCursor();
+				break;
+			}
 
-        setCursor(SWT.CURSOR_CROSS);
-        m_handler.setScene(getScene());
+			ctrl = ctrl.getParent();
+		}
 
-        Input3D input = getCurrentInput3D();
-        m_handler.buttonDown(i_button, getStateMask(input),
-            input.getRealMouseLocation().x, input.getRealMouseLocation().y);
+		m_pushedCursor = getCurrentViewer().getControl().getDisplay()
+				.getSystemCursor(SWT.CURSOR_ARROW);
 
-        return true;
-    }
+		// hide cursor and save position
+		ctrl = getCurrentViewer().getControl();
+		Display display = ctrl.getDisplay();
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#handleButtonUp(int)
-     */
-    @Override
-    protected boolean handleButtonUp(int i_button) {
+		Cursor cursor = display.getSystemCursor(i_cursorId);
+		ctrl.setCursor(cursor);
+	}
 
-        restoreCursor();
-        m_handler.setScene(getScene());
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#keyDown(org.eclipse.swt.events.KeyEvent,
+	 *      org.eclipse.gef.EditPartViewer)
+	 */
+	@Override
+	public void keyDown(KeyEvent i_evt, EditPartViewer i_viewer) {
 
-        Input3D input = getCurrentInput3D();
-        m_handler.buttonUp(i_button, getStateMask(input),
-            input.getRealMouseLocation().x, input.getRealMouseLocation().y);
+		super.keyDown(i_evt, i_viewer);
 
-        return true;
-    }
+		m_handler.setScene(getScene());
+		m_handler.keyDown(i_evt);
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#handleDrag()
-     */
-    @Override
-    protected boolean handleDrag() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#keyUp(org.eclipse.swt.events.KeyEvent,
+	 *      org.eclipse.gef.EditPartViewer)
+	 */
+	@Override
+	public void keyUp(KeyEvent i_evt, EditPartViewer i_viewer) {
 
-        m_handler.setScene(getScene());
+		super.keyUp(i_evt, i_viewer);
 
-        Input3D input = getCurrentInput3D();
-        m_handler.mouseMove(getStateMask(input),
-            input.getRealMouseLocation().x, input.getRealMouseLocation().y);
+		m_handler.setScene(getScene());
+		m_handler.keyUp(i_evt);
+	}
 
-        return true;
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#mouseDown(org.eclipse.swt.events.MouseEvent,
+	 *      org.eclipse.gef.EditPartViewer)
+	 */
+	@Override
+	public void mouseDown(MouseEvent i_me, EditPartViewer i_viewer) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#handleKeyDown(org.eclipse.swt.events.KeyEvent)
-     */
-    @Override
-    protected boolean handleKeyDown(KeyEvent i_e) {
+		super.mouseDown(i_me, i_viewer);
 
-        m_handler.setScene(getScene());
-        m_handler.keyDown(i_e);
+		setCursor(SWT.CURSOR_CROSS);
+		m_handler.setScene(getScene());
+		m_handler.buttonDown(i_me);
+	}
 
-        return true;
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#mouseDrag(org.eclipse.swt.events.MouseEvent,
+	 *      org.eclipse.gef.EditPartViewer)
+	 */
+	@Override
+	public void mouseDrag(MouseEvent i_me, EditPartViewer i_viewer) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#handleKeyUp(org.eclipse.swt.events.KeyEvent)
-     */
-    @Override
-    protected boolean handleKeyUp(KeyEvent i_e) {
+		super.mouseDrag(i_me, i_viewer);
 
-        m_handler.setScene(getScene());
-        m_handler.keyUp(i_e);
+		m_handler.setScene(getScene());
+		m_handler.mouseMove(i_me);
+	}
 
-        return true;
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#mouseMove(org.eclipse.swt.events.MouseEvent,
+	 *      org.eclipse.gef.EditPartViewer)
+	 */
+	@Override
+	public void mouseMove(MouseEvent i_me, EditPartViewer i_viewer) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#handleNativeDragFinished(org.eclipse.swt.dnd.DragSourceEvent)
-     */
-    @Override
-    protected boolean handleNativeDragFinished(DragSourceEvent i_event) {
+		super.mouseMove(i_me, i_viewer);
 
-        restoreCursor();
-        m_handler.setScene(getScene());
+		m_handler.setScene(getScene());
+		m_handler.mouseMove(i_me);
+	}
 
-        Input3D input = getCurrentInput3D();
-        m_handler.nativeDragFinished(input.getRealMouseLocation().x,
-            input.getRealMouseLocation().y);
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#mouseUp(org.eclipse.swt.events.MouseEvent,
+	 *      org.eclipse.gef.EditPartViewer)
+	 */
+	@Override
+	public void mouseUp(MouseEvent i_me, EditPartViewer i_viewer) {
 
-        return true;
-    }
+		restoreCursor();
+		super.mouseUp(i_me, i_viewer);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#handleNativeDragStarted(org.eclipse.swt.dnd.DragSourceEvent)
-     */
-    @Override
-    protected boolean handleNativeDragStarted(DragSourceEvent i_event) {
+		m_handler.setScene(getScene());
+		m_handler.buttonUp(i_me);
+	}
 
-        setCursor(SWT.CURSOR_CROSS);
-        m_handler.setScene(getScene());
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#mouseWheelScrolled(org.eclipse.swt.widgets.Event,
+	 *      org.eclipse.gef.EditPartViewer)
+	 */
+	@Override
+	public void mouseWheelScrolled(Event i_event, EditPartViewer i_viewer) {
 
-        Input3D input = getCurrentInput3D();
-        m_handler.nativeDragStarted(input.getRealMouseLocation().x,
-            input.getRealMouseLocation().y);
+		super.mouseWheelScrolled(i_event, i_viewer);
 
-        return true;
-    }
+		m_handler.setScene(getScene());
+		m_handler.mouseWheelScrolled(i_event);
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#keyUp(org.eclipse.swt.events.KeyEvent,
-     *      org.eclipse.gef.EditPartViewer)
-     */
-    @Override
-    public void keyUp(KeyEvent i_evt, EditPartViewer i_viewer) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#nativeDragFinished(org.eclipse.swt.dnd.DragSourceEvent,
+	 *      org.eclipse.gef.EditPartViewer)
+	 */
+	@Override
+	public void nativeDragFinished(DragSourceEvent i_event,
+			EditPartViewer i_viewer) {
 
-        super.keyUp(i_evt, i_viewer);
+		restoreCursor();
+		super.nativeDragFinished(i_event, i_viewer);
 
-        m_handler.setScene(getScene());
-        m_handler.keyUp(i_evt);
-    }
+		m_handler.setScene(getScene());
+		m_handler.nativeDragFinished(i_event);
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.tools.AbstractTool#mouseWheelScrolled(org.eclipse.swt.widgets.Event,
-     *      org.eclipse.gef.EditPartViewer)
-     */
-    @Override
-    public void mouseWheelScrolled(Event i_event, EditPartViewer i_viewer) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.tools.AbstractTool#nativeDragStarted(org.eclipse.swt.dnd.DragSourceEvent,
+	 *      org.eclipse.gef.EditPartViewer)
+	 */
+	@Override
+	public void nativeDragStarted(DragSourceEvent i_event,
+			EditPartViewer i_viewer) {
 
-        super.mouseWheelScrolled(i_event, i_viewer);
+		super.nativeDragStarted(i_event, i_viewer);
 
-        m_handler.setScene(getScene());
-        m_handler.mouseWheelScrolled(i_event.count);
-    }
+		setCursor(SWT.CURSOR_CROSS);
+		m_handler.setScene(getScene());
+		m_handler.nativeDragStarted(i_event);
+	}
 
-    private void restoreCursor() {
+	private void restoreCursor() {
 
-        if (m_pushedCursor != null) {
-            Control ctrl = getCurrentViewer().getControl();
-            ctrl.setCursor(m_pushedCursor);
-            m_pushedCursor = null;
-        }
-    }
-
-    private void setCursor(int i_cursorId) {
-
-        // save current cursor
-        Control ctrl = getCurrentViewer().getControl();
-        while (ctrl != null) {
-            if (ctrl.getCursor() != null) {
-                m_pushedCursor = ctrl.getCursor();
-                break;
-            }
-
-            ctrl = ctrl.getParent();
-        }
-
-        m_pushedCursor = getCurrentViewer().getControl().getDisplay().getSystemCursor(
-            SWT.CURSOR_ARROW);
-
-        // hide cursor and save position
-        ctrl = getCurrentViewer().getControl();
-        Display display = ctrl.getDisplay();
-
-        Cursor cursor = display.getSystemCursor(i_cursorId);
-        ctrl.setCursor(cursor);
-    }
+		if (m_pushedCursor != null) {
+			Control ctrl = getCurrentViewer().getControl();
+			ctrl.setCursor(m_pushedCursor);
+			m_pushedCursor = null;
+		}
+	}
 }

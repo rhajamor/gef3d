@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: GEF3D Ecoretools-3D Sample
+Bundle-Name: Gef3D Ecoretools-3D Sample
 Bundle-SymbolicName: org.eclipse.gef3d.examples.ecore;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Activator: org.eclipse.gef3d.examples.ecore.EcoreTools3DPlugin
-Bundle-Vendor: Eclipse Foundation
+Bundle-Vendor: FernUniversitaet in Hagen
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.gef3d,

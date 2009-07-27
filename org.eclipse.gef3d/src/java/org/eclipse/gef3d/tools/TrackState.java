@@ -11,11 +11,13 @@
  ******************************************************************************/
 package org.eclipse.gef3d.tools;
 
-import java.util.logging.Logger;
+import static org.eclipse.draw3d.util.CoordinateConverter.worldToSurface;
+
+import java.text.MessageFormat;
 
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw3d.ISurface;
+import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -31,172 +33,173 @@ import org.eclipse.draw3d.picking.ColorPicker;
  */
 public class TrackState {
 
-    @SuppressWarnings("unused")
-    private static final Logger log = Logger.getLogger(TrackState.class.getName());
+	private boolean m_valid = false;
 
-    private ISurface m_currentSurface;
+	private Vector3f m_location3D = new Vector3fImpl();
 
-    private Point m_currentSurfaceLocation = new Point();
+	private ColorPicker m_picker;
 
-    private Vector3f m_currentWorldLocation = new Vector3fImpl();
+	private Vector3f m_startLocation3D = new Vector3fImpl();
 
-    private ISurface m_initialSurface;
+	private Point m_screenLocation2D = new Point();
 
-    private Point m_initialSurfaceLocation = new Point();
+	private Point m_location2D = new Point();
 
-    private Vector3f m_initialWorldLocation = new Vector3fImpl();
+	private Dimension m_moveDelta2D = new Dimension();
 
-    private Point m_lastSurfaceLocation = new Point();
+	private Point m_startLocation2D = new Point();
 
-    private ColorPicker m_picker;
+	private Vector3f m_moveDelta3D = new Vector3fImpl();
 
-    private Dimension m_surfaceMoveDelta = new Dimension();
+	/**
+	 * Postcondition: moveDeltas (2D and 3D) != null
+	 */
+	private void validate() {
 
-    private Vector3f m_worldMoveDelta = new Vector3fImpl();
+		if (!m_valid) {
 
-    /**
-     * Creates a new instance and initializes it with the given arguments.
-     * 
-     * @param i_picker
-     *            the picker to use for calculating 3D coordinates
-     * @param i_surfaceLocation
-     *            the current surface location
-     * @throws NullPointerException
-     *             if any of the given arguments is null
-     */
-    public TrackState(ColorPicker i_picker, Point i_surfaceLocation) {
+			int x = m_screenLocation2D.x;
+			int y = m_screenLocation2D.y;
 
-        if (i_picker == null)
-            throw new NullPointerException("i_picker must not be null");
+			m_picker.getVirtualCoordinates(x, y, m_location3D);
+//			m_currentFigure = m_picker.getFigure3D(x, y);
 
-        if (i_surfaceLocation == null)
-            throw new NullPointerException("i_mouseLocation must not be null");
+			IFigure3D surfaceFigure = m_picker.getLastValidFigure();
 
-        m_picker = i_picker;
+			worldToSurface(m_location3D.getX(), m_location3D.getY(),
+				m_location3D.getZ(), surfaceFigure, m_location2D);
 
-        m_initialSurface = m_picker.getCurrentSurface();
-        m_initialSurfaceLocation.setLocation(i_surfaceLocation);
+			Math3D.sub(m_location3D, m_startLocation3D, m_moveDelta3D);
 
-        m_initialSurface.getWorldLocation(m_initialSurfaceLocation,
-            m_initialWorldLocation);
+			// if (m_startFigure == m_currentFigure) {
+			if (m_moveDelta2D == null)
+				m_moveDelta2D = new Dimension();
 
-        update(i_surfaceLocation);
-    }
+			m_moveDelta2D.width = m_location2D.x - m_startLocation2D.x;
+			m_moveDelta2D.height = m_location2D.y - m_startLocation2D.y;
+			// } else {
+			// m_moveDelta2D = null;
+			// }
 
-    /**
-     * Returns the current surface under the mouse cursor.
-     * 
-     * @return the current surface
-     */
-    public ISurface getCurrentSurface() {
+			m_valid = true;
+		}
+		// postcondition:
+		if (!(m_moveDelta2D != null && m_moveDelta3D != null)) {
+			throw new IllegalStateException(MessageFormat.format(
+				"Postcondition failed, "
+						+ "at least one move delta is null (2D: {0}, 3D: {1})",
+				m_moveDelta2D, m_moveDelta3D));
 
-        return m_currentSurface;
-    }
+		}
+	}
 
-    /**
-     * Returns the current surface location in 2D coordinates.
-     * 
-     * @return the current surface location
-     */
-    public Point getCurrentSurfaceLocation() {
+	/**
+	 * Returns the 2D move delta.
+	 * 
+	 * @return the 2D move delta.
+	 */
+	public Dimension getMoveDelta2D() {
 
-        return m_currentSurfaceLocation;
-    }
+		validate();
+		return m_moveDelta2D;
+	}
 
-    /**
-     * Returns the current world drag location.
-     * 
-     * @return the current 3D drag location or <code>null</code> if no location
-     *         has been set
-     */
-    public IVector3f getCurrentWorldLocation() {
+	/**
+	 * Returns the 3D start location.
+	 * 
+	 * @return
+	 */
+	public IVector3f getStartLocation3D() {
 
-        return m_currentWorldLocation;
-    }
+		return m_startLocation3D;
+	}
 
-    /**
-     * Returns the initial surface, e.g. the surface on which the drag
-     * originated.
-     * 
-     * @return the initial surface
-     */
-    public ISurface getInitialSurface() {
+	/**
+	 * Creates a new instance and initializes it with the given arguments.
+	 * 
+	 * @param i_screenLocation2D the start location of the drag operation in
+	 *            screen coordinates
+	 * @param i_picker the picker to use for calculating 3D coordinates
+	 * @throws NullPointerException if any of the given arguments is null
+	 */
+	public TrackState(Point i_screenLocation2D, ColorPicker i_picker) {
 
-        return m_initialSurface;
-    }
+		if (i_screenLocation2D == null)
+			throw new NullPointerException(
+				"i_screenLocation2D must not be null");
 
-    /**
-     * Returns the initial surface location, e.g. the surface location where
-     * this drag started.
-     * 
-     * @return the initial surface location
-     */
-    public Point getInitialSurfaceLocation() {
+		if (i_picker == null)
+			throw new NullPointerException("i_picker must not be null");
 
-        return m_initialSurfaceLocation;
-    }
+		m_picker = i_picker;
+		setScreenLocation(i_screenLocation2D);
 
-    /**
-     * Returns the initial world location, e.g. the world location where this
-     * drag started.
-     * 
-     * @return the initial world location
-     */
-    public IVector3f getInitialWorldLocation() {
+		m_picker.getVirtualCoordinates(m_screenLocation2D.x,
+			m_screenLocation2D.y, m_startLocation3D);
+		IFigure3D figureUnderLocation = 
+			m_picker.getFigure3D(m_screenLocation2D.x, m_screenLocation2D.y);
+		
+		if (figureUnderLocation==null) {
+//			figureUnderLocation = m_picker.getLastValidFigure();
+//			if (figureUnderLocation==null)
+				throw new NullPointerException("No initial surface found.");
+		}
+		
+		worldToSurface(m_startLocation3D.getX(), m_startLocation3D.getY(),
+			m_startLocation3D.getZ(), figureUnderLocation, m_startLocation2D);
+	}
 
-        return m_initialWorldLocation;
-    }
+	/**
+	 * Returns the current 3D drag location.
+	 * 
+	 * @return the current 3D drag location or <code>null</code> if no location
+	 *         has been set
+	 */
+	public IVector3f getLocation3D() {
 
-    /**
-     * Returns the 2D move delta.
-     * 
-     * @return the 2D move delta.
-     */
-    public Dimension getSurfaceMoveDelta() {
+		validate();
+		return m_location3D;
+	}
 
-        return m_surfaceMoveDelta;
-    }
+	/**
+	 * Returns the delta vector of the start and the current drag location.
+	 * 
+	 * @param o_result the result vector, if <code>null</code>, a new one will
+	 *            be created
+	 * @return the result delta vector
+	 */
+	public Vector3f getMoveDelta3D() {
 
-    /**
-     * Returns the 3D delta vector of the initial and the current drag location.
-     * 
-     * @return the delta vector
-     */
-    public Vector3f getWorldMoveDelta() {
+		validate();
+		return m_moveDelta3D;
+	}
 
-        return m_worldMoveDelta;
-    }
+	public Point getLocation2D() {
 
-    /**
-     * Sets the current location of the drag and the current surface.
-     * 
-     * @param i_surfaceLocation
-     *            the current location in surface coordinates
-     * 
-     * @throws NullPointerException
-     *             if the given location is <code>null</code>
-     */
-    public void update(Point i_surfaceLocation) {
+		validate();
+		return m_location2D;
+	}
 
-        if (i_surfaceLocation == null)
-            throw new NullPointerException("i_surfaceLocation must not be null");
+	/**
+	 * Sets the current 2D location of the drag.
+	 * 
+	 * @param i_location the current 2D location
+	 * @throws NullPointerException if the given location is <code>null</code>
+	 */
+	public void setScreenLocation(Point i_location) {
 
-        if (i_surfaceLocation.equals(m_lastSurfaceLocation))
-            return;
+		if (i_location == null)
+			throw new NullPointerException("i_location must not be null");
 
-        m_currentSurface = m_picker.getCurrentSurface();
-        m_currentSurfaceLocation.setLocation(i_surfaceLocation);
-        m_currentSurface.getWorldLocation(m_currentSurfaceLocation,
-            m_currentWorldLocation);
+		if (i_location.equals(m_screenLocation2D))
+			return;
 
-        m_lastSurfaceLocation.setLocation(i_surfaceLocation);
+		m_screenLocation2D.setLocation(i_location);
+		m_valid = false;
+	}
 
-        m_surfaceMoveDelta.width = m_currentSurfaceLocation.x
-                - m_initialSurfaceLocation.x;
-        m_surfaceMoveDelta.height = m_currentSurfaceLocation.y
-                - m_initialSurfaceLocation.y;
+	public Point getStartLocation2D() {
 
-        Math3D.sub(m_currentWorldLocation, m_initialWorldLocation,
-            m_worldMoveDelta);
-    }
+		return m_startLocation2D;
+	}
 }

@@ -15,10 +15,12 @@ import java.util.List;
 
 import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.geometry.IVector3f;
 
 /**
- * Interface to be implemented by 3D figures having 2D children such as 2D
- * connections or more general 2D figures.
+ * Interface to be implemented by 3D figures having 2D children such as 
+ * 2D connections or more general 2D figures.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -43,21 +45,18 @@ public interface IFigure2DHost3D {
 	 * {@link DispatchingConnectionLayer} uses the first available connection
 	 * layer.
 	 * 
-	 * @param i_clfactory
-	 *            the factory used or <code>null</code>, if no layer should be
+	 * @param i_clfactory the factory used or null, if no layer should be
 	 *            created lazily
-	 * @return the connection layer or <code>null</code> if this figure does not
-	 *         support connections
+	 * @return
 	 * @see ConnectionLayerFactory#singleton
 	 */
 	public ConnectionLayer getConnectionLayer(ConnectionLayerFactory i_clfactory);
 
 	/**
-	 * Returns the surface of this host figure.
+	 * Returns the 3D location of a 3D point using the host's insets matrix.
 	 * 
-	 * @return the surface
-	 * @todo add parameters that allow selection of a particular surface if a
-	 *       figure needs more than one surface
+	 * @param i_point2D
+	 * @return
 	 */
-	public ISurface getSurface();
+	public IVector3f getLocation3D(Point i_point2D);
 }

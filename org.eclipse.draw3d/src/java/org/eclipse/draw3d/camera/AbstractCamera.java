@@ -25,57 +25,65 @@ import java.util.Vector;
  */
 public abstract class AbstractCamera implements ICamera {
 
-    private final List<ICameraListener> m_listeners;
+	private int m_far = 40000;
 
-    /**
-     * @param i_lightweightSystem3D
-     */
-    public AbstractCamera() {
+	private final List<ICameraListener> m_listeners;
 
-        m_listeners = new Vector<ICameraListener>(3);
-    }
+	private int m_near = 100;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.camera.ICamera#addCameraListener(org.eclipse.draw3d.camera.ICameraListener)
-     */
-    public void addCameraListener(ICameraListener i_listener) {
+	/**
+	 * @param i_lightweightSystem3D
+	 */
+	public AbstractCamera() {
+		m_listeners = new Vector<ICameraListener>(3);
+	}
 
-        if (!m_listeners.contains(i_listener))
-            m_listeners.add(i_listener);
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.camera.ICamera#addCameraListener(org.eclipse.draw3d.camera.ICameraListener)
+	 */
+	public void addCameraListener(ICameraListener i_listener) {
 
-    /**
-     * Notifies all camera listeners that this camera has changed.
-     */
-    protected void fireCameraChanged() {
+		if (!m_listeners.contains(i_listener))
+			m_listeners.add(i_listener);
+	}
 
-        for (ICameraListener listener : m_listeners)
-            listener.cameraChanged();
-    }
+	/**
+	 * Notifies all camera listeners that this camera has changed.
+	 */
+	protected void fireCameraChanged() {
+		for (ICameraListener listener : m_listeners)
+			listener.cameraChanged();
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.camera.ICamera#removeCameraListener(org.eclipse.draw3d.camera.ICameraListener)
-     */
-    public void removeCameraListener(ICameraListener i_listener) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.camera.ICamera#getFar()
+	 */
+	public int getFar() {
 
-        if (m_listeners.contains(i_listener))
-            m_listeners.remove(i_listener);
-    }
+		return m_far;
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.camera.ICamera#transferListeners(org.eclipse.draw3d.camera.ICamera)
-     */
-    public void transferListeners(ICamera i_newCamera) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.camera.ICamera#getNear()
+	 */
+	public int getNear() {
 
-        for (ICameraListener listener : m_listeners) {
-            removeCameraListener(listener);
-            i_newCamera.addCameraListener(listener);
-        }
-    }
+		return m_near;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.camera.ICamera#removeCameraListener(org.eclipse.draw3d.camera.ICameraListener)
+	 */
+	public void removeCameraListener(ICameraListener i_listener) {
+		m_listeners.remove(i_listener);
+	}
+
 }

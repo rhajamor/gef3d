@@ -661,20 +661,20 @@ public class Math3DTest extends TestCase {
 
 		Vector3fImpl v1 = new Vector3fImpl(x, y, z);
 
-		Vector3f v2 = Math3D.transform(v0, m0, null);
+		Vector3f v2 = Math3D.transform(m0, v0, null);
 
 		if (!v1.equals(v2)) {
 			fail("testTransformIMatrix3fIVector3fVector3f - Expected values do not match: "
 					+ v1.toString() + " " + v2.toString());
 		}
 
-		Math3D.transform(v0, m0, v2);
+		Math3D.transform(m0, v0, v2);
 		if (!v1.equals(v2)) {
 			fail("testTransformIMatrix3fIVector3fVector3f - Expected values do not match: "
 					+ v1.toString() + " " + v2.toString());
 		}
 
-		v2 = Math3D.transform(v0, m0, v0);
+		v2 = Math3D.transform(m0, v0, v0);
 		if (!v1.equals(v2) || !v1.equals(v0)) {
 			fail("testTransformIMatrix3fIVector3fVector3f - Expected values do not match: "
 					+ v1.toString() + " " + v2.toString());
@@ -1060,7 +1060,7 @@ public class Math3DTest extends TestCase {
 
 	/**
 	 * Test method for
-	 * {@link org.eclipse.draw3d.geometryext.Math3D#translate(org.eclipse.draw3d.geometryext.IMatrix4f, org.eclipse.draw3d.geometryext.IVector3f, org.eclipse.draw3d.geometryext.Matrix4f)}
+	 * {@link org.eclipse.draw3d.geometryext.Math3D#translate(org.eclipse.draw3d.geometryext.IVector3f, org.eclipse.draw3d.geometryext.IMatrix4f, org.eclipse.draw3d.geometryext.Matrix4f)}
 	 * .
 	 */
 	public void testTranslateIVector3fIMatrix4fMatrix4f() {
@@ -1073,7 +1073,7 @@ public class Math3DTest extends TestCase {
 		m1.a43 += m0.a13 * v1.x + m0.a23 * v1.y + m0.a33 * v1.z;
 		m1.a44 += m0.a14 * v1.x + m0.a24 * v1.y + m0.a34 * v1.z;
 
-		Matrix4f m2 = Math3D.translate(m0, v1, null);
+		Matrix4f m2 = Math3D.translate(v1, m0, null);
 
 		if (!m1.equals(m2)) {
 			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
@@ -1081,14 +1081,14 @@ public class Math3DTest extends TestCase {
 		}
 
 		m2.set(m0);
-		Math3D.translate(m0, v1, m2);
+		Math3D.translate(v1, m0, m2);
 		if (!m1.equals(m2)) {
 			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
 					+ m1.toString() + " " + m2.toString());
 		}
 
 		m2.set(m0);
-		m2 = Math3D.translate(m0, v1, m0);
+		m2 = Math3D.translate(v1, m0, m0);
 		if (!m1.equals(m2) || !m1.equals(m0)) {
 			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
 					+ m1.toString() + " " + m2.toString());

@@ -105,7 +105,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 
 		invalidateMatrices();
 
-		firePositionChanged(PositionHint.LOCATION, delta);
+		firePositionChanged(PositionHint.location, delta);
 
 	}
 
@@ -145,7 +145,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 
 		invalidateMatrices();
 
-		firePositionChanged(PositionHint.SIZE, delta);
+		firePositionChanged(PositionHint.size, delta);
 	}
 
 }

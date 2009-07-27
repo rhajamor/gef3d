@@ -10,13 +10,15 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.graph.editor.editpolicies;
 
+import static org.eclipse.draw3d.util.CoordinateConverter.screenToSurface;
+
 import java.util.logging.Logger;
 
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.draw3d.util.CoordinateConverter;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.requests.CreateRequest;
@@ -38,8 +40,8 @@ public class Graph3DLayoutPolicy extends XY3DLayoutPolicy {
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger
-			.getLogger(Graph3DLayoutPolicy.class.getName());
+	private static final Logger log =
+		Logger.getLogger(Graph3DLayoutPolicy.class.getName());
 
 	/**
 	 * {@inheritDoc}
@@ -49,7 +51,7 @@ public class Graph3DLayoutPolicy extends XY3DLayoutPolicy {
 	 */
 	@Override
 	protected Command createChangeConstraintCommand(EditPart i_child,
-			Object i_constraint) {
+		Object i_constraint) {
 		Object obj = i_child.getModel();
 		Rectangle rect = (Rectangle) i_constraint;
 		if (obj instanceof Vertex) {
@@ -71,9 +73,20 @@ public class Graph3DLayoutPolicy extends XY3DLayoutPolicy {
 		if (obj instanceof Vertex) {
 			Graph g = (Graph) this.getHost().getModel();
 			Rectangle rect = (Rectangle) getConstraintFor(i_request);
-
-			return new VertexCreateCommand((Vertex) obj, g, rect.x, rect.y,
-					rect.width, rect.height);
+			
+			IFigure3D f3D = Figure3DHelper.getAncestor3D(getHostFigure());
+			if (f3D != null) {
+				Point p0 = new Point();
+				screenToSurface(rect.x, rect.y, f3D, p0);
+				Point p1 = new Point();
+				screenToSurface(rect.x+rect.width, rect.y+rect.height, f3D, p1);
+				return new VertexCreateCommand((Vertex) obj, g, p0.x,
+					p0.y, p1.x - p0.x, p1.y - p0.y);
+			} else {
+				// 2D only:
+				return new VertexCreateCommand((Vertex) obj, g, rect.x,
+					rect.y, rect.width, rect.height);
+			}
 		}
 		return null;
 	}

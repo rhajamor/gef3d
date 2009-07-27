@@ -17,16 +17,13 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.NodeEditPart;
-import org.eclipse.gef.Request;
 import org.eclipse.gef3d.editparts.AbstractGraphicalNodeEditPart;
 import org.eclipse.gef3d.examples.graph.editor.editpolicies.VertexEditPolicy;
 import org.eclipse.gef3d.examples.graph.model.Vertex;
 import org.eclipse.gef3d.factories.IConnectionAnchorFactory;
 import org.eclipse.gef3d.factories.SingleAnchorConnectionAnchorFactory;
-import org.eclipse.gef3d.tools.DragEditPartsTracker3D;
 
 
 /**
@@ -39,17 +36,6 @@ import org.eclipse.gef3d.tools.DragEditPartsTracker3D;
  */
 public class VertexPart extends AbstractGraphicalNodeEditPart implements
 		PropertyChangeListener, NodeEditPart {
-    
-    /** 
-     * {@inheritDoc}
-     * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getDragTracker(org.eclipse.gef.Request)
-     */
-    @Override
-    public DragTracker getDragTracker(Request i_request) {
-    
-        return new DragEditPartsTracker3D(this);
-    }
-    
 	/**
 	 * Logger for this class
 	 */

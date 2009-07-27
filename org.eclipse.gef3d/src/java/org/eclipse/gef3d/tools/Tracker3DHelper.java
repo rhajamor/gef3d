@@ -114,7 +114,9 @@ public class Tracker3DHelper {
 			}
 		}
 
-		TrackState trackState = new TrackState(picker, i_location);
+		TrackState trackState = new TrackState(i_location, picker);
+		trackState.setScreenLocation(i_location);
+
 		return trackState;
 	}
 }

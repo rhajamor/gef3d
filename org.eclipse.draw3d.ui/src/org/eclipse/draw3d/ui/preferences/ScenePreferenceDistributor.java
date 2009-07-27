@@ -140,8 +140,7 @@ public class ScenePreferenceDistributor extends Draw3DPreferenceDistributor
 		ICamera newCamera = getCamera(i_value);
 		ICamera currentCamera = m_scene.getCamera();
 
-		if (currentCamera != null
-				&& !currentCamera.getClass().equals(newCamera.getClass()))
+		if (!newCamera.getClass().equals(currentCamera.getClass()))
 			m_scene.setCamera(newCamera);
 	}
 

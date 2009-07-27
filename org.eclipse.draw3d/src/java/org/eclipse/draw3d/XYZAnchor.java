@@ -25,68 +25,55 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
  */
 public class XYZAnchor extends XYAnchor implements ConnectionAnchor3D {
 
-    Vector3fImpl m_location3D = new Vector3fImpl();
+	Vector3fImpl v3fLocation;
 
-    /**
-     * Creates a new anchor at the given location.
-     * 
-     * @param i_location
-     *            the location of this anchor
-     */
-    public XYZAnchor(Vector3fImpl i_location) {
+	/**
+	 * @param location
+	 */
+	public XYZAnchor(Vector3fImpl location) {
+		super(new Point(location.getX(), location.getY()));
+		v3fLocation = new Vector3fImpl();
+		setLocation3D(location);
+	}
 
-        super(new Point(i_location.getX(), i_location.getY()));
-        setLocation3D(i_location);
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.XYAnchor#setLocation(org.eclipse.draw2d.geometry.Point)
+	 */
+	@Override
+	public void setLocation(Point i_p) {
+		v3fLocation.set(i_p.x, i_p.y, 10);
+		super.setLocation(i_p);
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.ConnectionAnchor3D#getLocation3D(org.eclipse.draw3d.geometry.IVector3f,
-     *      org.eclipse.draw3d.geometry.Vector3f)
-     */
-    public IVector3f getLocation3D(IVector3f i_reference, Vector3f io_result) {
+	public void setLocation3D(IVector3f i_p) {
+		v3fLocation.set(i_p);
+		fireAnchorMoved();
+	}
 
-        if (io_result != null) {
-            io_result.set(m_location3D);
-            return io_result;
-        } else {
-            return m_location3D;
-        }
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ConnectionAnchor3D#getLocation3D(org.eclipse.draw3d.geometry.IVector3f,
+	 *      org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	public IVector3f getLocation3D(IVector3f i_reference, Vector3f io_result) {
+		if (io_result != null) {
+			io_result.set(v3fLocation);
+			return io_result;
+		} else {
+			return v3fLocation;
+		}
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.ConnectionAnchor3D#getReferencePoint3D(org.eclipse.draw3d.geometry.Vector3f)
-     */
-    public IVector3f getReferencePoint3D(Vector3f io_result) {
-
-        return getLocation3D(null, io_result);
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw2d.XYAnchor#setLocation(org.eclipse.draw2d.geometry.Point)
-     */
-    @Override
-    public void setLocation(Point i_p) {
-
-        m_location3D.set(i_p.x, i_p.y, 10);
-        super.setLocation(i_p);
-    }
-
-    /**
-     * Sets the absolute 3D world location of this anchor to the given value.
-     * 
-     * @param i_location
-     *            the absolute 3D world location to set
-     */
-    public void setLocation3D(IVector3f i_location) {
-
-        m_location3D.set(i_location);
-        fireAnchorMoved();
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ConnectionAnchor3D#getReferencePoint3D(org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	public IVector3f getReferencePoint3D(Vector3f io_result) {
+		return getLocation3D(null, io_result);
+	}
 
 }

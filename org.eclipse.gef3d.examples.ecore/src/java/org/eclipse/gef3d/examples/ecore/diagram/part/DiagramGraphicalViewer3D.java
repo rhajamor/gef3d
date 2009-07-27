@@ -10,30 +10,18 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.ecore.diagram.part;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.draw2d.ExclusionSearch;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.UpdateManager;
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.Draw3DCanvas;
-import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.draw3d.ISurface;
+import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.LightweightSystem3D;
-import org.eclipse.draw3d.PickingUpdateManager3D;
-import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.gef.EditPart;
-import org.eclipse.gef.Handle;
-import org.eclipse.gef.LayerConstants;
-import org.eclipse.gef.editparts.LayerManager;
-import org.eclipse.gef3d.handles.FeedbackFigure3D;
 import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -49,161 +37,156 @@ import org.eclipse.swt.widgets.Control;
  *        /org/eclipse/gmf/runtime/diagram/ui/parts/DiagramGraphicalViewer3D
  *        .java $
  */
-public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer {
+public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
+		IScene {
 
-    /**
-     * Creates a new GL canvas, sets it as this viewer's control and returns it.
-     * 
-     * @param i_composite
-     *            the parent composite
-     * @return the GL canvas
-     */
-    public Control createControl3D(Composite i_composite) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#reveal(org.eclipse.gef.EditPart)
+	 */
+	@Override
+	public void reveal(EditPart i_part) {
 
-        GLCanvas canvas = Draw3DCanvas.createCanvas(i_composite, SWT.NONE,
-            getLightweightSystem3D());
+		// TODO: implement this properly
+	}
 
-        setControl(canvas);
-        return getControl();
-    }
+	/**
+	 * Creates a new GL canvas, sets it as this viewer's control and returns it.
+	 * 
+	 * @param i_composite the parent composite
+	 * @return the GL canvas
+	 */
+	public Control createControl3D(Composite i_composite) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer#createLightweightSystem()
-     */
-    @Override
-    protected LightweightSystem createLightweightSystem() {
+		GLCanvas canvas = Draw3DCanvas.createCanvas(i_composite, SWT.NONE, getLightweightSystem3D());
 
-        LightweightSystem3D lws3D = new LightweightSystem3D();
+		setControl(canvas);
+		return getControl();
+	}
 
-        UpdateManager updateManager = lws3D.getUpdateManager();
-        if (updateManager instanceof PickingUpdateManager3D) {
-            PickingUpdateManager3D pickingManager = (PickingUpdateManager3D) updateManager;
-            ColorPicker picker = pickingManager.getPicker();
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer#createLightweightSystem()
+	 */
+	@Override
+	protected LightweightSystem createLightweightSystem() {
 
-            picker.ignoreSurface(Handle.class);
-            picker.ignoreSurface(FeedbackFigure3D.class);
-        }
+		return new LightweightSystem3D();
+	}
 
-        return lws3D;
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IScene#getCamera()
+	 */
+	public ICamera getCamera() {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * <p>
-     * This method was copied and subsequently modified.
-     * </p>
-     * 
-     * @author hudsonr (original implementation)
-     * @author Kristian Duske
-     * 
-     * @see org.eclipse.gef.ui.parts.GraphicalViewerImpl#findHandleAt(org.eclipse.draw2d.geometry.Point)
-     */
-    @Override
-    public Handle findHandleAt(Point i_p) {
+		LightweightSystem3D lightweightSystem3D = getLightweightSystem3D();
+		if (lightweightSystem3D == null)
+			return null;
 
-        LayerManager layermanager = (LayerManager) getEditPartRegistry().get(
-            LayerManager.ID);
+		return lightweightSystem3D.getCamera();
+	}
 
-        if (layermanager == null)
-            return null;
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#getFigureCanvas()
+	 */
+	@Override
+	protected FigureCanvas getFigureCanvas() {
 
-        Vector3f rayStart = Math3D.getVector3f();
-        Vector3f rayDirection = Math3D.getVector3f();
-        try {
-            List<IFigure> ignore = new ArrayList<IFigure>(3);
-            ignore.add(layermanager.getLayer(LayerConstants.PRIMARY_LAYER));
-            ignore.add(layermanager.getLayer(LayerConstants.CONNECTION_LAYER));
-            ignore.add(layermanager.getLayer(LayerConstants.FEEDBACK_LAYER));
+		return null;
+	}
 
-            LightweightSystem3D lws = getLightweightSystem3D();
-            PickingUpdateManager3D updateManager = (PickingUpdateManager3D) lws.getUpdateManager();
-            ColorPicker picker = updateManager.getPicker();
+	/**
+	 * Returns the 3D lightweight system if there is one.
+	 * 
+	 * @return the 3D lightweight system or <code>null</code> if the current
+	 *         lightweight system is not 3D
+	 */
+	public LightweightSystem3D getLightweightSystem3D() {
 
-            ISurface currentSurface = picker.getCurrentSurface();
-            currentSurface.getWorldLocation(i_p, rayDirection);
+		LightweightSystem lws = getLightweightSystem();
+		if (!(lws instanceof LightweightSystem3D))
+			return null;
 
-            lws.getCamera().getPosition(rayStart);
+		return (LightweightSystem3D) lws;
+	}
 
-            Math3D.sub(rayDirection, rayStart, rayDirection);
-            Math3D.normalise(rayDirection, rayDirection);
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IScene#getUpdateManager()
+	 */
+	public UpdateManager getUpdateManager() {
 
-            IFigure3D rootFigure = (IFigure3D) lws.getRootFigure();
-            ISurface rootSurface = rootFigure.getSurface();
+		return getLightweightSystem().getUpdateManager();
+	}
 
-            Point s = rootSurface.getSurfaceLocation2D(rayStart, rayDirection,
-                null);
-            IFigure handle = rootSurface.findFigureAt(s.x, s.y,
-                new ExclusionSearch(ignore));
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IScene#render()
+	 */
+	public void render() {
 
-            if (handle instanceof Handle)
-                return (Handle) handle;
+		// nothing to do
+	}
 
-            return null;
-        } finally {
-            Math3D.returnVector3f(rayStart);
-            Math3D.returnVector3f(rayDirection);
-        }
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IScene#setBackgroundColor(org.eclipse.swt.graphics.Color)
+	 */
+	public void setBackgroundColor(Color i_backgroundColor) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#getFigureCanvas()
-     */
-    @Override
-    protected FigureCanvas getFigureCanvas() {
+		LightweightSystem3D lightweightSystem3D = getLightweightSystem3D();
+		if (lightweightSystem3D == null)
+			return;
 
-        return null;
-    }
+		lightweightSystem3D.setBackgroundColor(i_backgroundColor);
+	}
 
-    /**
-     * Returns the 3D lightweight system if there is one.
-     * 
-     * @return the 3D lightweight system or <code>null</code> if the current
-     *         lightweight system is not 3D
-     */
-    public LightweightSystem3D getLightweightSystem3D() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IScene#setCamera(org.eclipse.draw3d.camera.ICamera)
+	 */
+	public void setCamera(ICamera i_camera) {
 
-        LightweightSystem lws = getLightweightSystem();
-        if (!(lws instanceof LightweightSystem3D))
-            return null;
+		LightweightSystem3D lightweightSystem3D = getLightweightSystem3D();
+		if (lightweightSystem3D == null)
+			return;
 
-        return (LightweightSystem3D) lws;
-    }
+		lightweightSystem3D.setCamera(i_camera);
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.IScene#getUpdateManager()
-     */
-    public UpdateManager getUpdateManager() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IScene#setDrawAxes(boolean)
+	 */
+	public void setDrawAxes(boolean i_drawAxes) {
 
-        return getLightweightSystem().getUpdateManager();
-    }
+		LightweightSystem3D lightweightSystem3D = getLightweightSystem3D();
+		if (lightweightSystem3D == null)
+			return;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#reveal(org.eclipse.gef.EditPart)
-     */
-    @Override
-    public void reveal(EditPart i_part) {
+		lightweightSystem3D.setDrawAxes(i_drawAxes);
+	}
 
-        // TODO: implement this properly
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#setRootFigure(org.eclipse.draw2d.IFigure)
+	 */
+	@Override
+	protected void setRootFigure(IFigure i_figure) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#setRootFigure(org.eclipse.draw2d.IFigure)
-     */
-    @Override
-    protected void setRootFigure(IFigure i_figure) {
-
-        super.setRootFigure(i_figure);
-        getLightweightSystem().setContents(i_figure);
-    }
+		super.setRootFigure(i_figure);
+		getLightweightSystem().setContents(i_figure);
+	}
 }
