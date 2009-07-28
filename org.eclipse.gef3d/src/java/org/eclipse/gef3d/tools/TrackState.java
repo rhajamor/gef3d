@@ -20,7 +20,7 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.picking.Picker;
 
 /**
  * Contains the state of a tracking operation and some convience method.
@@ -48,7 +48,7 @@ public class TrackState {
 
     private Point m_lastSurfaceLocation = new Point();
 
-    private ColorPicker m_picker;
+    private Picker m_picker;
 
     private Dimension m_surfaceMoveDelta = new Dimension();
 
@@ -64,7 +64,7 @@ public class TrackState {
      * @throws NullPointerException
      *             if any of the given arguments is null
      */
-    public TrackState(ColorPicker i_picker, Point i_surfaceLocation) {
+    public TrackState(Picker i_picker, Point i_surfaceLocation) {
 
         if (i_picker == null)
             throw new NullPointerException("i_picker must not be null");

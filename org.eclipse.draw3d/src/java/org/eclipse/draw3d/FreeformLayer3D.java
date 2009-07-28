@@ -43,7 +43,7 @@ import org.eclipse.draw3d.draw2dports.FreeformHelper;
  * @version $Revision$
  * @since Feb 11, 2008
  */
-public class FreeformLayer3D extends Figure3D implements FreeformFigure {
+public class FreeformLayer3D extends HostFigure3D implements FreeformFigure {
 	/**
 	 * Logger for this class
 	 */

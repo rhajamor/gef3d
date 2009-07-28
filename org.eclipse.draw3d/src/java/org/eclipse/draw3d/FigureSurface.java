@@ -38,76 +38,31 @@ public class FigureSurface extends AbstractSurface {
         }
     };
 
-    private IFigure3D m_host;
+    private IFigure3D m_owner;
 
     /**
      * Creates a new surface for the given figure.
      * 
-     * @param i_host
+     * @param i_owner
      *            the host figure of this surface
      */
-    public FigureSurface(IFigure3D i_host) {
+    public FigureSurface(IFigure3D i_owner) {
 
-        if (i_host == null)
-            throw new NullPointerException("i_host must not be null");
+        if (i_owner == null)
+            throw new NullPointerException("i_owner must not be null");
 
-        m_host = i_host;
-        m_host.addFigureListener(m_figureListener);
+        m_owner = i_owner;
+        m_owner.addFigureListener(m_figureListener);
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.eclipse.draw3d.ISurface#findFigureAt(int, int,
-     *      org.eclipse.draw2d.TreeSearch)
+     * @see org.eclipse.draw3d.ISurface#getOwner()
      */
-    public IFigure findFigureAt(int i_sx, int i_sy, TreeSearch i_search) {
+    public IFigure3D getOwner() {
 
-        // host pruned?
-        if (i_search != null && i_search.prune(m_host))
-            return null;
-
-        List<IFigure> children2d = m_host.getChildren2D();
-        for (IFigure child2D : children2d) {
-            IFigure hit = null;
-            if (i_search != null) {
-                if (i_search.prune(child2D))
-                    continue;
-
-                hit = child2D.findFigureAt(i_sx, i_sy, i_search);
-            } else {
-                hit = child2D.findFigureAt(i_sx, i_sy);
-            }
-
-            if (hit != null)
-                return hit;
-        }
-
-        // now we have only found a 3D figure, and we must check whether it
-        // is accepted by the search
-
-        if (i_search == null)
-            return m_host;
-
-        IFigure currentFigure = m_host;
-        do {
-            if (i_search.accept(currentFigure))
-                return currentFigure;
-
-            currentFigure = currentFigure.getParent();
-        } while (currentFigure != null);
-
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.ISurface#getHost()
-     */
-    public IFigure2DHost3D getHost() {
-
-        return m_host;
+        return m_owner;
     }
 
     /**
@@ -122,7 +77,7 @@ public class FigureSurface extends AbstractSurface {
         if (result == null)
             result = new Vector3fImpl();
 
-        result.set(m_host.getPosition3D().getLocation3D());
+        result.set(m_owner.getPosition3D().getLocation3D());
         return result;
     }
 
@@ -186,7 +141,7 @@ public class FigureSurface extends AbstractSurface {
         try {
             rot.setIdentity();
 
-            IVector3f angles = m_host.getPosition3D().getRotation3D();
+            IVector3f angles = m_owner.getPosition3D().getRotation3D();
             Math3D.rotate(angles, rot, rot);
 
             i_vector.transform(rot);
@@ -206,7 +161,7 @@ public class FigureSurface extends AbstractSurface {
         StringBuilder b = new StringBuilder();
 
         b.append("Figure surface for host [");
-        b.append(m_host);
+        b.append(m_owner);
         b.append("]");
 
         return b.toString();

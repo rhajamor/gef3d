@@ -29,18 +29,11 @@ import org.eclipse.gef3d.ext.intermodel.IInterModelDiagram;
 public class IntermodelContainerFigure extends Figure3D implements
 		IInterModelDiagram {
 
-	/**
-	 * 
-	 */
+    /*
 	public IntermodelContainerFigure() {
 		connectionLayer = new DispatchingConnectionLayer();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure2DHost3D#getConnectionLayer(org.eclipse.draw3d.ConnectionLayerFactory)
-	 */
 	@Override
 	public ConnectionLayer getConnectionLayer(ConnectionLayerFactory i_clfactory) {
 
@@ -50,6 +43,5 @@ public class IntermodelContainerFigure extends Figure3D implements
 		return connectionLayer;
 	}
 
-	
-
+	*/
 }

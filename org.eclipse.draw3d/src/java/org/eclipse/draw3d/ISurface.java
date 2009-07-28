@@ -11,13 +11,12 @@
 package org.eclipse.draw3d;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
 
 /**
- * A surface is a 2D plane that belongs to a figure and has 2D children of that
+ * A surface is a 2D plane that belongs to a figure and has children of that
  * figure projected on it. It has a 3D coordinate system with its origin in the
  * upper left corner and the Z axis oriented so that points with a positive Z
  * component are behind the surface.
@@ -29,28 +28,11 @@ import org.eclipse.draw3d.geometry.Vector3f;
 public interface ISurface {
 
     /**
-     * Returns the child figure at the given surface coordinates or
-     * <code>null</code> if no such figure exists. If the given tree search
-     * structure is not <code>null</code>, only such figures that satisfy the
-     * tree search conditions will be considered.
+     * Returns the figure that owns this surface.
      * 
-     * @param i_sx
-     *            the surface X coordinate
-     * @param i_sy
-     *            the surface Y coordinate
-     * @param i_search
-     *            the tree search structure
-     * @return the figure at the given surface coordinates or <code>null</code>
-     *         if no such figure exists
+     * @return the owning figure
      */
-    public IFigure findFigureAt(int i_sx, int i_sy, TreeSearch i_search);
-
-    /**
-     * Returns the host figure of this surface.
-     * 
-     * @return the host figure
-     */
-    public IFigure2DHost3D getHost();
+    public IFigure getOwner();
 
     /**
      * Returns the 2D surface coordinates of a point specified in world

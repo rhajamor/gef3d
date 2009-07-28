@@ -12,6 +12,7 @@ package org.eclipse.gef3d.examples.graph.editor.figures;
 
 import java.util.logging.Logger;
 
+import org.eclipse.draw2d.EventDispatcher;
 import org.eclipse.draw2d.FreeformLayout;
 import org.eclipse.draw3d.FreeformLayer3D;
 import org.eclipse.draw3d.RenderContext;
@@ -43,7 +44,7 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
 
 	private Shape m_shape = new CuboidFigureShape(this);
-
+	
 	/**
 	 * 
 	 */

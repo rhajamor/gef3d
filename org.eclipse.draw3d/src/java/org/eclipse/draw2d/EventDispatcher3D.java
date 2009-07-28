@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.IHostFigure3D;
 import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.MouseEvent3D;
@@ -22,7 +23,7 @@ import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseEvent;
@@ -92,10 +93,9 @@ public class EventDispatcher3D extends EventDispatcher {
         Vector3f s = Math3D.getVector3f();
         Vector3f d = Math3D.getVector3f();
         try {
-            // update the picker
-            ColorPicker picker = getColorPicker();
+            Picker picker = getColorPicker();
+            picker.updateCurrentSurface(i_e.x, i_e.y);
 
-            picker.getFigure3D(i_e.x, i_e.y);
             float depth = picker.getDepth(i_e.x, i_e.y);
 
             ICamera camera = m_scene.getCamera();
@@ -172,6 +172,19 @@ public class EventDispatcher3D extends EventDispatcher {
         m_dispatcher.dispatchKeyTraversed(i_e);
     }
 
+    private EventDispatcher getHostEventDispatcher() {
+
+        Picker picker = getColorPicker();
+        IFigure owner = picker.getCurrentSurface().getOwner();
+
+        if (owner instanceof IHostFigure3D) {
+            IHostFigure3D host = (IHostFigure3D) owner;
+            return host.getEventDispatcher();
+        }
+
+        return null;
+    }
+
     /**
      * {@inheritDoc}
      * 
@@ -181,7 +194,12 @@ public class EventDispatcher3D extends EventDispatcher {
     public void dispatchMouseDoubleClicked(MouseEvent i_me) {
 
         MouseEvent3D me = convert(i_me);
-        m_dispatcher.dispatchMouseDoubleClicked(me);
+        
+        EventDispatcher hostDispatcher = getHostEventDispatcher();
+        if (hostDispatcher != null)
+            hostDispatcher.dispatchMouseDoubleClicked(me);
+        else
+            m_dispatcher.dispatchMouseDoubleClicked(me);
     }
 
     /**
@@ -193,7 +211,12 @@ public class EventDispatcher3D extends EventDispatcher {
     public void dispatchMouseEntered(MouseEvent i_me) {
 
         MouseEvent3D me = convert(i_me);
-        m_dispatcher.dispatchMouseEntered(me);
+        
+        EventDispatcher hostDispatcher = getHostEventDispatcher();
+        if (hostDispatcher != null)
+            hostDispatcher.dispatchMouseEntered(me);
+        else
+            m_dispatcher.dispatchMouseEntered(me);
     }
 
     /**
@@ -205,7 +228,11 @@ public class EventDispatcher3D extends EventDispatcher {
     public void dispatchMouseExited(MouseEvent i_me) {
 
         MouseEvent3D me = convert(i_me);
-        m_dispatcher.dispatchMouseExited(me);
+        EventDispatcher hostDispatcher = getHostEventDispatcher();
+        if (hostDispatcher != null)
+            hostDispatcher.dispatchMouseExited(me);
+        else
+            m_dispatcher.dispatchMouseExited(me);
     }
 
     /**
@@ -292,14 +319,14 @@ public class EventDispatcher3D extends EventDispatcher {
         }
     }
 
-    private ColorPicker getColorPicker() {
+    private Picker getColorPicker() {
 
         UpdateManager updateManager = m_scene.getUpdateManager();
         if (!(updateManager instanceof PickingUpdateManager3D))
             throw new AssertionError("update manager must be an instance of "
                     + PickingUpdateManager3D.class.getName());
 
-        return ((PickingUpdateManager3D) updateManager).getPicker();
+        return ((PickingUpdateManager3D) updateManager).getMainPicker();
     }
 
     /**

@@ -40,7 +40,7 @@ public class ConnectionLayerFactory {
 	 * @param hint
 	 * @return
 	 */
-	public ConnectionLayer createConnectionLayer(IFigure2DHost3D hint) {
+	public ConnectionLayer createConnectionLayer(IHostFigure3D hint) {
 		return new ConnectionLayer();
 	}
 }

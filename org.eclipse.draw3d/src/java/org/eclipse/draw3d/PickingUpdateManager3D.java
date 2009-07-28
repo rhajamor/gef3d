@@ -13,9 +13,10 @@ package org.eclipse.draw3d;
 
 import java.util.logging.Logger;
 
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw3d.picking.ColorPicker;
-import org.eclipse.swt.opengl.GLCanvas;
+import org.eclipse.draw2d.TreeSearch;
+import org.eclipse.draw3d.picking.CombinationPicker;
+import org.eclipse.draw3d.picking.Picker;
+import org.eclipse.draw3d.picking.PickerManager;
 
 /**
  * Does the actual picking for 3D figures by using a color picker, see
@@ -25,17 +26,39 @@ import org.eclipse.swt.opengl.GLCanvas;
  * @version $Revision$
  * @since 13.12.2007
  */
-public class PickingUpdateManager3D extends DeferredUpdateManager3D {
+public class PickingUpdateManager3D extends DeferredUpdateManager3D implements
+        PickerManager {
 
     @SuppressWarnings("unused")
     private static final Logger log = Logger.getLogger(PickingUpdateManager3D.class.getName());
 
-    private ColorPicker m_picker = new ColorPicker();
+    private CombinationPicker m_picker;
 
     /**
      * Indicates whether picking is enabled.
      */
     boolean pickingEnabled = true;
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.picking.PickerManager#createSubsetPicker(java.lang.Object,
+     *      org.eclipse.draw2d.TreeSearch)
+     */
+    public Picker createSubsetPicker(Object i_key, TreeSearch i_search) {
+
+        return getPicker().createSubsetPicker(i_key, i_search);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.picking.PickerManager#deleteSubsetPicker(java.lang.Object)
+     */
+    public void deleteSubsetPicker(Object i_key) {
+
+        getPicker().deleteSubsetPicker(i_key);
+    }
 
     /**
      * {@inheritDoc}
@@ -47,17 +70,42 @@ public class PickingUpdateManager3D extends DeferredUpdateManager3D {
 
         if (m_picker != null)
             m_picker.dispose();
+
         super.dispose();
     }
 
     /**
-     * Returns the picker.
+     * {@inheritDoc}
      * 
-     * @return the picker
+     * @see org.eclipse.draw3d.picking.PickerManager#getMainPicker()
      */
-    public ColorPicker getPicker() {
+    public Picker getMainPicker() {
+
+        return getPicker().getMainPicker();
+    }
+
+    /**
+     * Returns the combinated picker, which is lazily created in this method.
+     * This picker will pick all figures.
+     * 
+     * @return the combinated picker
+     */
+    public CombinationPicker getPicker() {
+
+        if (m_picker == null)
+            m_picker = new CombinationPicker(root3D, canvas);
 
         return m_picker;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.picking.PickerManager#getSubsetPicker(java.lang.Object)
+     */
+    public Picker getSubsetPicker(Object i_key) {
+
+        return getPicker().getSubsetPicker(i_key);
     }
 
     /**
@@ -76,29 +124,5 @@ public class PickingUpdateManager3D extends DeferredUpdateManager3D {
         // feedback figure is moved, which is unneccessary
         if (m_picker != null)
             m_picker.invalidate();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.DeferredUpdateManager3D#setCanvas(org.eclipse.swt.opengl.GLCanvas)
-     */
-    @Override
-    public void setCanvas(GLCanvas i_canvas) {
-
-        super.setCanvas(i_canvas);
-        m_picker.setCanvas(i_canvas);
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.DeferredUpdateManager3D#setRoot(org.eclipse.draw2d.IFigure)
-     */
-    @Override
-    public void setRoot(IFigure i_figure) {
-
-        super.setRoot(i_figure);
-        m_picker.setRootFigure(Figure3DHelper.getAncestor3D(i_figure));
     }
 }

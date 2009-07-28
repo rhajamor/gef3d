@@ -136,7 +136,6 @@ public class ResizeTracker3D extends ResizeTracker {
             super.performDrag();
         } finally {
             m_trackState = null;
-            Tracker3DHelper.getPicker(getCurrentViewer()).clearIgnored();
         }
         
         if (log.isLoggable(Level.FINE))

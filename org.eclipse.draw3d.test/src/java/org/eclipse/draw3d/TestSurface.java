@@ -48,9 +48,9 @@ public class TestSurface extends AbstractSurface {
     /**
      * {@inheritDoc}
      * 
-     * @see org.eclipse.draw3d.ISurface#getHost()
+     * @see org.eclipse.draw3d.ISurface#getOwner()
      */
-    public IFigure2DHost3D getHost() {
+    public IFigure2DHost3D getOwner() {
 
         // this will not be tested
         return null;

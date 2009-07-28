@@ -137,7 +137,6 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
             super.performDrag();
         } finally {
             m_trackState = null;
-            Tracker3DHelper.getPicker(getCurrentViewer()).clearIgnored();
         }
 
         if (log.isLoggable(Level.FINER))

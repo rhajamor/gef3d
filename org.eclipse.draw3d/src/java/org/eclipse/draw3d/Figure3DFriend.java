@@ -25,79 +25,67 @@ import org.eclipse.swt.graphics.Font;
  * @see Figure3DHelper
  */
 public abstract class Figure3DFriend {
-	/**
-	 * Logger for this class
-	 */
-	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(Figure3DFriend.class
-			.getName());
 
-	/**
-	 * The associated figure.
-	 */
-	public final IFigure3D figure;
+    /**
+     * Logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger log = Logger.getLogger(Figure3DFriend.class.getName());
 
-	/**
-	 * Creates a new instance that is associated with the given figure.
-	 * 
-	 * @param i_figure the associated figure
-	 */
-	public Figure3DFriend(IFigure3D i_figure) {
+    /**
+     * The associated figure.
+     */
+    public final IFigure3D figure;
 
-		figure = i_figure;
-	}
+    /**
+     * Creates a new instance that is associated with the given figure.
+     * 
+     * @param i_figure
+     *            the associated figure
+     */
+    public Figure3DFriend(IFigure3D i_figure) {
 
-	/**
-	 * Returns the figure's local background color.
-	 * 
-	 * @return the figure's local background color
-	 */
-	public final Color getLocalBackgroundColor() {
+        figure = i_figure;
+    }
 
-		return figure.getLocalBackgroundColor();
-	}
+    /**
+     * Returns the figure's local background color.
+     * 
+     * @return the figure's local background color
+     */
+    public final Color getLocalBackgroundColor() {
 
-	/**
-	 * Returns the figure's local font.
-	 * 
-	 * @return the figure's local font
-	 */
-	public abstract Font getLocalFont();
+        return figure.getLocalBackgroundColor();
+    }
 
-	/**
-	 * Returns the figure's local foreground color.
-	 * 
-	 * @return the figure's local foreground color
-	 */
-	public final Color getLocalForegroundColor() {
+    /**
+     * Returns the figure's local font.
+     * 
+     * @return the figure's local font
+     */
+    public abstract Font getLocalFont();
 
-		return figure.getLocalForegroundColor();
-	}
+    /**
+     * Returns the figure's local foreground color.
+     * 
+     * @return the figure's local foreground color
+     */
+    public final Color getLocalForegroundColor() {
 
-	/**
-	 * Indicates whether the 2D content of the figure should be repainted (e.g.
-	 * whether it is dirty or not).<br /> <br/>Be aware that this is not equal
-	 * to the 2D children being invalid, because under certain circumstances,
-	 * the 2D content of a 3D figure is not the graphical representation of its
-	 * 2D children. For example, a 3D figure might choose to display a textual
-	 * description instead to reduce render time.
-	 * 
-	 * @return <code>true</code> if the 2D content is dirty or
-	 *         <code>false</code> otherwise
-	 */
-	public abstract boolean is2DContentDirty();
+        return figure.getLocalForegroundColor();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
 
-		StringBuilder strb = new StringBuilder("Dispatcher for ");
-		strb.append(figure.toString());
-		return strb.toString();
-	}
+        StringBuilder strb = new StringBuilder("Dispatcher for ");
+        strb.append(figure.toString());
+        return strb.toString();
+    }
 
 }

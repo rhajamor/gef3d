@@ -16,13 +16,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.EventDispatcher;
 import org.eclipse.draw2d.EventDispatcher3D;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GraphicsSource;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LightweightSystem;
+import org.eclipse.draw2d.SWTEventDispatcher;
+import org.eclipse.draw2d.SWTEventDispatcher3D;
 import org.eclipse.draw2d.StackLayout;
 import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.UpdateManager;
@@ -80,8 +81,10 @@ public class LightweightSystem3D extends LightweightSystem implements
 
         private final Figure3DHelper helper;
 
-        private ISurface m_surface = new VoidSurface(this,
-            LightweightSystem3D.this, 0.1f);
+        /**
+         * The void surface.
+         */
+        protected ISurface m_surface;
 
         // the position of the root is the universe.. the root is the universe
         private Position3DImpl universe;
@@ -149,12 +152,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 
                     return RootFigure3D.this.getLocalFont();
                 }
-
-                @Override
-                public boolean is2DContentDirty() {
-
-                    return false;
-                }
             });
         }
 
@@ -220,9 +217,14 @@ public class LightweightSystem3D extends LightweightSystem implements
          * @see Figure3DHelper#findFigureAt(int, int, TreeSearch)
          */
         @Override
-        public IFigure findFigureAt(int i_x, int i_y, TreeSearch i_search) {
+        public IFigure findFigureAt(int i_sx, int i_sy, TreeSearch i_search) {
 
-            return helper.findFigureAt(i_x, i_y, i_search);
+            // the root figure does not have 2D children
+            if (i_search == null || i_search.accept(this)
+                    && !i_search.prune(this))
+                return this;
+
+            return null;
         }
 
         /**
@@ -258,32 +260,11 @@ public class LightweightSystem3D extends LightweightSystem implements
         /**
          * {@inheritDoc}
          * 
-         * @see org.eclipse.draw3d.IFigure2DHost3D#getChildren2D()
-         */
-        public List<IFigure> getChildren2D() {
-
-            return helper.getChildren2D();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
          * @see org.eclipse.draw3d.IFigure3D#getChildren3D()
          */
         public List<IFigure3D> getChildren3D() {
 
             return helper.getChildren3D();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.eclipse.draw3d.IFigure2DHost3D#getConnectionLayer(org.eclipse.draw3d.ConnectionLayerFactory)
-         */
-        public ConnectionLayer getConnectionLayer(
-                ConnectionLayerFactory i_clfactory) {
-
-            return null;
         }
 
         /**
@@ -402,9 +383,13 @@ public class LightweightSystem3D extends LightweightSystem implements
         /**
          * {@inheritDoc}
          * 
-         * @see org.eclipse.draw3d.IFigure2DHost3D#getSurface()
+         * @see org.eclipse.draw3d.IFigure3D#getSurface()
          */
         public ISurface getSurface() {
+
+            if (m_surface == null)
+                m_surface = new VoidSurface(this, LightweightSystem3D.this,
+                    0.1f);
 
             return m_surface;
         }
@@ -743,6 +728,13 @@ public class LightweightSystem3D extends LightweightSystem implements
     }
 
     /**
+     * Needs to be stored here as well because it is private in
+     * {@link LightweightSystem} and using the getter would create an
+     * {@link SWTEventDispatcher}.
+     */
+    protected EventDispatcher m_eventDispatcher;
+
+    /**
      * {@inheritDoc}
      * 
      * @see org.eclipse.draw2d.LightweightSystem#getEventDispatcher()
@@ -750,15 +742,13 @@ public class LightweightSystem3D extends LightweightSystem implements
     @Override
     protected EventDispatcher getEventDispatcher() {
 
-        EventDispatcher dispatcher = super.getEventDispatcher();
-        if (!(dispatcher instanceof EventDispatcher3D)) {
-            dispatcher = new EventDispatcher3D(dispatcher, this);
-            dispatcher.setRoot(getRootFigure());
+        if (m_eventDispatcher == null) {
+            m_eventDispatcher = new SWTEventDispatcher3D(this);
+            setEventDispatcher(m_eventDispatcher);
 
-            setEventDispatcher(dispatcher);
         }
 
-        return dispatcher;
+        return m_eventDispatcher;
     }
 
     /**

@@ -26,7 +26,7 @@ import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.Handle;
@@ -120,7 +120,7 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
         UpdateManager updateManager = lws3D.getUpdateManager();
         if (updateManager instanceof PickingUpdateManager3D) {
             PickingUpdateManager3D pickingManager = (PickingUpdateManager3D) updateManager;
-            ColorPicker picker = pickingManager.getPicker();
+            Picker picker = pickingManager.getPicker();
 
             picker.ignoreSurface(Handle.class);
             picker.ignoreSurface(FeedbackFigure3D.class);
@@ -173,7 +173,7 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 
             LightweightSystem3D lws = getLightweightSystem3D();
             PickingUpdateManager3D updateManager = (PickingUpdateManager3D) lws.getUpdateManager();
-            ColorPicker picker = updateManager.getPicker();
+            Picker picker = updateManager.getPicker();
 
             ISurface currentSurface = picker.getCurrentSurface();
             currentSurface.getWorldLocation(i_p, rayDirection);

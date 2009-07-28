@@ -70,10 +70,10 @@ public class LwjglOffscreenBuffersFbo implements
 	 *            configuration.
 	 */
 	public LwjglOffscreenBuffersFbo(int i_height, int i_width,
-			Graphics3DOffscreenBufferConfig bufferConfig) {
+			Graphics3DOffscreenBufferConfig i_bufferConfig) {
 		this.m_height = i_height;
 		this.m_width = i_width;
-		this.m_bufferConfig = bufferConfig;
+		this.m_bufferConfig = i_bufferConfig;
 	}
 	
 	/** 

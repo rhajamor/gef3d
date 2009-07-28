@@ -10,15 +10,10 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.TreeSearch;
-import org.eclipse.draw2d.UpdateManager;
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.camera.ICameraListener;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.ColorPicker;
 
 /**
  * The void surface is used by the root figure. The void surface is always
@@ -48,22 +43,22 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
      * Creates a new void surface for the given scene. The given depth value
      * specifies the distance of the surface from the camera.
      * 
-     * @param i_host
-     *            the host figure of this surface
+     * @param i_owner
+     *            the figure that owns this surface
      * @param i_scene
      *            the scene
      * @param i_depth
      *            the depth value of the surface
      */
-    public VoidSurface(IFigure3D i_host, IScene i_scene, float i_depth) {
+    public VoidSurface(IFigure3D i_owner, IScene i_scene, float i_depth) {
 
-        if (i_host == null)
+        if (i_owner == null)
             throw new NullPointerException("i_host must not be null");
 
         if (i_scene == null)
             throw new NullPointerException("i_scene must not be null");
 
-        m_host = i_host;
+        m_host = i_owner;
         m_scene = i_scene;
         m_depth = i_depth;
 
@@ -87,61 +82,6 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
     /**
      * {@inheritDoc}
      * 
-     * @see org.eclipse.draw3d.ISurface#findFigureAt(int, int,
-     *      org.eclipse.draw2d.TreeSearch)
-     */
-    public IFigure findFigureAt(int i_sx, int i_sy, TreeSearch i_search) {
-
-        UpdateManager updateManager = m_scene.getUpdateManager();
-        if (!(updateManager instanceof PickingUpdateManager3D))
-            return null;
-
-        Vector3f w = Math3D.getVector3f();
-        Vector3f rayStart = Math3D.getVector3f();
-        Vector3f rayDirection = Math3D.getVector3f();
-        try {
-
-            // input coordinates are surface coordinates, convert them into
-            // mouse coordinates
-            getWorldLocation(i_sx, i_sy, 0, w);
-            Point m = m_scene.getCamera().project(w.getX(), w.getY(), w.getZ(),
-                null);
-
-            ColorPicker picker = ((PickingUpdateManager3D) updateManager).getPicker();
-            IFigure3D hit = picker.getFigure3D(m.x, m.y);
-
-            if (hit == null)
-                return null;
-
-            m_scene.getCamera().getPosition(rayStart);
-            
-            Math3D.sub(w, rayStart, rayDirection);
-            Math3D.normalise(rayDirection, rayDirection);
-            
-            ISurface surface = hit.getSurface();
-            Point s = surface.getSurfaceLocation2D(rayStart, rayDirection, null);
-
-            return hit.getSurface().findFigureAt(s.x, s.y, i_search);
-        } finally {
-            Math3D.returnVector3f(w);
-            Math3D.returnVector3f(rayStart);
-            Math3D.returnVector3f(rayDirection);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.ISurface#getHost()
-     */
-    public IFigure2DHost3D getHost() {
-
-        return m_host;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
      * @see org.eclipse.draw3d.AbstractSurface#getOrigin(org.eclipse.draw3d.geometry.Vector3f)
      */
     @Override
@@ -149,6 +89,16 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 
         ICamera camera = m_scene.getCamera();
         return camera.unProject(0, 0, m_depth, null, io_result);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.ISurface#getOwner()
+     */
+    public IFigure3D getOwner() {
+
+        return m_host;
     }
 
     /**

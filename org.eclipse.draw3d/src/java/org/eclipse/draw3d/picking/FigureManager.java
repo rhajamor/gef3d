@@ -13,11 +13,10 @@
 package org.eclipse.draw3d.picking;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
+import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderMode;
 
@@ -41,10 +40,6 @@ public class FigureManager implements ColorProvider {
      */
     private List<IFigure3D> m_figures = new ArrayList<IFigure3D>();
 
-    private Set<IFigure3D> m_ignoredFigures = new HashSet<IFigure3D>();
-
-    private Set<Class<?>> m_ignoredTypes = new HashSet<Class<?>>();
-
     /**
      * The next color to be returned when
      * {@link #nextColorIndex(RenderMode, IFigure3D)} is called.
@@ -54,43 +49,23 @@ public class FigureManager implements ColorProvider {
     private IFigure3D m_rootFigure;
 
     /**
-     * Creates and initializes a figure manager.
+     * All figures that are rejected by or pruned from this search are ignored.
      */
-    public FigureManager() {
-
-        // nothing to initialize
-    }
+    private TreeSearch m_search;
 
     /**
-     * Creates a new figure manager with the given figures and ignored figures
-     * and types.
+     * Creates and initializes a figure manager. If the given tree search is not
+     * <code>null</code>, all figures which are rejected by or pruned from the
+     * given search will be ignored by this manager, e.g.
+     * {@link #getColor(IFigure3D)} will return {@link ColorProvider#IGNORE} for
+     * such figures.
      * 
-     * @param i_figures
-     *            the figures, indexed by their color
-     * @param i_ignoredFigures
-     *            the ignored figures
-     * @param i_ignoredTypes
-     *            the ignored types
+     * @param i_search
+     *            the tree search
      */
-    private FigureManager(List<IFigure3D> i_figures,
-            Set<IFigure3D> i_ignoredFigures, Set<Class<?>> i_ignoredTypes,
-            IFigure3D i_rootFigure) {
+    public FigureManager(TreeSearch i_search) {
 
-        if (i_figures == null)
-            throw new NullPointerException("i_figures must not be null");
-
-        if (i_ignoredFigures == null)
-            throw new NullPointerException("i_ignoredFigures must not be null");
-
-        if (i_ignoredTypes == null)
-            throw new NullPointerException("i_ignoredTypes must not be null");
-
-        m_figures.addAll(i_figures);
-        m_ignoredFigures.addAll(i_ignoredFigures);
-        m_ignoredTypes.addAll(i_ignoredTypes);
-
-        m_rootFigure = i_rootFigure;
-
+        m_search = i_search;
     }
 
     /**
@@ -100,34 +75,6 @@ public class FigureManager implements ColorProvider {
 
         m_figures.clear();
         m_nextColor = MIN_INDEX - 1;
-    }
-
-    /**
-     * Clears the ignored figures and types.
-     * 
-     * @return <code>true</code> if there were ignored figures or types and
-     *         <code>false</code> otherwise
-     */
-    public boolean clearIgnored() {
-
-        boolean modified = !m_ignoredFigures.isEmpty()
-                || !m_ignoredTypes.isEmpty();
-
-        m_ignoredFigures.clear();
-        m_ignoredTypes.clear();
-
-        return modified;
-    }
-
-    /**
-     * Creates a snapshot of this figure manager.
-     * 
-     * @return a snapshot of this figure manager
-     */
-    public FigureManager createSnapshot() {
-
-        return new FigureManager(m_figures, m_ignoredFigures, m_ignoredTypes,
-            m_rootFigure);
     }
 
     /**
@@ -157,76 +104,21 @@ public class FigureManager implements ColorProvider {
      */
     public IFigure3D getFigure(int i_color) {
 
-        if (i_color == 0xFFFFFF) {
+        if (i_color == 0xFFFFFF)
             return m_rootFigure;
-            // return null;
-        }
 
         int index = i_color - MIN_INDEX;
-        if (index < 0 || index >= m_figures.size()) {
-            //			log.warning("int - Unexpected color index=" + index + " - exception: " + null); //$NON-NLS-1$ //$NON-NLS-2$
+        if (index < 0 || index >= m_figures.size())
             return m_rootFigure;
-            // return null;
-        }
 
         return m_figures.get(index);
     }
 
-    /**
-     * Ignore the given figure.
-     * 
-     * @param i_figure
-     *            the figure to ignore
-     * @return <code>true</code> if the given figure was not ignored prior to
-     *         calling this method and <code>false</code> otherwise
-     */
-    public boolean ignoreFigure(IFigure3D i_figure) {
+    private boolean isIgnored(IFigure3D i_figure) {
 
-        if (i_figure == null)
-            throw new NullPointerException("i_figure must not be null");
-
-        return m_ignoredFigures.add(i_figure);
-    }
-
-    /**
-     * Ignore the given type.
-     * 
-     * @param i_type
-     *            the type to ignore
-     * @return <code>true</code> if the given type was not ignored prior to
-     *         calling this method and <code>false</code> otherwise
-     */
-    public boolean ignoreType(Class<?> i_type) {
-
-        if (i_type == null)
-            throw new NullPointerException("i_type must not be null");
-
-        return m_ignoredTypes.add(i_type);
-    }
-
-    /**
-     * Indicates whether the given figure is currently ignored.
-     * 
-     * @param i_figure
-     *            the figure to check
-     * @return <code>true</code> if the given figure is ignored and
-     *         <code>false</code> otherwise
-     */
-    public boolean isIgnored(IFigure3D i_figure) {
-
-        if (i_figure == null)
-            throw new NullPointerException("i_figure must not be null");
-
-        if (m_ignoredFigures.isEmpty() && m_ignoredTypes.isEmpty())
+        if (m_search == null)
             return false;
 
-        if (m_ignoredFigures.contains(i_figure))
-            return true;
-
-        for (Class<?> type : m_ignoredTypes)
-            if (type.isInstance(i_figure))
-                return true;
-
-        return false;
+        return !m_search.accept(i_figure) || m_search.prune(i_figure);
     }
 }

@@ -20,7 +20,7 @@ import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.SWTKeySupport;
@@ -224,7 +224,7 @@ public class CameraInputHandler {
                 return;
 
             PickingUpdateManager3D pickingManager = (PickingUpdateManager3D) updateManager;
-            ColorPicker picker = pickingManager.getPicker();
+            Picker picker = pickingManager.getMainPicker();
 
             float depth = picker.getDepth(i_x, i_y);
 

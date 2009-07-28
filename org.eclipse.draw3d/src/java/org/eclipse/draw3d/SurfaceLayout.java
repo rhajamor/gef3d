@@ -38,7 +38,6 @@ public class SurfaceLayout extends XYLayout implements DelegatingLayoutManager {
 	 * @author Kristian Duske
 	 * @version $Revision$
 	 * @since 28.04.2008
-	 * @see $HeadURL$
 	 */
 	public class SurfaceConstraint {
 		/**

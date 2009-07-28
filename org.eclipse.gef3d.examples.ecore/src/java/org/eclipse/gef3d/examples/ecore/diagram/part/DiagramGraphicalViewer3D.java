@@ -24,9 +24,11 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.PickingUpdateManager3D;
+import org.eclipse.draw3d.TypeSearch;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.picking.Picker;
+import org.eclipse.draw3d.picking.PickerManager;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.Handle;
 import org.eclipse.gef.LayerConstants;
@@ -78,12 +80,10 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer {
         LightweightSystem3D lws3D = new LightweightSystem3D();
 
         UpdateManager updateManager = lws3D.getUpdateManager();
-        if (updateManager instanceof PickingUpdateManager3D) {
-            PickingUpdateManager3D pickingManager = (PickingUpdateManager3D) updateManager;
-            ColorPicker picker = pickingManager.getPicker();
-
-            picker.ignoreSurface(Handle.class);
-            picker.ignoreSurface(FeedbackFigure3D.class);
+        if (updateManager instanceof PickerManager) {
+            PickerManager pickerManager = (PickerManager) updateManager;
+            pickerManager.createSubsetPicker(Picker.HANDLE_PICKER,
+                new TypeSearch(Handle.class, FeedbackFigure3D.class));
         }
 
         return lws3D;
@@ -120,7 +120,7 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer {
 
             LightweightSystem3D lws = getLightweightSystem3D();
             PickingUpdateManager3D updateManager = (PickingUpdateManager3D) lws.getUpdateManager();
-            ColorPicker picker = updateManager.getPicker();
+            Picker picker = updateManager.getPicker();
 
             ISurface currentSurface = picker.getCurrentSurface();
             currentSurface.getWorldLocation(i_p, rayDirection);

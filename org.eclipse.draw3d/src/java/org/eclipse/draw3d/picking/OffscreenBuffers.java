@@ -39,17 +39,6 @@ public class OffscreenBuffers implements PickingBuffers {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.picking.PickingBuffers#createSnapshot()
-	 */
-	public PickingBuffers createSnapshot() {
-
-		return new SnapshotBuffers(getColorBuffer(), getDepthBuffer(),
-				getWidth(), getHeight(), getBufferConfig());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.draw3d.picking.PickingBuffers#dispose()
 	 */
 	public void dispose() {
@@ -129,11 +118,9 @@ public class OffscreenBuffers implements PickingBuffers {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.picking.PickingBuffers#repaint(org.eclipse.draw2d.IFigure,
-	 *      org.eclipse.draw3d.picking.FigureManager,
-	 *      org.eclipse.swt.opengl.GLCanvas)
+	 * @see org.eclipse.draw3d.picking.PickingBuffers#repaint(IFigure, FigureManager, GLCanvas)
 	 */
-	public void repaint(final IFigure i_rootFigure,
+	public boolean repaint(final IFigure i_rootFigure,
 			FigureManager i_figureManager, GLCanvas i_canvas) {
 
 		RenderContext renderContext = Figure3DHelper
@@ -180,8 +167,9 @@ public class OffscreenBuffers implements PickingBuffers {
 					i_rootFigure.paint(new DummyGraphics());
 				}
 			});
+			
+			return m_offscreenRenderer.isBackBufferEnabled();
 		} finally {
-
 			if (dither)
 				g3d.glEnable(Graphics3DDraw.GL_DITHER);
 
@@ -190,13 +178,6 @@ public class OffscreenBuffers implements PickingBuffers {
 
 			if (texture)
 				g3d.glEnable(Graphics3DDraw.GL_TEXTURE_2D);
-
-			if (m_offscreenRenderer.isBackBufferEnabled()) {
-				// repaint the back buffer to prevent the color buffer from
-				// showing
-				i_rootFigure.paint(new DummyGraphics());
-				i_canvas.swapBuffers();
-			}
 		}
 	}
 }

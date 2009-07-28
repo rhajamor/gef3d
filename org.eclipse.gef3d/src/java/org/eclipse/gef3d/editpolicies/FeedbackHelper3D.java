@@ -20,7 +20,7 @@ import org.eclipse.draw3d.XYZAnchor;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.gef.editpolicies.FeedbackHelper;
 
 /**
@@ -35,7 +35,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
     /**
      * The color picker, which can be <code>null</code>.
      */
-    protected ColorPicker m_colorPicker;
+    protected Picker m_colorPicker;
 
     /**
      * The default figure.
@@ -61,7 +61,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 
         UpdateManager updateManager = m_defaultFigure.getUpdateManager();
         if (updateManager instanceof PickingUpdateManager3D)
-            m_colorPicker = ((PickingUpdateManager3D) updateManager).getPicker();
+            m_colorPicker = ((PickingUpdateManager3D) updateManager).getMainPicker();
     }
 
     /**
