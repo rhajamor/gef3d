@@ -89,7 +89,11 @@ public class MoveHandle3D extends AbstractHandle3D {
 	 * @see org.eclipse.gef.handles.AbstractHandle#createDragTracker()
 	 */
 	protected DragTracker createDragTracker() {
-		DragEditPartsTracker3D tracker = new DragEditPartsTracker3D(getOwner());
+	    
+        
+        DragEditPartsTracker tracker = new DragEditPartsTracker(getOwner());
+	    
+//		DragEditPartsTracker tracker = new DragEditPartsTracker3D(getOwner());
 		tracker.setDefaultCursor(getCursor());
 		return tracker;
 	}

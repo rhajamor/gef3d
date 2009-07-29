@@ -113,7 +113,8 @@ public class ResizeHandle3D extends CubeHandle  {
 	 */
 	@Override
 	protected DragTracker createDragTracker() {
-		return new ResizeTracker3D(getOwner(), cursorDirection);
+	    return new ResizeTracker(getOwner(), cursorDirection);
+//		return new ResizeTracker3D(getOwner(), cursorDirection);
 	}
 
 	

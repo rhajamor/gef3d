@@ -12,6 +12,7 @@ package org.eclipse.draw3d;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -50,7 +51,7 @@ public interface ISurface {
      * 
      * @return the host figure
      */
-    public IFigure2DHost3D getHost();
+    public IFigure3D getHost();
 
     /**
      * Returns the 2D surface coordinates of a point specified in world
@@ -77,8 +78,8 @@ public interface ISurface {
      * 
      * @param i_rayStart
      *            the start point of the ray
-     * @param i_rayDirection
-     *            the direction vector of the ray, which need not be normalised
+     * @param i_rayPoint
+     *            the a point on the ray other than the start point
      * @param io_result
      *            the result point, if <code>null</code>, a new point will be
      *            returned
@@ -88,7 +89,7 @@ public interface ISurface {
      *         surface
      */
     public Point getSurfaceLocation2D(IVector3f i_rayStart,
-            IVector3f i_rayDirection, Point io_result);
+            IVector3f i_rayPoint, Point io_result);
 
     /**
      * Returns the 2D surface coordinates of a point specified in world
@@ -146,8 +147,8 @@ public interface ISurface {
      * 
      * @param i_rayStart
      *            the start point of the ray
-     * @param i_rayDirection
-     *            the direction vector of the ray, which need not be normalised
+     * @param i_rayPoint
+     *            a pointon the ray other than the start point
      * @param io_result
      *            the result vector, if <code>null</code>, a new vector will be
      *            returned
@@ -157,7 +158,7 @@ public interface ISurface {
      *         surface
      */
     public Vector3f getSurfaceLocation3D(IVector3f i_rayStart,
-            IVector3f i_rayDirection, Vector3f io_result);
+            IVector3f i_rayPoint, Vector3f io_result);
 
     /**
      * Returns the 3D surface coordinates of a point specified in world
@@ -171,6 +172,19 @@ public interface ISurface {
      * @return the 3D surface coordinates of the given point
      */
     public Vector3f getSurfaceLocation3D(IVector3f i_world, Vector3f io_result);
+
+    /**
+     * Returns the world dimensions of the given dimension specified in 2D
+     * surface coordinates.
+     * 
+     * @param i_surface
+     *            the 2D surface coordinates of the dimension
+     * @param io_result
+     *            the result vector, if <code>null</code>, a new vector will be
+     *            created
+     * @return the result vector
+     */
+    public Vector3f getWorldDimension(Dimension i_surface, Vector3f io_result);
 
     /**
      * Returns the world coordinates of the given point specified in 3D surface

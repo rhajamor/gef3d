@@ -16,6 +16,7 @@ import org.eclipse.draw2d.UpdateManager;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.camera.ICameraListener;
+import org.eclipse.draw3d.geometry.Cache;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.ColorPicker;
@@ -96,36 +97,39 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
         if (!(updateManager instanceof PickingUpdateManager3D))
             return null;
 
-        Vector3f w = Math3D.getVector3f();
-        Vector3f rayStart = Math3D.getVector3f();
-        Vector3f rayDirection = Math3D.getVector3f();
+        Vector3f w = Cache.getVector3f();
+        Vector3f rayStart = Cache.getVector3f();
+        Vector3f rayDirection = Cache.getVector3f();
         try {
 
             // input coordinates are surface coordinates, convert them into
             // mouse coordinates
             getWorldLocation(i_sx, i_sy, 0, w);
-            Point m = m_scene.getCamera().project(w.getX(), w.getY(), w.getZ(),
-                null);
 
-            ColorPicker picker = ((PickingUpdateManager3D) updateManager).getPicker();
-            IFigure3D hit = picker.getFigure3D(m.x, m.y);
+            ICamera camera = m_scene.getCamera();
+            Point mouseLocation = camera.project(w, null);
+
+            ColorPicker picker = m_scene.getPicker();
+            IFigure3D hit = picker.getFigure3D(mouseLocation.x, mouseLocation.y);
 
             if (hit == null)
                 return null;
 
-            m_scene.getCamera().getPosition(rayStart);
-            
+            camera.getPosition(rayStart);
+
             Math3D.sub(w, rayStart, rayDirection);
             Math3D.normalise(rayDirection, rayDirection);
-            
-            ISurface surface = hit.getSurface();
-            Point s = surface.getSurfaceLocation2D(rayStart, rayDirection, null);
 
-            return hit.getSurface().findFigureAt(s.x, s.y, i_search);
+            ISurface surface = hit.getSurface();
+            Point surfaceLocation = surface.getSurfaceLocation2D(rayStart,
+                rayDirection, null);
+
+            return hit.getSurface().findFigureAt(surfaceLocation.x,
+                surfaceLocation.y, i_search);
         } finally {
-            Math3D.returnVector3f(w);
-            Math3D.returnVector3f(rayStart);
-            Math3D.returnVector3f(rayDirection);
+            Cache.returnVector3f(w);
+            Cache.returnVector3f(rayStart);
+            Cache.returnVector3f(rayDirection);
         }
     }
 
@@ -134,7 +138,7 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
      * 
      * @see org.eclipse.draw3d.ISurface#getHost()
      */
-    public IFigure2DHost3D getHost() {
+    public IFigure3D getHost() {
 
         return m_host;
     }

@@ -19,8 +19,8 @@ import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.MouseEvent3D;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.camera.ICamera;
+import org.eclipse.draw3d.geometry.Cache;
 import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.ColorPicker;
 import org.eclipse.swt.events.FocusEvent;
@@ -89,8 +89,7 @@ public class EventDispatcher3D extends EventDispatcher {
 
     private MouseEvent3D convert(MouseEvent i_e) {
 
-        Vector3f s = Math3D.getVector3f();
-        Vector3f d = Math3D.getVector3f();
+        Vector3f eye = Cache.getVector3f();
         try {
             // update the picker
             ColorPicker picker = getColorPicker();
@@ -99,21 +98,17 @@ public class EventDispatcher3D extends EventDispatcher {
             float depth = picker.getDepth(i_e.x, i_e.y);
 
             ICamera camera = m_scene.getCamera();
-            camera.getPosition(s);
+            camera.getPosition(eye);
 
-            IVector3f worldLoc = camera.unProject(i_e.x, i_e.y, depth, null,
+            IVector3f worldLocation = camera.unProject(i_e.x, i_e.y, depth, null,
                 null);
 
-            Math3D.sub(worldLoc, s, d);
-            Math3D.normalise(d, d);
-
             ISurface surface = picker.getCurrentSurface();
-            Point surfaceLoc = surface.getSurfaceLocation2D(s, d, null);
+            Point surfaceLoc = surface.getSurfaceLocation2D(eye, worldLocation, null);
 
-            return new MouseEvent3D(i_e, surfaceLoc, worldLoc, depth);
+            return new MouseEvent3D(i_e, surfaceLoc, worldLocation, depth);
         } finally {
-            Math3D.returnVector3f(s);
-            Math3D.returnVector3f(d);
+            Cache.returnVector3f(eye);
         }
     }
 

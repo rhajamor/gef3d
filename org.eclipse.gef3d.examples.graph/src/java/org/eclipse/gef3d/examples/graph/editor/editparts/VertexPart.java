@@ -47,7 +47,8 @@ public class VertexPart extends AbstractGraphicalNodeEditPart implements
     @Override
     public DragTracker getDragTracker(Request i_request) {
     
-        return new DragEditPartsTracker3D(this);
+        return super.getDragTracker(i_request);
+        //return new DragEditPartsTracker3D(this);
     }
     
 	/**

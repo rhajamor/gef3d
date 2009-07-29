@@ -13,6 +13,7 @@ package org.eclipse.draw3d.picking;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -274,10 +275,35 @@ public class ColorPicker {
         if (m_disposed)
             throw new IllegalStateException("color picker is disposed");
 
-        m_valid = !m_figureManager.ignoreFigure(i_figure) && m_valid;
+        m_valid &= !m_figureManager.ignoreFigure(i_figure);
 
         if (log.isLoggable(Level.FINE))
             log.fine("ignoring " + i_figure + " and all children");
+    }
+
+    /**
+     * Ignores all figures in the given collection and their children.
+     * 
+     * @param i_figures
+     *            the figures to ignore
+     * 
+     * @throws NullPointerException
+     *             if the given collection is <code>null</code>
+     */
+    public void ignoreFigures(Collection<IFigure3D> i_figures) {
+
+        if (i_figures == null)
+            throw new NullPointerException("i_figures must not be null");
+
+        if (m_disposed)
+            throw new IllegalStateException("color picker is disposed");
+
+        for (IFigure3D figure : i_figures) {
+            m_valid &= !m_figureManager.ignoreFigure(figure);
+
+            if (log.isLoggable(Level.FINE))
+                log.fine("ignoring " + figure + " and all children");
+        }
     }
 
     /**

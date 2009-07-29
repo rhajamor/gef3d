@@ -11,12 +11,18 @@
 package org.eclipse.gef3d.tools;
 
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.IScene;
+import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.MouseEvent3D;
+import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.Tool;
 import org.eclipse.gef.tools.AbstractTool;
+import org.eclipse.gef3d.ui.parts.GraphicalViewer3D;
 import org.eclipse.swt.events.MouseEvent;
 
 /**
@@ -38,11 +44,13 @@ public abstract class AbstractTool3D extends AbstractTool {
      * @version $Revision$
      * @since 24.06.2009
      */
-    public static class Input3D extends Input {
+    public class Input3D extends Input {
 
         Point mouseLocation = new Point();
 
         Vector3f worldLocation = new Vector3fImpl();
+
+        Point surfaceLocation = new Point();
 
         /**
          * Returns the current location of the mouse pointer. This is what
@@ -82,10 +90,40 @@ public abstract class AbstractTool3D extends AbstractTool {
                 MouseEvent3D me3D = (MouseEvent3D) i_me;
 
                 worldLocation.set(me3D.worldLoc);
+                surfaceLocation.x = me3D.x;
+                surfaceLocation.y = me3D.y;
                 mouseLocation.x = me3D.mouseX;
                 mouseLocation.y = me3D.mouseY;
+            } else {
+                surfaceLocation.x = i_me.x;
+                surfaceLocation.y = i_me.y;
+
+                ColorPicker picker = getScene().getPicker();
+                ISurface surface = picker.getCurrentSurface();
+                surface.getWorldLocation(surfaceLocation, worldLocation);
+                
+                ICamera camera = getScene().getCamera();
+                camera.project(worldLocation, mouseLocation);
             }
         }
+    }
+
+    /**
+     * Returns the scene which contains the camera.
+     * 
+     * @return the scene
+     * 
+     * @throws AssertionError
+     *             if no scene is available
+     */
+    protected IScene getScene() {
+
+        EditPartViewer viewer = getCurrentViewer();
+        if (!(viewer instanceof GraphicalViewer3D))
+            throw new AssertionError(
+                "camera tool can only be used with a 3D graphical viewer");
+
+        return ((GraphicalViewer3D) viewer).getLightweightSystem3D();
     }
 
     private Input3D m_current;

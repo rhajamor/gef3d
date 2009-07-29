@@ -11,6 +11,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.geometryext;
 
+import org.eclipse.draw3d.geometry.Cache;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -64,7 +65,7 @@ public class Plane {
         if (result == null)
             result = new Vector3fImpl();
 
-        Vector3f tmp = Math3D.getVector3f();
+        Vector3f tmp = Cache.getVector3f();
         try {
             Math3D.sub(i_lb, i_la, tmp);
 
@@ -84,7 +85,7 @@ public class Plane {
 
             return result;
         } finally {
-            Math3D.returnVector3f(tmp);
+            Cache.returnVector3f(tmp);
         }
     }
 
@@ -107,7 +108,7 @@ public class Plane {
         if (i_ray == null)
             throw new NullPointerException("i_ray must not be null");
 
-        Vector3f p = Math3D.getVector3f();
+        Vector3f p = Cache.getVector3f();
         try {
             IVector3f s = i_ray.getStart();
             IVector3f d = i_ray.getDirection();
@@ -130,7 +131,7 @@ public class Plane {
 
             return result;
         } finally {
-            Math3D.returnVector3f(p);
+            Cache.returnVector3f(p);
         }
     }
 
@@ -160,9 +161,9 @@ public class Plane {
         if (i_p2 == null)
             throw new NullPointerException("i_p2 must not be null");
 
-        Vector3f p0p1 = Math3D.getVector3f();
-        Vector3f p0p2 = Math3D.getVector3f();
-        Vector3f normal = Math3D.getVector3f();
+        Vector3f p0p1 = Cache.getVector3f();
+        Vector3f p0p2 = Cache.getVector3f();
+        Vector3f normal = Cache.getVector3f();
 
         try {
             // convert to hessian normal form
@@ -181,9 +182,9 @@ public class Plane {
 
             return true;
         } finally {
-            Math3D.returnVector3f(p0p1);
-            Math3D.returnVector3f(p0p2);
-            Math3D.returnVector3f(normal);
+            Cache.returnVector3f(p0p1);
+            Cache.returnVector3f(p0p2);
+            Cache.returnVector3f(normal);
         }
     }
 

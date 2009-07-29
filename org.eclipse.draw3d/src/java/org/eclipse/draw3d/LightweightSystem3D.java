@@ -18,7 +18,6 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.EventDispatcher;
-import org.eclipse.draw2d.EventDispatcher3D;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GraphicsSource;
 import org.eclipse.draw2d.IFigure;
@@ -41,6 +40,7 @@ import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
+import org.eclipse.draw3d.picking.ColorPicker;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -386,6 +386,16 @@ public class LightweightSystem3D extends LightweightSystem implements
         public IVector3f getRotation3D() {
 
             return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.eclipse.draw3d.IFigure3D#getScene()
+         */
+        public IScene getScene() {
+
+            return LightweightSystem3D.this;
         }
 
         /**
@@ -750,15 +760,28 @@ public class LightweightSystem3D extends LightweightSystem implements
     @Override
     protected EventDispatcher getEventDispatcher() {
 
-        EventDispatcher dispatcher = super.getEventDispatcher();
-        if (!(dispatcher instanceof EventDispatcher3D)) {
-            dispatcher = new EventDispatcher3D(dispatcher, this);
-            dispatcher.setRoot(getRootFigure());
+        /*
+         * EventDispatcher dispatcher = super.getEventDispatcher(); if
+         * (!(dispatcher instanceof EventDispatcher3D)) { dispatcher = new
+         * EventDispatcher3D(dispatcher, this);
+         * dispatcher.setRoot(getRootFigure());
+         * 
+         * setEventDispatcher(dispatcher); }
+         * 
+         * return dispatcher;
+         */
 
-            setEventDispatcher(dispatcher);
-        }
+        return super.getEventDispatcher();
+    }
 
-        return dispatcher;
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.IScene#getPicker()
+     */
+    public ColorPicker getPicker() {
+
+        return getUpdateManager3D().getPicker();
     }
 
     /**
@@ -769,6 +792,18 @@ public class LightweightSystem3D extends LightweightSystem implements
     public RenderContext getRenderContext() {
 
         return m_renderContext;
+    }
+
+    /**
+     * Returns the update manager of this lightweight system. This is just a
+     * convience method and may throw a {@link ClassCastException} if the actual
+     * update manager is not an instance of {@link PickingUpdateManager3D}.
+     * 
+     * @return the 3D update manager
+     */
+    public PickingUpdateManager3D getUpdateManager3D() {
+
+        return (PickingUpdateManager3D) super.getUpdateManager();
     }
 
     /**

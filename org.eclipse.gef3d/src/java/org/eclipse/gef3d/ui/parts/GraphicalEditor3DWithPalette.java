@@ -15,7 +15,9 @@ package org.eclipse.gef3d.ui.parts;
 import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
+import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithPalette;
+import org.eclipse.gef3d.EditDomainWrapper;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -68,9 +70,11 @@ public abstract class GraphicalEditor3DWithPalette extends
         doAttachFPSCounter(viewer);
         control.addDisposeListener(viewer.getLightweightSystem3D());
 
-        if (viewer instanceof IScene) {
-            doRegisterToScene((IScene) viewer);
-        }
+        doRegisterToScene(viewer.getLightweightSystem3D());
+
+        // trigger the wrapping of the edit domain now that we have a viewer
+        if (getEditDomain() != null)
+            setEditDomain(getEditDomain());
     }
 
     /**
@@ -127,5 +131,19 @@ public abstract class GraphicalEditor3DWithPalette extends
 
         scenePreferenceDistributor = new ScenePreferenceDistributor(scene);
         scenePreferenceDistributor.start();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.gef.ui.parts.GraphicalEditorWithPalette#setEditDomain(org.eclipse.gef.DefaultEditDomain)
+     */
+    @Override
+    protected void setEditDomain(DefaultEditDomain i_ed) {
+
+        if (i_ed != null)
+            super.setEditDomain(new EditDomainWrapper(i_ed));
+        else
+            super.setEditDomain(null);
     }
 }

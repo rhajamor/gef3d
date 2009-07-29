@@ -206,6 +206,20 @@ public interface ICamera {
     public Point project(float i_wx, float i_wy, float i_wz, Point io_result);
 
     /**
+     * Performs a projection of the given world coordinates to mouse
+     * coordinates. In other words, it calculates the pixel which a ray from the
+     * eye to the given 3D point would intersect with.
+     * 
+     * @param i_worldLocation
+     *            the world coordinates
+     * @param io_result
+     *            the result point, if <code>null</code>, a new point will be
+     *            created
+     * @return the result point
+     */
+    public Point project(IVector3f i_worldLocation, Point io_result);
+
+    /**
      * Removes the given camera listener from this camera. If the given listener
      * is not registered, nothing happens. If the given listener has been
      * registered more than once, the oldest registration will be removed.

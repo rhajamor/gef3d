@@ -11,6 +11,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.geometry;
 
+
 /**
  * Basic vector operations.
  * 
@@ -162,9 +163,9 @@ public class Math3DVector3f extends Math3DVector2f {
         if (result == null)
             result = new Vector3fImpl();
 
-        Vector3f vecNorm = getVector3f();
-        Vector3f refNorm = getVector3f();
-        Vector3f axis = getVector3f();
+        Vector3f vecNorm = Cache.getVector3f();
+        Vector3f refNorm = Cache.getVector3f();
+        Vector3f axis = Cache.getVector3f();
         try {
 
             // calculate axis / angle representation of the rotation
@@ -215,9 +216,9 @@ public class Math3DVector3f extends Math3DVector2f {
             result.set((float) b, (float) h, (float) a);
             return result;
         } finally {
-            returnVector3f(vecNorm);
-            returnVector3f(refNorm);
-            returnVector3f(axis);
+            Cache.returnVector3f(vecNorm);
+            Cache.returnVector3f(refNorm);
+            Cache.returnVector3f(axis);
         }
     }
 

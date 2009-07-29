@@ -11,6 +11,7 @@
 package org.eclipse.gef3d.ui.parts;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.draw2d.ExclusionSearch;
@@ -23,9 +24,10 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.PickingUpdateManager3D;
-import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Cache;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.Handle;
 import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.editparts.LayerManager;
@@ -133,7 +135,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
      * @see org.eclipse.gef.ui.parts.GraphicalViewerImpl#findHandleAt(org.eclipse.draw2d.geometry.Point)
      */
     @Override
-    public Handle findHandleAt(Point i_p) {
+    public Handle findHandleAt(Point i_mouseLocation) {
 
         LayerManager layermanager = (LayerManager) getEditPartRegistry().get(
             LayerManager.ID);
@@ -141,8 +143,8 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
         if (layermanager == null)
             return null;
 
-        Vector3f rayStart = Math3D.getVector3f();
-        Vector3f rayDirection = Math3D.getVector3f();
+        Vector3f rayStart = Cache.getVector3f();
+        Vector3f rayPoint = Cache.getVector3f();
         try {
             List<IFigure> ignore = new ArrayList<IFigure>(3);
             ignore.add(layermanager.getLayer(LayerConstants.PRIMARY_LAYER));
@@ -150,32 +152,107 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
             ignore.add(layermanager.getLayer(LayerConstants.FEEDBACK_LAYER));
 
             LightweightSystem3D lws = getLightweightSystem3D();
-            PickingUpdateManager3D updateManager = (PickingUpdateManager3D) lws.getUpdateManager();
-            ColorPicker picker = updateManager.getPicker();
+            ColorPicker picker = lws.getPicker();
 
-            ISurface currentSurface = picker.getCurrentSurface();
-            currentSurface.getWorldLocation(i_p, rayDirection);
+            IFigure3D figure3D = picker.getFigure3D(i_mouseLocation.x,
+                i_mouseLocation.y);
 
+            if (figure3D == null)
+                return null;
+
+            if (figure3D instanceof Handle)
+                return (Handle) figure3D;
+
+            // keep searching on the surface
             lws.getCamera().getPosition(rayStart);
+            lws.getCamera().unProject(i_mouseLocation.x, i_mouseLocation.y, 0,
+                null, rayPoint);
 
-            Math3D.sub(rayDirection, rayStart, rayDirection);
-            Math3D.normalise(rayDirection, rayDirection);
+            ISurface surface = figure3D.getSurface();
+            Point surfaceLocation = surface.getSurfaceLocation2D(rayStart,
+                rayPoint, null);
 
-            IFigure3D rootFigure = (IFigure3D) lws.getRootFigure();
-            ISurface rootSurface = rootFigure.getSurface();
+            IFigure figure2D = figure3D.findFigureAt(surfaceLocation.x,
+                surfaceLocation.y, new ExclusionSearch(ignore));
 
-            Point s = rootSurface.getSurfaceLocation2D(rayStart, rayDirection,
-                null);
-            IFigure handle = rootSurface.findFigureAt(s.x, s.y,
-                new ExclusionSearch(ignore));
-
-            if (handle instanceof Handle)
-                return (Handle) handle;
+            if (figure2D instanceof Handle)
+                return (Handle) figure2D;
 
             return null;
         } finally {
-            Math3D.returnVector3f(rayStart);
-            Math3D.returnVector3f(rayDirection);
+            Cache.returnVector3f(rayStart);
+            Cache.returnVector3f(rayPoint);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * <p>
+     * This method was copied and subsequently modified.
+     * </p>
+     * 
+     * @author hudsonr (original implementation)
+     * @author Kristian Duske
+     * 
+     * @see org.eclipse.gef.ui.parts.GraphicalViewerImpl#findObjectAtExcluding(org.eclipse.draw2d.geometry.Point,
+     *      java.util.Collection, org.eclipse.gef.EditPartViewer.Conditional)
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public EditPart findObjectAtExcluding(Point i_mouseLocation,
+            Collection i_exclude, final Conditional i_condition) {
+
+        class ConditionalTreeSearch extends ExclusionSearch {
+
+            ConditionalTreeSearch(Collection coll) {
+
+                super(coll);
+            }
+
+            @Override
+            public boolean accept(IFigure i_figure) {
+
+                IFigure current = i_figure;
+                EditPart editpart = null;
+                while (editpart == null && current != null) {
+                    editpart = (EditPart) getVisualPartMap().get(current);
+                    current = current.getParent();
+                }
+
+                return editpart != null
+                        && (i_condition == null || i_condition.evaluate(editpart));
+            }
+        }
+
+        Vector3f rayStart = Cache.getVector3f();
+        Vector3f rayDirection = Cache.getVector3f();
+        try {
+
+            LightweightSystem3D lws = getLightweightSystem3D();
+            ColorPicker picker = lws.getPicker();
+
+            IFigure3D figure3D = picker.getFigure3D(i_mouseLocation.x,
+                i_mouseLocation.y);
+
+            EditPart part = null;
+            if (figure3D != null) {
+                IFigure figure2D = figure3D.findFigureAt(i_mouseLocation.x,
+                    i_mouseLocation.y, new ConditionalTreeSearch(i_exclude));
+
+                while (part == null && figure2D != null) {
+                    part = (EditPart) getVisualPartMap().get(figure2D);
+                    figure2D = figure2D.getParent();
+                }
+            }
+
+            if (part == null)
+                return getContents();
+
+            return part;
+        } finally {
+            Cache.returnVector3f(rayStart);
+            Cache.returnVector3f(rayDirection);
         }
     }
 

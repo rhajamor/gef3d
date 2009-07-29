@@ -24,7 +24,7 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.PickingUpdateManager3D;
-import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Cache;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.ColorPicker;
 import org.eclipse.gef.EditPart;
@@ -110,8 +110,8 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer {
         if (layermanager == null)
             return null;
 
-        Vector3f rayStart = Math3D.getVector3f();
-        Vector3f rayDirection = Math3D.getVector3f();
+        Vector3f rayStart = Cache.getVector3f();
+        Vector3f rayPoint = Cache.getVector3f();
         try {
             List<IFigure> ignore = new ArrayList<IFigure>(3);
             ignore.add(layermanager.getLayer(LayerConstants.PRIMARY_LAYER));
@@ -123,18 +123,14 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer {
             ColorPicker picker = updateManager.getPicker();
 
             ISurface currentSurface = picker.getCurrentSurface();
-            currentSurface.getWorldLocation(i_p, rayDirection);
+            currentSurface.getWorldLocation(i_p, rayPoint);
 
             lws.getCamera().getPosition(rayStart);
-
-            Math3D.sub(rayDirection, rayStart, rayDirection);
-            Math3D.normalise(rayDirection, rayDirection);
 
             IFigure3D rootFigure = (IFigure3D) lws.getRootFigure();
             ISurface rootSurface = rootFigure.getSurface();
 
-            Point s = rootSurface.getSurfaceLocation2D(rayStart, rayDirection,
-                null);
+            Point s = rootSurface.getSurfaceLocation2D(rayStart, rayPoint, null);
             IFigure handle = rootSurface.findFigureAt(s.x, s.y,
                 new ExclusionSearch(ignore));
 
@@ -143,8 +139,8 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer {
 
             return null;
         } finally {
-            Math3D.returnVector3f(rayStart);
-            Math3D.returnVector3f(rayDirection);
+            Cache.returnVector3f(rayStart);
+            Cache.returnVector3f(rayPoint);
         }
     }
 

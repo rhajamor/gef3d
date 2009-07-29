@@ -13,6 +13,7 @@ package org.eclipse.draw3d;
 
 import org.eclipse.draw2d.UpdateManager;
 import org.eclipse.draw3d.camera.ICamera;
+import org.eclipse.draw3d.picking.ColorPicker;
 import org.eclipse.swt.graphics.Color;
 
 /**
@@ -39,6 +40,13 @@ public interface IScene {
      * @return the attached camera
      */
     public ICamera getCamera();
+
+    /**
+     * Returns the color picker for this scene.
+     * 
+     * @return the color picker for this scene.
+     */
+    public ColorPicker getPicker();
 
     /**
      * Returns the update manager of the viewer.

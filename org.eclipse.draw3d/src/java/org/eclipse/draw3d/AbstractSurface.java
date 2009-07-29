@@ -12,6 +12,7 @@ package org.eclipse.draw3d;
 
 import java.util.logging.Logger;
 
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
@@ -19,6 +20,7 @@ import org.eclipse.draw3d.geometry.Matrix4f;
 import org.eclipse.draw3d.geometry.Matrix4fImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.util.Cache;
 
 /**
  * An abstract base implementation of a surface.
@@ -78,12 +80,12 @@ public abstract class AbstractSurface implements ISurface {
     public Point getSurfaceLocation2D(float i_wx, float i_wy, float i_wz,
             Point io_result) {
 
-        Vector3f w = Math3D.getVector3f();
+        Vector3f w = Cache.getVector3f();
         try {
             w.set(i_wx, i_wy, i_wz);
             return getSurfaceLocation2D(w, io_result);
         } finally {
-            Math3D.returnVector3f(w);
+            Cache.returnVector3f(w);
         }
     }
 
@@ -95,22 +97,22 @@ public abstract class AbstractSurface implements ISurface {
      *      org.eclipse.draw2d.geometry.Point)
      */
     public Point getSurfaceLocation2D(IVector3f i_rayStart,
-            IVector3f i_rayDirection, Point io_result) {
+            IVector3f i_rayPoint, Point io_result) {
 
         Point result = io_result;
         if (result == null)
             result = new Point();
 
-        Vector3f s = Math3D.getVector3f();
+        Vector3f surfaceLocation = Cache.getVector3f();
         try {
-            getSurfaceLocation3D(i_rayStart, i_rayDirection, s);
+            getSurfaceLocation3D(i_rayStart, i_rayPoint, surfaceLocation);
 
-            result.x = (int) s.getX();
-            result.y = (int) s.getY();
+            result.x = (int) surfaceLocation.getX();
+            result.y = (int) surfaceLocation.getY();
 
             return result;
         } finally {
-            Math3D.returnVector3f(s);
+            Cache.returnVector3f(surfaceLocation);
         }
     }
 
@@ -126,7 +128,7 @@ public abstract class AbstractSurface implements ISurface {
         if (result == null)
             result = new Point();
 
-        Vector3f vector = Math3D.getVector3f();
+        Vector3f vector = Cache.getVector3f();
         try {
             updateWorldToSurface();
             vector.set(i_world);
@@ -137,7 +139,7 @@ public abstract class AbstractSurface implements ISurface {
 
             return result;
         } finally {
-            Math3D.returnVector3f(vector);
+            Cache.returnVector3f(vector);
         }
     }
 
@@ -150,12 +152,12 @@ public abstract class AbstractSurface implements ISurface {
     public Vector3f getSurfaceLocation3D(float i_wx, float i_wy, float i_wz,
             Vector3f io_result) {
 
-        Vector3f w = Math3D.getVector3f();
+        Vector3f w = Cache.getVector3f();
         try {
             w.set(i_wx, i_wy, i_wz);
             return getSurfaceLocation3D(w, io_result);
         } finally {
-            Math3D.returnVector3f(w);
+            Cache.returnVector3f(w);
         }
     }
 
@@ -169,12 +171,12 @@ public abstract class AbstractSurface implements ISurface {
     public Vector3f getSurfaceLocation3D(ISurface i_reference,
             Vector3f i_surface, Vector3f io_result) {
 
-        Vector3f w = Math3D.getVector3f();
+        Vector3f w = Cache.getVector3f();
         try {
             i_reference.getWorldLocation(i_surface, w);
             return getSurfaceLocation3D(w, io_result);
         } finally {
-            Math3D.returnVector3f(w);
+            Cache.returnVector3f(w);
         }
     }
 
@@ -186,22 +188,33 @@ public abstract class AbstractSurface implements ISurface {
      *      org.eclipse.draw3d.geometry.Vector3f)
      */
     public Vector3f getSurfaceLocation3D(IVector3f i_rayStart,
-            IVector3f i_rayDirection, Vector3f io_result) {
+            IVector3f i_rayPoint, Vector3f io_result) {
 
-        Vector3f p = Math3D.getVector3f();
-        Vector3f n = Math3D.getVector3f();
-        Vector3f w = Math3D.getVector3f();
+        if (i_rayPoint.equals(i_rayStart))
+            return null;
+
+        Vector3f rayDirection = Cache.getVector3f();
+        Vector3f p = Cache.getVector3f();
+        Vector3f n = Cache.getVector3f();
+        Vector3f w = Cache.getVector3f();
 
         try {
+            Math3D.sub(i_rayPoint, i_rayStart, rayDirection);
+            Math3D.normalise(rayDirection, rayDirection);
+
             getOrigin(p);
             getZAxis(n);
 
-            Math3D.rayIntersectsPlane(i_rayStart, i_rayDirection, p, n, w);
+            Math3D.rayIntersectsPlane(i_rayStart, rayDirection, p, n, w);
+            if (w == null)
+                return null;
+
             return getSurfaceLocation3D(w, io_result);
         } finally {
-            Math3D.returnVector3f(p);
-            Math3D.returnVector3f(n);
-            Math3D.returnVector3f(w);
+            Cache.returnVector3f(rayDirection);
+            Cache.returnVector3f(p);
+            Cache.returnVector3f(n);
+            Cache.returnVector3f(w);
         }
     }
 
@@ -227,18 +240,36 @@ public abstract class AbstractSurface implements ISurface {
     /**
      * {@inheritDoc}
      * 
+     * @see org.eclipse.draw3d.ISurface#getWorldDimension(org.eclipse.draw2d.geometry.Dimension,
+     *      org.eclipse.draw3d.geometry.Vector3f)
+     */
+    public Vector3f getWorldDimension(Dimension i_surface, Vector3f io_result) {
+
+        Point p = Cache.getPoint();
+        try {
+            p.x = i_surface.width;
+            p.y = i_surface.height;
+            return getWorldLocation(p, io_result);
+        } finally {
+            Cache.returnPoint(p);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.eclipse.draw3d.ISurface#getWorldLocation(float, float, float,
      *      org.eclipse.draw3d.geometry.Vector3f)
      */
     public Vector3f getWorldLocation(float i_sx, float i_sy, float i_sz,
             Vector3f io_result) {
 
-        Vector3f s = Math3D.getVector3f();
+        Vector3f s = Cache.getVector3f();
         try {
             s.set(i_sx, i_sy, i_sz);
             return getWorldLocation(s, io_result);
         } finally {
-            Math3D.returnVector3f(s);
+            Cache.returnVector3f(s);
         }
     }
 
@@ -313,10 +344,10 @@ public abstract class AbstractSurface implements ISurface {
         if (m_surfaceToWorldValid)
             return;
 
-        Vector3f xAxis = Math3D.getVector3f();
-        Vector3f yAxis = Math3D.getVector3f();
-        Vector3f zAxis = Math3D.getVector3f();
-        Vector3f origin = Math3D.getVector3f();
+        Vector3f xAxis = Cache.getVector3f();
+        Vector3f yAxis = Cache.getVector3f();
+        Vector3f zAxis = Cache.getVector3f();
+        Vector3f origin = Cache.getVector3f();
 
         try {
             getXAxis(xAxis);
@@ -346,10 +377,10 @@ public abstract class AbstractSurface implements ISurface {
 
             m_surfaceToWorldValid = true;
         } finally {
-            Math3D.returnVector3f(xAxis);
-            Math3D.returnVector3f(yAxis);
-            Math3D.returnVector3f(zAxis);
-            Math3D.returnVector3f(origin);
+            Cache.returnVector3f(xAxis);
+            Cache.returnVector3f(yAxis);
+            Cache.returnVector3f(zAxis);
+            Cache.returnVector3f(origin);
         }
     }
 
