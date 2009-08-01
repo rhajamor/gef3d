@@ -15,9 +15,10 @@ import java.util.Queue;
 
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.geometry.Math3DCache;
 
 /**
- * Extends {@link org.eclipse.draw3d.geometry.Cache} with support for draw2d
+ * Extends {@link org.eclipse.draw3d.geometry.Math3DCache} with support for draw2d
  * primitives. This way, only the plugin containing this class needs to depend
  * on draw2d.
  * 
@@ -25,7 +26,7 @@ import org.eclipse.draw2d.geometry.Point;
  * @version $Revision$
  * @since 29.07.2009
  */
-public class Cache extends org.eclipse.draw3d.geometry.Cache {
+public class Draw3DCache extends Math3DCache {
 
     private static final Queue<Dimension> m_dimension = new LinkedList<Dimension>();
 

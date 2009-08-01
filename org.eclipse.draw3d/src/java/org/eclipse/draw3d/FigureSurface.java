@@ -15,7 +15,7 @@ import java.util.List;
 import org.eclipse.draw2d.FigureListener;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
-import org.eclipse.draw3d.geometry.Cache;
+import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Matrix4f;
@@ -173,7 +173,7 @@ public class FigureSurface extends AbstractSurface {
 
     private void rotateVector(Vector3f i_vector) {
 
-        Matrix4f rot = Cache.getMatrix4f();
+        Matrix4f rot = Math3DCache.getMatrix4f();
         try {
             rot.setIdentity();
 
@@ -182,7 +182,7 @@ public class FigureSurface extends AbstractSurface {
 
             i_vector.transform(rot);
         } finally {
-            Cache.returnMatrix4f(rot);
+            Math3DCache.returnMatrix4f(rot);
         }
     }
 

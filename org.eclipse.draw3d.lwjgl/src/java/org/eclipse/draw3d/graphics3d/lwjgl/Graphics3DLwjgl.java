@@ -34,8 +34,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.GLContext;
-import org.lwjgl.util.glu.Cylinder;
-import org.lwjgl.util.glu.Sphere;
 
 /**
  * Graphics3DLwjgl is the implementor of the Graphics3D interface for the LWJGL
@@ -450,6 +448,15 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 */
 	public void glLineWidth(float width) {
 		org.lwjgl.opengl.GL11.glLineWidth(width);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glPointSize(float)
+	 */
+	public void glPointSize(float size) {
+		org.lwjgl.opengl.GL11.glPointSize(size);
 	}
 
 	/**

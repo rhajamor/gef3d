@@ -32,13 +32,14 @@ import org.eclipse.swt.widgets.Display;
  * @version $Revision$
  * @since Mar 16 2009
  */
-public class Export3DOperation  {
-	
+public class Export3DOperation {
+
 	final IFigure3D rootFigure;
+
 	final String rendererID;
+
 	final String exportfilename;
-	
-	
+
 	/**
 	 * @param i_exportfilename
 	 * @param i_rendererID
@@ -58,31 +59,26 @@ public class Export3DOperation  {
 	 */
 	public void run() {
 		RenderContext renderContext = rootFigure.getRenderContext();
-		Graphics3D g3dSave =  renderContext.getGraphics3D();
+		Graphics3D g3dSave = renderContext.getGraphics3D();
 
 		try {
-			
-			Graphics3DDescriptor descr = Graphics3DRegistry.getRenderer(rendererID);
+
+			Graphics3DDescriptor descr =
+				Graphics3DRegistry.getRenderer(rendererID);
 			Graphics3D g3dExport = descr.createInstance(null);
 			g3dExport.setProperty("exportfile", exportfilename);
 
 			renderContext.setGraphics3D(g3dExport);
-			
+
 			Graphics dummy = createDummyGraphics();
-			renderContext.setMode(RenderMode.PAINT); 
 			rootFigure.invalidateTree(); // invalidate everything
 			rootFigure.paint(dummy);
-
-			
 		} finally {
 			renderContext.setGraphics3D(g3dSave);
-			renderContext.setMode(RenderMode.PAINT);
 			renderContext.clearDisplayManager(); // was in try block only?!
-			
 		}
 	}
 
-	
 	private Graphics createDummyGraphics() {
 		int width = 100;
 		int height = 100;

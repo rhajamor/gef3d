@@ -21,9 +21,9 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.ISurface;
-import org.eclipse.draw3d.geometry.Cache;
+import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.gef.AccessibleEditPart;
 import org.eclipse.gef.EditDomain;
 import org.eclipse.gef.EditPart;
@@ -192,9 +192,9 @@ public class EditPartViewerWrapper implements EditPartViewer {
      * 
      * @see org.eclipse.gef.EditPartViewer#findObjectAt(org.eclipse.draw2d.geometry.Point)
      */
-    public EditPart findObjectAt(Point i_surfaceLocation) {
+    public EditPart findObjectAt(Point i_sLocation) {
 
-        return findObjectAtExcluding(i_surfaceLocation, Collections.EMPTY_SET);
+        return findObjectAtExcluding(i_sLocation, Collections.EMPTY_SET);
     }
 
     /**
@@ -204,10 +204,10 @@ public class EditPartViewerWrapper implements EditPartViewer {
      *      java.util.Collection)
      */
     @SuppressWarnings("unchecked")
-    public EditPart findObjectAtExcluding(Point i_surfaceLocation,
+    public EditPart findObjectAtExcluding(Point i_sLocation,
             Collection i_exclusionSet) {
 
-        return findObjectAtExcluding(i_surfaceLocation, i_exclusionSet, null);
+        return findObjectAtExcluding(i_sLocation, i_exclusionSet, null);
     }
 
     /**
@@ -217,7 +217,7 @@ public class EditPartViewerWrapper implements EditPartViewer {
      *      java.util.Collection, org.eclipse.gef.EditPartViewer.Conditional)
      */
     @SuppressWarnings("unchecked")
-    public EditPart findObjectAtExcluding(Point i_surfaceLocation,
+    public EditPart findObjectAtExcluding(Point i_sLocation,
             Collection i_exclude, final Conditional i_condition) {
 
         class ConditionalTreeSearch extends ExclusionSearch {
@@ -242,16 +242,16 @@ public class EditPartViewerWrapper implements EditPartViewer {
             }
         }
 
-        Vector3f rayStart = Cache.getVector3f();
-        Vector3f rayDirection = Cache.getVector3f();
+        Vector3f rayStart = Math3DCache.getVector3f();
+        Vector3f rayDirection = Math3DCache.getVector3f();
         try {
 
-            ColorPicker picker = m_scene.getPicker();
+            Picker picker = m_scene.getPicker();
             ISurface surface = picker.getCurrentSurface();
 
             EditPart part = null;
-            IFigure figure2D = surface.findFigureAt(i_surfaceLocation.x,
-                i_surfaceLocation.y, new ConditionalTreeSearch(i_exclude));
+            IFigure figure2D = surface.findFigureAt(i_sLocation.x,
+                i_sLocation.y, new ConditionalTreeSearch(i_exclude));
 
             while (part == null && figure2D != null) {
                 part = (EditPart) getVisualPartMap().get(figure2D);
@@ -263,8 +263,8 @@ public class EditPartViewerWrapper implements EditPartViewer {
 
             return part;
         } finally {
-            Cache.returnVector3f(rayStart);
-            Cache.returnVector3f(rayDirection);
+            Math3DCache.returnVector3f(rayStart);
+            Math3DCache.returnVector3f(rayDirection);
         }
     }
 

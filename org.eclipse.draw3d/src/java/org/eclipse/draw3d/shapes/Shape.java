@@ -24,6 +24,8 @@ public interface Shape {
 
 	/**
 	 * Render the shape.
+	 * 
+	 * @param i_renderContext the current render context
 	 */
-	public void render(RenderContext renderContext);
+	public void render(RenderContext i_renderContext);
 }

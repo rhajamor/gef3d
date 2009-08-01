@@ -19,7 +19,6 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometryext.PointList3D;
-import org.eclipse.draw3d.picking.ColorProvider;
 import org.eclipse.draw3d.shapes.PolylineShape;
 import org.eclipse.swt.graphics.Color;
 
@@ -180,20 +179,11 @@ public class Polyline3D extends Figure3D {
 
 		m_shape.setPoints(points);
 
-		if (renderContext.getMode().isPaint()) {
-			Color color = getForegroundColor();
-			int alpha = getAlpha();
+		Color color = getForegroundColor();
+		int alpha = getAlpha();
 
-			m_shape.setColor(color, alpha);
-			m_shape.render(renderContext);
-		} else {
-			int color = renderContext.getColor(this);
-			if (color != ColorProvider.IGNORE) {
-				m_shape.setColor(color, 255);
-				m_shape.render(renderContext);
-			}
-		}
-
+		m_shape.setColor(color, alpha);
+		m_shape.render(renderContext);
 	}
 
 	/**

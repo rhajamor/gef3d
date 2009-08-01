@@ -1398,4 +1398,13 @@ public class Graphics3DX3D implements Graphics3D {
 	public void useContext(Object i_context) throws Graphics3DException {
 		m_context = i_context;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glPointSize(float)
+	 */
+	public void glPointSize(float i_size) {
+		// TODO implement method Graphics3DDraw.glPointSize
+	}
 }

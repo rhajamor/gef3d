@@ -54,7 +54,7 @@ public class TransparencyAdapter implements TransparentObject {
 	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth()
 	 */
 	public float getTransparencyDepth(RenderContext renderContext) {
-		ICamera camera = renderContext.getCamera();
+		ICamera camera = renderContext.getScene().getCamera();
 		containerFigure.getBounds3D().getCenter(TMP_V3);
 		float dist = camera.getDistance(TMP_V3);
 		return dist;

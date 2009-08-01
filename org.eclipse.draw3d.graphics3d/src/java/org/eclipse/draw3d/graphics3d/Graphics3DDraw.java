@@ -472,6 +472,8 @@ public interface Graphics3DDraw {
 
 	public abstract void glLineWidth(float width);
 
+	public abstract void glPointSize(float size);
+
 	public abstract void glColor3f(float red, float green, float blue);
 
 	public abstract void glFinish();

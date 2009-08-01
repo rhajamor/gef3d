@@ -48,7 +48,7 @@ public class DiagramFigure3D extends Figure3D implements TransparentObject {
 	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth()
 	 */
 	public float getTransparencyDepth(RenderContext renderContext) {
-		ICamera camera = renderContext.getCamera();
+		ICamera camera = renderContext.getScene().getCamera();
 
 		getBounds3D().getCenter(TMP_V3);
 		return camera.getDistance(TMP_V3);

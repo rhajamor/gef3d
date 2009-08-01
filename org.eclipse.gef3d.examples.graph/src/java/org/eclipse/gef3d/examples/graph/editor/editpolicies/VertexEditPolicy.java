@@ -44,6 +44,8 @@ public class VertexEditPolicy extends GraphicalNodeEditPolicy {
 		}
 		return null;
 	}
+	
+	
 
 	/**
 	 * {@inheritDoc}

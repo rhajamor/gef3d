@@ -36,8 +36,8 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(CubeHandle.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(CubeHandle.class.getName());
 
 	/**
 	 * The default size for square handles. (copied from {@link SquareHandle}
@@ -45,11 +45,11 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	 */
 	protected static final float DEFAULT_HANDLE_SIZE = 7;
 
-	private TransparencyAdapter m_alphashape = new TransparencyAdapter(this,
-			new CuboidFigureShape(this));
+	private TransparencyAdapter m_alphashape =
+		new TransparencyAdapter(this, new CuboidFigureShape(this));
 
-	private TransparencyAdapter m_supershape = new TransparencyAdapter(this,
-			new CuboidFigureShape(this));
+	private TransparencyAdapter m_supershape =
+		new TransparencyAdapter(this, new CuboidFigureShape(this));
 
 	/**
 	 * Null constructor
@@ -89,7 +89,7 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	protected void init() {
 
 		setPreferredSize3D(new Vector3fImpl(DEFAULT_HANDLE_SIZE,
-				DEFAULT_HANDLE_SIZE, DEFAULT_HANDLE_SIZE));
+			DEFAULT_HANDLE_SIZE, DEFAULT_HANDLE_SIZE));
 		setAlpha(40);
 	}
 
@@ -132,7 +132,6 @@ public abstract class CubeHandle extends AbstractHandle3D {
 		return getOwner().getSelected() == EditPart.SELECTED_PRIMARY;
 	}
 
-	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -140,12 +139,9 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	 */
 	@Override
 	public void render(RenderContext renderContext) {
-		if (renderContext.getMode().isPaint()) {
-			renderContext.addTransparentObject(m_alphashape);
-			renderContext.addSuperimposedObject(m_supershape);
-		} else {
-			m_alphashape.renderTransparent(renderContext); // render for picking
-		}
+
+		renderContext.addTransparentObject(m_alphashape);
+		renderContext.addSuperimposedObject(m_supershape);
 	}
 
 }

@@ -74,8 +74,9 @@ public class VertexFigure3D extends Figure3D {
 	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void render(RenderContext renderContext) {
-		m_shape.render(renderContext);
+	public void render(RenderContext i_renderContext) {
+
+		m_shape.render(i_renderContext);
 	}
 
 	// public static int loadImage(String path, int mag_filter, int min_filter)

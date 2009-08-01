@@ -19,11 +19,10 @@ import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.ColorPicker;
-import org.eclipse.draw3d.util.Cache;
+import org.eclipse.draw3d.picking.Picker;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.EditPartViewer;
-import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.Tool;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.palette.PaletteRoot;
@@ -93,15 +92,15 @@ public class EditDomainWrapper extends DefaultEditDomain {
 
     private void convert(EditPartViewer i_viewer, MouseEvent i_mouseEvent) {
 
-        Point surfaceLocation = Cache.getPoint();
+        Point sLocation = Draw3DCache.getPoint();
         try {
             getSurfaceLocation(i_viewer, i_mouseEvent.x, i_mouseEvent.y,
-                surfaceLocation);
+                sLocation);
 
-            i_mouseEvent.x = surfaceLocation.x;
-            i_mouseEvent.y = surfaceLocation.y;
+            i_mouseEvent.x = sLocation.x;
+            i_mouseEvent.y = sLocation.y;
         } finally {
-            Cache.returnPoint(surfaceLocation);
+            Draw3DCache.returnPoint(sLocation);
         }
     }
 
@@ -181,21 +180,21 @@ public class EditDomainWrapper extends DefaultEditDomain {
     private Point getSurfaceLocation(EditPartViewer i_viewer, int i_mx,
             int i_my, Point io_result) {
 
-        Vector3f eye = Cache.getVector3f();
-        Vector3f point = Cache.getVector3f();
+        Vector3f eye = Draw3DCache.getVector3f();
+        Vector3f point = Draw3DCache.getVector3f();
         try {
             ICamera camera = getScene(i_viewer).getCamera();
             camera.getPosition(eye);
 
             camera.unProject(i_mx, i_my, 0, null, point);
 
-            ColorPicker picker = getScene(i_viewer).getPicker();
+            Picker picker = getScene(i_viewer).getPicker();
             ISurface surface = picker.getCurrentSurface();
 
             return surface.getSurfaceLocation2D(eye, point, io_result);
         } finally {
-            Cache.returnVector3f(eye);
-            Cache.returnVector3f(point);
+            Draw3DCache.returnVector3f(eye);
+            Draw3DCache.returnVector3f(point);
         }
     }
 
@@ -342,15 +341,15 @@ public class EditDomainWrapper extends DefaultEditDomain {
     @Override
     public void mouseWheelScrolled(Event i_event, EditPartViewer i_viewer) {
 
-        Point surfaceLocation = Cache.getPoint();
+        Point sLocation = Draw3DCache.getPoint();
         try {
-            getSurfaceLocation(i_viewer, i_event.x, i_event.y, surfaceLocation);
-            i_event.x = surfaceLocation.x;
-            i_event.y = surfaceLocation.y;
+            getSurfaceLocation(i_viewer, i_event.x, i_event.y, sLocation);
+            i_event.x = sLocation.x;
+            i_event.y = sLocation.y;
 
             m_domain.mouseWheelScrolled(i_event, getViewer(i_viewer));
         } finally {
-            Cache.returnPoint(surfaceLocation);
+            Draw3DCache.returnPoint(sLocation);
         }
     }
 
@@ -364,15 +363,15 @@ public class EditDomainWrapper extends DefaultEditDomain {
     public void nativeDragFinished(DragSourceEvent i_event,
             EditPartViewer i_viewer) {
 
-        Point surfaceLocation = Cache.getPoint();
+        Point sLocation = Draw3DCache.getPoint();
         try {
-            getSurfaceLocation(i_viewer, i_event.x, i_event.y, surfaceLocation);
-            i_event.x = surfaceLocation.x;
-            i_event.y = surfaceLocation.y;
+            getSurfaceLocation(i_viewer, i_event.x, i_event.y, sLocation);
+            i_event.x = sLocation.x;
+            i_event.y = sLocation.y;
 
             m_domain.nativeDragFinished(i_event, getViewer(i_viewer));
         } finally {
-            Cache.returnPoint(surfaceLocation);
+            Draw3DCache.returnPoint(sLocation);
         }
     }
 
@@ -386,15 +385,15 @@ public class EditDomainWrapper extends DefaultEditDomain {
     public void nativeDragStarted(DragSourceEvent i_event,
             EditPartViewer i_viewer) {
 
-        Point surfaceLocation = Cache.getPoint();
+        Point sLocation = Draw3DCache.getPoint();
         try {
-            getSurfaceLocation(i_viewer, i_event.x, i_event.y, surfaceLocation);
-            i_event.x = surfaceLocation.x;
-            i_event.y = surfaceLocation.y;
+            getSurfaceLocation(i_viewer, i_event.x, i_event.y, sLocation);
+            i_event.x = sLocation.x;
+            i_event.y = sLocation.y;
 
             m_domain.nativeDragStarted(i_event, getViewer(i_viewer));
         } finally {
-            Cache.returnPoint(surfaceLocation);
+            Draw3DCache.returnPoint(sLocation);
         }
     }
 

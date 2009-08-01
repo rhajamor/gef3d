@@ -17,7 +17,7 @@ import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.util.Cache;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * 3D version of AbstractRouter.
@@ -52,12 +52,12 @@ public abstract class AbstractRouter3D extends AbstractRouter implements
         ConnectionAnchor sourceAnchor = connection.getSourceAnchor();
         ConnectionAnchor targetAnchor = connection.getTargetAnchor();
 
-        Vector3f ref = Cache.getVector3f();
+        Vector3f ref = Draw3DCache.getVector3f();
         try {
             getReferencePoint3D(sourceAnchor, ref);
             return getLocation3D(targetAnchor, ref, io_result);
         } finally {
-            Cache.returnVector3f(ref);
+            Draw3DCache.returnVector3f(ref);
         }
 
     }
@@ -83,17 +83,17 @@ public abstract class AbstractRouter3D extends AbstractRouter implements
             return anchor3D.getLocation3D(i_reference, io_result);
         } else {
 
-            Point surfaceLocation = Cache.getPoint();
+            Point sLocation = Draw3DCache.getPoint();
             try {
 
                 IFigure3D owner = Figure3DHelper.getAncestor3D(i_anchor.getOwner());
                 if (owner != null) {
                     // get surface location of the reference point
                     ISurface surface = owner.getSurface();
-                    surface.getSurfaceLocation2D(i_reference, surfaceLocation);
+                    surface.getSurfaceLocation2D(i_reference, sLocation);
 
                     // get surface location of the anchor in reference to p
-                    Point p = i_anchor.getLocation(surfaceLocation);
+                    Point p = i_anchor.getLocation(sLocation);
 
                     // convert back to world coordinate system
                     return surface.getWorldLocation(p, io_result);
@@ -102,7 +102,7 @@ public abstract class AbstractRouter3D extends AbstractRouter implements
                         "Cannot calculate the location of a 2D router with no owner");
                 }
             } finally {
-                Cache.returnPoint(surfaceLocation);
+                Draw3DCache.returnPoint(sLocation);
             }
         }
     }
@@ -153,12 +153,12 @@ public abstract class AbstractRouter3D extends AbstractRouter implements
         ConnectionAnchor sourceAnchor = connection.getSourceAnchor();
         ConnectionAnchor targetAnchor = connection.getTargetAnchor();
 
-        Vector3f ref = Cache.getVector3f();
+        Vector3f ref = Draw3DCache.getVector3f();
         try {
             getReferencePoint3D(targetAnchor, ref);
             return getLocation3D(sourceAnchor, ref, io_result);
         } finally {
-            Cache.returnVector3f(ref);
+            Draw3DCache.returnVector3f(ref);
         }
     }
 

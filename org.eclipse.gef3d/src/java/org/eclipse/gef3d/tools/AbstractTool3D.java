@@ -18,7 +18,7 @@ import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.Tool;
 import org.eclipse.gef.tools.AbstractTool;
@@ -46,11 +46,11 @@ public abstract class AbstractTool3D extends AbstractTool {
      */
     public class Input3D extends Input {
 
-        Point mouseLocation = new Point();
+        Point mLocation = new Point();
 
-        Vector3f worldLocation = new Vector3fImpl();
+        Vector3f wLocation = new Vector3fImpl();
 
-        Point surfaceLocation = new Point();
+        Point sLocation = new Point();
 
         /**
          * Returns the current location of the mouse pointer. This is what
@@ -63,7 +63,7 @@ public abstract class AbstractTool3D extends AbstractTool {
          */
         public Point getRealMouseLocation() {
 
-            return mouseLocation;
+            return mLocation;
         }
 
         /**
@@ -73,7 +73,7 @@ public abstract class AbstractTool3D extends AbstractTool {
          */
         public IVector3f getWorldLocation() {
 
-            return worldLocation;
+            return wLocation;
         }
 
         /**
@@ -89,21 +89,21 @@ public abstract class AbstractTool3D extends AbstractTool {
             if (i_me instanceof MouseEvent3D) {
                 MouseEvent3D me3D = (MouseEvent3D) i_me;
 
-                worldLocation.set(me3D.worldLoc);
-                surfaceLocation.x = me3D.x;
-                surfaceLocation.y = me3D.y;
-                mouseLocation.x = me3D.mouseX;
-                mouseLocation.y = me3D.mouseY;
+                wLocation.set(me3D.worldLoc);
+                sLocation.x = me3D.x;
+                sLocation.y = me3D.y;
+                mLocation.x = me3D.mouseX;
+                mLocation.y = me3D.mouseY;
             } else {
-                surfaceLocation.x = i_me.x;
-                surfaceLocation.y = i_me.y;
+                sLocation.x = i_me.x;
+                sLocation.y = i_me.y;
 
-                ColorPicker picker = getScene().getPicker();
+                Picker picker = getScene().getPicker();
                 ISurface surface = picker.getCurrentSurface();
-                surface.getWorldLocation(surfaceLocation, worldLocation);
+                surface.getWorldLocation(sLocation, wLocation);
                 
                 ICamera camera = getScene().getCamera();
-                camera.project(worldLocation, mouseLocation);
+                camera.project(wLocation, mLocation);
             }
         }
     }

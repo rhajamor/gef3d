@@ -18,10 +18,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
-import org.eclipse.draw3d.picking.ColorProvider;
 import org.eclipse.swt.opengl.GLCanvas;
 
 /**
@@ -55,39 +53,33 @@ public class RenderContext {
 		}
 	}
 
-	private final Comparator<TransparentObject> depthComparator = new DepthComparator(
-			this);
-
 	/**
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(RenderContext.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(RenderContext.class.getName());
 
-	private ICamera m_camera;
+	private final Comparator<TransparentObject> depthComparator =
+		new DepthComparator(this);
 
-	private ColorProvider m_colorProvider;
+	private GLCanvas m_Canvas;
 
 	private final Map<Graphics3D, DisplayListManager> m_displayListManagers;
 
-	private RenderMode m_mode;
+	private Graphics3D m_g3d = null;
 
-	private final SortedSet<TransparentObject> m_transparentObjects;
+	private IScene m_scene;
 
 	private final SortedSet<TransparentObject> m_superimposedObjects;
 
-	private Graphics3D m_g3d = null;
-
-	private GLCanvas m_Canvas;
+	private final SortedSet<TransparentObject> m_transparentObjects;
 
 	/**
 	 * Creates a new render context. The context is created by the
 	 * {@link LightweightSystem3D}.
 	 */
 	public RenderContext() {
-
-		m_mode = RenderMode.PAINT;
 
 		m_transparentObjects = new TreeSet<TransparentObject>(depthComparator);
 		m_superimposedObjects = new TreeSet<TransparentObject>(depthComparator);
@@ -96,18 +88,10 @@ public class RenderContext {
 	}
 
 	/**
-	 * Adds the given transparent object to be rendered later.
 	 * 
-	 * @param i_transparentObject the transparent object to add
-	 * @throws NullPointerException if the given object is <code>null</code>
 	 */
-	public void addTransparentObject(TransparentObject i_transparentObject) {
-
-		if (i_transparentObject == null)
-			throw new NullPointerException(
-					"i_transparentObject must not be null");
-
-		m_transparentObjects.add(i_transparentObject);
+	public void activate() {
+		m_Canvas.setCurrent();
 	}
 
 	/**
@@ -122,57 +106,72 @@ public class RenderContext {
 
 		if (i_transparentObject == null)
 			throw new NullPointerException(
-					"i_transparentObject must not be null");
+				"i_transparentObject must not be null");
 
 		m_superimposedObjects.add(i_transparentObject);
 	}
 
 	/**
-	 * Sets the render mode to <code>null</code> and clears the transparent
-	 * objects.
+	 * Adds the given transparent object to be rendered later.
+	 * 
+	 * @param i_transparentObject the transparent object to add
+	 * @throws NullPointerException if the given object is <code>null</code>
+	 */
+	public void addTransparentObject(TransparentObject i_transparentObject) {
+
+		if (i_transparentObject == null)
+			throw new NullPointerException(
+				"i_transparentObject must not be null");
+
+		m_transparentObjects.add(i_transparentObject);
+	}
+
+	/**
+	 * Clears the transparent objects.
 	 */
 	public void clear() {
 
-		m_mode = RenderMode.PAINT;
 		m_transparentObjects.clear();
 		m_superimposedObjects.clear();
-		m_displayListManagers.clear();
-		m_camera = null;
+		// m_displayListManagers.clear();
+		m_scene = null;
 	}
 
 	/**
-	 * Returns the current camera.
-	 * 
-	 * @return the current camera
-	 * @throws IllegalStateException if the camera is not set
+	 * Clears the display manager for the current g3d instance.
 	 */
-	public ICamera getCamera() {
-
-		if (m_camera == null)
-			throw new IllegalStateException("camera is not set");
-
-		return m_camera;
+	public void clearDisplayManager() {
+		if (getGraphics3D() == null) {
+			throw new IllegalStateException("no graphics3D intance set yet");
+		}
+		m_displayListManagers.remove(getGraphics3D());
 	}
 
 	/**
-	 * Returns the color for the given figure.
-	 * 
-	 * @param i_figure the figure
-	 * @return the color for the given figure
-	 * @throws IllegalStateException if no color provider is set or if the
-	 *             current render mode is not {@link RenderMode#COLOR}
-	 * @see ColorProvider#getColor(IFigure3D)
+	 * Disposes all {@link DisplayListManager}, clears display manager map, and
+	 * disposes the current {@link Graphics3D} instance. This method is called
+	 * by the {@link LightweightSystem3D} when the widget is disposed.
 	 */
-	public int getColor(IFigure3D i_figure) {
+	public synchronized void dispose() {
 
-		if (m_colorProvider == null)
-			throw new IllegalStateException("no color provider set");
-
-		if (!getMode().isColor())
-			throw new IllegalStateException(
-					"can't provide color when not in color mode");
-
-		return m_colorProvider.getColor(i_figure);
+		for (DisplayListManager displayListManager : m_displayListManagers
+			.values()) {
+			try {
+				displayListManager.dispose();
+			} catch (Exception ex) {
+				log.warning("Error disposing dipslay list manager: " + ex);
+			}
+		}
+		try {
+			m_displayListManagers.clear();
+		} catch (Exception ex) {
+			log.warning("Error clearing dispy list manager map: " + ex);
+		}
+		try {
+			m_g3d.dispose();
+		} catch (Exception ex) {
+			log.warning("Error disposing current graphics 3D instance: " + ex);
+		}
 	}
 
 	/**
@@ -182,7 +181,7 @@ public class RenderContext {
 	 * @throws IllegalStateException if no display list manager is set
 	 */
 	public DisplayListManager getDisplayListManager() {
-		
+
 		if (getGraphics3D() == null) {
 			throw new IllegalStateException("no graphcis 3D instance set yet");
 		}
@@ -200,17 +199,22 @@ public class RenderContext {
 	}
 
 	/**
-	 * Returns the render mode.
+	 * Returns the Graphics3D instance which shall be used for rendering in this
+	 * context.
 	 * 
-	 * @return the render mode
-	 * @throws IllegalStateException if the render mode has not been set
+	 * @return the graphics3D instance
 	 */
-	public RenderMode getMode() {
+	public Graphics3D getGraphics3D() {
+		return this.m_g3d;
+	}
 
-		if (m_mode == null)
-			throw new IllegalStateException("current render mode was not set");
-
-		return m_mode;
+	/**
+	 * Returns the scene
+	 * 
+	 * @return the scene
+	 */
+	public IScene getScene() {
+		return m_scene;
 	}
 
 	/**
@@ -240,83 +244,11 @@ public class RenderContext {
 	}
 
 	/**
-	 * Sets the camera of this render context.
-	 * 
-	 * @param i_camera the camera
+	 * @param i_canvas
 	 */
-	public void setCamera(ICamera i_camera) {
+	public void setCanvas(GLCanvas i_canvas) {
+		m_Canvas = i_canvas;
 
-		if (i_camera == null)
-			throw new NullPointerException("i_camera must not be null");
-
-		m_camera = i_camera;
-	}
-
-	/**
-	 * Sets the color provider for color rendering mode.
-	 * 
-	 * @param i_colorProvider the color provider
-	 */
-	public void setColorProvider(ColorProvider i_colorProvider) {
-
-		m_colorProvider = i_colorProvider;
-	}
-
-	// /**
-	// * Sets the display list manager.
-	// *
-	// * @param i_displayListManager the display list manager
-	// * @throws NullPointerException if the given display list manager is
-	// * <code>null</code>
-	// */
-	// public void setDisplayListManager(DisplayListManager
-	// i_displayListManager) {
-	//		
-	// if (i_displayListManager == null)
-	// throw new NullPointerException(
-	// "i_displayListManager must not be null");
-	//
-	// if (getGraphics3D()==null) {
-	// throw new IllegalStateException("no graphics3D intance set yet");
-	// }
-	//		
-	// m_displayListManagers.put(getGraphics3D(), i_displayListManager);
-	// }
-
-	/**
-	 * Clears the display manager for the current g3d instance.
-	 */
-	public void clearDisplayManager() {
-		if (getGraphics3D() == null) {
-			throw new IllegalStateException("no graphics3D intance set yet");
-		}
-		m_displayListManagers.remove(getGraphics3D());
-	}
-
-	/**
-	 * Sets the render mode.
-	 * 
-	 * @param i_mode the render mode, which must not be
-	 *            {@link NullPointerException}
-	 * @throws NullPointerException if the given render mode is
-	 *             <code>null</code>
-	 */
-	public void setMode(RenderMode i_mode) {
-
-		if (i_mode == null)
-			throw new NullPointerException("i_mode must not be null");
-
-		m_mode = i_mode;
-	}
-
-	/**
-	 * Returns the Graphics3D instance which shall be used for rendering in this
-	 * context.
-	 * 
-	 * @return the graphics3D instance
-	 */
-	public Graphics3D getGraphics3D() {
-		return this.m_g3d;
 	}
 
 	/**
@@ -331,6 +263,16 @@ public class RenderContext {
 	}
 
 	/**
+	 * Sets the scene
+	 * 
+	 * @param i_scene the scene
+	 */
+	public void setScene(IScene i_scene) {
+
+		m_scene = i_scene;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see java.lang.Object#toString()
@@ -340,54 +282,10 @@ public class RenderContext {
 
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("RenderState[mode: ");
-		builder.append(m_mode);
-		builder.append(", transparent objects: ");
+		builder.append("RenderContext[transparent objects: ");
 		builder.append(m_transparentObjects.size());
 		builder.append("]");
 
 		return builder.toString();
-	}
-
-	/**
-	 * Disposes all {@link DisplayListManager}, clears display manager map, and
-	 * disposes the current {@link Graphics3D} instance. This method is called
-	 * by the {@link LightweightSystem3D} when the widget is disposed.
-	 */
-	public synchronized void dispose() {
-
-		for (DisplayListManager displayListManager : m_displayListManagers
-				.values()) {
-			try {
-				displayListManager.dispose();
-			} catch (Exception ex) {
-				log.warning("Error disposing dipslay list manager: " + ex);
-			}
-		}
-		try {
-			m_displayListManagers.clear();
-		} catch (Exception ex) {
-			log.warning("Error clearing dispy list manager map: " + ex);
-		}
-		try {
-			m_g3d.dispose();
-		} catch (Exception ex) {
-			log.warning("Error disposing current graphics 3D instance: " + ex);
-		}
-	}
-
-	/**
-	 * 
-	 */
-	public void activate() {
-		m_Canvas.setCurrent();
-	}
-
-	/**
-	 * @param i_canvas
-	 */
-	public void setCanvas(GLCanvas i_canvas) {
-		m_Canvas = i_canvas;
-
 	}
 }

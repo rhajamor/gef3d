@@ -21,7 +21,7 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.util.Cache;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * 3D version of {@link org.eclipse.draw2d.ChopboxAnchor}.
@@ -67,9 +67,9 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 			IFigure3D owner3D = (IFigure3D) owner;
 			return owner3D.getBounds3D();
 		} else {
-			Vector3f origin3D = Cache.getVector3f();
-			Vector3f tmp = Cache.getVector3f();
-			Vector3f size3D = Cache.getVector3f();
+			Vector3f origin3D = Draw3DCache.getVector3f();
+			Vector3f tmp = Draw3DCache.getVector3f();
+			Vector3f size3D = Draw3DCache.getVector3f();
 
 			try {
 				IFigure3D host = Figure3DHelper.getAncestor3D(owner);
@@ -88,9 +88,9 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 				Math3D.sub(tmp, origin3D, size3D);
 				return new BoundingBoxImpl(origin3D, size3D);
 			} finally {
-				Cache.returnVector3f(origin3D);
-				Cache.returnVector3f(tmp);
-				Cache.returnVector3f(size3D);
+				Draw3DCache.returnVector3f(origin3D);
+				Draw3DCache.returnVector3f(tmp);
+				Draw3DCache.returnVector3f(size3D);
 			}
 		}
 	}
@@ -183,9 +183,9 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 		if (result == null)
 			result = new Vector3fImpl();
 
-		Point surfaceRef = Cache.getPoint();
-		Vector3f center = Cache.getVector3f();
-		Vector3f tmp = Cache.getVector3f();
+		Point surfaceRef = Draw3DCache.getPoint();
+		Vector3f center = Draw3DCache.getVector3f();
+		Vector3f tmp = Draw3DCache.getVector3f();
 		try {
 			// maybe the owner is a 2D figure!
 			if (getOwner() instanceof IFigure3D) {
@@ -249,9 +249,9 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 				return surface.getWorldLocation(result2D, result);
 			}
 		} finally {
-		    Cache.returnPoint(surfaceRef);
-			Cache.returnVector3f(center);
-			Cache.returnVector3f(tmp);
+		    Draw3DCache.returnPoint(surfaceRef);
+			Draw3DCache.returnVector3f(center);
+			Draw3DCache.returnVector3f(tmp);
 		}
 	}
 
@@ -285,7 +285,7 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 		if (result == null)
 			result = new Vector3fImpl();
 
-		Vector3f ref = Cache.getVector3f();
+		Vector3f ref = Draw3DCache.getVector3f();
 		try {
 			if (owner instanceof IFigure3D) {
 				getBounds3D().getCenter(ref);
@@ -302,7 +302,7 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 				return null;
 			}
 		} finally {
-			Cache.returnVector3f(ref);
+			Draw3DCache.returnVector3f(ref);
 		}
 	}
 
