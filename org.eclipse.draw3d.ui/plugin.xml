@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.eclipse.draw3d.ui.preferences.dialog.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.eclipse.draw3d.ui.preferences.dialog.CameraPreferencePage"
+            id="org.eclipse.draw3d.ui.cameraPreferences"
+            name="Draw3D">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.draw3d.ui.viewer.ShapeViewer"
+            contributorClass="org.eclipse.draw3d.ui.viewer.Draw3DViewerActionBarContributor"
+            default="false"
+            extensions="shape"
+            id="org.eclipse.draw3d.ui.ShapeViewer"
+            name="Shape Viewer">
+      </editor>
+   </extension>
+
+</plugin>
