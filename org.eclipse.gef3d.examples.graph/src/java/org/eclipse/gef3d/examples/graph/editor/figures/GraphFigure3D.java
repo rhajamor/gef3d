@@ -13,7 +13,9 @@ package org.eclipse.gef3d.examples.graph.editor.figures;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.FreeformLayout;
+import org.eclipse.draw3d.FigureSurface;
 import org.eclipse.draw3d.FreeformLayer3D;
+import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.SurfaceLayout;
 import org.eclipse.draw3d.TransparentObject;
@@ -37,12 +39,28 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(GraphFigure3D.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(GraphFigure3D.class.getName());
 
 	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
 
 	private Shape m_shape = new CuboidFigureShape(this);
+
+	/**
+	 * The surface of this figure. This is where 2D children are placed.
+	 */
+	private ISurface m_surface = new FigureSurface(this);
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getSurface()
+	 */
+	@Override
+	public ISurface getSurface() {
+
+		return m_surface;
+	}
 
 	/**
 	 * 
@@ -99,8 +117,6 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 
 		i_renderContext.addTransparentObject(this);
 	}
-
-	
 
 	/**
 	 * {@inheritDoc}

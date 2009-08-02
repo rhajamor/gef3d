@@ -12,9 +12,7 @@ package org.eclipse.gef3d.ui.parts;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ExclusionSearch;
@@ -26,11 +24,11 @@ import org.eclipse.draw3d.Draw3DCanvas;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.LightweightSystem3D;
+import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.Hit;
 import org.eclipse.draw3d.picking.Picker;
-import org.eclipse.draw3d.picking.SurfaceSearchProvider;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.Handle;
@@ -38,6 +36,7 @@ import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.editparts.LayerManager;
 import org.eclipse.gef.editparts.ScalableRootEditPart;
 import org.eclipse.gef.ui.parts.GraphicalViewerImpl;
+import org.eclipse.gef3d.SurfaceSearch;
 import org.eclipse.gef3d.factories.IFigureFactory;
 import org.eclipse.gef3d.factories.IFigureFactoryProvider;
 import org.eclipse.swt.SWT;
@@ -56,6 +55,7 @@ import org.eclipse.swt.widgets.Control;
 public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 		GraphicalViewer3D, IFigureFactoryProvider {
 
+	@SuppressWarnings("unused")
 	private static final Logger log =
 		Logger.getLogger(GraphicalViewer3DImpl.class.getName());
 
@@ -70,7 +70,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	 * figure can display a coordinate system)</li>
 	 * <li>The root edit part and its figure manage the layers</li>
 	 * </ul>
-	 * Internal Note: Fixed deepth buffer problem on Mac OS X, thanks to Nicolas
+	 * Internal Note: Fixed depth buffer problem on Mac OS X, thanks to Nicolas
 	 * Richeton
 	 * 
 	 * @see "http://nricheton.homeip.net/?p=53"
@@ -117,51 +117,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	protected LightweightSystem createLightweightSystem() {
 
 		LightweightSystem3D lws3D = new LightweightSystem3D();
-
-		Picker picker = lws3D.getPicker();
-		picker.setSurfaceProvider(new SurfaceSearchProvider() {
-
-			public TreeSearch getSurfaceSearch() {
-
-				final LayerManager layermanager =
-					(LayerManager) getEditPartRegistry().get(LayerManager.ID);
-
-				if (layermanager == null)
-					return null;
-
-				return new TreeSearch() {
-
-					private Set<IFigure> m_ignore;
-
-					public boolean accept(IFigure i_figure) {
-
-						return true;
-					}
-
-					public boolean prune(IFigure i_figure) {
-
-						if (m_ignore == null) {
-							m_ignore = new HashSet<IFigure>();
-							m_ignore.add(layermanager
-								.getLayer(LayerConstants.CONNECTION_LAYER));
-							m_ignore.add(layermanager
-								.getLayer(LayerConstants.FEEDBACK_LAYER));
-							m_ignore.add(layermanager
-								.getLayer(LayerConstants.GRID_LAYER));
-							m_ignore.add(layermanager
-								.getLayer(LayerConstants.GUIDE_LAYER));
-							m_ignore.add(layermanager
-								.getLayer(LayerConstants.HANDLE_LAYER));
-							m_ignore
-								.add(layermanager
-									.getLayer(LayerConstants.SCALED_FEEDBACK_LAYER));
-						}
-
-						return m_ignore.contains(i_figure);
-					}
-				};
-			}
-		});
+		lws3D.getPicker().setSurfaceSearch(new SurfaceSearch(this));
 
 		return lws3D;
 	}
@@ -185,8 +141,9 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 		if (layermanager == null)
 			return null;
 
-		Vector3f rayStart = Draw3DCache.getVector3f();
-		Vector3f rayPoint = Draw3DCache.getVector3f();
+		Vector3f eye = Draw3DCache.getVector3f();
+		Vector3f direction = Draw3DCache.getVector3f();
+		Vector3f wLocation = Draw3DCache.getVector3f();
 		Point sLocation = Draw3DCache.getPoint();
 		try {
 			List<IFigure> ignore = new ArrayList<IFigure>(3);
@@ -207,12 +164,14 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 				return (Handle) figure3D;
 
 			// keep searching on the surface
-			lws.getCamera().getPosition(rayStart);
+			lws.getCamera().getPosition(eye);
 			lws.getCamera().unProject(i_mLocation.x, i_mLocation.y, 0, null,
-				rayPoint);
+				wLocation);
 
 			ISurface surface = figure3D.getSurface();
-			surface.getSurfaceLocation2D(rayStart, rayPoint, sLocation);
+
+			Math3D.getRayDirection(eye, wLocation, direction);
+			surface.getSurfaceLocation2D(eye, direction, sLocation);
 
 			IFigure figure2D =
 				figure3D.findFigureAt(sLocation.x, sLocation.y, search);
@@ -222,8 +181,9 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 
 			return null;
 		} finally {
-			Draw3DCache.returnVector3f(rayStart);
-			Draw3DCache.returnVector3f(rayPoint);
+			Draw3DCache.returnVector3f(eye);
+			Draw3DCache.returnVector3f(direction);
+			Draw3DCache.returnVector3f(wLocation);
 			Draw3DCache.returnPoint(sLocation);
 		}
 	}

@@ -42,11 +42,6 @@ public class MouseEvent3D extends MouseEvent {
 		return DUMMY;
 	}
 
-	/**
-	 * The depth value.
-	 */
-	public float depth;
-
 	public int mouseX;
 
 	public int mouseY;
@@ -60,11 +55,9 @@ public class MouseEvent3D extends MouseEvent {
 	/**
 	 * Creates a new event from the given base event.
 	 * 
-	 * @param i_e
-	 *            the base event
+	 * @param i_e the base event
 	 */
-	public MouseEvent3D(MouseEvent i_e, Point i_surfaceLoc,
-			IVector3f i_worldLoc, float i_depth) {
+	public MouseEvent3D(MouseEvent i_e, Point i_surfaceLoc, IVector3f i_worldLoc) {
 
 		super(getEvent(i_e));
 
@@ -73,7 +66,6 @@ public class MouseEvent3D extends MouseEvent {
 
 		this.mouseX = i_e.x;
 		this.mouseY = i_e.y;
-		this.depth = i_depth;
 		this.worldLoc = i_worldLoc;
 
 		// from MouseEvent

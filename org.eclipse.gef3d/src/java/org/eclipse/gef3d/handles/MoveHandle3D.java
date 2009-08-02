@@ -108,22 +108,19 @@ public class MoveHandle3D extends AbstractHandle3D {
 	}
 
 	/**
-	 * Overridden to create a {@link DragEditPartsTracker}.
+	 * {@inheritDoc}
 	 * <p>
-	 * Copied from {@link MoveHandle#MoveHandle(GraphicalEditPart, Locator)},
-	 * returns a {@link DragEditPartsTracker3D} instead of its 2D version
-	 * {@link DragEditPartsTracker}.
+	 * Copied from {@link MoveHandle#MoveHandle(GraphicalEditPart, Locator)}.
 	 * </p>
 	 * 
-	 * @see org.eclipse.gef.handles.AbstractHandle#createDragTracker()
+	 * @see org.eclipse.gef3d.handles.AbstractHandle3D#createDragTracker()
 	 */
+	@Override
 	protected DragTracker createDragTracker() {
 
 		DragEditPartsTracker tracker = new DragEditPartsTracker(getOwner());
-
-		// DragEditPartsTracker tracker = new
-		// DragEditPartsTracker3D(getOwner());
 		tracker.setDefaultCursor(getCursor());
+
 		return tracker;
 	}
 

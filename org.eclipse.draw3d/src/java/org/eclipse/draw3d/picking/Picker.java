@@ -24,9 +24,7 @@ import org.eclipse.draw3d.geometry.IVector3f;
 public interface Picker {
 
 	/**
-	 * Returns the surface of the figure that was last hit by the picking ray.
-	 * If no figure has been hit yet, the surface of the root figure is
-	 * returned. The handle and feedback layer are ignored.
+	 * Returns the current surface.
 	 * 
 	 * @return the current surface
 	 */
@@ -117,10 +115,19 @@ public interface Picker {
 	public Hit getHit(IVector3f i_rayPoint, TreeSearch i_search);
 
 	/**
-	 * Sets a surface search provider. It is used to obtain a tree search when
-	 * the current surface is searched.
+	 * Sets a tree search instance that is used when updating the current
+	 * surface. Only figures accepted by the given search are considered when
+	 * picking a surface.
 	 * 
-	 * @param i_provider the surface search provider
+	 * @param i_search the search instance
 	 */
-	public void setSurfaceProvider(SurfaceSearchProvider i_provider);
+	public void setSurfaceSearch(TreeSearch i_search);
+
+	/**
+	 * Updates the current surface.
+	 * 
+	 * @param i_mx the mouse X coordinate
+	 * @param i_my the mouse Y coordinate
+	 */
+	public void updateCurrentSurface(int i_mx, int i_my);
 }

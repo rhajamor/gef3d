@@ -40,8 +40,6 @@ public class Query {
 
 	private IFigure3D m_rootFigure;
 
-	private TreeSearch m_surfaceSearch;
-
 	/**
 	 * Constructs a new picking query with the given parameters. All figures
 	 * which are not accepted or pruned by the given figure search are ignored.
@@ -52,14 +50,11 @@ public class Query {
 	 * @param i_rootFigure the root figure
 	 * @param i_figureSearch the search instance for the figure search, may be
 	 *            <code>null</code>
-	 * @param i_surfaceSearch the search instance for the surface search, may be
-	 *            <code>null</code>
 	 * @throws NullPointerException if the given ray starting point, ray
 	 *             direction or root figure is <code>null</code>
 	 */
 	public Query(IVector3f i_rayStart, IVector3f i_rayDirection,
-			IFigure3D i_rootFigure, TreeSearch i_figureSearch,
-			TreeSearch i_surfaceSearch) {
+			IFigure3D i_rootFigure, TreeSearch i_figureSearch) {
 
 		if (i_rayStart == null)
 			throw new NullPointerException("i_rayStart must not be null");
@@ -74,7 +69,6 @@ public class Query {
 		m_rayDirection = i_rayDirection;
 		m_rootFigure = i_rootFigure;
 		m_figureSearch = i_figureSearch;
-		m_surfaceSearch = i_surfaceSearch;
 	}
 
 	private boolean accept(IFigure i_figure, TreeSearch i_search) {
@@ -88,94 +82,46 @@ public class Query {
 		return i_search.accept(i_figure);
 	}
 
-	private HitCombo combineParentChildHits(IFigure i_parentFigure,
-		float i_parentDistance, boolean i_parentFigurePruned,
-		boolean i_parentSurfacePruned, HitCombo i_childHits) {
-
-		if (i_childHits != null) {
-			if (i_parentFigurePruned)
-				i_childHits.setFigureHit(null);
-			if (i_parentSurfacePruned)
-				i_childHits.setSurfaceHit(null);
-		}
+	private HitImpl combineParentChildHits(IFigure i_parentFigure,
+		float i_parentDistance, HitImpl i_childHit) {
 
 		if (!(i_parentFigure instanceof IFigure3D))
-			return i_childHits;
+			return i_childHit;
 
 		IFigure3D parentFigure3D = (IFigure3D) i_parentFigure;
 		if (parentFigure3D.equals(m_rootFigure))
-			return i_childHits;
+			return i_childHit;
 
-		HitImpl figureHit = null, surfaceHit = null;
-
-		if (i_childHits != null) {
-			figureHit = i_childHits.getFigureHit();
-			surfaceHit = i_childHits.getSurfaceHit();
-		}
-
-		if (figureHit == null && !i_parentFigurePruned
-			&& accept(parentFigure3D, m_figureSearch))
-			figureHit =
+		HitImpl hit = i_childHit;
+		if (hit == null && accept(parentFigure3D, m_figureSearch))
+			hit =
 				new HitImpl(parentFigure3D, i_parentDistance, m_rayStart,
 					m_rayDirection);
 
-		if (surfaceHit == null && !i_parentSurfacePruned
-			&& accept(parentFigure3D, m_surfaceSearch))
-			surfaceHit =
-				new HitImpl(parentFigure3D, i_parentDistance, m_rayStart,
-					m_rayDirection);
-
-		HitCombo result = i_childHits;
-		if (result == null)
-			result = new HitCombo(figureHit, surfaceHit);
-		else {
-			result.setFigureHit(figureHit);
-			result.setSurfaceHit(surfaceHit);
-		}
-
-		return result;
+		return hit;
 	}
 
-	private HitCombo combineSiblingHits(HitCombo i_hits1, HitCombo i_hits2) {
+	private HitImpl combineSiblingHits(HitImpl i_hit1, HitImpl i_hit2) {
 
-		if (i_hits1 == null)
-			return i_hits2;
+		if (i_hit1 == null)
+			return i_hit2;
 
-		if (i_hits2 == null)
-			return i_hits1;
+		if (i_hit2 == null)
+			return i_hit1;
 
-		HitImpl surfaceHit1 = i_hits1.getSurfaceHit();
-		HitImpl figureHit1 = i_hits1.getFigureHit();
-
-		HitImpl surfaceHit2 = i_hits2.getSurfaceHit();
-		HitImpl figureHit2 = i_hits2.getFigureHit();
-
-		if (surfaceHit1 != null)
-			i_hits1.setSurfaceHit(surfaceHit1.getBestHit(surfaceHit2));
-		else
-			i_hits1.setSurfaceHit(surfaceHit2);
-
-		if (figureHit1 != null)
-			i_hits1.setFigureHit(figureHit1.getBestHit(figureHit2));
-		else
-			i_hits1.setFigureHit(figureHit2);
-
-		return i_hits1;
+		return i_hit1.getBestHit(i_hit2);
 	}
 
 	@SuppressWarnings("unchecked")
-	private HitCombo doExecute(IFigure i_figure, float i_distance) {
+	private HitImpl doExecute(IFigure i_figure, float i_distance) {
 
 		if (Float.isNaN(i_distance))
 			return null;
 
-		boolean figurePruned = prune(i_figure, m_figureSearch);
-		boolean surfacePruned = prune(i_figure, m_surfaceSearch);
-
-		if (figurePruned && surfacePruned)
+		if (prune(i_figure, m_figureSearch))
 			return null;
 
-		HitCombo hits = null;
+		HitImpl hit = null;
 		List children = i_figure.getChildren();
 
 		for (Iterator iter = children.iterator(); iter.hasNext();) {
@@ -187,26 +133,24 @@ public class Query {
 			else
 				descDistance = i_distance;
 
-			hits = combineSiblingHits(doExecute(child, descDistance), hits);
+			hit = combineSiblingHits(doExecute(child, descDistance), hit);
 		}
 
-		return combineParentChildHits(i_figure, i_distance, figurePruned,
-			surfacePruned, hits);
+		return combineParentChildHits(i_figure, i_distance, hit);
 	}
 
 	/**
-	 * Executes this query on the given figure and its subtree.
+	 * Executes this query.
 	 * 
 	 * @param i_figure the figure to search
 	 * @param i_tmpVector a temporary vector that will hold the world location
 	 *            of the current hit. This is passed in here to avoid the
 	 *            creation of lots of temporary objects due to the recursive
 	 *            nature of this method.
-	 * @return a combination of a surface and a figure hit or <code>null</code>
-	 *         if neither a surface nor a figure was hit
+	 * @return a hit or <code>null</code> if no acceptable figure was hit
 	 */
 	@SuppressWarnings("unchecked")
-	public HitCombo execute() {
+	public Hit execute() {
 
 		return doExecute(m_rootFigure, getDistance(m_rootFigure));
 	}
@@ -272,7 +216,7 @@ public class Query {
 			return false;
 
 		if (i_search == null)
-			return true;
+			return false;
 
 		return i_search.prune(i_figure);
 	}

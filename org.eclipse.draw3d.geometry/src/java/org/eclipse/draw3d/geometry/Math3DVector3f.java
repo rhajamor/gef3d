@@ -222,6 +222,33 @@ public class Math3DVector3f extends Math3DVector2f {
 	}
 
 	/**
+	 * Returns the normalised direction vector of a ray that starts at the given
+	 * origin and that contains the given point.
+	 * 
+	 * @param i_origin the origin of the ray
+	 * @param i_point a point contained in the ray
+	 * @param o_result the result vector, if <code>null</code>, a new vector
+	 *            will be returned
+	 * @return the normalised direction vector or <code>null</code> if the given
+	 *         origin and point are identical
+	 */
+	public static Vector3f getRayDirection(IVector3f i_origin,
+		IVector3f i_point, Vector3f o_result) {
+
+		if (i_origin.equals(i_point))
+			return null;
+
+		Vector3f result = o_result;
+		if (result == null)
+			result = new Vector3fImpl();
+
+		sub(i_point, i_origin, result);
+		normalise(result, result);
+
+		return result;
+	}
+
+	/**
 	 * Returns a vector with the component-wise maximum values of the given two
 	 * vectors.
 	 * 
@@ -345,7 +372,7 @@ public class Math3DVector3f extends Math3DVector2f {
 			return o_result;
 		}
 	}
-	
+
 	/**
 	 * Translates a vector by given x, y, and z value. Basically it's the same
 	 * as adding a vector (x,y,z) to the vector.

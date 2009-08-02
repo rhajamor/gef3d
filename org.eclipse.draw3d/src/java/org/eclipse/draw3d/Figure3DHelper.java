@@ -311,9 +311,12 @@ public class Figure3DHelper {
 
 			IFigure3D figure = hit.getFigure();
 			ISurface surface = figure.getSurface();
-			hit.getWorldLocation(wLocation);
+			if (surface == null)
+				return figure;
 
+			hit.getWorldLocation(wLocation);
 			surface.getSurfaceLocation2D(wLocation, sLocation);
+
 			return surface.findFigureAt(sLocation.x, sLocation.y, i_search);
 		} finally {
 			Draw3DCache.returnVector3f(wLocation);

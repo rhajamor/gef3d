@@ -41,7 +41,7 @@ public class GeometryPicker implements Picker {
 
 	private IScene m_scene;
 
-	private SurfaceSearchProvider m_surfaceSearchProvider;
+	private TreeSearch m_surfaceSearch;
 
 	/**
 	 * Creates a new picker for the given scene.
@@ -137,28 +137,9 @@ public class GeometryPicker implements Picker {
 			throw new NullPointerException("i_rayDirection must not be null");
 
 		Query query =
-			new Query(i_rayStart, i_rayDirection, m_rootFigure, i_search,
-				getSurfaceSearch());
+			new Query(i_rayStart, i_rayDirection, m_rootFigure, i_search);
 
-		HitCombo hitCombo = query.execute();
-		if (hitCombo == null)
-			return null;
-
-		Hit figureHit = hitCombo.getFigureHit();
-		Hit surfaceHit = hitCombo.getSurfaceHit();
-
-		if (surfaceHit != null) {
-			ISurface surface = surfaceHit.getFigure().getSurface();
-				log.info(surface.toString());
-
-			if (surfaceHit.getFigure().getClass().getName().endsWith(
-				"MoveHandle3D"))
-				log.info("schmuh!");
-
-			m_currentSurface = surface;
-		}
-
-		return figureHit;
+		return query.execute();
 	}
 
 	/**
@@ -182,22 +163,12 @@ public class GeometryPicker implements Picker {
 				throw new IllegalArgumentException(
 					"i_rayPoint must not be equal to the camera position");
 
-			Math3D.sub(i_rayPoint, rayStart, rayDirection);
-			Math3D.normalise(rayDirection, rayDirection);
-
+			Math3D.getRayDirection(rayStart, i_rayPoint, rayDirection);
 			return getHit(rayStart, rayDirection, i_search);
 		} finally {
 			Draw3DCache.returnVector3f(rayStart);
 			Draw3DCache.returnVector3f(rayDirection);
 		}
-	}
-
-	private TreeSearch getSurfaceSearch() {
-
-		if (m_surfaceSearchProvider == null)
-			return null;
-
-		return m_surfaceSearchProvider.getSurfaceSearch();
 	}
 
 	/**
@@ -213,10 +184,28 @@ public class GeometryPicker implements Picker {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.picking.Picker#setSurfaceProvider(org.eclipse.draw3d.picking.SurfaceSearchProvider)
+	 * @see org.eclipse.draw3d.picking.Picker#setSurfaceSearch(org.eclipse.draw2d.TreeSearch)
 	 */
-	public void setSurfaceProvider(SurfaceSearchProvider i_provider) {
+	public void setSurfaceSearch(TreeSearch i_search) {
 
-		m_surfaceSearchProvider = i_provider;
+		m_surfaceSearch = i_search;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Picker#updateCurrentSurface(int, int)
+	 */
+	public void updateCurrentSurface(int i_mx, int i_my) {
+
+		Hit hit = getHit(i_mx, i_my, m_surfaceSearch);
+		if (hit != null) {
+			ISurface surface = hit.getFigure().getSurface();
+			if (surface != null) {
+				if (!surface.equals(m_currentSurface))
+					log.info("new current surface is " + surface);
+				m_currentSurface = surface;
+			}
+		}
 	}
 }

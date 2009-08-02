@@ -69,7 +69,7 @@ public interface ISurface {
 	 * intersection of a ray and the surface.
 	 * 
 	 * @param i_rayStart the start point of the ray
-	 * @param i_rayPoint the a point on the ray other than the start point
+	 * @param i_rayDirection the direction vector of the ray, must be normalised
 	 * @param io_result the result point, if <code>null</code>, a new point will
 	 *            be returned
 	 * @return the 2D surface coordinates of the point of intersection or
@@ -77,7 +77,7 @@ public interface ISurface {
 	 *         surface
 	 */
 	public Point getSurfaceLocation2D(IVector3f i_rayStart,
-		IVector3f i_rayPoint, Point io_result);
+		IVector3f i_rayDirection, Point io_result);
 
 	/**
 	 * Returns the 2D surface coordinates of a point specified in world
@@ -125,7 +125,7 @@ public interface ISurface {
 	 * intersection of a ray and the surface.
 	 * 
 	 * @param i_rayStart the start point of the ray
-	 * @param i_rayPoint a pointon the ray other than the start point
+	 * @param i_rayDirection the direction vector of the ray, must be normalised
 	 * @param io_result the result vector, if <code>null</code>, a new vector
 	 *            will be returned
 	 * @return the 3D surface coordinates of the point of intersection or
@@ -133,7 +133,7 @@ public interface ISurface {
 	 *         surface
 	 */
 	public Vector3f getSurfaceLocation3D(IVector3f i_rayStart,
-		IVector3f i_rayPoint, Vector3f io_result);
+		IVector3f i_rayDirection, Vector3f io_result);
 
 	/**
 	 * Returns the 3D surface coordinates of a point specified in world

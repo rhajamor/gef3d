@@ -25,8 +25,6 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.geometry.BoundingBox;
 import org.eclipse.draw3d.geometry.BoundingBoxImpl;
-import org.eclipse.draw3d.geometry.IBoundingBox;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.Handle;
@@ -80,9 +78,9 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
     /**
      * Logger for this class
      */
-    private static final Logger log = Logger.getLogger(ResizableEditPolicy3D.class.getName());
-
-    private static Vector3fImpl TEMP_V_1 = new Vector3fImpl();
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(ResizableEditPolicy3D.class.getName());
 
     /**
      * Creates the figure used for feedback.

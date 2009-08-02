@@ -24,6 +24,7 @@ import org.eclipse.draw3d.Draw3DCanvas;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.LightweightSystem3D;
+import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.Hit;
@@ -151,8 +152,9 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 		if (layermanager == null)
 			return null;
 
-		Vector3f rayStart = Draw3DCache.getVector3f();
-		Vector3f rayPoint = Draw3DCache.getVector3f();
+		Vector3f eye = Draw3DCache.getVector3f();
+		Vector3f wLocation = Draw3DCache.getVector3f();
+		Vector3f direction = Draw3DCache.getVector3f();
 		Point sLocation = Draw3DCache.getPoint();
 		try {
 			List<IFigure> ignore = new ArrayList<IFigure>(3);
@@ -173,12 +175,14 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 				return (Handle) figure3D;
 
 			// keep searching on the surface
-			lws.getCamera().getPosition(rayStart);
+			lws.getCamera().getPosition(eye);
 			lws.getCamera().unProject(i_mLocation.x, i_mLocation.y, 0, null,
-				rayPoint);
+				wLocation);
 
 			ISurface surface = figure3D.getSurface();
-			surface.getSurfaceLocation2D(rayStart, rayPoint, sLocation);
+
+			Math3D.getRayDirection(eye, wLocation, direction);
+			surface.getSurfaceLocation2D(eye, direction, sLocation);
 
 			IFigure figure2D =
 				figure3D.findFigureAt(sLocation.x, sLocation.y, search);
@@ -188,8 +192,9 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 
 			return null;
 		} finally {
-			Draw3DCache.returnVector3f(rayStart);
-			Draw3DCache.returnVector3f(rayPoint);
+			Draw3DCache.returnVector3f(eye);
+			Draw3DCache.returnVector3f(wLocation);
+			Draw3DCache.returnVector3f(direction);
 			Draw3DCache.returnPoint(sLocation);
 		}
 	}

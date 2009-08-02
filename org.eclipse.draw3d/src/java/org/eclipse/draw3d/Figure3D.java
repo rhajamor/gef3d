@@ -108,11 +108,6 @@ public class Figure3D extends Figure implements IFigure3D {
 	protected boolean repaint2DComponents = true;
 
 	/**
-	 * The surface of this figure. This is where 2D children are placed.
-	 */
-	protected ISurface surface = new FigureSurface(this);
-
-	/**
 	 * Boolean semaphore used by {@link #syncSize()} and {@link #syncSize3D()}
 	 * to avoid infinite loop.
 	 */
@@ -439,7 +434,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	public ISurface getSurface() {
 
-		return surface;
+		return null;
 	}
 
 	/**

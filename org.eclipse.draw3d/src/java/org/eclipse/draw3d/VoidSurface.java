@@ -90,19 +90,19 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	 */
 	public IFigure findFigureAt(int i_sx, int i_sy, TreeSearch i_search) {
 
-		Vector3f w = Draw3DCache.getVector3f();
-		Vector3f rayStart = Draw3DCache.getVector3f();
-		Vector3f rayDirection = Draw3DCache.getVector3f();
+		Vector3f eye = Draw3DCache.getVector3f();
+		Vector3f wLocation = Draw3DCache.getVector3f();
+		Vector3f direction = Draw3DCache.getVector3f();
 		Point mLocation = Draw3DCache.getPoint();
 		Point sLocation = Draw3DCache.getPoint();
 		try {
 
 			// input coordinates are surface coordinates, convert them into
 			// mouse coordinates
-			getWorldLocation(i_sx, i_sy, 0, w);
+			getWorldLocation(i_sx, i_sy, 0, wLocation);
 
 			ICamera camera = m_scene.getCamera();
-			camera.project(w, mLocation);
+			camera.project(wLocation, mLocation);
 
 			Picker picker = m_scene.getPicker();
 			Hit hit = picker.getHit(mLocation.x, mLocation.y, i_search);
@@ -110,21 +110,19 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 			if (hit == null)
 				return null;
 
-			camera.getPosition(rayStart);
-
-			Math3D.sub(w, rayStart, rayDirection);
-			Math3D.normalise(rayDirection, rayDirection);
 
 			IFigure3D figure = hit.getFigure();
 			ISurface surface = figure.getSurface();
 
-			surface.getSurfaceLocation2D(rayStart, rayDirection, sLocation);
+			camera.getPosition(eye);
+			Math3D.getRayDirection(eye, wLocation, direction);
 
+			surface.getSurfaceLocation2D(eye, direction, sLocation);
 			return figure.findFigureAt(sLocation.x, sLocation.y, i_search);
 		} finally {
-			Draw3DCache.returnVector3f(w);
-			Draw3DCache.returnVector3f(rayStart);
-			Draw3DCache.returnVector3f(rayDirection);
+			Draw3DCache.returnVector3f(wLocation);
+			Draw3DCache.returnVector3f(eye);
+			Draw3DCache.returnVector3f(direction);
 			Draw3DCache.returnPoint(sLocation);
 		}
 	}
