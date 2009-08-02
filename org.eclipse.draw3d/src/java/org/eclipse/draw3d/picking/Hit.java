@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.picking;
 
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 
@@ -37,16 +36,6 @@ public interface Hit {
 	 * @return the figure
 	 */
 	public IFigure3D getFigure();
-
-	/**
-	 * Returns the mouse location of the picking operation that yielded this
-	 * hit.
-	 * 
-	 * @param o_result the result point, if <code>null</code>, a new point will
-	 *            be returned
-	 * @return the mouse location
-	 */
-	public Point getMouseLocation(Point o_result);
 
 	/**
 	 * Returns the world location of this hit, in other words the world location

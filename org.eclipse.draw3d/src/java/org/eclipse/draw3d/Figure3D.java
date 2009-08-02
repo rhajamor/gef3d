@@ -87,6 +87,8 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	protected int m_alpha = 255;
 
+	private IParaxialBoundingBox m_paraxialBounds;
+
 	SynchronizedPosition3DImpl position3D;
 
 	/**
@@ -177,6 +179,17 @@ public class Figure3D extends Figure implements IFigure3D {
 	protected void fireFigureMoved() {
 
 		position3D.invalidateMatrices();
+
+		IFigure parent = getParent();
+		while (parent != null) {
+			if (parent instanceof IFigure3D)
+				((IFigure3D) parent).invalidateParaxialBounds();
+
+			parent = parent.getParent();
+		}
+
+		invalidateParaxialBoundsTree();
+
 		super.fireFigureMoved();
 	}
 
@@ -330,8 +343,10 @@ public class Figure3D extends Figure implements IFigure3D {
 	@SuppressWarnings("unchecked")
 	public IParaxialBoundingBox getParaxialBoundingBox() {
 
-		// TODO Cache the bounding box!
-		return helper.getParaxialBoundingBox();
+		if (m_paraxialBounds == null)
+			m_paraxialBounds = helper.getParaxialBoundingBox();
+
+		return m_paraxialBounds;
 	}
 
 	/**
@@ -457,6 +472,26 @@ public class Figure3D extends Figure implements IFigure3D {
 
 		position3D.invalidateMatrices();
 		super.invalidate();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#invalidateParaxialBounds()
+	 */
+	public void invalidateParaxialBounds() {
+
+		m_paraxialBounds = null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#invalidateParaxialBoundsTree()
+	 */
+	public void invalidateParaxialBoundsTree() {
+
+		helper.invalidateParaxialBoundsTree();
 	}
 
 	/**

@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.picking;
 
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.geometry.IParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
@@ -31,8 +30,6 @@ public class HitImpl implements Hit {
 	private float m_distance;
 
 	private IFigure3D m_figure;
-
-	private Point m_mLocation;
 
 	private Vector3f m_wLocation;
 
@@ -85,7 +82,7 @@ public class HitImpl implements Hit {
 	 * @return the best candidate of this and the given hit
 	 * @throws NullPointerException if the given hit is <code>null</code>
 	 */
-	public HitImpl getBestCandidate(HitImpl i_hit) {
+	public HitImpl getBestHit(HitImpl i_hit) {
 
 		if (i_hit == null)
 			return this;
@@ -143,24 +140,6 @@ public class HitImpl implements Hit {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.picking.Hit#getMouseLocation(org.eclipse.draw2d.geometry.Point)
-	 */
-	public Point getMouseLocation(Point o_result) {
-
-		if (m_mLocation == null)
-			throw new IllegalStateException("mouse location has not been set");
-
-		Point result = o_result;
-		if (result == null)
-			result = new Point();
-
-		result.setLocation(m_mLocation);
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.draw3d.picking.Hit#getWorldLocation(org.eclipse.draw3d.geometry.Vector3f)
 	 */
 	public Vector3f getWorldLocation(Vector3f o_result) {
@@ -209,20 +188,6 @@ public class HitImpl implements Hit {
 	}
 
 	/**
-	 * Sets the mouse location.
-	 * 
-	 * @param i_mx the mouse X coordinate
-	 * @param i_my the mouse Y coordinate
-	 */
-	public void setMouseLocation(int i_mx, int i_my) {
-
-		if (m_mLocation == null)
-			m_mLocation = new Point();
-
-		m_mLocation.setLocation(i_mx, i_my);
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see java.lang.Object#toString()
@@ -234,8 +199,6 @@ public class HitImpl implements Hit {
 
 		b.append("Hit[figure=");
 		b.append(m_figure);
-		b.append(", mouse: ");
-		b.append(m_mLocation);
 		b.append(", distance: ");
 		b.append(m_distance);
 		b.append(", world: ");

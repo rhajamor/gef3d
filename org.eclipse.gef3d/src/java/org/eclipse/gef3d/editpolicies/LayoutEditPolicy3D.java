@@ -11,6 +11,7 @@
 package org.eclipse.gef3d.editpolicies;
 
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
@@ -40,11 +41,13 @@ public abstract class LayoutEditPolicy3D extends LayoutEditPolicy {
 		if (host3D == null) {
 			return super.createSizeOnDropFeedback(i_createRequest);
 		} else { // use 3D implementation otherwise
-			ISurface surface = host3D.getSurface();
+			Point sLocation = i_createRequest.getLocation();
+			ISurface surface =
+				FeedbackHelper3D.getCurrentSurface(host3D, sLocation);
 			FeedbackFigure3D feedback = new FeedbackFigure3D();
 
-			FeedbackHelper3D.update(feedback, surface, i_createRequest
-				.getLocation(), i_createRequest.getSize());
+			FeedbackHelper3D.update(feedback, surface, sLocation,
+				i_createRequest.getSize());
 
 			addFeedback(feedback);
 			return feedback;
@@ -63,14 +66,17 @@ public abstract class LayoutEditPolicy3D extends LayoutEditPolicy {
 			&& REQ_CREATE.equals(i_request.getType())) {
 
 			CreateRequest createRequest = (CreateRequest) i_request;
+			Point sLocation = createRequest.getLocation();
+
 			IFigure3D feedback =
 				(IFigure3D) getSizeOnDropFeedback(createRequest);
 
 			IFigure3D host3D = Figure3DHelper.getAncestor3D(getHostFigure());
-			ISurface surface = host3D.getSurface();
+			ISurface surface =
+				FeedbackHelper3D.getCurrentSurface(host3D, sLocation);
 
-			FeedbackHelper3D.update(feedback, surface, createRequest
-				.getLocation(), createRequest.getSize());
+			FeedbackHelper3D.update(feedback, surface, sLocation, createRequest
+				.getSize());
 		}
 	}
 }

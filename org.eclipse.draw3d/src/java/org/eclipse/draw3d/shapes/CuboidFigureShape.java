@@ -59,6 +59,7 @@ public class CuboidFigureShape implements Shape {
 	 * @see org.eclipse.draw3d.shapes.Shape#render()
 	 */
 	public void render(RenderContext renderContext) {
+
 		int alpha = m_figure.getAlpha();
 		// IMatrix4f modelMatrix = m_figure.getModelMatrix();
 		Position3D position3D = m_figure.getPosition3D();

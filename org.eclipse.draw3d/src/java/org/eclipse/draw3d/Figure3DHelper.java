@@ -418,6 +418,18 @@ public class Figure3DHelper {
 	}
 
 	/**
+	 * Invalidates the paraxial bounds of the figure and of all 3D figures in
+	 * its subtree.
+	 */
+	public void invalidateParaxialBoundsTree() {
+
+		m_figuresFriend.figure.invalidateParaxialBounds();
+		List<IFigure3D> descendants3D = getDescendants3D();
+		for (IFigure3D descendant3D : descendants3D)
+			descendant3D.invalidateParaxialBoundsTree();
+	}
+
+	/**
 	 * Paints the figure's border.
 	 * 
 	 * @param i_graphics the graphics to paint on

@@ -167,6 +167,17 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable,
 	public IVector3f getSize3D();
 
 	/**
+	 * Invalidates the paraxial of this figure;
+	 */
+	public void invalidateParaxialBounds();
+
+	/**
+	 * Invalidates the paraxial bounds of this figure and of all 3D figures in
+	 * its subtree.
+	 */
+	public void invalidateParaxialBoundsTree();
+
+	/**
 	 * Returns the distance between the given ray start point and the point of
 	 * intersection of the given ray and this figure, if any. The returned
 	 * distance is actually the scalar value x by which the given ray direction
@@ -187,7 +198,8 @@ public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable,
 	 * @throws IllegalArgumentException if the given direction vector has a
 	 *             length of zero
 	 */
-	// public float intersectRay(IVector3f i_rayStart, IVector3f i_rayDirection);
+	// public float intersectRay(IVector3f i_rayStart, IVector3f
+	// i_rayDirection);
 
 	/**
 	 * Sets the alpha value of this figure. This value controls the transparency

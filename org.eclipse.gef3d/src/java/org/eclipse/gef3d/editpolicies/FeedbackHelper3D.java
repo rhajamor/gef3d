@@ -37,13 +37,38 @@ import org.eclipse.gef.editpolicies.FeedbackHelper;
  */
 public class FeedbackHelper3D extends FeedbackHelper {
 
+	public static ISurface getCurrentSurface(IFigure3D i_figure,
+		Point i_sLocation) {
+
+		if (i_figure == null)
+			throw new NullPointerException("i_figure must not be null");
+
+		if (i_sLocation == null)
+			throw new NullPointerException("i_sLocation must not be null");
+
+		Vector3f wLocation = Draw3DCache.getVector3f();
+		try {
+			PickingUpdateManager3D updateManager =
+				(PickingUpdateManager3D) i_figure.getUpdateManager();
+			Picker picker = updateManager.getPicker();
+
+			ISurface surface = i_figure.getSurface();
+			surface.getWorldLocation(i_sLocation, wLocation);
+
+			picker.getHit(wLocation);
+			return picker.getCurrentSurface();
+		} finally {
+			Draw3DCache.returnVector3f(wLocation);
+		}
+	}
+
 	@SuppressWarnings("unused")
 	private static final Logger log =
 		Logger.getLogger(FeedbackHelper3D.class.getName());
 
 	private static void update(BoundingBox i_bounds, ISurface i_surface,
-		Point i_sLocation, Dimension i_surfaceSize,
-		Point i_surfaceMoveDelta, Dimension i_surfaceSizeDelta) {
+		Point i_sLocation, Dimension i_surfaceSize, Point i_surfaceMoveDelta,
+		Dimension i_surfaceSizeDelta) {
 
 		Point sLocation = Draw3DCache.getPoint();
 		Dimension surfaceSize = Draw3DCache.getDimension();
@@ -96,8 +121,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 				bounds.set(figure3D.getBounds3D());
 
 				if (i_surfaceMoveDelta != null) {
-					i_surface.getWorldLocation(i_surfaceMoveDelta,
-						wLocation);
+					i_surface.getWorldLocation(i_surfaceMoveDelta, wLocation);
 					bounds.translate(wLocation);
 				}
 
@@ -133,8 +157,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 		Vector3f wLocation = Draw3DCache.getVector3f();
 		Vector3f worldSize = Draw3DCache.getVector3f();
 		try {
-			update(bounds, i_surface, i_sLocation, i_surfaceSize, null,
-				null);
+			update(bounds, i_surface, i_sLocation, i_surfaceSize, null, null);
 
 			bounds.expand(0.01f);
 			bounds.getPosition(wLocation);

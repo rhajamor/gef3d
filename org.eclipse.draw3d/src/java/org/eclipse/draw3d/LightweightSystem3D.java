@@ -83,6 +83,8 @@ public class LightweightSystem3D extends LightweightSystem implements
 
 		private final Figure3DHelper helper;
 
+		private IParaxialBoundingBox m_paraxialBounds;
+
 		private ISurface m_surface =
 			new VoidSurface(this, LightweightSystem3D.this, 0.1f);
 
@@ -348,8 +350,10 @@ public class LightweightSystem3D extends LightweightSystem implements
 		 */
 		public IParaxialBoundingBox getParaxialBoundingBox() {
 
-			// TODO Cache the bounding box!
-			return helper.getParaxialBoundingBox();
+			if (m_paraxialBounds == null)
+				m_paraxialBounds = helper.getParaxialBoundingBox();
+
+			return m_paraxialBounds;
 		}
 
 		/**
@@ -432,6 +436,26 @@ public class LightweightSystem3D extends LightweightSystem implements
 		public ISurface getSurface() {
 
 			return m_surface;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.IFigure3D#invalidateParaxialBounds()
+		 */
+		public void invalidateParaxialBounds() {
+
+			m_paraxialBounds = null;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.IFigure3D#invalidateParaxialBoundsTree()
+		 */
+		public void invalidateParaxialBoundsTree() {
+
+			helper.invalidateParaxialBoundsTree();
 		}
 
 		/**

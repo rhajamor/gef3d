@@ -12,7 +12,10 @@ package org.eclipse.gef3d.ui.parts;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ExclusionSearch;
 import org.eclipse.draw2d.IFigure;
@@ -27,6 +30,7 @@ import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.Hit;
 import org.eclipse.draw3d.picking.Picker;
+import org.eclipse.draw3d.picking.SurfaceSearchProvider;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.Handle;
@@ -51,6 +55,9 @@ import org.eclipse.swt.widgets.Control;
  */
 public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 		GraphicalViewer3D, IFigureFactoryProvider {
+
+	private static final Logger log =
+		Logger.getLogger(GraphicalViewer3DImpl.class.getName());
 
 	protected IFigureFactory m_FigureFactory = null;
 
@@ -109,7 +116,54 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	@Override
 	protected LightweightSystem createLightweightSystem() {
 
-		return new LightweightSystem3D();
+		LightweightSystem3D lws3D = new LightweightSystem3D();
+
+		Picker picker = lws3D.getPicker();
+		picker.setSurfaceProvider(new SurfaceSearchProvider() {
+
+			public TreeSearch getSurfaceSearch() {
+
+				final LayerManager layermanager =
+					(LayerManager) getEditPartRegistry().get(LayerManager.ID);
+
+				if (layermanager == null)
+					return null;
+
+				return new TreeSearch() {
+
+					private Set<IFigure> m_ignore;
+
+					public boolean accept(IFigure i_figure) {
+
+						return true;
+					}
+
+					public boolean prune(IFigure i_figure) {
+
+						if (m_ignore == null) {
+							m_ignore = new HashSet<IFigure>();
+							m_ignore.add(layermanager
+								.getLayer(LayerConstants.CONNECTION_LAYER));
+							m_ignore.add(layermanager
+								.getLayer(LayerConstants.FEEDBACK_LAYER));
+							m_ignore.add(layermanager
+								.getLayer(LayerConstants.GRID_LAYER));
+							m_ignore.add(layermanager
+								.getLayer(LayerConstants.GUIDE_LAYER));
+							m_ignore.add(layermanager
+								.getLayer(LayerConstants.HANDLE_LAYER));
+							m_ignore
+								.add(layermanager
+									.getLayer(LayerConstants.SCALED_FEEDBACK_LAYER));
+						}
+
+						return m_ignore.contains(i_figure);
+					}
+				};
+			}
+		});
+
+		return lws3D;
 	}
 
 	/**

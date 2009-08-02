@@ -11,6 +11,7 @@
 package org.eclipse.draw3d.picking;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -29,30 +30,36 @@ import org.eclipse.draw3d.geometry.IVector3f;
  */
 public class Query {
 
+	private TreeSearch m_figureSearch;
+
 	private Map<Object, Object> m_objects;
 
 	private IVector3f m_rayDirection;
 
 	private IVector3f m_rayStart;
 
-	private IFigure m_rootFigure;
+	private IFigure3D m_rootFigure;
 
-	private TreeSearch m_search;
+	private TreeSearch m_surfaceSearch;
 
 	/**
 	 * Constructs a new picking query with the given parameters. All figures
-	 * which are not accepted or pruned by the given search are ignored.
+	 * which are not accepted or pruned by the given figure search are ignored.
 	 * 
 	 * @param i_rayStart the starting point of the picking ray
 	 * @param i_rayDirection the direction of the picking ray, must be
 	 *            normalised
 	 * @param i_rootFigure the root figure
-	 * @param i_search the search instance, may be <code>null</code>
+	 * @param i_figureSearch the search instance for the figure search, may be
+	 *            <code>null</code>
+	 * @param i_surfaceSearch the search instance for the surface search, may be
+	 *            <code>null</code>
 	 * @throws NullPointerException if the given ray starting point, ray
 	 *             direction or root figure is <code>null</code>
 	 */
 	public Query(IVector3f i_rayStart, IVector3f i_rayDirection,
-			IFigure i_rootFigure, TreeSearch i_search) {
+			IFigure3D i_rootFigure, TreeSearch i_figureSearch,
+			TreeSearch i_surfaceSearch) {
 
 		if (i_rayStart == null)
 			throw new NullPointerException("i_rayStart must not be null");
@@ -66,21 +73,125 @@ public class Query {
 		m_rayStart = i_rayStart;
 		m_rayDirection = i_rayDirection;
 		m_rootFigure = i_rootFigure;
-		m_search = i_search;
+		m_figureSearch = i_figureSearch;
+		m_surfaceSearch = i_surfaceSearch;
 	}
 
-	private boolean consider(IFigure i_figure) {
+	private boolean accept(IFigure i_figure, TreeSearch i_search) {
 
 		if (!i_figure.isVisible())
 			return false;
 
-		if (m_search == null)
+		if (i_search == null)
 			return true;
 
-		if (m_search.prune(i_figure))
-			return false;
+		return i_search.accept(i_figure);
+	}
 
-		return m_search.accept(i_figure);
+	private HitCombo combineParentChildHits(IFigure i_parentFigure,
+		float i_parentDistance, boolean i_parentFigurePruned,
+		boolean i_parentSurfacePruned, HitCombo i_childHits) {
+
+		if (i_childHits != null) {
+			if (i_parentFigurePruned)
+				i_childHits.setFigureHit(null);
+			if (i_parentSurfacePruned)
+				i_childHits.setSurfaceHit(null);
+		}
+
+		if (!(i_parentFigure instanceof IFigure3D))
+			return i_childHits;
+
+		IFigure3D parentFigure3D = (IFigure3D) i_parentFigure;
+		if (parentFigure3D.equals(m_rootFigure))
+			return i_childHits;
+
+		HitImpl figureHit = null, surfaceHit = null;
+
+		if (i_childHits != null) {
+			figureHit = i_childHits.getFigureHit();
+			surfaceHit = i_childHits.getSurfaceHit();
+		}
+
+		if (figureHit == null && !i_parentFigurePruned
+			&& accept(parentFigure3D, m_figureSearch))
+			figureHit =
+				new HitImpl(parentFigure3D, i_parentDistance, m_rayStart,
+					m_rayDirection);
+
+		if (surfaceHit == null && !i_parentSurfacePruned
+			&& accept(parentFigure3D, m_surfaceSearch))
+			surfaceHit =
+				new HitImpl(parentFigure3D, i_parentDistance, m_rayStart,
+					m_rayDirection);
+
+		HitCombo result = i_childHits;
+		if (result == null)
+			result = new HitCombo(figureHit, surfaceHit);
+		else {
+			result.setFigureHit(figureHit);
+			result.setSurfaceHit(surfaceHit);
+		}
+
+		return result;
+	}
+
+	private HitCombo combineSiblingHits(HitCombo i_hits1, HitCombo i_hits2) {
+
+		if (i_hits1 == null)
+			return i_hits2;
+
+		if (i_hits2 == null)
+			return i_hits1;
+
+		HitImpl surfaceHit1 = i_hits1.getSurfaceHit();
+		HitImpl figureHit1 = i_hits1.getFigureHit();
+
+		HitImpl surfaceHit2 = i_hits2.getSurfaceHit();
+		HitImpl figureHit2 = i_hits2.getFigureHit();
+
+		if (surfaceHit1 != null)
+			i_hits1.setSurfaceHit(surfaceHit1.getBestHit(surfaceHit2));
+		else
+			i_hits1.setSurfaceHit(surfaceHit2);
+
+		if (figureHit1 != null)
+			i_hits1.setFigureHit(figureHit1.getBestHit(figureHit2));
+		else
+			i_hits1.setFigureHit(figureHit2);
+
+		return i_hits1;
+	}
+
+	@SuppressWarnings("unchecked")
+	private HitCombo doExecute(IFigure i_figure, float i_distance) {
+
+		if (Float.isNaN(i_distance))
+			return null;
+
+		boolean figurePruned = prune(i_figure, m_figureSearch);
+		boolean surfacePruned = prune(i_figure, m_surfaceSearch);
+
+		if (figurePruned && surfacePruned)
+			return null;
+
+		HitCombo hits = null;
+		List children = i_figure.getChildren();
+
+		for (Iterator iter = children.iterator(); iter.hasNext();) {
+			IFigure child = (IFigure) iter.next();
+
+			float descDistance;
+			if (child instanceof IFigure3D)
+				descDistance = getDistance((IFigure3D) child);
+			else
+				descDistance = i_distance;
+
+			hits = combineSiblingHits(doExecute(child, descDistance), hits);
+		}
+
+		return combineParentChildHits(i_figure, i_distance, figurePruned,
+			surfacePruned, hits);
 	}
 
 	/**
@@ -91,35 +202,13 @@ public class Query {
 	 *            of the current hit. This is passed in here to avoid the
 	 *            creation of lots of temporary objects due to the recursive
 	 *            nature of this method.
-	 * @return a hit or <code>null</code> if no figure was hit
+	 * @return a combination of a surface and a figure hit or <code>null</code>
+	 *         if neither a surface nor a figure was hit
 	 */
 	@SuppressWarnings("unchecked")
-	public HitImpl execute(IFigure3D i_figure) {
+	public HitCombo execute() {
 
-		HitImpl hit = null;
-		if (consider(i_figure)) {
-
-			float d = getDistance(i_figure);
-			if (!Float.isNaN(d)) {
-
-				List<IFigure3D> descendants3D = i_figure.getDescendants3D();
-				for (IFigure3D descendant3D : descendants3D) {
-					if (consider(descendant3D)) {
-						float cd = getDistance(descendant3D);
-						if (!Float.isNaN(cd)) {
-							HitImpl childHit = execute(descendant3D);
-							if (childHit != null)
-								hit = childHit.getBestCandidate(hit);
-						}
-					}
-				}
-
-				if (hit == null && !i_figure.equals(m_rootFigure))
-					hit = new HitImpl(i_figure, d, m_rayStart, m_rayDirection);
-			}
-		}
-
-		return hit;
+		return doExecute(m_rootFigure, getDistance(m_rootFigure));
 	}
 
 	/**
@@ -143,14 +232,18 @@ public class Query {
 
 	private float getDistance(IFigure3D i_figure) {
 
+		float distance = Float.NaN;
 		if (i_figure instanceof Pickable) {
 			Pickable pickable = (Pickable) i_figure;
-			return pickable.getDistance(this);
+			distance = pickable.getDistance(this);
 		}
 
-		IParaxialBoundingBox pBounds = i_figure.getParaxialBoundingBox();
-		return pBounds.intersectRay(m_rayStart, m_rayDirection);
+		if (Float.isNaN(distance)) {
+			IParaxialBoundingBox pBounds = i_figure.getParaxialBoundingBox();
+			distance = pBounds.intersectRay(m_rayStart, m_rayDirection);
+		}
 
+		return distance;
 	}
 
 	/**
@@ -171,6 +264,17 @@ public class Query {
 	public IVector3f getRayStart() {
 
 		return m_rayStart;
+	}
+
+	private boolean prune(IFigure i_figure, TreeSearch i_search) {
+
+		if (!i_figure.isVisible())
+			return false;
+
+		if (i_search == null)
+			return true;
+
+		return i_search.prune(i_figure);
 	}
 
 	/**

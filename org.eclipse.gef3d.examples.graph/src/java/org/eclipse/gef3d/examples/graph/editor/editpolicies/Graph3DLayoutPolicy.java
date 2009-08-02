@@ -18,7 +18,6 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.requests.CreateRequest;
-import org.eclipse.gef3d.editpolicies.ShowLayoutFeedbackEditPolicy3D;
 import org.eclipse.gef3d.editpolicies.XY3DLayoutPolicy;
 import org.eclipse.gef3d.examples.graph.editor.commands.VertexCreateCommand;
 import org.eclipse.gef3d.examples.graph.editor.commands.VertexResizeCommand;
@@ -68,9 +67,6 @@ public class Graph3DLayoutPolicy extends XY3DLayoutPolicy {
 	@Override
 	protected IFigure createSizeOnDropFeedback(CreateRequest i_createRequest) {
 
-		log.info("must not be called, install "
-			+ ShowLayoutFeedbackEditPolicy3D.class.getName()
-			+ " before this edit policy");
 		return null;
 	}
 
@@ -102,13 +98,6 @@ public class Graph3DLayoutPolicy extends XY3DLayoutPolicy {
 	@Override
 	protected void showLayoutTargetFeedback(Request i_request) {
 
-		if (REQ_ADD.equals(i_request.getType())
-			|| REQ_CLONE.equals(i_request.getType())
-			|| REQ_MOVE.equals(i_request.getType())
-			|| REQ_RESIZE_CHILDREN.equals(i_request.getType())
-			|| REQ_CREATE.equals(i_request.getType()))
-			log.info("must not be called, install "
-				+ ShowLayoutFeedbackEditPolicy3D.class.getName()
-				+ " before this edit policy");
+		// nothing to do
 	}
 }
