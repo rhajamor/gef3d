@@ -36,12 +36,16 @@ public class SurfaceSearch implements TreeSearch {
 		if (m_ignoredLayers == null) {
 			m_ignoredLayers = new HashSet<IFigure>();
 
-			addLayer(m_layerManager.getLayer(CONNECTION_LAYER));
-			addLayer(m_layerManager.getLayer(FEEDBACK_LAYER));
-			addLayer(m_layerManager.getLayer(GRID_LAYER));
-			addLayer(m_layerManager.getLayer(GUIDE_LAYER));
-			addLayer(m_layerManager.getLayer(HANDLE_LAYER));
-			addLayer(m_layerManager.getLayer(SCALED_FEEDBACK_LAYER));
+			LayerManager layerManager =
+				(LayerManager) m_viewer.getEditPartRegistry().get(
+					LayerManager.ID);
+
+			addLayer(layerManager.getLayer(CONNECTION_LAYER));
+			addLayer(layerManager.getLayer(FEEDBACK_LAYER));
+			addLayer(layerManager.getLayer(GRID_LAYER));
+			addLayer(layerManager.getLayer(GUIDE_LAYER));
+			addLayer(layerManager.getLayer(HANDLE_LAYER));
+			addLayer(layerManager.getLayer(SCALED_FEEDBACK_LAYER));
 		}
 
 		return m_ignoredLayers;
@@ -55,7 +59,7 @@ public class SurfaceSearch implements TreeSearch {
 		m_ignoredLayers.add(i_layer);
 	}
 
-	private LayerManager m_layerManager;
+	private EditPartViewer m_viewer;
 
 	/**
 	 * Creates a new surface search. The given edit part viewer is used to
@@ -70,8 +74,7 @@ public class SurfaceSearch implements TreeSearch {
 		if (i_viewer == null)
 			throw new NullPointerException("i_viewer must not be null");
 
-		m_layerManager =
-			(LayerManager) i_viewer.getEditPartRegistry().get(LayerManager.ID);
+		m_viewer = i_viewer;
 	}
 
 	/**

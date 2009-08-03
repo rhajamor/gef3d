@@ -11,12 +11,10 @@
 package org.eclipse.draw3d.picking;
 
 import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.draw3d.geometry.IParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * A mutable implementation of the {@link Hit} interface.
@@ -31,11 +29,11 @@ public class HitImpl implements Hit {
 
 	private IFigure3D m_figure;
 
-	private Vector3f m_wLocation;
+	private IVector3f m_rayDirection;
 
 	private IVector3f m_rayStart;
 
-	private IVector3f m_rayDirection;
+	private Vector3f m_wLocation;
 
 	/**
 	 * Creates a new hit with the given figure and distance.
@@ -64,57 +62,6 @@ public class HitImpl implements Hit {
 		m_distance = i_distance;
 		m_rayStart = i_rayStart;
 		m_rayDirection = i_rayDirection;
-	}
-
-	/**
-	 * Returns the best candidate of this hit and the given hit. The best
-	 * candidate is calculated as follows:
-	 * <ul>
-	 * <li>If the given hit is returned, this hit is returned.</li>
-	 * <li>If both hits are exact or both hits are not exact, the closest hit is
-	 * returned.</li>
-	 * <li>If one hit is exact, it is returned if it is not behind the paraxial
-	 * bounding box of the approximated hit.</li>
-	 * <li>Otherwise, the coarse hit is returned.</li>
-	 * </ul>
-	 * 
-	 * @param i_hit the hit to compare to
-	 * @return the best candidate of this and the given hit
-	 * @throws NullPointerException if the given hit is <code>null</code>
-	 */
-	public HitImpl getBestHit(HitImpl i_hit) {
-
-		if (i_hit == null)
-			return this;
-
-		if ((isExact() == i_hit.isExact())) {
-			if (isCloserThan(i_hit))
-				return this;
-			else
-				return i_hit;
-		} else {
-			Vector3f wLocation = Draw3DCache.getVector3f();
-			try {
-				HitImpl exact = isExact() ? this : i_hit;
-				HitImpl coarse = isExact() ? i_hit : this;
-
-				if (exact.isCloserThan(coarse))
-					return exact;
-				else {
-					IFigure3D figure = coarse.getFigure();
-					IParaxialBoundingBox pbBox =
-						figure.getParaxialBoundingBox();
-
-					exact.getWorldLocation(wLocation);
-					if (pbBox.contains(wLocation))
-						return exact;
-					else
-						return coarse;
-				}
-			} finally {
-				Draw3DCache.returnVector3f(wLocation);
-			}
-		}
 	}
 
 	/**
@@ -173,18 +120,6 @@ public class HitImpl implements Hit {
 			throw new NullPointerException("i_hit must not be null");
 
 		return m_distance < i_hit.getDistance();
-	}
-
-	/**
-	 * Indicates whether this hit is exact, or if it was found by some
-	 * approximation method.
-	 * 
-	 * @return <code>true</code> if this hit is exact or <code>false</code>
-	 *         otherwise
-	 */
-	public boolean isExact() {
-
-		return m_figure instanceof Pickable;
 	}
 
 	/**

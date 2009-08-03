@@ -16,6 +16,7 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.swt.graphics.Color;
 
 /**
@@ -51,6 +52,17 @@ public class CuboidFigureShape implements Shape {
 			throw new NullPointerException("i_figure must not be null");
 
 		m_figure = i_figure;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
+	 *      org.eclipse.draw3d.geometry.Position3D)
+	 */
+	public float getDistance(Query i_query, Position3D i_position) {
+
+		return m_solidCube.getDistance(i_query, i_position);
 	}
 
 	/**

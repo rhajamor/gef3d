@@ -153,6 +153,173 @@ public class Math3D extends Math3DMatrixOps {
 		}
 	}
 
+	private enum ProjectionPlane {
+		XY, XZ, ZY;
+
+		public IVector3f getNormal() {
+
+			switch (this) {
+			case XY:
+				return IVector3f.Z_AXIS;
+			case XZ:
+				return IVector3f.Y_AXIS;
+			default:
+				return IVector3f.X_AXIS;
+			}
+		}
+
+		public float getX(IVector3f i_vector) {
+
+			switch (this) {
+			case XY:
+				return i_vector.getX();
+			case XZ:
+				return i_vector.getX();
+			default:
+				return i_vector.getZ();
+			}
+		}
+
+		public float getY(IVector3f i_vector) {
+			switch (this) {
+			case XY:
+				return i_vector.getY();
+			case XZ:
+				return i_vector.getZ();
+			default:
+				return i_vector.getY();
+			}
+		}
+
+		public static ProjectionPlane getPlane(IVector3f i_normal) {
+
+			float xy = Math.abs(Math3D.dot(XY.getNormal(), i_normal));
+			float xz = Math.abs(Math3D.dot(XZ.getNormal(), i_normal));
+			float zy = Math.abs(Math3D.dot(ZY.getNormal(), i_normal));
+
+			ProjectionPlane plane = null;
+			float max;
+			if (xy > xz) {
+				plane = XY;
+				max = xy;
+			} else {
+				plane = XZ;
+				max = xz;
+			}
+
+			if (zy > max)
+				plane = ZY;
+
+			return plane;
+		}
+	}
+
+	public static float rayIntersectsPolygon(IVector3f i_rayStart,
+		IVector3f i_rayDirection, IVector3f[] i_polygon, IVector3f i_normal) {
+
+		if (i_rayStart == null)
+			throw new NullPointerException("i_rayStart must not be null");
+
+		if (i_rayDirection == null)
+			throw new NullPointerException("i_rayDirection must not be null");
+
+		if (i_polygon == null)
+			throw new NullPointerException("i_polygon must not be null");
+
+		if (i_normal == null)
+			throw new NullPointerException("i_normal must not be null");
+
+		if (i_polygon.length < 3)
+			throw new IllegalArgumentException(
+				"a polygon must have at least three vertices");
+
+		Vector3f tmp = Math3DCache.getVector3f();
+		Vector3f intersection = Math3DCache.getVector3f();
+		try {
+			float cos = Math3D.dot(i_rayDirection, i_normal);
+			if (cos >= 0)
+				return Float.NaN;
+
+			rayIntersectsPlane(i_rayStart, i_rayDirection, i_polygon[0],
+				i_normal, intersection);
+
+			ProjectionPlane projectionPlane =
+				ProjectionPlane.getPlane(i_normal);
+
+			float ix = projectionPlane.getX(intersection);
+			float iy = projectionPlane.getY(intersection);
+
+			int c = 0;
+			float x0, y0, x1, y1;
+			IVector3f p0 = i_polygon[i_polygon.length - 1];
+			for (int i = 0; i < i_polygon.length; i++) {
+				IVector3f p1 = i_polygon[i];
+
+				// move point of intersection into origin
+				x0 = projectionPlane.getX(p0) - ix;
+				y0 = projectionPlane.getY(p0) - iy;
+				x1 = projectionPlane.getX(p1) - ix;
+				y1 = projectionPlane.getY(p1) - iy;
+
+				if (x0 == 0 && y0 == 0 || x1 == 0 && y1 == 0) {
+					// we hit a corner cancel search and return distance
+					c = 1;
+					break;
+				}
+
+				if ((y0 > 0 && y1 <= 0) || (y0 <= 0 && y1 > 0)) {
+					if (x0 > 0 && x1 > 0) {
+						c += 1;
+					} else if ((x0 > 0 && x1 <= 0) || (x0 <= 0 && x1 > 0)) {
+						float x = -y0 * (x1 - x0) / (y1 - y0) + x0;
+						if (x >= 0)
+							c += 1;
+					}
+				}
+
+				p0 = p1;
+			}
+
+			if (c % 2 == 0)
+				return Float.NaN;
+
+			Math3D.sub(intersection, i_rayStart, tmp);
+			return tmp.length();
+		} finally {
+			Math3DCache.returnVector3f(intersection);
+			Math3DCache.returnVector3f(tmp);
+		}
+	}
+
+	public static float rayIntersectsPolygon(IVector3f i_rayStart,
+		IVector3f i_rayDirection, IVector3f[] i_polygon) {
+
+		if (i_polygon == null)
+			throw new NullPointerException("i_polygon must not be null");
+
+		if (i_polygon.length < 3)
+			throw new IllegalArgumentException(
+				"a polygon must have at least three vertices");
+
+		Vector3f a = Math3DCache.getVector3f();
+		Vector3f b = Math3DCache.getVector3f();
+		Vector3f normal = Math3DCache.getVector3f();
+		try {
+			Math3D.sub(i_polygon[1], i_polygon[0], b);
+			Math3D.sub(i_polygon[i_polygon.length - 1], i_polygon[0], b);
+
+			Math3D.cross(a, b, normal);
+			Math3D.normalise(normal, normal);
+
+			return rayIntersectsPolygon(i_rayStart, i_rayDirection, i_polygon,
+				normal);
+		} finally {
+			Math3DCache.returnVector3f(a);
+			Math3DCache.returnVector3f(b);
+			Math3DCache.returnVector3f(normal);
+		}
+	}
+
 	/**
 	 * Calculcates the point of intersection between a ray and a plane. The ray
 	 * is specified by a starting point and a direction and the plane is
@@ -206,7 +373,8 @@ public class Math3D extends Math3DMatrixOps {
 	 * @param i_rayDirection the direction vector of the ray, which must be
 	 *            normalised
 	 * @param i_planePoint a point that is contained in the plane
-	 * @param i_planeNormal the normal vector of the plane
+	 * @param i_planeNormal the normal vector of the plane, which must be
+	 *            normalised
 	 * @param io_result the result vector, if <code>null</code>, a new vector
 	 *            will be returned
 	 * @return the point of intersection between the given ray and plane or

@@ -16,6 +16,7 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.TransparencyAdapter;
 import org.eclipse.gef.EditPart;
@@ -32,18 +33,19 @@ import org.eclipse.swt.graphics.Cursor;
  * @since Mar 25, 2008
  */
 public abstract class CubeHandle extends AbstractHandle3D {
-	/**
-	 * Logger for this class
-	 */
-	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(CubeHandle.class.getName());
 
 	/**
 	 * The default size for square handles. (copied from {@link SquareHandle}
 	 * and made public)
 	 */
 	protected static final float DEFAULT_HANDLE_SIZE = 7;
+
+	/**
+	 * Logger for this class
+	 */
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(CubeHandle.class.getName());
 
 	private TransparencyAdapter m_alphashape =
 		new TransparencyAdapter(this, new CuboidFigureShape(this));
@@ -84,16 +86,6 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	}
 
 	/**
-	 * Initializes the handle.
-	 */
-	protected void init() {
-
-		setPreferredSize3D(new Vector3fImpl(DEFAULT_HANDLE_SIZE,
-			DEFAULT_HANDLE_SIZE, DEFAULT_HANDLE_SIZE));
-		setAlpha(40);
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * <p>
 	 * Returns the color for the inside of the handle. Like
@@ -109,6 +101,17 @@ public abstract class CubeHandle extends AbstractHandle3D {
 
 	/**
 	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		return m_alphashape.getDistance(i_query, getPosition3D());
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * <p>
 	 * Returns the color for the outside of the handle, GEF uses
 	 * {@link SquareHandle#getBorderColor()} instead.
@@ -118,6 +121,16 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	@Override
 	public Color getForegroundColor() {
 		return (isPrimary()) ? ColorConstants.black : ColorConstants.black;
+	}
+
+	/**
+	 * Initializes the handle.
+	 */
+	protected void init() {
+
+		setPreferredSize3D(new Vector3fImpl(DEFAULT_HANDLE_SIZE,
+			DEFAULT_HANDLE_SIZE, DEFAULT_HANDLE_SIZE));
+		setAlpha(40);
 	}
 
 	/**

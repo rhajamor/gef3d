@@ -11,10 +11,8 @@
 package org.eclipse.gef3d.editpolicies;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.draw3d.ISurface;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.editpolicies.LayoutEditPolicy;
 import org.eclipse.gef.requests.CreateRequest;
@@ -29,6 +27,18 @@ import org.eclipse.gef3d.handles.FeedbackFigure3D;
  */
 public abstract class LayoutEditPolicy3D extends LayoutEditPolicy {
 
+	private FeedbackHelper3D m_helper;
+
+	/**
+	 * Creates a new feedback helper for the current host figure.
+	 * 
+	 * @return the feedback helper
+	 */
+	protected FeedbackHelper3D createFeedbackHelper() {
+
+		return new FeedbackHelper3D();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -41,17 +51,31 @@ public abstract class LayoutEditPolicy3D extends LayoutEditPolicy {
 		if (host3D == null) {
 			return super.createSizeOnDropFeedback(i_createRequest);
 		} else { // use 3D implementation otherwise
-			Point sLocation = i_createRequest.getLocation();
-			ISurface surface =
-				FeedbackHelper3D.getCurrentSurface(host3D, sLocation);
 			FeedbackFigure3D feedback = new FeedbackFigure3D();
 
-			FeedbackHelper3D.update(feedback, surface, sLocation,
+			getFeedbackHelper().update(feedback, i_createRequest.getLocation(),
 				i_createRequest.getSize());
 
 			addFeedback(feedback);
 			return feedback;
 		}
+	}
+
+	/**
+	 * Returns the current feedback helper. If no feedback helper is set, a new
+	 * one will be created. Also,
+	 * {@link FeedbackHelper3D#setHostFigure(IFigure)} will be called with the
+	 * current host figure as the parameter.
+	 * 
+	 * @return the feedback helper
+	 */
+	protected FeedbackHelper3D getFeedbackHelper() {
+
+		if (m_helper == null)
+			m_helper = createFeedbackHelper();
+
+		m_helper.setHostFigure(getHostFigure());
+		return m_helper;
 	}
 
 	/**
@@ -66,17 +90,11 @@ public abstract class LayoutEditPolicy3D extends LayoutEditPolicy {
 			&& REQ_CREATE.equals(i_request.getType())) {
 
 			CreateRequest createRequest = (CreateRequest) i_request;
-			Point sLocation = createRequest.getLocation();
-
 			IFigure3D feedback =
 				(IFigure3D) getSizeOnDropFeedback(createRequest);
 
-			IFigure3D host3D = Figure3DHelper.getAncestor3D(getHostFigure());
-			ISurface surface =
-				FeedbackHelper3D.getCurrentSurface(host3D, sLocation);
-
-			FeedbackHelper3D.update(feedback, surface, sLocation, createRequest
-				.getSize());
+			getFeedbackHelper().update(feedback, createRequest.getLocation(),
+				createRequest.getSize());
 		}
 	}
 }

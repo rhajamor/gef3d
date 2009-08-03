@@ -22,6 +22,7 @@ import org.eclipse.draw3d.TransparentObject;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.graphics.Color;
@@ -35,6 +36,7 @@ import org.eclipse.swt.widgets.Display;
  * @since 21.11.2007
  */
 public class GraphFigure3D extends FreeformLayer3D implements TransparentObject {
+
 	/**
 	 * Logger for this class
 	 */
@@ -50,17 +52,6 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 	 * The surface of this figure. This is where 2D children are placed.
 	 */
 	private ISurface m_surface = new FigureSurface(this);
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#getSurface()
-	 */
-	@Override
-	public ISurface getSurface() {
-
-		return m_surface;
-	}
 
 	/**
 	 * 
@@ -92,6 +83,28 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 		Color bgColor = new Color(Display.getCurrent(), 0xFF, 0xFF, 0xFF);
 		setBackgroundColor(bgColor);
 		setAlpha((byte) 0x44);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		return m_shape.getDistance(i_query, getPosition3D());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getSurface()
+	 */
+	@Override
+	public ISurface getSurface() {
+
+		return m_surface;
 	}
 
 	/**

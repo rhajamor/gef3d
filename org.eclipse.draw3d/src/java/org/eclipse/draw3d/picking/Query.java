@@ -93,10 +93,14 @@ public class Query {
 			return i_childHit;
 
 		HitImpl hit = i_childHit;
-		if (hit == null && accept(parentFigure3D, m_figureSearch))
-			hit =
-				new HitImpl(parentFigure3D, i_parentDistance, m_rayStart,
-					m_rayDirection);
+		if (accept(parentFigure3D, m_figureSearch)) {
+			float realDistance = parentFigure3D.getDistance(this);
+			if (!Float.isNaN(realDistance)
+				&& (hit == null || realDistance < hit.getDistance()))
+				hit =
+					new HitImpl(parentFigure3D, i_parentDistance, m_rayStart,
+						m_rayDirection);
+		}
 
 		return hit;
 	}
@@ -109,16 +113,16 @@ public class Query {
 		if (i_hit2 == null)
 			return i_hit1;
 
-		return i_hit1.getBestHit(i_hit2);
+		if (i_hit1.isCloserThan(i_hit2))
+			return i_hit1;
+
+		return i_hit2;
 	}
 
 	@SuppressWarnings("unchecked")
-	private HitImpl doExecute(IFigure i_figure, float i_distance) {
+	private HitImpl doExecute(IFigure i_figure, float i_boundingBoxDistance) {
 
-		if (Float.isNaN(i_distance))
-			return null;
-
-		if (prune(i_figure, m_figureSearch))
+		if (Float.isNaN(i_boundingBoxDistance))
 			return null;
 
 		HitImpl hit = null;
@@ -127,16 +131,18 @@ public class Query {
 		for (Iterator iter = children.iterator(); iter.hasNext();) {
 			IFigure child = (IFigure) iter.next();
 
-			float descDistance;
-			if (child instanceof IFigure3D)
-				descDistance = getDistance((IFigure3D) child);
-			else
-				descDistance = i_distance;
+			if (!prune(child, m_figureSearch)) {
+				float childDistance;
+				if (child instanceof IFigure3D)
+					childDistance = getBoundingBoxDistance((IFigure3D) child);
+				else
+					childDistance = i_boundingBoxDistance;
 
-			hit = combineSiblingHits(doExecute(child, descDistance), hit);
+				hit = combineSiblingHits(doExecute(child, childDistance), hit);
+			}
 		}
 
-		return combineParentChildHits(i_figure, i_distance, hit);
+		return combineParentChildHits(i_figure, i_boundingBoxDistance, hit);
 	}
 
 	/**
@@ -152,7 +158,10 @@ public class Query {
 	@SuppressWarnings("unchecked")
 	public Hit execute() {
 
-		return doExecute(m_rootFigure, getDistance(m_rootFigure));
+		if (prune(m_rootFigure, m_figureSearch))
+			return null;
+
+		return doExecute(m_rootFigure, getBoundingBoxDistance(m_rootFigure));
 	}
 
 	/**
@@ -174,20 +183,10 @@ public class Query {
 		return m_objects.get(i_key);
 	}
 
-	private float getDistance(IFigure3D i_figure) {
+	private float getBoundingBoxDistance(IFigure3D i_figure) {
 
-		float distance = Float.NaN;
-		if (i_figure instanceof Pickable) {
-			Pickable pickable = (Pickable) i_figure;
-			distance = pickable.getDistance(this);
-		}
-
-		if (Float.isNaN(distance)) {
-			IParaxialBoundingBox pBounds = i_figure.getParaxialBoundingBox();
-			distance = pBounds.intersectRay(m_rayStart, m_rayDirection);
-		}
-
-		return distance;
+		IParaxialBoundingBox pBounds = i_figure.getParaxialBoundingBox();
+		return pBounds.intersectRay(m_rayStart, m_rayDirection);
 	}
 
 	/**

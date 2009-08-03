@@ -24,8 +24,6 @@ import org.eclipse.draw3d.Draw3DCanvas;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.LightweightSystem3D;
-import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.Hit;
 import org.eclipse.draw3d.picking.Picker;
@@ -133,7 +131,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	 * @see org.eclipse.gef.ui.parts.GraphicalViewerImpl#findHandleAt(org.eclipse.draw2d.geometry.Point)
 	 */
 	@Override
-	public Handle findHandleAt(Point i_mLocation) {
+	public Handle findHandleAt(Point i_sLocation) {
 
 		LayerManager layermanager =
 			(LayerManager) getEditPartRegistry().get(LayerManager.ID);
@@ -141,10 +139,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 		if (layermanager == null)
 			return null;
 
-		Vector3f eye = Draw3DCache.getVector3f();
-		Vector3f direction = Draw3DCache.getVector3f();
-		Vector3f wLocation = Draw3DCache.getVector3f();
-		Point sLocation = Draw3DCache.getPoint();
+		Vector3f point = Draw3DCache.getVector3f();
 		try {
 			List<IFigure> ignore = new ArrayList<IFigure>(3);
 			ignore.add(layermanager.getLayer(LayerConstants.PRIMARY_LAYER));
@@ -155,7 +150,10 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 			LightweightSystem3D lws = getLightweightSystem3D();
 			Picker picker = lws.getPicker();
 
-			Hit hit = picker.getHit(i_mLocation.x, i_mLocation.y, search);
+			ISurface surface = picker.getCurrentSurface();
+			surface.getWorldLocation(i_sLocation, point);
+
+			Hit hit = picker.getHit(point, search);
 			if (hit == null)
 				return null;
 
@@ -163,28 +161,10 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 			if (figure3D instanceof Handle)
 				return (Handle) figure3D;
 
-			// keep searching on the surface
-			lws.getCamera().getPosition(eye);
-			lws.getCamera().unProject(i_mLocation.x, i_mLocation.y, 0, null,
-				wLocation);
-
-			ISurface surface = figure3D.getSurface();
-
-			Math3D.getRayDirection(eye, wLocation, direction);
-			surface.getSurfaceLocation2D(eye, direction, sLocation);
-
-			IFigure figure2D =
-				figure3D.findFigureAt(sLocation.x, sLocation.y, search);
-
-			if (figure2D instanceof Handle)
-				return (Handle) figure2D;
-
+			// there are only 3D handles
 			return null;
 		} finally {
-			Draw3DCache.returnVector3f(eye);
-			Draw3DCache.returnVector3f(direction);
-			Draw3DCache.returnVector3f(wLocation);
-			Draw3DCache.returnPoint(sLocation);
+			Draw3DCache.returnVector3f(point);
 		}
 	}
 
@@ -201,7 +181,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public EditPart findObjectAtExcluding(Point i_mLocation,
+	public EditPart findObjectAtExcluding(Point i_sLocation,
 		Collection i_exclude, final Conditional i_condition) {
 
 		class ConditionalTreeSearch extends ExclusionSearch {
@@ -226,25 +206,38 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 			}
 		}
 
-		Vector3f rayStart = Math3DCache.getVector3f();
-		Vector3f rayDirection = Math3DCache.getVector3f();
+		Vector3f point = Draw3DCache.getVector3f();
+		Point figureSurfaceLocation = Draw3DCache.getPoint();
 		try {
 
 			LightweightSystem3D lws = getLightweightSystem3D();
 			Picker picker = lws.getPicker();
 
+			ISurface surface = picker.getCurrentSurface();
+			surface.getWorldLocation(i_sLocation, point);
+
 			TreeSearch search = new ConditionalTreeSearch(i_exclude);
-			Hit hit = picker.getHit(i_mLocation.x, i_mLocation.y, search);
+			Hit hit = picker.getHit(point, search);
 
 			EditPart part = null;
 			if (hit != null) {
 				IFigure3D figure3D = hit.getFigure();
-				IFigure figure2D =
-					figure3D.findFigureAt(i_mLocation.x, i_mLocation.y, search);
+				IFigure figure = figure3D;
 
-				while (part == null && figure2D != null) {
-					part = (EditPart) getVisualPartMap().get(figure2D);
-					figure2D = figure2D.getParent();
+				ISurface figureSurface = figure3D.getSurface();
+				if (figureSurface != null) {
+					hit.getWorldLocation(point);
+					figureSurface.getSurfaceLocation2D(point,
+						figureSurfaceLocation);
+
+					figure =
+						figure3D.findFigureAt(figureSurfaceLocation.x,
+							figureSurfaceLocation.y, search);
+				}
+
+				while (part == null && figure != null) {
+					part = (EditPart) getVisualPartMap().get(figure);
+					figure = figure.getParent();
 				}
 			}
 
@@ -253,8 +246,8 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 
 			return part;
 		} finally {
-			Math3DCache.returnVector3f(rayStart);
-			Math3DCache.returnVector3f(rayDirection);
+			Draw3DCache.returnVector3f(point);
+			Draw3DCache.returnPoint(figureSurfaceLocation);
 		}
 	}
 

@@ -15,9 +15,17 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Math3DCache;
+import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.ColorConverter;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Color;
 
 /**
@@ -38,13 +46,134 @@ public class SolidCube extends AbstractModelShape {
 	private static final String DL_TEXTURE = "solid_cube_texture";
 
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(SolidCube.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(SolidCube.class.getName());
 
-	private final float[] m_color = new float[] { DEFAULT_COLOR[0],
-			DEFAULT_COLOR[1], DEFAULT_COLOR[2], DEFAULT_COLOR[3] };
+	private final float[] m_color =
+		new float[] { DEFAULT_COLOR[0], DEFAULT_COLOR[1], DEFAULT_COLOR[2],
+			DEFAULT_COLOR[3] };
 
 	private Integer m_textureId;
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
+	 *      org.eclipse.draw3d.geometry.Position3D)
+	 */
+	public float getDistance(Query i_query, Position3D i_position) {
+
+		Vector3f p0 = Math3DCache.getVector3f();
+		Vector3f p1 = Math3DCache.getVector3f();
+		Vector3f p2 = Math3DCache.getVector3f();
+		Vector3f p3 = Math3DCache.getVector3f();
+		Vector3f normal = Math3DCache.getVector3f();
+		Vector3f[] poly = new Vector3f[] { p0, p1, p2, p3 };
+		try {
+			IMatrix4f modelMatrix = i_position.getModelMatrix();
+
+			normal.set(0, 0, -1);
+			p0.set(0, 0, 0);
+			p1.set(0, 1, 0);
+			p2.set(1, 1, 0);
+			p3.set(1, 0, 0);
+
+			float distance = getDistance(i_query, modelMatrix, poly, normal);
+			if (!Float.isNaN(distance))
+				return distance;
+
+			// back
+			normal.set(0, 0, 1);
+			p0.set(0, 0, 1);
+			p1.set(1, 0, 1);
+			p2.set(1, 1, 1);
+			p3.set(0, 1, 1);
+
+			distance = getDistance(i_query, modelMatrix, poly, normal);
+			if (!Float.isNaN(distance))
+				return distance;
+
+			// left
+			normal.set(-1, 0, 0);
+			p0.set(0, 0, 0);
+			p1.set(0, 0, 1);
+			p2.set(0, 1, 1);
+			p3.set(0, 1, 0);
+
+			distance = getDistance(i_query, modelMatrix, poly, normal);
+			if (!Float.isNaN(distance))
+				return distance;
+
+			// right
+			normal.set(1, 0, 0);
+			p0.set(1, 0, 1);
+			p1.set(1, 0, 0);
+			p2.set(1, 1, 0);
+			p3.set(1, 1, 1);
+
+			distance = getDistance(i_query, modelMatrix, poly, normal);
+			if (!Float.isNaN(distance))
+				return distance;
+
+			// top
+			normal.set(0, 1, 0);
+			p0.set(0, 1, 1);
+			p1.set(1, 1, 1);
+			p2.set(1, 1, 0);
+			p3.set(0, 1, 0);
+
+			distance = getDistance(i_query, modelMatrix, poly, normal);
+			if (!Float.isNaN(distance))
+				return distance;
+
+			// bottom
+			normal.set(0, -1, 0);
+			p0.set(1, 0, 0);
+			p1.set(1, 0, 1);
+			p2.set(0, 0, 1);
+			p3.set(0, 0, 0);
+
+			return getDistance(i_query, modelMatrix, poly, normal);
+		} finally {
+			Math3DCache.returnVector3f(p0);
+			Math3DCache.returnVector3f(p1);
+			Math3DCache.returnVector3f(p2);
+			Math3DCache.returnVector3f(p3);
+			Math3DCache.returnVector3f(normal);
+		}
+	}
+
+	/**
+	 * @param i_query
+	 * @param modelMatrix
+	 * @param poly
+	 * @param normal
+	 * @return
+	 */
+	private float getDistance(Query i_query, IMatrix4f modelMatrix,
+		Vector3f[] poly, Vector3f normal) {
+		for (Vector3f vector3f : poly)
+			vector3f.transform(modelMatrix);
+
+		Vector3f origin = Draw3DCache.getVector3f();
+		try {
+			origin.set(0, 0, 0);
+			origin.transform(modelMatrix);
+
+			normal.transform(modelMatrix);
+			Math3D.sub(normal, origin, normal);
+			Math3D.normalise(normal, normal);
+
+			IVector3f rayStart = i_query.getRayStart();
+			IVector3f rayDirection = i_query.getRayDirection();
+			float distance =
+				Math3D.rayIntersectsPolygon(rayStart, rayDirection, poly,
+					normal);
+			return distance;
+		} finally {
+			Draw3DCache.returnVector3f(origin);
+		}
+	}
 
 	private void glSetColor(Graphics3D g3d) {
 
@@ -57,7 +186,7 @@ public class SolidCube extends AbstractModelShape {
 	}
 
 	private void initDisplayLists(DisplayListManager i_displayListManager,
-			final Graphics3D g3d) {
+		final Graphics3D g3d) {
 
 		if (i_displayListManager.isDisplayList(DL_REST, DL_FRONT, DL_TEXTURE))
 			return;
@@ -152,19 +281,17 @@ public class SolidCube extends AbstractModelShape {
 	@Override
 	protected void performRender(RenderContext renderContext) {
 
-		DisplayListManager displayListManager = renderContext
-				.getDisplayListManager();
+		DisplayListManager displayListManager =
+			renderContext.getDisplayListManager();
 		Graphics3D g3d = renderContext.getGraphics3D();
 		initDisplayLists(displayListManager, g3d);
-		
 
 		if (m_textureId != null) {
 			g3d.glColor4f(0, 0, 0, 0);
 
 			g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, m_textureId);
 			g3d.glTexEnvi(Graphics3DDraw.GL_TEXTURE_ENV,
-					Graphics3DDraw.GL_TEXTURE_ENV_MODE,
-					Graphics3DDraw.GL_REPLACE);
+				Graphics3DDraw.GL_TEXTURE_ENV_MODE, Graphics3DDraw.GL_REPLACE);
 
 			displayListManager.executeDisplayList(DL_TEXTURE);
 			g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, 0);
@@ -218,6 +345,6 @@ public class SolidCube extends AbstractModelShape {
 	protected void setup(RenderContext renderContext) {
 		Graphics3D g3d = renderContext.getGraphics3D();
 		g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
-				Graphics3DDraw.GL_FILL);
+			Graphics3DDraw.GL_FILL);
 	}
 }

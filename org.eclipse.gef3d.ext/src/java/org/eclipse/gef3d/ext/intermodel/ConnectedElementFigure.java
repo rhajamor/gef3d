@@ -18,6 +18,7 @@ import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.graphics.Color;
@@ -40,6 +41,17 @@ public class ConnectedElementFigure extends Figure3D {
 	private Shape m_shape = new CuboidFigureShape(this);
 
 	Label tagLabel;
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		return m_shape.getDistance(i_query, getPosition3D());
+	}
 
 	public ConnectedElementFigure() {
 

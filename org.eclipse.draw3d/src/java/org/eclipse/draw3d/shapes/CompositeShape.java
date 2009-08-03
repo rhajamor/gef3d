@@ -15,6 +15,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.picking.Query;
 
 /**
  * A shape that contains other shapes and does no rendering itself. Instead,
@@ -72,4 +75,20 @@ public class CompositeShape implements Shape {
 			shape.render(renderContext);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
+	 *      org.eclipse.draw3d.geometry.Position3D)
+	 */
+	public float getDistance(Query i_query, Position3D i_position) {
+
+		float distance = Float.NaN;
+		for (Shape shape : m_shapes)
+			distance =
+				Math3D.minDistance(distance, shape.getDistance(i_query,
+					i_position));
+
+		return distance;
+	}
 }

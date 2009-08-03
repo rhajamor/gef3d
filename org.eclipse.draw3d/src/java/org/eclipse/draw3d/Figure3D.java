@@ -35,6 +35,7 @@ import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.geometryext.SyncedVector3f;
 import org.eclipse.draw3d.geometryext.SynchronizedPosition3DImpl;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.swt.graphics.Font;
 
 /**
@@ -280,6 +281,16 @@ public class Figure3D extends Figure implements IFigure3D {
 	public List<IFigure3D> getDescendants3D() {
 
 		return helper.getDescendants3D();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	public float getDistance(Query i_query) {
+
+		return Float.NaN;
 	}
 
 	/**

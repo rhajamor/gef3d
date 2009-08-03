@@ -23,6 +23,7 @@ import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.swt.graphics.Color;
 
@@ -86,6 +87,18 @@ public class ConeFigureShape extends AbstractModelShape {
 			throw new NullPointerException("i_figure must not be null");
 
 		m_figure = i_figure;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
+	 *      org.eclipse.draw3d.geometry.Position3D)
+	 */
+	public float getDistance(Query i_query, Position3D i_position) {
+
+		// TODO: Implement this.
+		return Float.NaN;
 	}
 
 	private void initDisplayLists(DisplayListManager i_displayListManager) {

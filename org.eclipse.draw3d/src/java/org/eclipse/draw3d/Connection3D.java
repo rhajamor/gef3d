@@ -17,7 +17,6 @@ import java.util.List;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometryext.PointList3D;
-import org.eclipse.draw3d.picking.Pickable;
 
 /**
  * 3D version of connection, extends from Connection and can be used in a 2D
@@ -29,7 +28,7 @@ import org.eclipse.draw3d.picking.Pickable;
  * @since 26.11.2007
  * @see org.eclipse.draw2d.Connection
  */
-public interface Connection3D extends IFigure3D, Connection, Pickable {
+public interface Connection3D extends IFigure3D, Connection {
 	/**
 	 * Returns the PointList containing the Points that make up this Connection
 	 * by reference. Note that simply changing the points does not update the

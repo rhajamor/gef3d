@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.EventDispatcher;
+import org.eclipse.draw2d.EventDispatcher3D;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GraphicsSource;
 import org.eclipse.draw2d.IFigure;
@@ -42,6 +43,7 @@ import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Picker;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.ParaxialBoundingBoxCube;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.draw3d.util.DebugPrimitives;
@@ -68,6 +70,21 @@ import org.eclipse.swt.widgets.Canvas;
  */
 public class LightweightSystem3D extends LightweightSystem implements
 		ICameraListener, DisposeListener, IScene {
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.LightweightSystem#setEventDispatcher(org.eclipse.draw2d.EventDispatcher)
+	 */
+	@Override
+	public void setEventDispatcher(EventDispatcher i_dispatcher) {
+
+		EventDispatcher dispatcher = i_dispatcher;
+		if (!(dispatcher instanceof EventDispatcher3D))
+			dispatcher = new EventDispatcher3D(dispatcher, this);
+
+		super.setEventDispatcher(dispatcher);
+	}
 
 	/**
 	 * The 3D root figure class does not extend Figure3D for design reasons.
@@ -300,6 +317,16 @@ public class LightweightSystem3D extends LightweightSystem implements
 		public List<IFigure3D> getDescendants3D() {
 
 			return helper.getDescendants3D();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
+		 */
+		public float getDistance(Query i_query) {
+
+			return Float.NaN;
 		}
 
 		/**

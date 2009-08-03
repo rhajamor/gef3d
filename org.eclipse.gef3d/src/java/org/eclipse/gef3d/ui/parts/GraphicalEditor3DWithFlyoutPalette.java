@@ -15,9 +15,7 @@ package org.eclipse.gef3d.ui.parts;
 import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
-import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
-import org.eclipse.gef3d.EditDomainWrapper;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -131,19 +129,5 @@ public abstract class GraphicalEditor3DWithFlyoutPalette extends
 
         scenePreferenceDistributor = new ScenePreferenceDistributor(scene);
         scenePreferenceDistributor.start();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette#setEditDomain(org.eclipse.gef.DefaultEditDomain)
-     */
-    @Override
-    protected void setEditDomain(DefaultEditDomain i_ed) {
-
-        if (i_ed != null)
-            super.setEditDomain(new EditDomainWrapper(i_ed));
-        else
-            super.setEditDomain(null);
     }
 }

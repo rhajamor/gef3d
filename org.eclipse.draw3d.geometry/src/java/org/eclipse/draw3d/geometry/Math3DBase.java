@@ -96,4 +96,25 @@ public class Math3DBase {
 		return i_value >= min && i_value <= max;
 	}
 
+	/**
+	 * Returns the smaller one of the given distances. If both distances are
+	 * {@link Float#NaN}, {@link Float#NaN} is returned. If one of the given
+	 * distances is {@link Float#NaN}, the other distance is returned.
+	 * 
+	 * @param i_distance1 the first distance
+	 * @param i_distance2 the second distance
+	 * @return the minimum distance or {@link Float#isNaN()} if both given
+	 *         distances are {@link Float#NaN}
+	 */
+	public static float minDistance(float i_distance1, float i_distance2) {
+
+		if (Float.isNaN(i_distance1))
+			return i_distance2;
+
+		if (Float.isNaN(i_distance2))
+			return i_distance1;
+
+		return Math.min(i_distance1, i_distance2);
+	}
+
 }

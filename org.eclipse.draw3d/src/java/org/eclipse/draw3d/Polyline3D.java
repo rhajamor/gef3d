@@ -19,6 +19,7 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometryext.PointList3D;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.PolylineShape;
 import org.eclipse.swt.graphics.Color;
 
@@ -57,6 +58,18 @@ public class Polyline3D extends Figure3D {
 		points.add(i_point);
 		// bounds = null;
 		repaint();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		m_shape.setPoints(points);
+		return m_shape.getDistance(i_query, null);
 	}
 
 	/**

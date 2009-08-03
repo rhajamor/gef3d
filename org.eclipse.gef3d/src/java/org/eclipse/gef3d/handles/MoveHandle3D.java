@@ -18,6 +18,7 @@ import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.SolidCube;
 import org.eclipse.draw3d.shapes.WiredCube;
 import org.eclipse.gef.DragTracker;
@@ -62,6 +63,22 @@ public class MoveHandle3D extends AbstractHandle3D {
 		this(owner, new MoveHandleLocator3D(owner.getFigure()));
 	}
 
+	/**
+	 * Creates a MoveHandle for the given <code>GraphicalEditPart</code> using
+	 * the given <code>Locator</code>.
+	 * <p>
+	 * Copied from {@link MoveHandle#MoveHandle(GraphicalEditPart, Locator)} and
+	 * not yet modified.
+	 * </p>
+	 * 
+	 * @param owner The GraphicalEditPart to be moved by this handle.
+	 * @param loc The Locator used to place the handle.
+	 */
+	public MoveHandle3D(GraphicalEditPart owner, Locator loc) {
+		super(owner, loc);
+		initialize();
+	}
+
 	// /**
 	// * Returns <code>true</code> if the point (x,y) is contained within this
 	// handle.
@@ -92,22 +109,6 @@ public class MoveHandle3D extends AbstractHandle3D {
 	// }
 
 	/**
-	 * Creates a MoveHandle for the given <code>GraphicalEditPart</code> using
-	 * the given <code>Locator</code>.
-	 * <p>
-	 * Copied from {@link MoveHandle#MoveHandle(GraphicalEditPart, Locator)} and
-	 * not yet modified.
-	 * </p>
-	 * 
-	 * @param owner The GraphicalEditPart to be moved by this handle.
-	 * @param loc The Locator used to place the handle.
-	 */
-	public MoveHandle3D(GraphicalEditPart owner, Locator loc) {
-		super(owner, loc);
-		initialize();
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * <p>
 	 * Copied from {@link MoveHandle#MoveHandle(GraphicalEditPart, Locator)}.
@@ -122,6 +123,17 @@ public class MoveHandle3D extends AbstractHandle3D {
 		tracker.setDefaultCursor(getCursor());
 
 		return tracker;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		return solidcube.getDistance(i_query, getPosition3D());
 	}
 
 	/**

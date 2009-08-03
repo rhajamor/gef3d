@@ -19,12 +19,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.draw3d.ISurface;
-import org.eclipse.draw3d.geometry.BoundingBox;
-import org.eclipse.draw3d.geometry.BoundingBoxImpl;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.Handle;
@@ -32,10 +28,8 @@ import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.editpolicies.ConstrainedLayoutEditPolicy;
 import org.eclipse.gef.editpolicies.NonResizableEditPolicy;
 import org.eclipse.gef.editpolicies.ResizableEditPolicy;
-import org.eclipse.gef.handles.HandleBounds;
 import org.eclipse.gef.requests.ChangeBoundsRequest;
 import org.eclipse.gef3d.handles.FeedbackFigure3D;
-import org.eclipse.gef3d.handles.HandleBounds3D;
 import org.eclipse.gef3d.handles.IHandleFactory;
 import org.eclipse.gef3d.handles.MoveHandle3DFactory;
 import org.eclipse.gef3d.handles.NonResizableHandle3DFactory;
@@ -75,201 +69,164 @@ import org.eclipse.gef3d.handles.ResizableHandle3DFactory;
  */
 public class ResizableEditPolicy3D extends ResizableEditPolicy {
 
-    /**
-     * Logger for this class
-     */
+	/**
+	 * Logger for this class
+	 */
 	@SuppressWarnings("unused")
 	private static final Logger log =
 		Logger.getLogger(ResizableEditPolicy3D.class.getName());
 
-    /**
-     * Creates the figure used for feedback.
-     * <p>
-     * Copied and modified for 3D from
-     * {@link NonResizableEditPolicy#createDragSourceFeedbackFigure()}.
-     * </p>
-     * 
-     * @return the new feedback figure
-     */
-    @Override
-    protected IFigure createDragSourceFeedbackFigure() {
+	private FeedbackHelper3D m_helper;
 
-        // use 2D implementation if only 2D figures are displayed
-        if (Figure3DHelper.getAncestor3D(getHostFigure()) == null) {
-            return super.createDragSourceFeedbackFigure();
-        } else { // use 3D implementation otherwise
+	/**
+	 * Creates the figure used for feedback.
+	 * <p>
+	 * Copied and modified for 3D from
+	 * {@link NonResizableEditPolicy#createDragSourceFeedbackFigure()}.
+	 * </p>
+	 * 
+	 * @return the new feedback figure
+	 */
+	@Override
+	protected IFigure createDragSourceFeedbackFigure() {
 
-            // Use a ghost rectangle for feedback
-            // GEF:
-            // RectangleFigure r = new RectangleFigure();
-            // FigureUtilities.makeGhostShape(r);
-            // r.setLineStyle(Graphics.LINE_DOT);
-            // r.setForegroundColor(ColorConstants.white);
+		// use 2D implementation if only 2D figures are displayed
+		if (Figure3DHelper.getAncestor3D(getHostFigure()) == null) {
+			return super.createDragSourceFeedbackFigure();
+		} else { // use 3D implementation otherwise
 
-            IFigure figure = getHostFigure();
-            IFigure3D feedback3D = new FeedbackFigure3D();
+			// Use a ghost rectangle for feedback
+			// GEF:
+			// RectangleFigure r = new RectangleFigure();
+			// FigureUtilities.makeGhostShape(r);
+			// r.setLineStyle(Graphics.LINE_DOT);
+			// r.setForegroundColor(ColorConstants.white);
 
-            IFigure3D host3D = Figure3DHelper.getAncestor3D(figure.getParent());
-            ISurface surface = host3D.getSurface();
+			IFigure3D feedback = new FeedbackFigure3D();
+			getFeedbackHelper().update(feedback, null, null);
 
-            FeedbackHelper3D.update(feedback3D, surface, figure, null, null);
+			addFeedback(feedback);
+			return feedback;
+		}
+	}
 
-            addFeedback(feedback3D);
-            return feedback3D;
-        }
-    }
+	/**
+	 * Creates a new feedback helper for the current host figure.
+	 * 
+	 * @return the feedback helper
+	 */
+	protected FeedbackHelper3D createFeedbackHelper() {
 
-    /**
-     * {@inheritDoc} This method is responsible for creating selection handles.
-     * <p>
-     * Copied from {@link ResizableEditPolicy}. Instead of handler kits,
-     * factories are used. If no 3D ancestor is found, the original method is
-     * used.
-     * </p>
-     * 
-     * @see org.eclipse.gef.editpolicies.ResizableEditPolicy#createSelectionHandles()
-     */
-    @Override
-    protected List createSelectionHandles() {
+		return new FeedbackHelper3D();
+	}
 
-        // use 2D implementation if only 2D figures are displayed
-        if (Figure3DHelper.getAncestor3D(getHostFigure()) == null) {
-            return super.createSelectionHandles();
-        } else { // use 3D implementation otherwise
+	/**
+	 * {@inheritDoc} This method is responsible for creating selection handles.
+	 * <p>
+	 * Copied from {@link ResizableEditPolicy}. Instead of handler kits,
+	 * factories are used. If no 3D ancestor is found, the original method is
+	 * used.
+	 * </p>
+	 * 
+	 * @see org.eclipse.gef.editpolicies.ResizableEditPolicy#createSelectionHandles()
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	protected List createSelectionHandles() {
 
-            IHandleFactory nonResizableHF = NonResizableHandle3DFactory.INSTANCE;
-            IHandleFactory resizableHF = ResizableHandle3DFactory.INSTANCE;
-            IHandleFactory moveHF = MoveHandle3DFactory.INSTANCE;
+		// use 2D implementation if only 2D figures are displayed
+		if (Figure3DHelper.getAncestor3D(getHostFigure()) == null) {
+			return super.createSelectionHandles();
+		} else { // use 3D implementation otherwise
 
-            int directions = getResizeDirections();
+			IHandleFactory nonResizableHF =
+				NonResizableHandle3DFactory.INSTANCE;
+			IHandleFactory resizableHF = ResizableHandle3DFactory.INSTANCE;
+			IHandleFactory moveHF = MoveHandle3DFactory.INSTANCE;
 
-            List<Handle> list = new ArrayList<Handle>();
-            GraphicalEditPart host = (GraphicalEditPart) getHost();
+			int directions = getResizeDirections();
 
-            if (directions == 0)
-                nonResizableHF.addHandles(host, list);
-            else if (directions != -1) {
-                moveHF.addHandles(host, list);
-                if ((directions & EAST) != 0)
-                    resizableHF.addHandle(host, list, EAST);
-                else
-                    nonResizableHF.addHandle(host, list, EAST);
-                if ((directions & SOUTH_EAST) == SOUTH_EAST)
-                    resizableHF.addHandle(host, list, SOUTH_EAST);
-                else
-                    nonResizableHF.addHandle(host, list, SOUTH_EAST);
-                if ((directions & SOUTH) != 0)
-                    resizableHF.addHandle(host, list, SOUTH);
-                else
-                    nonResizableHF.addHandle(host, list, SOUTH);
-                if ((directions & SOUTH_WEST) == SOUTH_WEST)
-                    resizableHF.addHandle(host, list, SOUTH_WEST);
-                else
-                    nonResizableHF.addHandle(host, list, SOUTH_WEST);
-                if ((directions & WEST) != 0)
-                    resizableHF.addHandle(host, list, WEST);
-                else
-                    nonResizableHF.addHandle(host, list, WEST);
-                if ((directions & NORTH_WEST) == NORTH_WEST)
-                    resizableHF.addHandle(host, list, NORTH_WEST);
-                else
-                    nonResizableHF.addHandle(host, list, NORTH_WEST);
-                if ((directions & NORTH) != 0)
-                    resizableHF.addHandle(host, list, NORTH);
-                else
-                    nonResizableHF.addHandle(host, list, NORTH);
-                if ((directions & NORTH_EAST) == NORTH_EAST)
-                    resizableHF.addHandle(host, list, NORTH_EAST);
-                else
-                    nonResizableHF.addHandle(host, list, NORTH_EAST);
-            } else
-                resizableHF.addHandles(host, list);
+			List<Handle> list = new ArrayList<Handle>();
+			GraphicalEditPart host = (GraphicalEditPart) getHost();
 
-            return list;
-        }
-    }
+			if (directions == 0)
+				nonResizableHF.addHandles(host, list);
+			else if (directions != -1) {
+				moveHF.addHandles(host, list);
+				if ((directions & EAST) != 0)
+					resizableHF.addHandle(host, list, EAST);
+				else
+					nonResizableHF.addHandle(host, list, EAST);
+				if ((directions & SOUTH_EAST) == SOUTH_EAST)
+					resizableHF.addHandle(host, list, SOUTH_EAST);
+				else
+					nonResizableHF.addHandle(host, list, SOUTH_EAST);
+				if ((directions & SOUTH) != 0)
+					resizableHF.addHandle(host, list, SOUTH);
+				else
+					nonResizableHF.addHandle(host, list, SOUTH);
+				if ((directions & SOUTH_WEST) == SOUTH_WEST)
+					resizableHF.addHandle(host, list, SOUTH_WEST);
+				else
+					nonResizableHF.addHandle(host, list, SOUTH_WEST);
+				if ((directions & WEST) != 0)
+					resizableHF.addHandle(host, list, WEST);
+				else
+					nonResizableHF.addHandle(host, list, WEST);
+				if ((directions & NORTH_WEST) == NORTH_WEST)
+					resizableHF.addHandle(host, list, NORTH_WEST);
+				else
+					nonResizableHF.addHandle(host, list, NORTH_WEST);
+				if ((directions & NORTH) != 0)
+					resizableHF.addHandle(host, list, NORTH);
+				else
+					nonResizableHF.addHandle(host, list, NORTH);
+				if ((directions & NORTH_EAST) == NORTH_EAST)
+					resizableHF.addHandle(host, list, NORTH_EAST);
+				else
+					nonResizableHF.addHandle(host, list, NORTH_EAST);
+			} else
+				resizableHF.addHandles(host, list);
 
-    /**
-     * Returns the bounds of the host's figure to be used to calculate the
-     * initial location of the feedback.Uses handle bounds if available.
-     * <p>
-     * Here, the returned bound may be modified since they are a copy.
-     * <p>
-     * Copied and modified for 3D from
-     * {@link NonResizableEditPolicy#getInitialFeedbackBounds()}.
-     * </p>
-     * 
-     * @return the host figure's bounding Rectangle
-     */
-    protected BoundingBox getInitialFeedbackBounds3D() {
+			return list;
+		}
+	}
 
-        GraphicalEditPart graphicalEditPart = (GraphicalEditPart) getHost();
-        IFigure ref = graphicalEditPart.getFigure();
+	/**
+	 * Returns the current feedback helper. If no feedback helper is set, a new
+	 * one will be created. Also,
+	 * {@link FeedbackHelper3D#setHostFigure(IFigure)} will be called with the
+	 * current host figure as the parameter.
+	 * 
+	 * @return the feedback helper
+	 */
+	protected FeedbackHelper3D getFeedbackHelper() {
 
-        BoundingBox bounds3D = new BoundingBoxImpl();
-        if (ref instanceof IFigure3D) {
-            IFigure3D ref3D = (IFigure3D) ref;
+		if (m_helper == null)
+			m_helper = createFeedbackHelper();
 
-            if (ref3D instanceof HandleBounds3D) {
-                HandleBounds3D handleBounds = (HandleBounds3D) ref3D;
-                bounds3D.set(handleBounds.getHandleBounds3D());
-            } else {
-                bounds3D.set(ref3D.getBounds3D());
-            }
-        } else {
-            // do not call super method here, since this method may be
-            // overridden causing infinite calls or inconsistent behavior
-            // with 3D version
+		m_helper.setHostFigure(getHostFigure());
+		return m_helper;
+	}
 
-            Rectangle rect;
-            if (ref instanceof HandleBounds) {
-                HandleBounds handleBounds = (HandleBounds) ref;
-                rect = handleBounds.getHandleBounds();
-            } else {
-                rect = ref.getBounds();
-            }
+	/**
+	 * Shows or updates feedback for a change bounds request.
+	 * <p>
+	 * Copied and modified for 3D from
+	 * {@link NonResizableEditPolicy#showChangeBoundsFeedback(ChangeBoundsRequest)}
+	 * .
+	 * </p>
+	 * 
+	 * @param request the request
+	 */
+	@Override
+	protected void showChangeBoundsFeedback(ChangeBoundsRequest request) {
 
-            ref.translateToAbsolute(rect);
-
-            bounds3D.set(Figure3DHelper.convertBoundsToBounds3D(ref, rect, 1));
-            bounds3D.translate(0, 0, -1);
-        }
-
-        bounds3D.expand(0.01f);
-        return bounds3D;
-    }
-
-    /**
-     * Shows or updates feedback for a change bounds request.
-     * <p>
-     * Copied and modified for 3D from
-     * {@link NonResizableEditPolicy#showChangeBoundsFeedback(ChangeBoundsRequest)}
-     * .
-     * </p>
-     * 
-     * @param request
-     *            the request
-     */
-    @Override
-    protected void showChangeBoundsFeedback(ChangeBoundsRequest request) {
-
-        // if (log.isLoggable(Level.INFO)) {
-        // log.info("showChangeBoundsFeedback"); //$NON-NLS-1$
-        // }
-
-        // GEF: IFigure feedback = getDragSourceFeedbackFigure();
-        IFigure feedback = getDragSourceFeedbackFigure();
-        if (!(feedback instanceof IFigure3D)) {
-            super.showChangeBoundsFeedback(request);
-        } else {
-            IFigure figure = getHostFigure();
-            IFigure3D feedback3D = (IFigure3D) feedback;
-
-            IFigure3D host3D = Figure3DHelper.getAncestor3D(figure.getParent());
-            ISurface surface = host3D.getSurface();
-
-            FeedbackHelper3D.update(feedback3D, surface, figure,
-                request.getMoveDelta(), request.getSizeDelta());
-        }
-    }
+		IFigure feedback = getDragSourceFeedbackFigure();
+		if (!(feedback instanceof IFigure3D))
+			super.showChangeBoundsFeedback(request);
+		else
+			getFeedbackHelper().update((IFigure3D) feedback,
+				request.getMoveDelta(), request.getSizeDelta());
+	}
 }

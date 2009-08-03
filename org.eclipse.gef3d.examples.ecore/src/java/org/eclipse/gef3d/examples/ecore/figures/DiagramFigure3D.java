@@ -18,6 +18,7 @@ import org.eclipse.draw3d.TransparentObject;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 
@@ -33,13 +34,24 @@ public class DiagramFigure3D extends Figure3D implements TransparentObject {
 
 	private static final Vector3f TMP_V3 = new Vector3fImpl();
 
-	private Shape m_shape = new CuboidFigureShape(this);
-
 	protected int headerStyle;
+
+	private Shape m_shape = new CuboidFigureShape(this);
 
 	public DiagramFigure3D() {
 
 		setLayoutManager(new FreeformLayout());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		return m_shape.getDistance(i_query, getPosition3D());
 	}
 
 	/**
@@ -74,8 +86,6 @@ public class DiagramFigure3D extends Figure3D implements TransparentObject {
 	public void render(RenderContext renderContext) {
 		renderContext.addTransparentObject(this);
 	}
-
-
 
 	/**
 	 * {@inheritDoc}

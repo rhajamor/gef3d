@@ -36,7 +36,6 @@ import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
-import org.eclipse.draw3d.picking.Hit;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Color;
@@ -288,40 +287,29 @@ public class Figure3DHelper {
 	}
 
 	/**
-	 * Finds the figure at the given mouse coordinates, while excluding figures
-	 * in the given tree search structure. The search is delegated to the
-	 * frontmost surface at the given mouse coordinates.
+	 * Finds the figure at the given surface coordinates, while excluding
+	 * figures in the given tree search structure. The search is delegated to
+	 * the surface of this figure, if any.
 	 * 
-	 * @param i_mx the mouse X coordinate
-	 * @param i_my the mouse Y coordinate
+	 * @param i_sx the surface X coordinate
+	 * @param i_sy the surface Y coordinate
 	 * @param i_search the tree search structure
 	 * @return the figure at the given coordinates or <code>null</code> if there
 	 *         is no figure at the given coordinates
 	 */
-	public IFigure findFigureAt(int i_mx, int i_my, TreeSearch i_search) {
+	public IFigure findFigureAt(int i_sx, int i_sy, TreeSearch i_search) {
 
-		Vector3f wLocation = Draw3DCache.getVector3f();
-		Point sLocation = Draw3DCache.getPoint();
-		try {
-			Picker picker = getPicker();
-			Hit hit = picker.getHit(i_mx, i_my, i_search);
+		IFigure3D figure = m_figuresFriend.figure;
+		ISurface surface = figure.getSurface();
 
-			if (hit == null)
-				return null;
+		if (surface != null)
+			return surface.findFigureAt(i_sx, i_sy, i_search);
 
-			IFigure3D figure = hit.getFigure();
-			ISurface surface = figure.getSurface();
-			if (surface == null)
-				return figure;
+		if (i_search == null
+			|| (!i_search.prune(figure) && i_search.accept(figure)))
+			return figure;
 
-			hit.getWorldLocation(wLocation);
-			surface.getSurfaceLocation2D(wLocation, sLocation);
-
-			return surface.findFigureAt(sLocation.x, sLocation.y, i_search);
-		} finally {
-			Draw3DCache.returnVector3f(wLocation);
-			Draw3DCache.returnPoint(sLocation);
-		}
+		return null;
 	}
 
 	/**

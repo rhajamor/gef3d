@@ -21,6 +21,7 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
 import org.eclipse.draw3d.geometryext.SyncHost3D;
+import org.eclipse.draw3d.picking.Pickable;
 
 /**
  * 3D extension of GEF's IFigure interface.
@@ -29,7 +30,8 @@ import org.eclipse.draw3d.geometryext.SyncHost3D;
  * @version $Revision$
  * @since 24.10.2007
  */
-public interface IFigure3D extends IFigure, IFigure2DHost3D, Renderable,
+public interface IFigure3D extends IFigure, Pickable, IFigure2DHost3D,
+		Renderable,
 		SyncHost3D {
 
 	/**
