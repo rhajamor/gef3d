@@ -14,8 +14,8 @@ package org.eclipse.draw3d;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw3d.picking.ColorPicker;
-import org.eclipse.swt.opengl.GLCanvas;
+import org.eclipse.draw3d.picking.GeometryPicker;
+import org.eclipse.draw3d.picking.Picker;
 
 /**
  * Does the actual picking for 3D figures by using a color picker, see
@@ -27,78 +27,63 @@ import org.eclipse.swt.opengl.GLCanvas;
  */
 public class PickingUpdateManager3D extends DeferredUpdateManager3D {
 
-    @SuppressWarnings("unused")
-    private static final Logger log = Logger.getLogger(PickingUpdateManager3D.class.getName());
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(PickingUpdateManager3D.class.getName());
 
-    private ColorPicker m_picker = new ColorPicker();
+	private GeometryPicker m_picker;
 
-    /**
-     * Indicates whether picking is enabled.
-     */
-    boolean pickingEnabled = true;
+	/**
+	 * Creates a new picking update manager for the given scene.
+	 * 
+	 * @param i_scene the scene
+	 * @throws NullPointerException if the given scene is <code>null</code>
+	 */
+	public PickingUpdateManager3D(IScene i_scene) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw2d.UpdateManager#dispose()
-     */
-    @Override
-    public void dispose() {
+		if (i_scene == null)
+			throw new NullPointerException("i_scene must not be null");
 
-        if (m_picker != null)
-            m_picker.dispose();
-        super.dispose();
-    }
+		m_picker = new GeometryPicker(i_scene);
+	}
 
-    /**
-     * Returns the picker.
-     * 
-     * @return the picker
-     */
-    public ColorPicker getPicker() {
+	/**
+	 * Indicates whether picking is enabled.
+	 */
+	boolean pickingEnabled = true;
 
-        return m_picker;
-    }
+	/**
+	 * Returns the picker.
+	 * 
+	 * @return the picker
+	 */
+	public Picker getPicker() {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.DeferredUpdateManager3D#repairDamage()
-     */
-    @Override
-    protected void repairDamage() {
+		return m_picker;
+	}
 
-        pickingEnabled = false;
-        super.repairDamage();
-        pickingEnabled = true;
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.DeferredUpdateManager3D#repairDamage()
+	 */
+	@Override
+	protected void repairDamage() {
 
-        // TODO: this leads to the picking buffer being re-rendered when a
-        // feedback figure is moved, which is unneccessary
-        if (m_picker != null)
-            m_picker.invalidate();
-    }
+		pickingEnabled = false;
+		super.repairDamage();
+		pickingEnabled = true;
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.DeferredUpdateManager3D#setCanvas(org.eclipse.swt.opengl.GLCanvas)
-     */
-    @Override
-    public void setCanvas(GLCanvas i_canvas) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.DeferredUpdateManager3D#setRoot(org.eclipse.draw2d.IFigure)
+	 */
+	@Override
+	public void setRoot(IFigure i_figure) {
 
-        super.setCanvas(i_canvas);
-        m_picker.setCanvas(i_canvas);
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.DeferredUpdateManager3D#setRoot(org.eclipse.draw2d.IFigure)
-     */
-    @Override
-    public void setRoot(IFigure i_figure) {
-
-        super.setRoot(i_figure);
-        m_picker.setRootFigure(Figure3DHelper.getAncestor3D(i_figure));
-    }
+		super.setRoot(i_figure);
+		m_picker.setRootFigure(Figure3DHelper.getAncestor3D(i_figure));
+	}
 }

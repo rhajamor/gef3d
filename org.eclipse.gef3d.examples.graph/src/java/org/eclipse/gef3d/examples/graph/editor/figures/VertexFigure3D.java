@@ -19,6 +19,7 @@ import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.SurfaceLayout;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.SWT;
@@ -71,11 +72,23 @@ public class VertexFigure3D extends Figure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		return m_shape.getDistance(i_query, getPosition3D());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void render(RenderContext renderContext) {
-		m_shape.render(renderContext);
+	public void render(RenderContext i_renderContext) {
+
+		m_shape.render(i_renderContext);
 	}
 
 	// public static int loadImage(String path, int mag_filter, int min_filter)

@@ -13,11 +13,9 @@ package org.eclipse.gef3d.tools;
 
 import java.util.logging.Logger;
 
-import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.ui.camera.CameraInputHandler;
 import org.eclipse.draw3d.ui.preferences.CameraPreferenceDistributor;
 import org.eclipse.gef.EditPartViewer;
-import org.eclipse.gef3d.ui.parts.GraphicalViewer3D;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.events.KeyEvent;
@@ -93,24 +91,6 @@ public class CameraTool extends AbstractTool3D {
     protected String getCommandName() {
 
         return "Camera Tool";
-    }
-
-    /**
-     * Returns the scene which contains the camera.
-     * 
-     * @return the scene
-     * 
-     * @throws AssertionError
-     *             if no scene is available
-     */
-    protected IScene getScene() {
-
-        EditPartViewer viewer = getCurrentViewer();
-        if (!(viewer instanceof GraphicalViewer3D))
-            throw new AssertionError(
-                "camera tool can only be used with a 3D graphical viewer");
-
-        return ((GraphicalViewer3D) viewer).getLightweightSystem3D();
     }
 
     private int getStateMask(Input i_input) {

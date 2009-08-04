@@ -15,6 +15,7 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.ConeFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 
@@ -27,76 +28,86 @@ import org.eclipse.draw3d.shapes.Shape;
  */
 public class ShapeDecoration extends Figure3D implements RotatableDecoration3D {
 
-    private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
+	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
 
-    private static final IVector3f Z_AXIS_NEG = new Vector3fImpl(0, 0, -1);
+	private static final IVector3f Z_AXIS_NEG = new Vector3fImpl(0, 0, -1);
 
-    private Vector3fImpl m_lastReference = new Vector3fImpl(0, 0, 0);
+	private Vector3fImpl m_lastReference = new Vector3fImpl(0, 0, 0);
 
-    /**
-     * The shape that represents this decoration visually.
-     */
-    protected Shape m_shape = new ConeFigureShape(this);
+	/**
+	 * The shape that represents this decoration visually.
+	 */
+	protected Shape m_shape = new ConeFigureShape(this);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.Figure3D#render()
-     */
-    @Override
-    public void render(RenderContext renderContext) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
 
-        m_shape.render(renderContext);
-    }
+		return m_shape.getDistance(i_query, getPosition3D());
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw2d.RotatableDecoration#setReferencePoint(org.eclipse.draw2d.geometry.Point)
-     */
-    public void setReferencePoint(Point i_p) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#render()
+	 */
+	@Override
+	public void render(RenderContext renderContext) {
 
-        throw new UnsupportedOperationException("reference point must be 3D");
-    }
+		m_shape.render(renderContext);
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.RotatableDecoration3D#setReferencePoint3D(org.eclipse.draw3d.geometry.Vector3f)
-     */
-    public void setReferencePoint3D(IVector3f i_reference) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.RotatableDecoration#setReferencePoint(org.eclipse.draw2d.geometry.Point)
+	 */
+	public void setReferencePoint(Point i_p) {
 
-        if (i_reference == null) {
-            if (m_lastReference.x == 0 && m_lastReference.y == 0
-                    && m_lastReference.z == 0)
-                return;
+		throw new UnsupportedOperationException("reference point must be 3D");
+	}
 
-            getPosition3D().setRotation3D(m_lastReference);
-        } else {
-            if (i_reference.equals(m_lastReference))
-                return;
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.RotatableDecoration3D#setReferencePoint3D(org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	public void setReferencePoint3D(IVector3f i_reference) {
 
-            TMP_V3.set(getPosition3D().getLocation3D());
-            Math3D.sub(i_reference, TMP_V3, TMP_V3);
-            Math3D.getEulerAngles(Z_AXIS_NEG, TMP_V3, TMP_V3);
+		if (i_reference == null) {
+			if (m_lastReference.x == 0 && m_lastReference.y == 0
+				&& m_lastReference.z == 0)
+				return;
 
-            getPosition3D().setRotation3D(TMP_V3);
-            m_lastReference.set(TMP_V3);
-        }
-    }
+			getPosition3D().setRotation3D(m_lastReference);
+		} else {
+			if (i_reference.equals(m_lastReference))
+				return;
 
-    /**
-     * Sets the shape of this decoration.
-     * 
-     * @param i_shape
-     *            the shape of this decoration
-     */
-    public void setShape(Shape i_shape) {
+			TMP_V3.set(getPosition3D().getLocation3D());
+			Math3D.sub(i_reference, TMP_V3, TMP_V3);
+			Math3D.getEulerAngles(Z_AXIS_NEG, TMP_V3, TMP_V3);
 
-        if (i_shape == null)
-            throw new NullPointerException("i_shape must not be null");
+			getPosition3D().setRotation3D(TMP_V3);
+			m_lastReference.set(TMP_V3);
+		}
+	}
 
-        m_shape = i_shape;
-    }
+	/**
+	 * Sets the shape of this decoration.
+	 * 
+	 * @param i_shape the shape of this decoration
+	 */
+	public void setShape(Shape i_shape) {
+
+		if (i_shape == null)
+			throw new NullPointerException("i_shape must not be null");
+
+		m_shape = i_shape;
+	}
 
 }

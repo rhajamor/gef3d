@@ -78,15 +78,6 @@ Contributors:
             name="%_UI_GraphEditor2D_label">
       </editor>
    </extension>
-   <extension
-         point="org.eclipse.ui.views">
-      <view
-            class="org.eclipse.gef3d.examples.graph.editor.Draw3DViewPart"
-            id="org.eclipse.gef3d.examples.graph.editor.Draw3DViewPart"
-            name="Graph Viewer Demo"
-            restorable="true">
-      </view>
-   </extension>
    
   
    

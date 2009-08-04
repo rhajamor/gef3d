@@ -68,9 +68,11 @@ public abstract class GraphicalEditor3DWithPalette extends
         doAttachFPSCounter(viewer);
         control.addDisposeListener(viewer.getLightweightSystem3D());
 
-        if (viewer instanceof IScene) {
-            doRegisterToScene((IScene) viewer);
-        }
+        doRegisterToScene(viewer.getLightweightSystem3D());
+
+        // trigger the wrapping of the edit domain now that we have a viewer
+        if (getEditDomain() != null)
+            setEditDomain(getEditDomain());
     }
 
     /**

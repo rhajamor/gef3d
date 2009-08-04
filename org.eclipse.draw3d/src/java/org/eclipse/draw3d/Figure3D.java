@@ -26,6 +26,7 @@ import org.eclipse.draw2d.geometry.Translatable;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IHost3D;
 import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DUtil;
@@ -34,6 +35,7 @@ import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.geometryext.SyncedVector3f;
 import org.eclipse.draw3d.geometryext.SynchronizedPosition3DImpl;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.swt.graphics.Font;
 
 /**
@@ -49,8 +51,8 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * Logger for this class
 	 */
-	protected static final Logger log = Logger.getLogger(Figure3D.class
-			.getName());
+	protected static final Logger log =
+		Logger.getLogger(Figure3D.class.getName());
 
 	/**
 	 * The texture needs to be invalidated every time a child is moved so that
@@ -59,6 +61,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	private FigureListener childMovedListener = new FigureListener() {
 
 		public void figureMoved(IFigure i_source) {
+
 			repaint2DComponents = true;
 		}
 	};
@@ -85,6 +88,8 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	protected int m_alpha = 255;
 
+	private IParaxialBoundingBox m_paraxialBounds;
+
 	SynchronizedPosition3DImpl position3D;
 
 	/**
@@ -104,11 +109,6 @@ public class Figure3D extends Figure implements IFigure3D {
 	protected boolean repaint2DComponents = true;
 
 	/**
-	 * The surface of this figure. This is where 2D children are placed.
-	 */
-	protected ISurface surface = new FigureSurface(this);
-
-	/**
 	 * Boolean semaphore used by {@link #syncSize()} and {@link #syncSize3D()}
 	 * to avoid infinite loop.
 	 */
@@ -124,11 +124,13 @@ public class Figure3D extends Figure implements IFigure3D {
 
 			@Override
 			public Font getLocalFont() {
+
 				return Figure3D.this.getLocalFont();
 			}
 
 			@Override
 			public boolean is2DContentDirty() {
+
 				return repaint2DComponents;
 			}
 		};
@@ -155,9 +157,9 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see Figure3DHelper#findFigureAt(int, int, TreeSearch)
 	 */
 	@Override
-	public IFigure findFigureAt(int i_x, int i_y, TreeSearch i_search) {
+	public IFigure findFigureAt(int i_mx, int i_my, TreeSearch i_search) {
 
-		return helper.findFigureAt(i_x, i_y, i_search);
+		return helper.findFigureAt(i_mx, i_my, i_search);
 	}
 
 	/**
@@ -173,6 +175,17 @@ public class Figure3D extends Figure implements IFigure3D {
 	protected void fireFigureMoved() {
 
 		position3D.invalidateMatrices();
+
+		IFigure parent = getParent();
+		while (parent != null) {
+			if (parent instanceof IFigure3D)
+				((IFigure3D) parent).invalidateParaxialBounds();
+
+			parent = parent.getParent();
+		}
+
+		invalidateParaxialBoundsTree();
+
 		super.fireFigureMoved();
 	}
 
@@ -192,6 +205,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see org.eclipse.draw3d.IFigure3D#getAncestor3D()
 	 */
 	public IFigure3D getAncestor3D() {
+
 		return Figure3DHelper.getAncestor3D(getParent());
 	}
 
@@ -206,6 +220,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	@Override
 	public Rectangle getBounds() {
+
 		return super.getBounds();
 	}
 
@@ -219,6 +234,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 *             {@link #getPosition3D()}
 	 */
 	public IBoundingBox getBounds3D() {
+
 		return position3D.getBounds3D();
 	}
 
@@ -248,6 +264,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see org.eclipse.draw3d.IFigure2DHost3D#getConnectionLayer(org.eclipse.draw3d.ConnectionLayerFactory)
 	 */
 	public ConnectionLayer getConnectionLayer(ConnectionLayerFactory i_clfactory) {
+
 		if (connectionLayer == null && i_clfactory != null) {
 			connectionLayer = i_clfactory.createConnectionLayer(this);
 			// add(connectionLayer); // or else it doesn't have an update
@@ -262,7 +279,18 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see org.eclipse.draw3d.IFigure3D#getSuccessor3D()
 	 */
 	public List<IFigure3D> getDescendants3D() {
+
 		return helper.getDescendants3D();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	public float getDistance(Query i_query) {
+
+		return Float.NaN;
 	}
 
 	/**
@@ -273,6 +301,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 *             getPosition3D().getLocation3D()}
 	 */
 	public IVector3f getLocation3D() {
+
 		return position3D.getLocation3D();
 	}
 
@@ -284,6 +313,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 *             getPosition3D().getLocationMatrix()}
 	 */
 	public IMatrix4f getLocationMatrix() {
+
 		return position3D.getLocationMatrix();
 	}
 
@@ -295,6 +325,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 *             getPosition3D().getMatrixState()}
 	 */
 	public MatrixState getMatrixState() {
+
 		return position3D.getMatrixState();
 	}
 
@@ -306,7 +337,22 @@ public class Figure3D extends Figure implements IFigure3D {
 	 *             getPosition3D().getModelMatrix()}
 	 */
 	public IMatrix4f getModelMatrix() {
+
 		return position3D.getModelMatrix();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#getParaxialBoundingBox()
+	 */
+	@SuppressWarnings("unchecked")
+	public IParaxialBoundingBox getParaxialBoundingBox() {
+
+		if (m_paraxialBounds == null)
+			m_paraxialBounds = helper.getParaxialBoundingBox();
+
+		return m_paraxialBounds;
 	}
 
 	/**
@@ -315,6 +361,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see org.eclipse.draw3d.geometry.IHost3D#getParentHost3D()
 	 */
 	public IHost3D getParentHost3D() {
+
 		return getAncestor3D();
 	}
 
@@ -324,6 +371,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see org.eclipse.draw3d.geometry.IHost3D#getPosition3D()
 	 */
 	public Position3D getPosition3D() {
+
 		return position3D;
 	}
 
@@ -339,6 +387,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see org.eclipse.draw3d.IFigure3D#getPreferredSize3D()
 	 */
 	public IVector3f getPreferredSize3D() {
+
 		if (preferredSize3D == null) {
 			preferredSize3D = new SyncedVector3f();
 		}
@@ -351,6 +400,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see org.eclipse.draw3d.IFigure3D#getRenderContext()
 	 */
 	public RenderContext getRenderContext() {
+
 		return getAncestor3D().getRenderContext();
 	}
 
@@ -362,7 +412,18 @@ public class Figure3D extends Figure implements IFigure3D {
 	 *             getPosition3D().getRotation3D()}
 	 */
 	public IVector3f getRotation3D() {
+
 		return position3D.getRotation3D();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#getScene()
+	 */
+	public IScene getScene() {
+
+		return Figure3DHelper.getAncestor3D(getParent()).getScene();
 	}
 
 	/**
@@ -373,6 +434,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 *             getPosition3D().getSize3D()}
 	 */
 	public IVector3f getSize3D() {
+
 		return position3D.getSize3D();
 	}
 
@@ -383,7 +445,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	public ISurface getSurface() {
 
-		return surface;
+		return null;
 	}
 
 	/**
@@ -399,6 +461,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	@Override
 	public boolean intersects(Rectangle i_rect) {
+
 		return true;
 	}
 
@@ -412,8 +475,29 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	@Override
 	public void invalidate() {
+
 		position3D.invalidateMatrices();
 		super.invalidate();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#invalidateParaxialBounds()
+	 */
+	public void invalidateParaxialBounds() {
+
+		m_paraxialBounds = null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IFigure3D#invalidateParaxialBoundsTree()
+	 */
+	public void invalidateParaxialBoundsTree() {
+
+		helper.invalidateParaxialBoundsTree();
 	}
 
 	/**
@@ -426,6 +510,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	@Override
 	public void invalidateTree() {
+
 		repaint2DComponents = true;
 		super.invalidateTree();
 	}
@@ -469,10 +554,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	protected void paintChildren(Graphics i_graphics) {
 
 		helper.paintChildren(i_graphics);
-
-		RenderContext renderContext = getRenderContext();
-		if (renderContext.getMode().isPaint())
-			repaint2DComponents = false;
+		repaint2DComponents = false;
 	}
 
 	/**
@@ -498,19 +580,19 @@ public class Figure3D extends Figure implements IFigure3D {
 
 		if (i_hint.contains(PositionHint.SIZE)) { // from old setSize3D method
 			if (!(delta.getX() == 0 && delta.getY() == 0)
-					&& (delta.getZ() != 0)) {
+				&& (delta.getZ() != 0)) {
 				invalidate();
 				bFigureMoved = true;
 			}
 		}
-		
+
 		if (i_hint.contains(PositionHint.ROTATION)) { // from old setRotation3D
 			bFigureMoved = true;
 		}
-		
+
 		if (i_hint.contains(PositionHint.LOCATION)) { // from old setLocation3D
 			if (!(delta.getX() == 0 && delta.getY() == 0)
-					&& (delta.getZ() != 0)) {
+				&& (delta.getZ() != 0)) {
 				bFigureMoved = true;
 			}
 		}
@@ -536,9 +618,8 @@ public class Figure3D extends Figure implements IFigure3D {
 	public void remove(IFigure i_figure) {
 
 		super.remove(i_figure);
-		if (!(i_figure instanceof IFigure3D)) {
+		if (!(i_figure instanceof IFigure3D))
 			i_figure.removeFigureListener(childMovedListener);
-		}
 	}
 
 	/**
@@ -558,6 +639,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	@Override
 	public void revalidate() {
+
 		super.revalidate();
 		helper.revalidate();
 	}
@@ -578,6 +660,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 *             getPosition3D().setLocation3D(point3D)}
 	 */
 	public void setLocation3D(IVector3f i_point) {
+
 		position3D.setLocation3D(i_point);
 	}
 
@@ -588,26 +671,26 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * created before
 	 * </p>
 	 * 
-	 * @param i_preferredSize3D
-	 *            new preferred size, must not be null and all values must not
-	 *            be less 0
+	 * @param i_preferredSize3D new preferred size, must not be null and all
+	 *            values must not be less 0
 	 * @see org.eclipse.draw3d.IFigure3D#setPreferredSize3D(org.eclipse.draw3d.geometry.IVector3f)
 	 */
 	public void setPreferredSize3D(IVector3f i_preferredSize3D) {
+
 		if (i_preferredSize3D == null) // parameter precondition
 			throw new NullPointerException("i_preferredSize3D must not be null");
 		if (i_preferredSize3D.getX() < 0 || i_preferredSize3D.getY() < 0
-				|| i_preferredSize3D.getZ() < 0) // parameter
+			|| i_preferredSize3D.getZ() < 0) // parameter
 			// precondition
 			throw new IllegalArgumentException(
-					"no value of given vector must be less 0, , was "
-							+ i_preferredSize3D);
+				"no value of given vector must be less 0, , was "
+					+ i_preferredSize3D);
 
 		if (preferredSize3D == null) {
 			preferredSize3D = new SyncedVector3f();
 		}
-		Dimension size = preferredSize3D
-				.setVector3fAsDimension(i_preferredSize3D);
+		Dimension size =
+			preferredSize3D.setVector3fAsDimension(i_preferredSize3D);
 		setPreferredSize(size);
 
 	}
@@ -620,19 +703,20 @@ public class Figure3D extends Figure implements IFigure3D {
 	 *             getPosition3D().setRotation3D(rotation)}
 	 */
 	public void setRotation3D(IVector3f i_rotation) {
+
 		position3D.setRotation3D(i_rotation);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @param i_size
-	 *            new size, must not be null, no value must be less 0
+	 * @param i_size new size, must not be null, no value must be less 0
 	 * @see org.eclipse.draw3d.IFigure3D#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
 	 * @deprecated use {@link Position3D#setSize3D(IVector3f)
 	 *             getPosition3D().setSize3D(size)}
 	 */
 	public void setSize3D(IVector3f i_size) {
+
 		position3D.setSize3D(i_size);
 	}
 
@@ -643,14 +727,15 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	@Override
 	public String toString() {
+
 		StringBuffer strb = new StringBuffer();
 		strb.append(this.getClass().getName()).append(" at (");
 		strb.append(getLocation3D().getX()).append(",").append(
-				getLocation3D().getY()).append(",").append(
-				getLocation3D().getZ()).append(")");
+			getLocation3D().getY()).append(",").append(getLocation3D().getZ())
+			.append(")");
 		strb.append(", size (");
 		strb.append(getSize3D().getX()).append(",").append(getSize3D().getY())
-				.append(",").append(getSize3D().getZ()).append(")");
+			.append(",").append(getSize3D().getZ()).append(")");
 		return strb.toString();
 	}
 
@@ -660,6 +745,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see org.eclipse.draw3d.IFigure3D#transformFromParent(org.eclipse.draw3d.geometry.Transformable)
 	 */
 	public void transformFromParent(Transformable i_transformable) {
+
 		Position3DUtil.transformFromParent(position3D, i_transformable);
 	}
 
@@ -669,6 +755,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see org.eclipse.draw3d.IFigure3D#transformToAbsolute(org.eclipse.draw3d.geometry.Transformable)
 	 */
 	public void transformToAbsolute(Transformable io_transformable) {
+
 		Position3DUtil.transformToAbsolute(position3D, io_transformable);
 	}
 
@@ -678,6 +765,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see org.eclipse.draw3d.IFigure3D#transformToParent(org.eclipse.draw3d.geometry.Transformable)
 	 */
 	public void transformToParent(Transformable io_transformable) {
+
 		Position3DUtil.transformToParent(position3D, io_transformable);
 	}
 
@@ -687,6 +775,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * @see org.eclipse.draw3d.IFigure3D#transformToRelative(org.eclipse.draw3d.geometry.Transformable)
 	 */
 	public void transformToRelative(Transformable io_transformable) {
+
 		Position3DUtil.transformToRelative(position3D, io_transformable);
 	}
 
@@ -732,6 +821,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	@Override
 	public void validate() {
+
 		super.validate();
 		repaint2DComponents = true;
 	}

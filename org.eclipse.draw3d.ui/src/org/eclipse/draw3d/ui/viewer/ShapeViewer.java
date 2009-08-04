@@ -14,6 +14,7 @@ import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.Cylinder;
 import org.eclipse.draw3d.shapes.Sphere;
 import org.eclipse.swt.SWT;
@@ -46,6 +47,17 @@ public class ShapeViewer extends Draw3DViewer {
 			/**
 			 * {@inheritDoc}
 			 * 
+			 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+			 */
+			@Override
+			public float getDistance(Query i_query) {
+
+				return m_sphere.getDistance(i_query, getPosition3D());
+			}
+
+			/**
+			 * {@inheritDoc}
+			 * 
 			 * @see org.eclipse.draw3d.Figure3D#render(org.eclipse.draw3d.RenderContext)
 			 */
 			@Override
@@ -59,12 +71,9 @@ public class ShapeViewer extends Draw3DViewer {
 				 * m_cylinder.setOutlineColor(getForegroundColor(), 127);
 				 * m_cylinder.setFillColor(getBackgroundColor(), 127);
 				 * m_cylinder.setPosition(getPosition3D());
-				 * 
 				 * m_cylinder.setOutline(true); m_cylinder.setFill(true);
-				 * 
 				 * m_cylinder.setRadiusProportions(0);
 				 * m_cylinder.setSegments(30);
-				 * 
 				 * m_cylinder.render(i_renderContext);
 				 */
 			}

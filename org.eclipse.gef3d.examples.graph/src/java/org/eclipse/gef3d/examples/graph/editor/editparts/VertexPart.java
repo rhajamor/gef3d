@@ -22,12 +22,11 @@ import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.NodeEditPart;
 import org.eclipse.gef.Request;
 import org.eclipse.gef3d.editparts.AbstractGraphicalNodeEditPart;
+import org.eclipse.gef3d.editpolicies.ShowSourceFeedback3DEditPolicy;
 import org.eclipse.gef3d.examples.graph.editor.editpolicies.VertexEditPolicy;
 import org.eclipse.gef3d.examples.graph.model.Vertex;
 import org.eclipse.gef3d.factories.IConnectionAnchorFactory;
 import org.eclipse.gef3d.factories.SingleAnchorConnectionAnchorFactory;
-import org.eclipse.gef3d.tools.DragEditPartsTracker3D;
-
 
 /**
  * VertexPart manges vertices. This part can be using in 2D, 2.5D, and 3D mode.
@@ -35,47 +34,15 @@ import org.eclipse.gef3d.tools.DragEditPartsTracker3D;
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since 22.11.2007
- * 
  */
 public class VertexPart extends AbstractGraphicalNodeEditPart implements
 		PropertyChangeListener, NodeEditPart {
-    
-    /** 
-     * {@inheritDoc}
-     * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getDragTracker(org.eclipse.gef.Request)
-     */
-    @Override
-    public DragTracker getDragTracker(Request i_request) {
-    
-        return new DragEditPartsTracker3D(this);
-    }
-    
+
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger.getLogger(VertexPart.class
-			.getName());
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef.editparts.AbstractEditPart#createEditPolicies()
-	 */
-	@Override
-	protected void createEditPolicies() {
-		installEditPolicy(EditPolicy.NODE_ROLE, new VertexEditPolicy());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef3d.editparts.AbstractGraphicalNodeEditPart#createConnectionAnchorFactory()
-	 */
-	@Override
-	protected IConnectionAnchorFactory createConnectionAnchorFactory() {
-		return new SingleAnchorConnectionAnchorFactory.ChopboxAnchor3DFactory(
-				this);
-	}
+	private static final Logger log =
+		Logger.getLogger(VertexPart.class.getName());
 
 	/**
 	 * {@inheritDoc}
@@ -93,6 +60,29 @@ public class VertexPart extends AbstractGraphicalNodeEditPart implements
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.gef3d.editparts.AbstractGraphicalNodeEditPart#createConnectionAnchorFactory()
+	 */
+	@Override
+	protected IConnectionAnchorFactory createConnectionAnchorFactory() {
+		return new SingleAnchorConnectionAnchorFactory.ChopboxAnchor3DFactory(
+			this);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.editparts.AbstractEditPart#createEditPolicies()
+	 */
+	@Override
+	protected void createEditPolicies() {
+		installEditPolicy(ShowSourceFeedback3DEditPolicy.ROLE,
+			new ShowSourceFeedback3DEditPolicy());
+		installEditPolicy(EditPolicy.NODE_ROLE, new VertexEditPolicy());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#deactivate()
 	 */
 	@Override
@@ -104,20 +94,13 @@ public class VertexPart extends AbstractGraphicalNodeEditPart implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getDragTracker(org.eclipse.gef.Request)
 	 */
-	public void propertyChange(PropertyChangeEvent i_Event) {
-		String strPropertyName = i_Event.getPropertyName();
-		if (Vertex.PROPERTY_X.equals(strPropertyName)
-				|| Vertex.PROPERTY_Y.equals(strPropertyName)
-				|| Vertex.PROPERTY_HEIGHT.equals(strPropertyName)
-				|| Vertex.PROPERTY_WIDTH.equals(strPropertyName)) {
-			refreshVisuals();
-		} else if (Vertex.PROPERTY_SOURCES.equals(strPropertyName)) {
-			refreshSourceConnections();
-		} else if (Vertex.PROPERTY_DESTS.equals(strPropertyName)) {
-			refreshTargetConnections();
-		}
+	@Override
+	public DragTracker getDragTracker(Request i_request) {
+
+		return super.getDragTracker(i_request);
+		// return new DragEditPartsTracker3D(this);
 	}
 
 	/**
@@ -143,6 +126,25 @@ public class VertexPart extends AbstractGraphicalNodeEditPart implements
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+	 */
+	public void propertyChange(PropertyChangeEvent i_Event) {
+		String strPropertyName = i_Event.getPropertyName();
+		if (Vertex.PROPERTY_X.equals(strPropertyName)
+			|| Vertex.PROPERTY_Y.equals(strPropertyName)
+			|| Vertex.PROPERTY_HEIGHT.equals(strPropertyName)
+			|| Vertex.PROPERTY_WIDTH.equals(strPropertyName)) {
+			refreshVisuals();
+		} else if (Vertex.PROPERTY_SOURCES.equals(strPropertyName)) {
+			refreshSourceConnections();
+		} else if (Vertex.PROPERTY_DESTS.equals(strPropertyName)) {
+			refreshTargetConnections();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.gef.editparts.AbstractEditPart#refreshVisuals()
 	 */
 	@Override
@@ -153,19 +155,11 @@ public class VertexPart extends AbstractGraphicalNodeEditPart implements
 		fig.setLocation(p);
 		fig.setSize(Math.round(v.getWidth()), Math.round(v.getHeight()));
 
-//		if (log.isLoggable(Level.INFO)) {
-//			log.info("Updating figure for model " + v); //$NON-NLS-1$
-//		}
-		
-		
-		
+		// if (log.isLoggable(Level.INFO)) {
+		//			log.info("Updating figure for model " + v); //$NON-NLS-1$
+		// }
+
 		super.refreshVisuals();
-		
-		
-		
-		
-		
-		
 
 		/*
 		 * if (mode == Mode.GEFOGL) { IFigure3D fig = ( IFigure3D) getFigure();

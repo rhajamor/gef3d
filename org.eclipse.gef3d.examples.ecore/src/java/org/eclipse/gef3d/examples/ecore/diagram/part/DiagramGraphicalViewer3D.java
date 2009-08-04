@@ -11,27 +11,30 @@
 package org.eclipse.gef3d.examples.ecore.diagram.part;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.draw2d.ExclusionSearch;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LightweightSystem;
+import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.UpdateManager;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.Draw3DCanvas;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.LightweightSystem3D;
-import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.picking.Hit;
+import org.eclipse.draw3d.picking.Picker;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.Handle;
 import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.editparts.LayerManager;
-import org.eclipse.gef3d.handles.FeedbackFigure3D;
 import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.opengl.GLCanvas;
@@ -51,159 +54,222 @@ import org.eclipse.swt.widgets.Control;
  */
 public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer {
 
-    /**
-     * Creates a new GL canvas, sets it as this viewer's control and returns it.
-     * 
-     * @param i_composite
-     *            the parent composite
-     * @return the GL canvas
-     */
-    public Control createControl3D(Composite i_composite) {
+	/**
+	 * Creates a new GL canvas, sets it as this viewer's control and returns it.
+	 * 
+	 * @param i_composite the parent composite
+	 * @return the GL canvas
+	 */
+	public Control createControl3D(Composite i_composite) {
 
-        GLCanvas canvas = Draw3DCanvas.createCanvas(i_composite, SWT.NONE,
-            getLightweightSystem3D());
+		GLCanvas canvas =
+			Draw3DCanvas.createCanvas(i_composite, SWT.NONE,
+				getLightweightSystem3D());
 
-        setControl(canvas);
-        return getControl();
-    }
+		setControl(canvas);
+		return getControl();
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer#createLightweightSystem()
-     */
-    @Override
-    protected LightweightSystem createLightweightSystem() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer#createLightweightSystem()
+	 */
+	@Override
+	protected LightweightSystem createLightweightSystem() {
 
-        LightweightSystem3D lws3D = new LightweightSystem3D();
+		return new LightweightSystem3D();
+	}
 
-        UpdateManager updateManager = lws3D.getUpdateManager();
-        if (updateManager instanceof PickingUpdateManager3D) {
-            PickingUpdateManager3D pickingManager = (PickingUpdateManager3D) updateManager;
-            ColorPicker picker = pickingManager.getPicker();
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * This method was copied and subsequently modified.
+	 * </p>
+	 * 
+	 * @author hudsonr (original implementation)
+	 * @author Kristian Duske
+	 * @see org.eclipse.gef.ui.parts.GraphicalViewerImpl#findHandleAt(org.eclipse.draw2d.geometry.Point)
+	 */
+	@Override
+	public Handle findHandleAt(Point i_mLocation) {
 
-            picker.ignoreSurface(Handle.class);
-            picker.ignoreSurface(FeedbackFigure3D.class);
-        }
+		LayerManager layermanager =
+			(LayerManager) getEditPartRegistry().get(LayerManager.ID);
 
-        return lws3D;
-    }
+		if (layermanager == null)
+			return null;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * <p>
-     * This method was copied and subsequently modified.
-     * </p>
-     * 
-     * @author hudsonr (original implementation)
-     * @author Kristian Duske
-     * 
-     * @see org.eclipse.gef.ui.parts.GraphicalViewerImpl#findHandleAt(org.eclipse.draw2d.geometry.Point)
-     */
-    @Override
-    public Handle findHandleAt(Point i_p) {
+		Vector3f eye = Draw3DCache.getVector3f();
+		Vector3f wLocation = Draw3DCache.getVector3f();
+		Vector3f direction = Draw3DCache.getVector3f();
+		Point sLocation = Draw3DCache.getPoint();
+		try {
+			List<IFigure> ignore = new ArrayList<IFigure>(3);
+			ignore.add(layermanager.getLayer(LayerConstants.PRIMARY_LAYER));
+			ignore.add(layermanager.getLayer(LayerConstants.CONNECTION_LAYER));
+			ignore.add(layermanager.getLayer(LayerConstants.FEEDBACK_LAYER));
+			TreeSearch search = new ExclusionSearch(ignore);
 
-        LayerManager layermanager = (LayerManager) getEditPartRegistry().get(
-            LayerManager.ID);
+			LightweightSystem3D lws = getLightweightSystem3D();
+			Picker picker = lws.getPicker();
 
-        if (layermanager == null)
-            return null;
+			Hit hit = picker.getHit(i_mLocation.x, i_mLocation.y, search);
+			if (hit == null)
+				return null;
 
-        Vector3f rayStart = Math3D.getVector3f();
-        Vector3f rayDirection = Math3D.getVector3f();
-        try {
-            List<IFigure> ignore = new ArrayList<IFigure>(3);
-            ignore.add(layermanager.getLayer(LayerConstants.PRIMARY_LAYER));
-            ignore.add(layermanager.getLayer(LayerConstants.CONNECTION_LAYER));
-            ignore.add(layermanager.getLayer(LayerConstants.FEEDBACK_LAYER));
+			IFigure3D figure3D = hit.getFigure();
+			if (figure3D instanceof Handle)
+				return (Handle) figure3D;
 
-            LightweightSystem3D lws = getLightweightSystem3D();
-            PickingUpdateManager3D updateManager = (PickingUpdateManager3D) lws.getUpdateManager();
-            ColorPicker picker = updateManager.getPicker();
+			// keep searching on the surface
+			lws.getCamera().getPosition(eye);
+			lws.getCamera().unProject(i_mLocation.x, i_mLocation.y, 0, null,
+				wLocation);
 
-            ISurface currentSurface = picker.getCurrentSurface();
-            currentSurface.getWorldLocation(i_p, rayDirection);
+			ISurface surface = figure3D.getSurface();
 
-            lws.getCamera().getPosition(rayStart);
+			Math3D.getRayDirection(eye, wLocation, direction);
+			surface.getSurfaceLocation2D(eye, direction, sLocation);
 
-            Math3D.sub(rayDirection, rayStart, rayDirection);
-            Math3D.normalise(rayDirection, rayDirection);
+			IFigure figure2D =
+				figure3D.findFigureAt(sLocation.x, sLocation.y, search);
 
-            IFigure3D rootFigure = (IFigure3D) lws.getRootFigure();
-            ISurface rootSurface = rootFigure.getSurface();
+			if (figure2D instanceof Handle)
+				return (Handle) figure2D;
 
-            Point s = rootSurface.getSurfaceLocation2D(rayStart, rayDirection,
-                null);
-            IFigure handle = rootSurface.findFigureAt(s.x, s.y,
-                new ExclusionSearch(ignore));
+			return null;
+		} finally {
+			Draw3DCache.returnVector3f(eye, wLocation, direction);
+			Draw3DCache.returnPoint(sLocation);
+		}
+	}
 
-            if (handle instanceof Handle)
-                return (Handle) handle;
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * This method was copied and subsequently modified.
+	 * </p>
+	 * 
+	 * @author hudsonr (original implementation)
+	 * @author Kristian Duske
+	 * @see org.eclipse.gef.ui.parts.GraphicalViewerImpl#findObjectAtExcluding(org.eclipse.draw2d.geometry.Point,
+	 *      java.util.Collection, org.eclipse.gef.EditPartViewer.Conditional)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public EditPart findObjectAtExcluding(Point i_mLocation,
+		Collection i_exclude, final Conditional i_condition) {
 
-            return null;
-        } finally {
-            Math3D.returnVector3f(rayStart);
-            Math3D.returnVector3f(rayDirection);
-        }
-    }
+		class ConditionalTreeSearch extends ExclusionSearch {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#getFigureCanvas()
-     */
-    @Override
-    protected FigureCanvas getFigureCanvas() {
+			ConditionalTreeSearch(Collection coll) {
 
-        return null;
-    }
+				super(coll);
+			}
 
-    /**
-     * Returns the 3D lightweight system if there is one.
-     * 
-     * @return the 3D lightweight system or <code>null</code> if the current
-     *         lightweight system is not 3D
-     */
-    public LightweightSystem3D getLightweightSystem3D() {
+			@Override
+			public boolean accept(IFigure i_figure) {
 
-        LightweightSystem lws = getLightweightSystem();
-        if (!(lws instanceof LightweightSystem3D))
-            return null;
+				IFigure current = i_figure;
+				EditPart editpart = null;
+				while (editpart == null && current != null) {
+					editpart = (EditPart) getVisualPartMap().get(current);
+					current = current.getParent();
+				}
 
-        return (LightweightSystem3D) lws;
-    }
+				return editpart != null
+					&& (i_condition == null || i_condition.evaluate(editpart));
+			}
+		}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.IScene#getUpdateManager()
-     */
-    public UpdateManager getUpdateManager() {
+		Vector3f rayOrigin = Math3DCache.getVector3f();
+		Vector3f rayDirection = Math3DCache.getVector3f();
+		try {
 
-        return getLightweightSystem().getUpdateManager();
-    }
+			LightweightSystem3D lws = getLightweightSystem3D();
+			Picker picker = lws.getPicker();
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#reveal(org.eclipse.gef.EditPart)
-     */
-    @Override
-    public void reveal(EditPart i_part) {
+			TreeSearch search = new ConditionalTreeSearch(i_exclude);
+			Hit hit = picker.getHit(i_mLocation.x, i_mLocation.y, search);
 
-        // TODO: implement this properly
-    }
+			EditPart part = null;
+			if (hit != null) {
+				IFigure3D figure3D = hit.getFigure();
+				IFigure figure2D =
+					figure3D.findFigureAt(i_mLocation.x, i_mLocation.y, search);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#setRootFigure(org.eclipse.draw2d.IFigure)
-     */
-    @Override
-    protected void setRootFigure(IFigure i_figure) {
+				while (part == null && figure2D != null) {
+					part = (EditPart) getVisualPartMap().get(figure2D);
+					figure2D = figure2D.getParent();
+				}
+			}
 
-        super.setRootFigure(i_figure);
-        getLightweightSystem().setContents(i_figure);
-    }
+			if (part == null)
+				return getContents();
+
+			return part;
+		} finally {
+			Math3DCache.returnVector3f(rayOrigin, rayDirection);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#getFigureCanvas()
+	 */
+	@Override
+	protected FigureCanvas getFigureCanvas() {
+
+		return null;
+	}
+
+	/**
+	 * Returns the 3D lightweight system if there is one.
+	 * 
+	 * @return the 3D lightweight system or <code>null</code> if the current
+	 *         lightweight system is not 3D
+	 */
+	public LightweightSystem3D getLightweightSystem3D() {
+
+		LightweightSystem lws = getLightweightSystem();
+		if (!(lws instanceof LightweightSystem3D))
+			return null;
+
+		return (LightweightSystem3D) lws;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IScene#getUpdateManager()
+	 */
+	public UpdateManager getUpdateManager() {
+
+		return getLightweightSystem().getUpdateManager();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#reveal(org.eclipse.gef.EditPart)
+	 */
+	@Override
+	public void reveal(EditPart i_part) {
+
+		// TODO: implement this properly
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef.ui.parts.ScrollingGraphicalViewer#setRootFigure(org.eclipse.draw2d.IFigure)
+	 */
+	@Override
+	protected void setRootFigure(IFigure i_figure) {
+
+		super.setRootFigure(i_figure);
+		getLightweightSystem().setContents(i_figure);
+	}
 }

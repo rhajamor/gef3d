@@ -15,6 +15,7 @@ import java.util.List;
 import org.eclipse.draw2d.FigureListener;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
+import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Matrix4f;
@@ -61,41 +62,31 @@ public class FigureSurface extends AbstractSurface {
      * @see org.eclipse.draw3d.ISurface#findFigureAt(int, int,
      *      org.eclipse.draw2d.TreeSearch)
      */
+    @SuppressWarnings("unchecked")
     public IFigure findFigureAt(int i_sx, int i_sy, TreeSearch i_search) {
 
         // host pruned?
         if (i_search != null && i_search.prune(m_host))
             return null;
 
-        List<IFigure> children2d = m_host.getChildren2D();
-        for (IFigure child2D : children2d) {
-            IFigure hit = null;
-            if (i_search != null) {
-                if (i_search.prune(child2D))
-                    continue;
+        IFigure hit = null;
+        List<IFigure> children = m_host.getChildren();
+        for (IFigure child : children) {
+            if (!(child instanceof IFigure3D)) {
+                if (i_search != null)
+                    hit = child.findFigureAt(i_sx, i_sy, i_search);
+                else
+                    hit = child.findFigureAt(i_sx, i_sy);
 
-                hit = child2D.findFigureAt(i_sx, i_sy, i_search);
-            } else {
-                hit = child2D.findFigureAt(i_sx, i_sy);
+                if (hit != null)
+                    return hit;
             }
-
-            if (hit != null)
-                return hit;
         }
 
         // now we have only found a 3D figure, and we must check whether it
         // is accepted by the search
-
-        if (i_search == null)
+        if (i_search == null || i_search.accept(m_host))
             return m_host;
-
-        IFigure currentFigure = m_host;
-        do {
-            if (i_search.accept(currentFigure))
-                return currentFigure;
-
-            currentFigure = currentFigure.getParent();
-        } while (currentFigure != null);
 
         return null;
     }
@@ -105,7 +96,7 @@ public class FigureSurface extends AbstractSurface {
      * 
      * @see org.eclipse.draw3d.ISurface#getHost()
      */
-    public IFigure2DHost3D getHost() {
+    public IFigure3D getHost() {
 
         return m_host;
     }
@@ -182,7 +173,7 @@ public class FigureSurface extends AbstractSurface {
 
     private void rotateVector(Vector3f i_vector) {
 
-        Matrix4f rot = Math3D.getMatrix4f();
+        Matrix4f rot = Math3DCache.getMatrix4f();
         try {
             rot.setIdentity();
 
@@ -191,7 +182,7 @@ public class FigureSurface extends AbstractSurface {
 
             i_vector.transform(rot);
         } finally {
-            Math3D.returnMatrix4f(rot);
+            Math3DCache.returnMatrix4f(rot);
         }
     }
 

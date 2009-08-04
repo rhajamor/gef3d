@@ -15,11 +15,11 @@ import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.TransparentObject;
 import org.eclipse.draw3d.camera.ICamera;
+import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
-
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * Cube like transparent figure used for visualizing feedback during edit
@@ -35,8 +35,6 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
  */
 public class FeedbackFigure3D extends Figure3D implements TransparentObject {
 
-	private static final Vector3f TMP_V3 = new Vector3fImpl();
-
 	private Shape m_shape = new CuboidFigureShape(this);
 
 	/**
@@ -48,20 +46,35 @@ public class FeedbackFigure3D extends Figure3D implements TransparentObject {
 		setForegroundColor(ColorConstants.black);
 		setAlpha(100);
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		return m_shape.getDistance(i_query, getPosition3D());
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth()
 	 */
 	public float getTransparencyDepth(RenderContext renderContext) {
-		ICamera camera = renderContext.getCamera();
+		ICamera camera = renderContext.getScene().getCamera();
 
-		getBounds3D().getCenter(TMP_V3);
-		return camera.getDistance(TMP_V3);
+		Vector3f center = Draw3DCache.getVector3f();
+		try {
+			getPosition3D().getBounds3D().getCenter(center);
+			return camera.getDistance(center);
+		} finally {
+			Draw3DCache.returnVector3f(center);
+		}
 	}
 
-	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -69,8 +82,8 @@ public class FeedbackFigure3D extends Figure3D implements TransparentObject {
 	 */
 	@Override
 	public void render(RenderContext renderContext) {
-		if (renderContext.getMode().isPaint())
-			renderContext.addTransparentObject(this);
+
+		renderContext.addTransparentObject(this);
 	}
 
 	/**
@@ -82,7 +95,5 @@ public class FeedbackFigure3D extends Figure3D implements TransparentObject {
 
 		m_shape.render(renderContext);
 	}
-
-	
 
 }

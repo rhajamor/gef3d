@@ -13,13 +13,16 @@ package org.eclipse.gef3d.examples.graph.editor.figures;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.FreeformLayout;
+import org.eclipse.draw3d.FigureSurface;
 import org.eclipse.draw3d.FreeformLayer3D;
+import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.SurfaceLayout;
 import org.eclipse.draw3d.TransparentObject;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.graphics.Color;
@@ -33,16 +36,22 @@ import org.eclipse.swt.widgets.Display;
  * @since 21.11.2007
  */
 public class GraphFigure3D extends FreeformLayer3D implements TransparentObject {
+
 	/**
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(GraphFigure3D.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(GraphFigure3D.class.getName());
 
 	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
 
 	private Shape m_shape = new CuboidFigureShape(this);
+
+	/**
+	 * The surface of this figure. This is where 2D children are placed.
+	 */
+	private ISurface m_surface = new FigureSurface(this);
 
 	/**
 	 * 
@@ -79,11 +88,33 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		return m_shape.getDistance(i_query, getPosition3D());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getSurface()
+	 */
+	@Override
+	public ISurface getSurface() {
+
+		return m_surface;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth()
 	 */
 	public float getTransparencyDepth(RenderContext renderContext) {
 
-		ICamera camera = renderContext.getCamera();
+		ICamera camera = renderContext.getScene().getCamera();
 
 		getBounds3D().getCenter(TMP_V3);
 		return camera.getDistance(TMP_V3);
@@ -95,11 +126,10 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 	 * @see org.eclipse.draw3d.Figure3D#render()
 	 */
 	@Override
-	public void render(RenderContext renderContext) {
-		renderContext.addTransparentObject(this);
-	}
+	public void render(RenderContext i_renderContext) {
 
-	
+		i_renderContext.addTransparentObject(this);
+	}
 
 	/**
 	 * {@inheritDoc}

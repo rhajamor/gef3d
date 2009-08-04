@@ -13,8 +13,10 @@ package org.eclipse.draw3d.shapes;
 
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.swt.graphics.Color;
 
@@ -31,7 +33,19 @@ public class WiredCube extends AbstractModelShape {
 
 	private final float[] m_color = new float[] { 0, 0, 0, 1 };
 
-	private void initDisplayLists(DisplayListManager i_displayListManager, final Graphics3D g3d) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
+	 *      org.eclipse.draw3d.geometry.Position3D)
+	 */
+	public float getDistance(Query i_query, Position3D i_position) {
+
+		return Float.NaN;
+	}
+
+	private void initDisplayLists(DisplayListManager i_displayListManager,
+		final Graphics3D g3d) {
 
 		if (i_displayListManager.isDisplayList(DL_CUBE))
 			return;
@@ -70,8 +84,8 @@ public class WiredCube extends AbstractModelShape {
 	@Override
 	protected void performRender(RenderContext renderContext) {
 
-		DisplayListManager displayListManager = renderContext
-				.getDisplayListManager();
+		DisplayListManager displayListManager =
+			renderContext.getDisplayListManager();
 
 		initDisplayLists(displayListManager, renderContext.getGraphics3D());
 		displayListManager.executeDisplayList(DL_CUBE);

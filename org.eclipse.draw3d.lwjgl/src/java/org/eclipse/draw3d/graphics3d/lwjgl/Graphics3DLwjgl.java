@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.geometry.IPosition3D;
+import org.eclipse.draw3d.graphics3d.AbstractGraphics3DDraw;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
@@ -34,8 +35,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.GLContext;
-import org.lwjgl.util.glu.Cylinder;
-import org.lwjgl.util.glu.Sphere;
 
 /**
  * Graphics3DLwjgl is the implementor of the Graphics3D interface for the LWJGL
@@ -46,7 +45,8 @@ import org.lwjgl.util.glu.Sphere;
  * @version $Revision$
  * @since 06.12.2008
  */
-public class Graphics3DLwjgl implements Graphics3D {
+public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
+		Graphics3D {
 	/**
 	 * Logger for this class
 	 */
@@ -450,6 +450,15 @@ public class Graphics3DLwjgl implements Graphics3D {
 	 */
 	public void glLineWidth(float width) {
 		org.lwjgl.opengl.GL11.glLineWidth(width);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glPointSize(float)
+	 */
+	public void glPointSize(float size) {
+		org.lwjgl.opengl.GL11.glPointSize(size);
 	}
 
 	/**

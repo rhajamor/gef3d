@@ -29,7 +29,4 @@ public class GraphFigure2D extends FreeformLayer {
 	public GraphFigure2D() {
 		setLayoutManager(new FreeformLayout());
 	}
-	
-	
-
 }

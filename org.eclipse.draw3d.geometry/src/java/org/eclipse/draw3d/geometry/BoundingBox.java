@@ -23,14 +23,6 @@ package org.eclipse.draw3d.geometry;
  * @since 12.10.2008
  */
 public interface BoundingBox extends IBoundingBox, Transformable {
-	/**
-	 * Resizes this bounding box by the given delta values.
-	 * 
-	 * @param i_dx add this value to the X dimension of this bounding box
-	 * @param i_dy add this value to the Y dimension of this bounding box
-	 * @param i_dz add this value to the Z dimension of this bounding box
-	 */
-	public void resize(float i_dx, float i_dy, float i_dz);
 
 	/**
 	 * Expands this bounding box by the given delta. The center of the bounding
@@ -40,6 +32,15 @@ public interface BoundingBox extends IBoundingBox, Transformable {
 	 * @param i_delta the value to expand the box by
 	 */
 	public void expand(float i_iDelta);
+
+	/**
+	 * Resizes this bounding box by the given delta values.
+	 * 
+	 * @param i_dx add this value to the X dimension of this bounding box
+	 * @param i_dy add this value to the Y dimension of this bounding box
+	 * @param i_dz add this value to the Z dimension of this bounding box
+	 */
+	public void resize(float i_dx, float i_dy, float i_dz);
 
 	/**
 	 * Resizes this bounding box by the given delta vector.
@@ -58,6 +59,15 @@ public interface BoundingBox extends IBoundingBox, Transformable {
 	public void set(IBoundingBox i_sourceBoundingBox3f);
 
 	/**
+	 * Sets the opposite corner of the position of this bounding box. This may
+	 * modify the size and position of the bounding box.
+	 * 
+	 * @param i_end the new vector
+	 * @see IBoundingBox#getEnd(Vector3f)
+	 */
+	public void setEnd(IVector3f i_end);
+
+	/**
 	 * Sets the location of this bounding box to the given values.
 	 * 
 	 * @param i_x the new X position
@@ -65,22 +75,29 @@ public interface BoundingBox extends IBoundingBox, Transformable {
 	 * @param i_z the new Z position
 	 */
 	public void setLocation(float i_x, float i_y, float i_z);
-	
-	
+
 	/**
-	 * Sets the size of this bounding box.
-	 * @param i_newSize
+	 * Sets the location of this bounding box to the given location.
+	 * 
+	 * @param i_location the locatino to set
 	 */
-	public void setSize(IVector3f i_newSize);
-	
+	public void setLocation(IVector3f i_location);
+
 	/**
 	 * Sets the size of this bounding box.
+	 * 
 	 * @param i_width
 	 * @param i_height
 	 * @param i_depth
 	 */
 	public void setSize(float i_width, float i_height, float i_depth);
-	
+
+	/**
+	 * Sets the size of this bounding box.
+	 * 
+	 * @param i_newSize
+	 */
+	public void setSize(IVector3f i_newSize);
 
 	/**
 	 * Translates this bounding box by the given delta values.

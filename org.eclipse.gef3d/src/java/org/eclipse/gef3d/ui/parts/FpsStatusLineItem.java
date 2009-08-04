@@ -119,9 +119,6 @@ public class FpsStatusLineItem extends ContributionItem implements
      */
     public void renderPassFinished(RenderContext renderContext) {
 
-        if (!renderContext.getMode().isPaint())
-            return;
-
         long time = System.currentTimeMillis();
         if (m_lastFrame == -1) {
             m_lastFrame = time;

@@ -20,6 +20,7 @@ import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.Matrix4f;
 import org.eclipse.draw3d.geometry.Matrix4fImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -44,8 +45,184 @@ import org.eclipse.draw3d.util.BufferUtils;
  */
 public class FirstPersonCamera extends AbstractCamera {
 
+    /**
+     * Serves as a cache for the last projection operation.
+     * 
+     * @author Kristian Duske
+     * @version $Revision$
+     * @since 28.07.2009
+     */
+    private class Projection {
+
+        private float m_depth;
+
+        private Point m_mLocation = new Point();
+
+        private Matrix4f m_modelMatrix = new Matrix4fImpl();
+
+        private boolean m_valid = false;
+
+        private Vector3f m_wLocation = new Vector3fImpl();
+
+        /**
+         * Returns the cached mouse location.
+         * 
+         * @param io_result
+         *            the result point, if <code>null</code>, a new point will
+         *            be returned
+         * @return the cached mouse location
+         */
+		public Point getMouseLocation(Point io_result) {
+
+            Point result = io_result;
+            if (result == null)
+                result = new Point();
+
+            result.setLocation(m_mLocation);
+            return result;
+        }
+
+        /**
+         * Returns the cached world location.
+         * 
+         * @param io_result
+         *            the result vector, if <code>null</code>, a new vector will
+         *            be returned
+         * @return the cached world location
+         */
+        public Vector3f getWorldLocation(Vector3f io_result) {
+
+            Vector3f result = io_result;
+            if (result == null)
+                result = new Vector3fImpl();
+
+            result.set(m_wLocation);
+            return result;
+        }
+
+        /**
+         * Indicates whether the cached mouse location is up to date for the
+         * given world location and model matrix.
+         * 
+         * @param i_wx
+         *            the world X coordinate
+         * @param i_wy
+         *            the world Y coordinate
+         * @param i_wz
+         *            the world Z coordinate
+         * @param i_modelMatrix
+         *            the model matrix
+         * @return <code>true</code> if the cached mouse location is up to date
+         *         for the given world location and model matrix
+         */
+        public boolean hasMouseLocation(float i_wx, float i_wy, float i_wz,
+                IMatrix4f i_modelMatrix) {
+
+            if (!m_valid)
+                return false;
+
+            if (i_wx != m_wLocation.getX()
+                    || i_wy != m_wLocation.getY()
+                    || i_wz != m_wLocation.getY())
+                return false;
+
+            if (i_modelMatrix == null) {
+                if (!m_modelMatrix.equals(IMatrix4f.IDENTITY))
+                    return false;
+            } else {
+                if (!i_modelMatrix.equals(m_modelMatrix))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /**
+         * Indicates whether the cached world location is up to date for the
+         * given mouse location and model matrix.
+         * 
+         * @param i_mx
+         *            the mouse X coordinate
+         * @param i_my
+         *            the mouse Y coordinate
+         * @param i_depth
+         *            the depth value
+         * @param i_modelMatrix
+         *            the model matrix
+         * @return <code>true</code> if the cached world location location is up
+         *         to date for the given mouse location and model matrix
+         */
+        public boolean hasWorldLocation(int i_mx, int i_my, float i_depth,
+                IMatrix4f i_modelMatrix) {
+
+            if (!m_valid)
+                return false;
+
+            if (i_mx != m_mLocation.x || i_my != m_mLocation.y
+                    || i_depth != m_depth)
+                return false;
+
+            if (i_modelMatrix == null) {
+                if (!m_modelMatrix.equals(IMatrix4f.IDENTITY))
+                    return false;
+            } else {
+                if (!i_modelMatrix.equals(m_modelMatrix))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /**
+         * Invalidates the cached values.
+         */
+        public void invalidate() {
+
+            m_valid = false;
+        }
+
+        /**
+         * Updates the cached projection input and output values and the model
+         * matrix to the given values.
+         * 
+         * @param i_wx
+         *            the world X coordinate
+         * @param i_wy
+         *            the world Y coordinate
+         * @param i_wz
+         *            the world Z coordinate
+         * @param i_mx
+         *            the mouse X coordinate
+         * @param i_my
+         *            the mouse Z coordinate
+         * @param i_depth
+         *            the depth value
+         * @param i_modelMatrix
+         *            the model matrix
+         */
+        public void update(float i_wx, float i_wy, float i_wz, int i_mx,
+                int i_my, float i_depth, IMatrix4f i_modelMatrix) {
+
+            m_wLocation.set(i_wx, i_wy, i_wz);
+            m_mLocation.x = i_mx;
+            m_mLocation.y = i_my;
+            m_depth = i_depth;
+
+            if (i_modelMatrix == null)
+                m_modelMatrix.setIdentity();
+            else
+                m_modelMatrix.set(i_modelMatrix);
+
+            m_valid = true;
+        }
+    }
+
+    private static final FloatBuffer BUF_F16 = BufferUtils.createFloatBuffer(16);
+
     @SuppressWarnings("unused")
     private static Logger log = Logger.getLogger(FirstPersonCamera.class.getName());
+
+    private Projection m_cachedProjection = new Projection();
 
     /**
      * Distance of the far clipping plane.
@@ -56,6 +233,8 @@ public class FirstPersonCamera extends AbstractCamera {
      * The field of vision angle in degrees.
      */
     protected int m_fov = 45;
+
+    private boolean m_matricesValid = false;
 
     /**
      * Distance of the near clipping plane.
@@ -78,8 +257,6 @@ public class FirstPersonCamera extends AbstractCamera {
      * The current camera up vector.
      */
     protected final Vector3fImpl m_up = new Vector3fImpl();
-
-    private boolean m_matricesValid = false;
 
     /**
      * The current viewing direction.
@@ -113,7 +290,7 @@ public class FirstPersonCamera extends AbstractCamera {
     private IMatrix4f calculateMatrix(IMatrix4f i_modelMatrix,
             Matrix4f io_result) {
 
-        Matrix4f tmp = Math3D.getMatrix4f();
+        Matrix4f tmp = Math3DCache.getMatrix4f();
         try {
             if (i_modelMatrix != null)
                 Math3D.mul(m_projectionMatrix, i_modelMatrix, tmp);
@@ -123,7 +300,7 @@ public class FirstPersonCamera extends AbstractCamera {
             Math3D.mul(tmp, m_viewMatrix, io_result);
             return io_result;
         } finally {
-            Math3D.returnMatrix4f(tmp);
+            Math3DCache.returnMatrix4f(tmp);
         }
     }
 
@@ -137,6 +314,7 @@ public class FirstPersonCamera extends AbstractCamera {
 
         super.fireCameraChanged();
         m_matricesValid = false;
+        m_cachedProjection.invalidate();
     }
 
     private float getAspect() {
@@ -157,12 +335,12 @@ public class FirstPersonCamera extends AbstractCamera {
         if (i_point == null)
             throw new NullPointerException("i_point must not be null");
 
-        Vector3f tmp = Math3D.getVector3f();
+        Vector3f tmp = Math3DCache.getVector3f();
         try {
             Math3D.sub(i_point, m_position, tmp);
             return tmp.length();
         } finally {
-            Math3D.returnVector3f(tmp);
+            Math3DCache.returnVector3f(tmp);
         }
     }
 
@@ -203,7 +381,7 @@ public class FirstPersonCamera extends AbstractCamera {
         if (result == null)
             result = new Ray();
 
-        Vector3f direction = Math3D.getVector3f();
+        Vector3f direction = Math3DCache.getVector3f();
         try {
             unProject(i_xm, i_ym, 0, null, direction);
             Math3D.sub(direction, m_position, direction);
@@ -211,7 +389,7 @@ public class FirstPersonCamera extends AbstractCamera {
             result.set(m_position, direction);
             return result;
         } finally {
-            Math3D.returnVector3f(direction);
+            Math3DCache.returnVector3f(direction);
         }
     }
 
@@ -293,7 +471,7 @@ public class FirstPersonCamera extends AbstractCamera {
      */
     public void moveBy(float i_dForward, float i_dStrafe, float i_dUp) {
 
-        Vector3f tmp = Math3D.getVector3f();
+        Vector3f tmp = Math3DCache.getVector3f();
         try {
             tmp.set(m_viewDir);
             tmp.scale(i_dForward);
@@ -309,7 +487,7 @@ public class FirstPersonCamera extends AbstractCamera {
 
             fireCameraChanged();
         } finally {
-            Math3D.returnVector3f(tmp);
+            Math3DCache.returnVector3f(tmp);
         }
     }
 
@@ -332,8 +510,8 @@ public class FirstPersonCamera extends AbstractCamera {
      */
     public void orbit(IVector3f i_center, float i_hAngle, float i_vAngle) {
 
-        Matrix4f rot = Math3D.getMatrix4f();
-        Vector3f tmp = Math3D.getVector3f();
+        Matrix4f rot = Math3DCache.getMatrix4f();
+        Vector3f tmp = Math3DCache.getVector3f();
 
         try {
             rot.setIdentity();
@@ -351,8 +529,8 @@ public class FirstPersonCamera extends AbstractCamera {
             rotate(0, i_vAngle, i_hAngle);
             fireCameraChanged();
         } finally {
-            Math3D.returnMatrix4f(rot);
-            Math3D.returnVector3f(tmp);
+            Math3DCache.returnMatrix4f(rot);
+            Math3DCache.returnVector3f(tmp);
         }
     }
 
@@ -364,12 +542,15 @@ public class FirstPersonCamera extends AbstractCamera {
      */
     public Point project(float i_wx, float i_wy, float i_wz, Point io_result) {
 
+        if (m_cachedProjection.hasMouseLocation(i_wx, i_wy, i_wz, null))
+            return m_cachedProjection.getMouseLocation(io_result);
+
         Point result = io_result;
         if (result == null)
             result = new Point();
 
-        Matrix4f transformation = Math3D.getMatrix4f();
-        Vector3f tmp = Math3D.getVector3f();
+        Matrix4f transformation = Math3DCache.getMatrix4f();
+        Vector3f tmp = Math3DCache.getVector3f();
 
         try {
             calculateMatrix(null, transformation);
@@ -378,17 +559,31 @@ public class FirstPersonCamera extends AbstractCamera {
             tmp.transform(transformation);
 
             result.x = Math.round((tmp.getX() + 1) * m_viewport.width / 2f);
-            result.y = Math.round((-1* tmp.getY() + 1)
-                    * m_viewport.height / 2f);
+            result.y = Math.round((-1 * tmp.getY() + 1) * m_viewport.height
+                    / 2f);
+
+            float depth = (tmp.getZ() + 1) / 2;
+            m_cachedProjection.update(i_wx, i_wy, i_wz, result.x, result.y,
+                depth, null);
 
             return result;
         } finally {
-            Math3D.returnMatrix4f(transformation);
-            Math3D.returnVector3f(tmp);
+            Math3DCache.returnMatrix4f(transformation);
+            Math3DCache.returnVector3f(tmp);
         }
     }
 
-    private static final FloatBuffer BUF_F16 = BufferUtils.createFloatBuffer(16);
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.eclipse.draw3d.camera.ICamera#project(org.eclipse.draw3d.geometry.IVector3f,
+     *      org.eclipse.draw2d.geometry.Point)
+     */
+    public Point project(IVector3f i_wLocation, Point io_result) {
+
+        return project(i_wLocation.getX(), i_wLocation.getY(),
+            i_wLocation.getZ(), io_result);
+    }
 
     /**
      * {@inheritDoc}
@@ -425,7 +620,7 @@ public class FirstPersonCamera extends AbstractCamera {
             g3d.glGetFloat(Graphics3DDraw.GL_MODELVIEW_MATRIX, BUF_F16);
             m_viewMatrix.setColumnMajor(BUF_F16);
             Math3D.transpose(m_viewMatrix, m_viewMatrix);
-            
+
             m_matricesValid = true;
         }
     }
@@ -443,7 +638,7 @@ public class FirstPersonCamera extends AbstractCamera {
 
     public void rotate(float i_roll, float i_pitch, float i_yaw) {
 
-        Matrix4f rot = Math3D.getMatrix4f();
+        Matrix4f rot = Math3DCache.getMatrix4f();
         try {
             rot.setIdentity();
 
@@ -462,7 +657,7 @@ public class FirstPersonCamera extends AbstractCamera {
 
             fireCameraChanged();
         } finally {
-            Math3D.returnMatrix4f(rot);
+            Math3DCache.returnMatrix4f(rot);
         }
     }
 
@@ -486,27 +681,35 @@ public class FirstPersonCamera extends AbstractCamera {
      *      org.eclipse.draw3d.geometry.IMatrix4f,
      *      org.eclipse.draw3d.geometry.Vector3f)
      */
-    public Vector3f unProject(int i_xm, int i_ym, float i_d,
+    public Vector3f unProject(int i_mx, int i_my, float i_depth,
             IMatrix4f i_modelMatrix, Vector3f io_result) {
 
-        Matrix4f inversion = Math3D.getMatrix4f();
+        if (m_cachedProjection.hasWorldLocation(i_mx, i_my, i_depth,
+            i_modelMatrix))
+            return m_cachedProjection.getWorldLocation(io_result);
+
+        Vector3f result = io_result;
+        if (result == null)
+            result = new Vector3fImpl();
+
+        Matrix4f inversion = Math3DCache.getMatrix4f();
         try {
-            Vector3f result = io_result;
-            if (result == null)
-                result = new Vector3fImpl();
 
             // invert viewport transformation
-            result.setX(2 * i_xm / (float) m_viewport.width - 1);
-            result.setY(2 * (m_viewport.height - i_ym)
+            result.setX(2 * i_mx / (float) m_viewport.width - 1);
+            result.setY(2 * (m_viewport.height - i_my)
                     / (float) m_viewport.height - 1);
-            result.setZ(2 * i_d - 1);
+            result.setZ(2 * i_depth - 1);
 
             calculateInversionMatrix(i_modelMatrix, inversion);
-
             result.transform(inversion);
+
+            m_cachedProjection.update(result.getX(), result.getY(),
+                result.getZ(), i_mx, i_my, i_depth, i_modelMatrix);
+
             return result;
         } finally {
-            Math3D.returnMatrix4f(inversion);
+            Math3DCache.returnMatrix4f(inversion);
         }
     }
 }

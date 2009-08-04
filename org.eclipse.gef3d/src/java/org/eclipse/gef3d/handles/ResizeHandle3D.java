@@ -15,16 +15,13 @@ package org.eclipse.gef3d.handles;
 import org.eclipse.draw2d.Cursors;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.PositionConstants3D;
-import org.eclipse.draw3d.TransparentObject;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.handles.RelativeHandleLocator;
 import org.eclipse.gef.handles.ResizeHandle;
 import org.eclipse.gef.handles.SquareHandle;
 import org.eclipse.gef.tools.ResizeTracker;
-import org.eclipse.gef3d.tools.ResizeTracker3D;
 import org.eclipse.swt.graphics.Cursor;
-
 
 /**
  * 3D version of {@link ResizeHandle}. Note that this handle is also used (even
@@ -36,7 +33,7 @@ import org.eclipse.swt.graphics.Cursor;
  * @version $Revision$
  * @since Mar 26, 2008
  */
-public class ResizeHandle3D extends CubeHandle  {
+public class ResizeHandle3D extends CubeHandle {
 
 	/**
 	 * <p>
@@ -84,9 +81,9 @@ public class ResizeHandle3D extends CubeHandle  {
 			PositionConstants3D i_zposition) {
 		setOwner(owner);
 		setLocator(new RelativeHandleLocator3D(owner.getFigure(), direction,
-				i_zposition));
+			i_zposition));
 		setCursor(Cursors.getDirectionalCursor(direction, owner.getFigure()
-				.isMirrored()));
+			.isMirrored()));
 		cursorDirection = direction;
 	}
 
@@ -113,9 +110,8 @@ public class ResizeHandle3D extends CubeHandle  {
 	 */
 	@Override
 	protected DragTracker createDragTracker() {
-		return new ResizeTracker3D(getOwner(), cursorDirection);
+		return new ResizeTracker(getOwner(), cursorDirection);
+		// return new ResizeTracker3D(getOwner(), cursorDirection);
 	}
-
-	
 
 }

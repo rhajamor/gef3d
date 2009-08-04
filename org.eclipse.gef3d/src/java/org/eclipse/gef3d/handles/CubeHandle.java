@@ -16,6 +16,7 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.TransparencyAdapter;
 import org.eclipse.gef.EditPart;
@@ -32,12 +33,6 @@ import org.eclipse.swt.graphics.Cursor;
  * @since Mar 25, 2008
  */
 public abstract class CubeHandle extends AbstractHandle3D {
-	/**
-	 * Logger for this class
-	 */
-	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(CubeHandle.class
-			.getName());
 
 	/**
 	 * The default size for square handles. (copied from {@link SquareHandle}
@@ -45,11 +40,18 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	 */
 	protected static final float DEFAULT_HANDLE_SIZE = 7;
 
-	private TransparencyAdapter m_alphashape = new TransparencyAdapter(this,
-			new CuboidFigureShape(this));
+	/**
+	 * Logger for this class
+	 */
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(CubeHandle.class.getName());
 
-	private TransparencyAdapter m_supershape = new TransparencyAdapter(this,
-			new CuboidFigureShape(this));
+	private TransparencyAdapter m_alphashape =
+		new TransparencyAdapter(this, new CuboidFigureShape(this));
+
+	private TransparencyAdapter m_supershape =
+		new TransparencyAdapter(this, new CuboidFigureShape(this));
 
 	/**
 	 * Null constructor
@@ -84,16 +86,6 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	}
 
 	/**
-	 * Initializes the handle.
-	 */
-	protected void init() {
-
-		setPreferredSize3D(new Vector3fImpl(DEFAULT_HANDLE_SIZE,
-				DEFAULT_HANDLE_SIZE, DEFAULT_HANDLE_SIZE));
-		setAlpha(40);
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * <p>
 	 * Returns the color for the inside of the handle. Like
@@ -105,6 +97,17 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	public Color getBackgroundColor() {
 		return (isPrimary()) ? ColorConstants.darkGray : ColorConstants.white;
 
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		return m_alphashape.getDistance(i_query, getPosition3D());
 	}
 
 	/**
@@ -121,6 +124,16 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	}
 
 	/**
+	 * Initializes the handle.
+	 */
+	protected void init() {
+
+		setPreferredSize3D(new Vector3fImpl(DEFAULT_HANDLE_SIZE,
+			DEFAULT_HANDLE_SIZE, DEFAULT_HANDLE_SIZE));
+		setAlpha(40);
+	}
+
+	/**
 	 * Returns <code>true</code> if the handle's owner is the primary selection.
 	 * 
 	 * @return <code>true</code> if the handles owner has primary selection.
@@ -132,7 +145,6 @@ public abstract class CubeHandle extends AbstractHandle3D {
 		return getOwner().getSelected() == EditPart.SELECTED_PRIMARY;
 	}
 
-	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -140,12 +152,9 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	 */
 	@Override
 	public void render(RenderContext renderContext) {
-		if (renderContext.getMode().isPaint()) {
-			renderContext.addTransparentObject(m_alphashape);
-			renderContext.addSuperimposedObject(m_supershape);
-		} else {
-			m_alphashape.renderTransparent(renderContext); // render for picking
-		}
+
+		renderContext.addTransparentObject(m_alphashape);
+		renderContext.addSuperimposedObject(m_supershape);
 	}
 
 }

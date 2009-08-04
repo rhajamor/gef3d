@@ -12,8 +12,10 @@ package org.eclipse.draw3d.shapes;
 
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.swt.graphics.Color;
 
@@ -205,6 +207,18 @@ public class Cylinder extends AbstractModelShape {
 		}
 
 		return m_bottomVertices;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
+	 *      org.eclipse.draw3d.geometry.Position3D)
+	 */
+	public float getDistance(Query i_query, Position3D i_position) {
+
+		// TODO: Implement this
+		return Float.NaN;
 	}
 
 	private float[] getTopVertices() {
@@ -428,10 +442,8 @@ public class Cylinder extends AbstractModelShape {
 	/**
 	 * Sets the outline color of this cylinder.
 	 * 
-	 * @param i_color
-	 *            the outline color
-	 * @param i_alpha
-	 *            the alpha value
+	 * @param i_color the outline color
+	 * @param i_alpha the alpha value
 	 */
 	public void setOutlineColor(Color i_color, int i_alpha) {
 

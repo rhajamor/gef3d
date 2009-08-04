@@ -25,6 +25,7 @@ import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.graphics3d.AbstractGraphics3DDraw;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
@@ -54,7 +55,7 @@ import org.eclipse.swt.opengl.GLCanvas;
  * @see <a * href="http://www.web3d.org/x3d/specifications/ISO-IEC-FDIS-19775-1.2-X3D-AbstractSpecification/"
  *      >X3D-Specification< /a>
  */
-public class Graphics3DX3D implements Graphics3D {
+public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D {
 	/**
 	 * To remember the current state of the export run.
 	 * 
@@ -1397,5 +1398,14 @@ public class Graphics3DX3D implements Graphics3D {
 	 */
 	public void useContext(Object i_context) throws Graphics3DException {
 		m_context = i_context;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glPointSize(float)
+	 */
+	public void glPointSize(float i_size) {
+		// TODO implement method Graphics3DDraw.glPointSize
 	}
 }

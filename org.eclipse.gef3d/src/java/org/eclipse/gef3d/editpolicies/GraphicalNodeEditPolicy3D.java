@@ -11,20 +11,13 @@
 package org.eclipse.gef3d.editpolicies;
 
 import org.eclipse.draw2d.Connection;
-import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw3d.Figure3DHelper;
-import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.PolylineConnection3D;
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.Request;
-import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.FeedbackHelper;
 import org.eclipse.gef.editpolicies.GraphicalNodeEditPolicy;
 import org.eclipse.gef.requests.CreateConnectionRequest;
-import org.eclipse.gef.requests.ReconnectRequest;
-import org.eclipse.gef3d.ui.parts.GraphicalViewer3D;
 
 /**
  * GraphicalNodeEditPolicy3D, creates a 3D feedback connection line instead of a
@@ -67,9 +60,7 @@ public abstract class GraphicalNodeEditPolicy3D extends GraphicalNodeEditPolicy 
 	@Override
 	protected FeedbackHelper getFeedbackHelper(CreateConnectionRequest request) {
 		if (feedbackHelper == null) {
-			feedbackHelper =
-				new FeedbackHelper3D(Figure3DHelper
-						.getAncestor3D(getHostFigure()));
+			feedbackHelper = new FeedbackHelper3D();
 			Point p = request.getLocation();
 			connectionFeedback = createDummyConnection(request);
 			connectionFeedback
@@ -80,6 +71,10 @@ public abstract class GraphicalNodeEditPolicy3D extends GraphicalNodeEditPolicy 
 			addFeedback(connectionFeedback);
 			feedbackHelper.update(null, p);
 		}
+
+		if (feedbackHelper instanceof FeedbackHelper3D)
+			((FeedbackHelper3D) feedbackHelper).setHostFigure(getHostFigure());
+
 		return feedbackHelper;
 	}
 

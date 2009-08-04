@@ -12,6 +12,7 @@ package org.eclipse.draw3d.camera;
 
 import java.util.logging.Logger;
 
+import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Matrix4f;
@@ -64,8 +65,8 @@ public class RestrictedFirstPersonCamera extends FirstPersonCamera {
 		float currentPitch = HALF_PI - Math3D.angle(m_viewDir, UP_REF);
 		boolean allowPitch = Math.abs(currentPitch + i_vAngle) < HALF_PI;
 
-		Matrix4f rot = Math3D.getMatrix4f();
-		Vector3f tmp = Math3D.getVector3f();
+		Matrix4f rot = Math3DCache.getMatrix4f();
+		Vector3f tmp = Math3DCache.getVector3f();
 		try {
 			rot.setIdentity();
 			if (i_hAngle != 0)
@@ -82,8 +83,8 @@ public class RestrictedFirstPersonCamera extends FirstPersonCamera {
 			rotate(0, i_vAngle, i_hAngle);
 			fireCameraChanged();
 		} finally {
-			Math3D.returnMatrix4f(rot);
-			Math3D.returnVector3f(tmp);
+			Math3DCache.returnMatrix4f(rot);
+			Math3DCache.returnVector3f(tmp);
 		}
 	}
 
@@ -96,7 +97,7 @@ public class RestrictedFirstPersonCamera extends FirstPersonCamera {
 	@Override
 	public void rotate(float i_roll, float i_pitch, float i_yaw) {
 
-		Matrix4f rot = Math3D.getMatrix4f();
+		Matrix4f rot = Math3DCache.getMatrix4f();
 		try {
 			rot.setIdentity();
 
@@ -120,7 +121,7 @@ public class RestrictedFirstPersonCamera extends FirstPersonCamera {
 
 			fireCameraChanged();
 		} finally {
-			Math3D.returnMatrix4f(rot);
+			Math3DCache.returnMatrix4f(rot);
 		}
 	}
 }

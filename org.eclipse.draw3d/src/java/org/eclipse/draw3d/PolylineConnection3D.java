@@ -532,5 +532,4 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 		// }
 		super.setValid(i_value);
 	}
-
 }

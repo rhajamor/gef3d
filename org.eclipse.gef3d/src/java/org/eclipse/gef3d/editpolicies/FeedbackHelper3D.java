@@ -10,17 +10,23 @@
  ******************************************************************************/
 package org.eclipse.gef3d.editpolicies;
 
+import java.util.logging.Logger;
+
 import org.eclipse.draw2d.ConnectionAnchor;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.UpdateManager;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.XYZAnchor;
-import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.BoundingBox;
+import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.picking.Picker;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.editpolicies.FeedbackHelper;
 
 /**
@@ -32,79 +38,209 @@ import org.eclipse.gef.editpolicies.FeedbackHelper;
  */
 public class FeedbackHelper3D extends FeedbackHelper {
 
-    /**
-     * The color picker, which can be <code>null</code>.
-     */
-    protected ColorPicker m_colorPicker;
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(FeedbackHelper3D.class.getName());
 
-    /**
-     * The default figure.
-     */
-    protected IFigure3D m_defaultFigure;
+	/**
+	 * A dummy anchor.
+	 */
+	protected XYZAnchor m_dummyAnchor;
 
-    /**
-     * A dummy anchor.
-     */
-    protected XYZAnchor m_dummyAnchor;
+	/**
+	 * The 3D host figure.
+	 */
+	protected IFigure m_hostFigure;
 
-    /**
-     * Creates a new feedback helper. The given default figure is used to
-     * convert world coordinates to surface coordinates and vice versa.
-     * 
-     * @param i_defaultFigure
-     *            the default figure
-     */
-    public FeedbackHelper3D(IFigure3D i_defaultFigure) {
+	/**
+	 * The picker, which can be <code>null</code>.
+	 */
+	protected Picker m_picker;
 
-        m_defaultFigure = i_defaultFigure;
-        m_dummyAnchor = createDummyAnchor();
+	/**
+	 * Creates a new feedback helper.
+	 */
+	public FeedbackHelper3D() {
 
-        UpdateManager updateManager = m_defaultFigure.getUpdateManager();
-        if (updateManager instanceof PickingUpdateManager3D)
-            m_colorPicker = ((PickingUpdateManager3D) updateManager).getPicker();
-    }
+		m_dummyAnchor = createDummyAnchor();
+	}
 
-    /**
-     * Creates a dummy anchor.
-     * 
-     * @return a dummy anchor
-     */
-    protected XYZAnchor createDummyAnchor() {
+	/**
+	 * Creates a dummy anchor.
+	 * 
+	 * @return a dummy anchor
+	 */
+	protected XYZAnchor createDummyAnchor() {
 
-        return new XYZAnchor(new Vector3fImpl(10, 10, 10));
-    }
+		return new XYZAnchor(new Vector3fImpl(10, 10, 10));
+	}
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * This method is a duplicate of the original one, using the newly defined
-     * anchor here.
-     * 
-     * @see org.eclipse.gef.editpolicies.FeedbackHelper#update(org.eclipse.draw2d.ConnectionAnchor,
-     *      org.eclipse.draw2d.geometry.Point)
-     */
-    @Override
-    public void update(ConnectionAnchor anchor, Point p) {
+	/**
+	 * Sets the bounds of the given feedback figure to the given values,
+	 * expanded by <code>0.01f</code>. The given values are in relation to the
+	 * current surface.
+	 * 
+	 * @param i_feedback the feedback figure to modify
+	 * @param i_sLocation the absolute location in surface coordinates
+	 * @param i_sSize the absolute size in surface coordinates
+	 */
+	public void setAbsoluteFeedbackBounds(IFigure3D i_feedback,
+		Point i_sLocation, Dimension i_sSize) {
 
-        if (anchor != null)
-            setAnchor(anchor);
-        else {
-            ISurface surface = null;
-            if (m_colorPicker != null)
-                surface = m_colorPicker.getCurrentSurface();
+		if (i_feedback == null)
+			throw new NullPointerException("i_feedback must not be null");
 
-            if (surface == null)
-                surface = m_defaultFigure.getSurface();
+		BoundingBox bounds = Draw3DCache.getBoundingBox();
+		Vector3f wLocation = Draw3DCache.getVector3f();
+		Vector3f wSize = Draw3DCache.getVector3f();
+		try {
+			ISurface surface = m_picker.getCurrentSurface();
 
-            Vector3f w = Math3D.getVector3f();
-            try {
-                surface.getWorldLocation(p, w);
-                m_dummyAnchor.setLocation3D(w);
-                setAnchor(m_dummyAnchor);
-            } finally {
-                Math3D.returnVector3f(w);
-            }
-        }
-    }
+			if (i_sLocation != null) {
+				surface.getWorldLocation(i_sLocation, wLocation);
+				bounds.setLocation(wLocation);
+			} else
+				bounds.setLocation(0, 0, 0);
+
+			if (i_sSize != null) {
+				surface.getWorldDimension(i_sSize, wSize);
+				bounds.setSize(wSize);
+			} else
+				bounds.setSize(0, 0, 0);
+
+			wSize.setZ(1);
+
+			bounds.expand(0.01f);
+			bounds.getPosition(wLocation);
+			bounds.getSize(wSize);
+
+			i_feedback.getPosition3D().setLocation3D(wLocation);
+			i_feedback.getPosition3D().setSize3D(wSize);
+		} finally {
+			Draw3DCache.returnBoundingBox(bounds);
+			Draw3DCache.returnVector3f(wLocation, wSize);
+		}
+	}
+
+	/**
+	 * Moves the given feedback figure by the given move delta and resizes it by
+	 * the given size delta. The given deltas are in relation to the current
+	 * surface.
+	 * 
+	 * @param i_feedback the feedback figure
+	 * @param i_surfaceMoveDelta the move delta
+	 * @param i_surfaceSizeDelta the size delta
+	 */
+	public void setDeltaFeedbackBounds(IFigure3D i_feedback,
+		Point i_surfaceMoveDelta, Dimension i_surfaceSizeDelta) {
+
+		if (i_feedback == null)
+			throw new NullPointerException("i_feedback must not be null");
+
+		BoundingBox bounds = Draw3DCache.getBoundingBox();
+		Vector3f wLocation = Draw3DCache.getVector3f();
+		Vector3f wSize = Draw3DCache.getVector3f();
+		try {
+			bounds.set(i_feedback.getBounds3D());
+			ISurface surface = m_picker.getCurrentSurface();
+
+			if (i_surfaceMoveDelta != null) {
+				surface.getWorldLocation(i_surfaceMoveDelta, wLocation);
+				bounds.translate(wLocation);
+			}
+
+			if (i_surfaceSizeDelta != null) {
+				surface.getWorldDimension(i_surfaceSizeDelta, wSize);
+				bounds.resize(wSize);
+			}
+
+			bounds.getPosition(wLocation);
+			bounds.getSize(wSize);
+
+			i_feedback.getPosition3D().setLocation3D(wLocation);
+			i_feedback.getPosition3D().setSize3D(wSize);
+		} finally {
+			Draw3DCache.returnBoundingBox(bounds);
+			Draw3DCache.returnVector3f(wLocation, wSize);
+		}
+	}
+
+	/**
+	 * Sets the host figure of this feedback helper.
+	 * 
+	 * @param i_hostFigure the host figure
+	 */
+	public void setHostFigure(IFigure i_hostFigure) {
+
+		m_hostFigure = i_hostFigure;
+
+		UpdateManager updateManager = m_hostFigure.getUpdateManager();
+		if (updateManager instanceof PickingUpdateManager3D)
+			m_picker = ((PickingUpdateManager3D) updateManager).getPicker();
+	}
+
+	/**
+	 * Sets the bounds of the given feedback figure to the bounds of the host
+	 * figure, expanded by <code>0.01f</code>.
+	 * 
+	 * @param i_feedback the feedback figure to modify
+	 */
+	public void setInitialFeedbackBounds(IFigure3D i_feedback) {
+
+		if (m_hostFigure instanceof IFigure3D) {
+			BoundingBox feedbackBounds = Draw3DCache.getBoundingBox();
+			Vector3f wLocation = Draw3DCache.getVector3f();
+			Vector3f wSize = Draw3DCache.getVector3f();
+			try {
+				IFigure3D hostFigure3D = (IFigure3D) m_hostFigure;
+				IBoundingBox hostBounds = hostFigure3D.getBounds3D();
+
+				feedbackBounds.set(hostBounds);
+				feedbackBounds.expand(0.01f);
+
+				feedbackBounds.getPosition(wLocation);
+				feedbackBounds.getSize(wSize);
+
+				i_feedback.getPosition3D().setLocation3D(wLocation);
+				i_feedback.getPosition3D().setSize3D(wSize);
+			} finally {
+				Draw3DCache.returnBoundingBox(feedbackBounds);
+				Draw3DCache.returnVector3f(wLocation, wSize);
+			}
+		} else {
+			Point sLocation = m_hostFigure.getBounds().getLocation();
+			Dimension sSize = m_hostFigure.getBounds().getSize();
+
+			setAbsoluteFeedbackBounds(i_feedback, sLocation, sSize);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * This method is a duplicate of the original one, using the newly defined
+	 * anchor here.
+	 * 
+	 * @see org.eclipse.gef.editpolicies.FeedbackHelper#update(org.eclipse.draw2d.ConnectionAnchor,
+	 *      org.eclipse.draw2d.geometry.Point)
+	 */
+	@Override
+	public void update(ConnectionAnchor anchor, Point p) {
+
+		if (anchor != null)
+			setAnchor(anchor);
+		else {
+			ISurface surface = m_picker.getCurrentSurface();
+
+			Vector3f w = Draw3DCache.getVector3f();
+			try {
+				surface.getWorldLocation(p, w);
+				m_dummyAnchor.setLocation3D(w);
+				setAnchor(m_dummyAnchor);
+			} finally {
+				Draw3DCache.returnVector3f(w);
+			}
+		}
+	}
 
 }

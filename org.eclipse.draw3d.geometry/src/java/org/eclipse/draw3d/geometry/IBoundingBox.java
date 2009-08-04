@@ -16,9 +16,8 @@ package org.eclipse.draw3d.geometry;
  * A bounding box is a box which is defined by two vectors. Hence one
  * implementation may define the center position of the box while the other one
  * specifies the box' size from the center position, the getters defined here do
- * not assume to simply return attributes but may calculate derived values.
- * This interface defines an immutable
- * bounding box.
+ * not assume to simply return attributes but may calculate derived values. This
+ * interface defines an immutable bounding box.
  * 
  * @author Matthias Thiele
  * @version $Revision$
@@ -37,6 +36,17 @@ public interface IBoundingBox {
 	public Vector3f getCenter(Vector3f o_resultVector3f);
 
 	/**
+	 * Returns the opposite corner of the position of this bounding box, in
+	 * other words the sum of the position and size vectors. Depending on the
+	 * implementation, this may be a derived attribute.
+	 * 
+	 * @param o_resultVector3f the result vector, if <code>null</code> , a new
+	 *            vector will be created
+	 * @return the opposite corner of the position
+	 */
+	public Vector3f getEnd(Vector3f o_resultVector3f);
+
+	/**
 	 * Returns the position of this bounding box.
 	 * 
 	 * @param o_resultVector3f The result vector, if <code>null</code>, a new
@@ -46,7 +56,8 @@ public interface IBoundingBox {
 	public Vector3f getPosition(Vector3f o_resultVector3f);
 
 	/**
-	 * Returns the size of this bounding box.
+	 * Returns the size of this bounding box. Depending on the implementation,
+	 * this may be a derived attribute.
 	 * 
 	 * @param o_resultVector3f The result vector, if <code>null</code>, a new
 	 *            vector will be returned

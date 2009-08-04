@@ -23,30 +23,31 @@ import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
-import org.eclipse.draw3d.picking.ColorProvider;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.swt.graphics.Color;
 
 /**
  * Renders a model matrix as a cone.
- *
- * @todo Disk and Cylinder are not defined yet (were defined in LWJGL),
- * thus this class is not working yet!
+ * 
+ * @todo Disk and Cylinder are not defined yet (were defined in LWJGL), thus
+ *       this class is not working yet!
  * @author Kristian Duske
  * @version $Revision$
  * @since 19.05.2008
  */
 public class ConeFigureShape extends AbstractModelShape {
-	/**
-	 * Logger for this class
-	 */
-	private static final Logger log = Logger.getLogger(ConeFigureShape.class.getName());
-
 	private static final String DL_SOLID = "solid_cone";
 
 	private static final String DL_WIRED = "wired_cone";
 
 	private static final float HEIGHT = 16;
+
+	/**
+	 * Logger for this class
+	 */
+	private static final Logger log =
+		Logger.getLogger(ConeFigureShape.class.getName());
 
 	private static final int LOOPS = 1;
 
@@ -62,11 +63,11 @@ public class ConeFigureShape extends AbstractModelShape {
 
 	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
 
+	private static boolean WARN_ONCE = true;
+
 	private final IFigure3D m_figure;
 
 	private boolean m_solid = true;
-	
-	private static boolean WARN_ONCE = true;
 
 	/**
 	 * Creates a new shape for the given figure.
@@ -75,17 +76,29 @@ public class ConeFigureShape extends AbstractModelShape {
 	 * @throws NullPointerException if the given figure is <code>null</code>
 	 */
 	public ConeFigureShape(IFigure3D i_figure) {
-		
+
 		if (WARN_ONCE && log.isLoggable(Level.WARNING)) {
-			log.warning("Cone figure is not working yet, since disc and cylinder are not implemented.");
+			log
+				.warning("Cone figure is not working yet, since disc and cylinder are not implemented.");
 			WARN_ONCE = false;
 		}
-		
 
 		if (i_figure == null)
 			throw new NullPointerException("i_figure must not be null");
 
 		m_figure = i_figure;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
+	 *      org.eclipse.draw3d.geometry.Position3D)
+	 */
+	public float getDistance(Query i_query, Position3D i_position) {
+
+		// TODO: Implement this.
+		return Float.NaN;
 	}
 
 	private void initDisplayLists(DisplayListManager i_displayListManager) {
@@ -97,18 +110,18 @@ public class ConeFigureShape extends AbstractModelShape {
 
 			public void run() {
 
-//				Cylinder cylinder = new Cylinder();
-//				cylinder.setNormals(Graphics3DUtil.GLU_FLAT);
-//				cylinder.setDrawStyle(Graphics3DUtil.GLU_FILL);
-//
-//				Disk disk = new Disk();
-//				disk.setNormals(Graphics3DUtil.GLU_FLAT);
-//				disk.setDrawStyle(Graphics3DUtil.GLU_FILL);
-//				disk.setOrientation(Graphics3DUtil.GLU_INSIDE);
-//
-//				cylinder.draw(RADIUS, 0, HEIGHT, SLICES, SUBDIVS);
-//				disk.draw(0, RADIUS, SLICES, LOOPS);
-				
+				// Cylinder cylinder = new Cylinder();
+				// cylinder.setNormals(Graphics3DUtil.GLU_FLAT);
+				// cylinder.setDrawStyle(Graphics3DUtil.GLU_FILL);
+				//
+				// Disk disk = new Disk();
+				// disk.setNormals(Graphics3DUtil.GLU_FLAT);
+				// disk.setDrawStyle(Graphics3DUtil.GLU_FILL);
+				// disk.setOrientation(Graphics3DUtil.GLU_INSIDE);
+				//
+				// cylinder.draw(RADIUS, 0, HEIGHT, SLICES, SUBDIVS);
+				// disk.draw(0, RADIUS, SLICES, LOOPS);
+
 				// dummy code:
 				// TODO which g3d to be used, figures g3d or renderers?
 				Graphics3D g3d = m_figure.getRenderContext().getGraphics3D();
@@ -126,11 +139,11 @@ public class ConeFigureShape extends AbstractModelShape {
 
 			public void run() {
 
-//				Cylinder cylinder = new Cylinder();
-//				cylinder.setNormals(Graphics3DUtil.GLU_FLAT);
-//				cylinder.setDrawStyle(Graphics3DUtil.GLU_SILHOUETTE);
-//
-//				cylinder.draw(RADIUS, 0, HEIGHT, SLICES, SUBDIVS);
+				// Cylinder cylinder = new Cylinder();
+				// cylinder.setNormals(Graphics3DUtil.GLU_FLAT);
+				// cylinder.setDrawStyle(Graphics3DUtil.GLU_SILHOUETTE);
+				//
+				// cylinder.draw(RADIUS, 0, HEIGHT, SLICES, SUBDIVS);
 				// dummy code:
 				Graphics3D g3d = m_figure.getRenderContext().getGraphics3D();
 				g3d.glBegin(Graphics3DDraw.GL_QUADS);
@@ -153,31 +166,21 @@ public class ConeFigureShape extends AbstractModelShape {
 	@Override
 	protected void performRender(RenderContext renderContext) {
 
-		DisplayListManager displayListManager = renderContext
-				.getDisplayListManager();
+		DisplayListManager displayListManager =
+			renderContext.getDisplayListManager();
 		initDisplayLists(displayListManager);
 		Graphics3D g3d = renderContext.getGraphics3D();
 
-		if (renderContext.getMode().isPaint()) {
-			Color color = m_figure.getForegroundColor();
-			int alpha = m_figure.getAlpha();
+		Color color = m_figure.getForegroundColor();
+		int alpha = m_figure.getAlpha();
 
-			ColorConverter.toFloatArray(color, alpha, TMP_4F);
-			g3d.glColor4f(TMP_4F[0], TMP_4F[1], TMP_4F[2], TMP_4F[3]);
+		ColorConverter.toFloatArray(color, alpha, TMP_4F);
+		g3d.glColor4f(TMP_4F[0], TMP_4F[1], TMP_4F[2], TMP_4F[3]);
 
-			if (m_solid)
-				displayListManager.executeDisplayList(DL_SOLID);
-			else
-				displayListManager.executeDisplayList(DL_WIRED);
-		} else {
-			int color = renderContext.getColor(m_figure);
-			if (color != ColorProvider.IGNORE) {
-				ColorConverter.toFloatArray(color, 255, TMP_4F);
-				g3d.glColor4f(TMP_4F[0], TMP_4F[1], TMP_4F[2], TMP_4F[3]);
-
-				displayListManager.executeDisplayList(DL_SOLID);
-			}
-		}
+		if (m_solid)
+			displayListManager.executeDisplayList(DL_SOLID);
+		else
+			displayListManager.executeDisplayList(DL_WIRED);
 	}
 
 	/**
@@ -199,28 +202,27 @@ public class ConeFigureShape extends AbstractModelShape {
 	@Override
 	protected void setup(RenderContext renderContext) {
 
-//		TMP_M4.set(m_figure.getLocationMatrix());
-//		TMP_V3.set(0, 0, -HEIGHT);
-//		Math3D.translate(TMP_V3, TMP_M4, TMP_M4);
-//		setModelMatrix(TMP_M4);
-	
-		if (m_figure==null) {
+		// TMP_M4.set(m_figure.getLocationMatrix());
+		// TMP_V3.set(0, 0, -HEIGHT);
+		// Math3D.translate(TMP_V3, TMP_M4, TMP_M4);
+		// setModelMatrix(TMP_M4);
+
+		if (m_figure == null) {
 			setPosition(null);
 			return;
 		}
-		
-		Position3D pos = Position3DUtil.createRelativePosition(m_figure.getParentHost3D());
+
+		Position3D pos =
+			Position3DUtil.createRelativePosition(m_figure.getParentHost3D());
 		pos.setLocation3D(m_figure.getPosition3D().getLocation3D());
 		pos.setRotation3D(m_figure.getPosition3D().getRotation3D());
 		pos.setSize3D(IVector3f.UNITVEC3f);
 		Vector3fImpl v = new Vector3fImpl(pos.getLocation3D());
 		v.z -= HEIGHT;
 		pos.setLocation3D(v);
-		
-		
+
 		setPosition(pos);
-		
+
 	}
 
-	
 }

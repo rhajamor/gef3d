@@ -30,12 +30,14 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.geometry.BoundingBox;
 import org.eclipse.draw3d.geometry.BoundingBoxImpl;
 import org.eclipse.draw3d.geometry.IBoundingBox;
+import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
-import org.eclipse.draw3d.picking.ColorPicker;
+import org.eclipse.draw3d.picking.Picker;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 
@@ -85,24 +87,20 @@ public class Figure3DHelper {
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(Figure3DHelper.class
-			.getName());
-
-	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
+	private static final Logger log =
+		Logger.getLogger(Figure3DHelper.class.getName());
 
 	/**
 	 * Converts 2D bounds to 3D bounds.
 	 * 
 	 * @todo use normal vector of 3D ancestor for 3D bounds,
 	 * @todo evaluate scale factor when converting the bounds
-	 * @param i_reference
-	 *            a reference figure for the Z position
-	 * @param i_rect
-	 *            the 2D bounds
+	 * @param i_reference a reference figure for the Z position
+	 * @param i_rect the 2D bounds
 	 * @return the 3D bounds
 	 */
 	public static IBoundingBox convertBoundsToBounds3D(IFigure i_reference,
-			Rectangle i_rect) {
+		Rectangle i_rect) {
 
 		return convertBoundsToBounds3D(i_reference, i_rect, 0);
 	}
@@ -112,18 +110,15 @@ public class Figure3DHelper {
 	 * 
 	 * @todo use normal vector of 3D ancestor for 3D bounds,
 	 * @todo evaluate scale factor when converting the bounds
-	 * @param i_reference
-	 *            a reference figure for the Z position
-	 * @param i_rect
-	 *            the 2D bounds
-	 * @param i_z
-	 *            the Z size of the returned 3D bounds
+	 * @param i_reference a reference figure for the Z position
+	 * @param i_rect the 2D bounds
+	 * @param i_z the Z size of the returned 3D bounds
 	 * @return the 3D bounds
 	 */
 	public static IBoundingBox convertBoundsToBounds3D(IFigure i_reference,
-			Rectangle i_rect, float i_z) {
+		Rectangle i_rect, float i_z) {
 
-		Vector3f origin = Math3D.getVector3f();
+		Vector3f origin = Draw3DCache.getVector3f();
 		try {
 			IFigure3D host = getAncestor3D(i_reference);
 			ISurface surface = host.getSurface();
@@ -136,7 +131,7 @@ public class Figure3DHelper {
 
 			return bounds3D;
 		} finally {
-			Math3D.returnVector3f(origin);
+			Draw3DCache.returnVector3f(origin);
 		}
 	}
 
@@ -144,8 +139,7 @@ public class Figure3DHelper {
 	 * Returns this figure or an 3D ancector if this figure. 2D Connections may
 	 * return the 3D ancestor of their source.
 	 * 
-	 * @param i_figure
-	 *            the figure whose 3D ancestor should be returned
+	 * @param i_figure the figure whose 3D ancestor should be returned
 	 * @return the 3D ancestor of the given figure or <code>null</code> if the
 	 *         given figure does not have a 3D ancestor
 	 * @todo document return value if no 3D ancestor is found (null?)
@@ -167,11 +161,9 @@ public class Figure3DHelper {
 	/**
 	 * Returns the center of a figure (2D or 3D) in world coordinates.
 	 * 
-	 * @param i_figure
-	 *            the figure whose center should be determined
-	 * @param io_result
-	 *            the result vector, if <code>null</code> a new vector will be
-	 *            created
+	 * @param i_figure the figure whose center should be determined
+	 * @param io_result the result vector, if <code>null</code> a new vector
+	 *            will be created
 	 * @return the center of the given figure in world coordinates
 	 * @todo why is this static? why not use an instance method here?
 	 */
@@ -205,18 +197,16 @@ public class Figure3DHelper {
 	 * Returns the 2D surface location of a 3D point relative to the given 3D
 	 * host of the given reference figure.
 	 * 
-	 * @param i_figure
-	 *            the reference figure
-	 * @param i_location
-	 *            the 3D location in world coordinates
+	 * @param i_figure the reference figure
+	 * @param i_location the 3D location in world coordinates
 	 * @return the 2D surface location
-	 * @throws NullPointerException
-	 *             if any of the given arguments is <code>null</code>
-	 * @throws IllegalArgumentException
-	 *             if the given figure does not have a 3D host
+	 * @throws NullPointerException if any of the given arguments is
+	 *             <code>null</code>
+	 * @throws IllegalArgumentException if the given figure does not have a 3D
+	 *             host
 	 */
 	public final static Point getLocation(final IFigure i_figure,
-			final IVector3f i_location) {
+		final IVector3f i_location) {
 
 		if (i_figure == null)
 			throw new NullPointerException("figure must not be null");
@@ -227,7 +217,7 @@ public class Figure3DHelper {
 		IFigure3D host = getAncestor3D(i_figure);
 		if (host == null)
 			throw new IllegalArgumentException("no 3D host found for "
-					+ i_figure);
+				+ i_figure);
 
 		ISurface surface = host.getSurface();
 		return surface.getSurfaceLocation2D(i_location, null);
@@ -247,10 +237,8 @@ public class Figure3DHelper {
 	/**
 	 * Creates a new helper. The given friend provides access to the figure.
 	 * 
-	 * @param i_figuresFriend
-	 *            the figure's friend
-	 * @throws NullPointerException
-	 *             if the given friend is <code>null</code>
+	 * @param i_figuresFriend the figure's friend
+	 * @throws NullPointerException if the given friend is <code>null</code>
 	 */
 	public Figure3DHelper(final Figure3DFriend i_figuresFriend) {
 
@@ -267,8 +255,7 @@ public class Figure3DHelper {
 	 * {@link #paintChildren(Graphics)} to make that method easier to read and
 	 * it should not be called from anywhere else.
 	 * 
-	 * @param i_graphics
-	 *            the graphics object to configure
+	 * @param i_graphics the graphics object to configure
 	 */
 	private void configureGraphics(Graphics i_graphics) {
 
@@ -302,28 +289,27 @@ public class Figure3DHelper {
 	/**
 	 * Finds the figure at the given surface coordinates, while excluding
 	 * figures in the given tree search structure. The search is delegated to
-	 * the color picker's current surface.
+	 * the surface of this figure, if any.
 	 * 
-	 * @param i_sx
-	 *            the surface X coordinate
-	 * @param i_sy
-	 *            the surface Y coordinate
-	 * @param i_search
-	 *            the tree search structure
+	 * @param i_sx the surface X coordinate
+	 * @param i_sy the surface Y coordinate
+	 * @param i_search the tree search structure
 	 * @return the figure at the given coordinates or <code>null</code> if there
 	 *         is no figure at the given coordinates
 	 */
 	public IFigure findFigureAt(int i_sx, int i_sy, TreeSearch i_search) {
 
-		UpdateManager updateManager = m_figuresFriend.figure.getUpdateManager();
-		if (!(updateManager instanceof PickingUpdateManager3D))
-			return null;
+		IFigure3D figure = m_figuresFriend.figure;
+		ISurface surface = figure.getSurface();
 
-		ColorPicker picker = ((PickingUpdateManager3D) updateManager)
-				.getPicker();
-		
-		ISurface surface = picker.getCurrentSurface();
-		return surface.findFigureAt(i_sx, i_sy, i_search);
+		if (surface != null)
+			return surface.findFigureAt(i_sx, i_sy, i_search);
+
+		if (i_search == null
+			|| (!i_search.prune(figure) && i_search.accept(figure)))
+			return figure;
+
+		return null;
 	}
 
 	/**
@@ -385,10 +371,59 @@ public class Figure3DHelper {
 	}
 
 	/**
+	 * Creates the paraxial bounding box for the figure.
+	 * 
+	 * @return the paraxial bounding box
+	 */
+	@SuppressWarnings("unchecked")
+	public ParaxialBoundingBoxImpl getParaxialBoundingBox() {
+
+		// TODO store the paraxial bounding box and invalidate it when either
+		// any of my descendents or any of my ancestors has moved or been
+		// resized
+
+		IFigure3D figure = m_figuresFriend.figure;
+		Position3D position3D = figure.getPosition3D();
+
+		ParaxialBoundingBoxImpl pBoundingBox =
+			new ParaxialBoundingBoxImpl(position3D.getBounds3D(),
+				IMatrix4f.IDENTITY);
+
+		List<IFigure3D> descendants3D = getDescendants3D();
+		for (IFigure3D descendant3D : descendants3D)
+			if (!(descendant3D instanceof Connection3D))
+				pBoundingBox.union(descendant3D.getParaxialBoundingBox());
+
+		return pBoundingBox;
+	}
+
+	/**
+	 * Returns the color picker.
+	 * 
+	 * @return the color picker.
+	 */
+	public Picker getPicker() {
+
+		UpdateManager updateManager = m_figuresFriend.figure.getUpdateManager();
+		return ((PickingUpdateManager3D) updateManager).getPicker();
+	}
+
+	/**
+	 * Invalidates the paraxial bounds of the figure and of all 3D figures in
+	 * its subtree.
+	 */
+	public void invalidateParaxialBoundsTree() {
+
+		m_figuresFriend.figure.invalidateParaxialBounds();
+		List<IFigure3D> descendants3D = getDescendants3D();
+		for (IFigure3D descendant3D : descendants3D)
+			descendant3D.invalidateParaxialBoundsTree();
+	}
+
+	/**
 	 * Paints the figure's border.
 	 * 
-	 * @param i_graphics
-	 *            the graphics to paint on
+	 * @param i_graphics the graphics to paint on
 	 * @see org.eclipse.draw2d.Figure#paintBorder(org.eclipse.draw2d.Graphics)
 	 */
 	public void paintBorder(Graphics i_graphics) {
@@ -399,8 +434,7 @@ public class Figure3DHelper {
 	/**
 	 * Paints the figure's children.
 	 * 
-	 * @param i_graphics
-	 *            the graphics object to paint on
+	 * @param i_graphics the graphics object to paint on
 	 * @see org.eclipse.draw2d.Figure#paintChildren(org.eclipse.draw2d.Graphics)
 	 */
 	public void paintChildren(Graphics i_graphics) {
@@ -430,19 +464,17 @@ public class Figure3DHelper {
 	 * well.
 	 * </p>
 	 * 
-	 * @param i_graphics
-	 *            the graphics object to paint on
+	 * @param i_graphics the graphics object to paint on
 	 */
 	private void paintChildren2D(Graphics i_graphics) {
 
 		Collection<IFigure> children2D = getChildren2D();
 		if (!children2D.isEmpty()) {
 
-			RenderContext renderContext = m_figuresFriend.figure
-					.getRenderContext();
+			RenderContext renderContext =
+				m_figuresFriend.figure.getRenderContext();
 
-			boolean repaint2D = renderContext.getMode().isPaint()
-					&& m_figuresFriend.is2DContentDirty();
+			boolean repaint2D = m_figuresFriend.is2DContentDirty();
 
 			IFigure3D figure = m_figuresFriend.figure;
 			Graphics graphics = i_graphics;
@@ -451,9 +483,9 @@ public class Figure3DHelper {
 				Graphics3D g3d = renderContext.getGraphics3D();
 				Rectangle bounds = figure.getBounds();
 
-				Graphics textureGraphics = g3d.activateGraphics2D(figure,
-						bounds.width, bounds.height, figure.getAlpha(), figure
-								.getBackgroundColor());
+				Graphics textureGraphics =
+					g3d.activateGraphics2D(figure, bounds.width, bounds.height,
+						figure.getAlpha(), figure.getBackgroundColor());
 
 				/*
 				 * if (!textureManager.contains(figure)) {
@@ -488,13 +520,13 @@ public class Figure3DHelper {
 						graphics.restoreState();
 					}
 
-					ConnectionLayer connectionLayer = figure
-							.getConnectionLayer(null);
+					ConnectionLayer connectionLayer =
+						figure.getConnectionLayer(null);
 
 					// paint the connections
 					if (connectionLayer != null) {
-						IVector3f location3D = figure.getPosition3D()
-								.getLocation3D();
+						IVector3f location3D =
+							figure.getPosition3D().getLocation3D();
 
 						int dx = -Math.round(location3D.getX());
 						int dy = -Math.round(location3D.getY());
@@ -521,8 +553,7 @@ public class Figure3DHelper {
 	 * to make that method easier to read and it should not be called from
 	 * anywhere else.
 	 * 
-	 * @param i_graphics
-	 *            the graphics object to pass on
+	 * @param i_graphics the graphics object to pass on
 	 */
 	private void paintChildren3D(Graphics i_graphics) {
 
@@ -535,8 +566,7 @@ public class Figure3DHelper {
 	/**
 	 * Paint the figure itself.
 	 * 
-	 * @param i_graphics
-	 *            the graphics object to paint on
+	 * @param i_graphics the graphics object to paint on
 	 * @see org.eclipse.draw2d.Figure#paintFigure(org.eclipse.draw2d.Graphics)
 	 */
 	public void paintFigure(Graphics i_graphics) {
@@ -555,6 +585,7 @@ public class Figure3DHelper {
 	 * revalidate method.
 	 */
 	public void revalidate() {
+
 		m_decendants3DCache = null;
 	}
 
@@ -565,6 +596,7 @@ public class Figure3DHelper {
 	 */
 	@Override
 	public String toString() {
+
 		return super.toString() + " with " + this.m_figuresFriend;
 	}
 
