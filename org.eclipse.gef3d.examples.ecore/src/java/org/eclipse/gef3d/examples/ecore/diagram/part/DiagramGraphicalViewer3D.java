@@ -140,9 +140,7 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer {
 
 			return null;
 		} finally {
-			Draw3DCache.returnVector3f(eye);
-			Draw3DCache.returnVector3f(wLocation);
-			Draw3DCache.returnVector3f(direction);
+			Draw3DCache.returnVector3f(eye, wLocation, direction);
 			Draw3DCache.returnPoint(sLocation);
 		}
 	}
@@ -185,7 +183,7 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer {
 			}
 		}
 
-		Vector3f rayStart = Math3DCache.getVector3f();
+		Vector3f rayOrigin = Math3DCache.getVector3f();
 		Vector3f rayDirection = Math3DCache.getVector3f();
 		try {
 
@@ -212,8 +210,7 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer {
 
 			return part;
 		} finally {
-			Math3DCache.returnVector3f(rayStart);
-			Math3DCache.returnVector3f(rayDirection);
+			Math3DCache.returnVector3f(rayOrigin, rayDirection);
 		}
 	}
 

@@ -85,8 +85,7 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 				// cannot happen
 				return false;
 			} finally {
-				Math3DCache.returnVector3f(start);
-				Math3DCache.returnVector3f(end);
+				Math3DCache.returnVector3f(start, end);
 			}
 		}
 
@@ -225,11 +224,8 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 			Math3D.sub(pBoundsP1, pBoundsP0, pBoundsP1);
 			setSize(pBoundsP1);
 		} finally {
-			Math3DCache.returnVector3f(boundsLoc);
-			Math3DCache.returnVector3f(boundsSize);
-			Math3DCache.returnVector3f(pBoundsP0);
-			Math3DCache.returnVector3f(pBoundsP1);
-			Math3DCache.returnVector3f(tmp);
+			Math3DCache.returnVector3f(boundsLoc, boundsSize, pBoundsP0,
+				pBoundsP1, tmp);
 		}
 	}
 
@@ -252,7 +248,7 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 	 * @see org.eclipse.draw3d.geometry.IParaxialBoundingBox#intersectRay(org.eclipse.draw3d.geometry.IVector3f,
 	 *      org.eclipse.draw3d.geometry.IVector3f)
 	 */
-	public float intersectRay(IVector3f i_rayStart, IVector3f i_rayDirection) {
+	public float intersectRay(IVector3f i_rayOrigin, IVector3f i_rayDirection) {
 
 		Vector3f planePoint = Math3DCache.getVector3f();
 		Vector3f intersection = Math3DCache.getVector3f();
@@ -284,13 +280,13 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 				candidate.getPoint(this, planePoint);
 
 				float d =
-					Math3D.rayIntersectsPlane(i_rayStart, i_rayDirection,
+					Math3D.rayIntersectsPlane(i_rayOrigin, i_rayDirection,
 						planePoint, planeNormal);
 
 				if (!Float.isNaN(d) && d > 0f) {
 					intersection.set(i_rayDirection);
 					intersection.scale(d);
-					Math3D.add(i_rayStart, intersection, intersection);
+					Math3D.add(i_rayOrigin, intersection, intersection);
 
 					if (candidate.contains(this, intersection))
 						return d;
@@ -299,8 +295,7 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 
 			return Float.NaN;
 		} finally {
-			Math3DCache.returnVector3f(planePoint);
-			Math3DCache.returnVector3f(intersection);
+			Math3DCache.returnVector3f(planePoint, intersection);
 		}
 	}
 
@@ -340,10 +335,7 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 
 			return (!(myPos.equals(m_position) && myOldEnd.equals(myEnd)));
 		} finally {
-			Math3DCache.returnVector3f(myPos);
-			Math3DCache.returnVector3f(theirPos);
-			Math3DCache.returnVector3f(myEnd);
-			Math3DCache.returnVector3f(theirEnd);
+			Math3DCache.returnVector3f(myPos, theirPos, myEnd, theirEnd);
 		}
 	}
 
@@ -372,8 +364,7 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 				&& Math3D.in(start.getY(), end.getY(), i_point.getY())
 				&& Math3D.in(start.getZ(), end.getZ(), i_point.getZ());
 		} finally {
-			Math3DCache.returnVector3f(start);
-			Math3DCache.returnVector3f(end);
+			Math3DCache.returnVector3f(start, end);
 		}
 	}
 

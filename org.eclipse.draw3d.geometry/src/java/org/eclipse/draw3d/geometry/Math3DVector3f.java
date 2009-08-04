@@ -215,9 +215,7 @@ public class Math3DVector3f extends Math3DVector2f {
 			result.set((float) b, (float) h, (float) a);
 			return result;
 		} finally {
-			Math3DCache.returnVector3f(vecNorm);
-			Math3DCache.returnVector3f(refNorm);
-			Math3DCache.returnVector3f(axis);
+			Math3DCache.returnVector3f(vecNorm, refNorm, axis);
 		}
 	}
 

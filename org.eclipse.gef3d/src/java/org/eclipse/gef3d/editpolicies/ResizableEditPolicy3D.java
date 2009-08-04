@@ -103,7 +103,7 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 			// r.setForegroundColor(ColorConstants.white);
 
 			IFigure3D feedback = new FeedbackFigure3D();
-			getFeedbackHelper().update(feedback, null, null);
+			getFeedbackHelper().setInitialFeedbackBounds(feedback);
 
 			addFeedback(feedback);
 			return feedback;
@@ -225,8 +225,11 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 		IFigure feedback = getDragSourceFeedbackFigure();
 		if (!(feedback instanceof IFigure3D))
 			super.showChangeBoundsFeedback(request);
-		else
-			getFeedbackHelper().update((IFigure3D) feedback,
+		else {
+			IFigure3D feedback3D = (IFigure3D) feedback;
+			getFeedbackHelper().setInitialFeedbackBounds(feedback3D);
+			getFeedbackHelper().setDeltaFeedbackBounds(feedback3D,
 				request.getMoveDelta(), request.getSizeDelta());
+		}
 	}
 }

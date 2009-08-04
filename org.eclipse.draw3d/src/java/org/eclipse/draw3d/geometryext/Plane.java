@@ -89,7 +89,7 @@ public class Plane {
 	/**
 	 * Determines the point of intersection of this plane and a given ray.
 	 * 
-	 * @param i_rayStart the starting point of the ray
+	 * @param i_rayOrigin the origin of the ray
 	 * @param i_rayDirection the direction vector of the ray, must be normalised
 	 * @param o_result the result vector, if <code>null</code>, a new vector
 	 *            will be created
@@ -98,13 +98,24 @@ public class Plane {
 	 *         in this plane
 	 * @throws NullPointerException if i_la or i_lb is <code>null</code>
 	 */
-	public Vector3f intersectionWithRay(IVector3f i_rayStart,
+	public Vector3f intersectionWithRay(IVector3f i_rayOrigin,
 		IVector3f i_rayDirection, Vector3f o_result) {
 
-		return Math3D.rayIntersectsPlane(i_rayStart, i_rayDirection, m_p, m_n,
+		return Math3D.rayIntersectsPlane(i_rayOrigin, i_rayDirection, m_p, m_n,
 			o_result);
 	}
 
+	/**
+	 * Calculates the point of intersection between the given segment and this
+	 * plane.
+	 * 
+	 * @param i_segmentPoint1 the first vertex of the segment
+	 * @param i_segmentPoint2 the second vertex of the segment
+	 * @param o_result the result vector, if <code>null</code>, a new vector
+	 *            will be returned
+	 * @return the point of intersection or <code>null</code> if the given
+	 *         segment does not intersect with this plane
+	 */
 	public Vector3f intersectionWithSegment(IVector3f i_segmentPoint1,
 		IVector3f i_segmentPoint2, Vector3f o_result) {
 
@@ -201,9 +212,7 @@ public class Plane {
 
 			return true;
 		} finally {
-			Math3DCache.returnVector3f(p0p1);
-			Math3DCache.returnVector3f(p0p2);
-			Math3DCache.returnVector3f(normal);
+			Math3DCache.returnVector3f(p0p1, p0p2, normal);
 		}
 	}
 

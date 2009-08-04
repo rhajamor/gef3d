@@ -102,14 +102,14 @@ public class DebugPrimitives implements Renderable {
 		point.set(i_p);
 	}
 
-	public void addRay(Object i_key, IVector3f i_rayStart,
+	public void addRay(Object i_key, IVector3f i_rayOrigin,
 		IVector3f i_rayDirection) {
 
 		if (i_key == null)
 			throw new NullPointerException("i_key must not be null");
 
-		if (i_rayStart == null)
-			throw new NullPointerException("i_rayStart must not be null");
+		if (i_rayOrigin == null)
+			throw new NullPointerException("i_rayOrigin must not be null");
 
 		if (i_rayDirection == null)
 			throw new NullPointerException("i_rayDirection must not be null");
@@ -120,7 +120,7 @@ public class DebugPrimitives implements Renderable {
 			m_lines.put(i_key, ray);
 		}
 
-		ray[0].set(i_rayStart);
+		ray[0].set(i_rayOrigin);
 		ray[1].set(i_rayDirection);
 	}
 
@@ -230,9 +230,7 @@ public class DebugPrimitives implements Renderable {
 			}
 			g3D.glEnd();
 		} finally {
-			Math3DCache.returnVector3f(dir);
-			Math3DCache.returnVector3f(start);
-			Math3DCache.returnVector3f(end);
+			Math3DCache.returnVector3f(dir, start, end);
 		}
 	}
 

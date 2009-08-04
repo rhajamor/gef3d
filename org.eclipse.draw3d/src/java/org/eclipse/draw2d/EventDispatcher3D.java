@@ -104,9 +104,7 @@ public class EventDispatcher3D extends EventDispatcher {
 			Vector3f wLocation = surface.getWorldLocation(sLocation, null);
 			return new MouseEvent3D(i_me, sLocation, wLocation);
 		} finally {
-			Draw3DCache.returnVector3f(eye);
-			Draw3DCache.returnVector3f(point);
-			Draw3DCache.returnVector3f(direction);
+			Draw3DCache.returnVector3f(eye, point, direction);
 			Draw3DCache.returnPoint(sLocation);
 		}
 	}

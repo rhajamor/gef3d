@@ -70,7 +70,7 @@ public interface Picker {
 	/**
 	 * Returns a hit for a figure hit by the given picking ray.
 	 * 
-	 * @param i_rayStart the origin of the picking ray
+	 * @param i_rayOrigin the origin of the picking ray
 	 * @param i_rayDirection the direction of the picking ray, must be
 	 *            normalised
 	 * @return the hit or <code>null</code> if no figure was hit by the given
@@ -79,13 +79,13 @@ public interface Picker {
 	 * @throws NullPointerException if any of the given vectors is
 	 *             <code>null</code>
 	 */
-	public Hit getHit(IVector3f i_rayStart, IVector3f i_rayDirection);
+	public Hit getHit(IVector3f i_rayOrigin, IVector3f i_rayDirection);
 
 	/**
 	 * Returns a hit for a figure hit by the given picking ray. Only figures
 	 * which are accepted and not pruned by the given search are considered.
 	 * 
-	 * @param i_rayStart the origin of the picking ray
+	 * @param i_rayOrigin the origin of the picking ray
 	 * @param i_rayDirection the direction of the picking ray, must be
 	 *            normalised
 	 * @param i_search the search
@@ -95,7 +95,7 @@ public interface Picker {
 	 * @throws NullPointerException if any of the given vectors is
 	 *             <code>null</code>
 	 */
-	public Hit getHit(IVector3f i_rayStart, IVector3f i_rayDirection,
+	public Hit getHit(IVector3f i_rayOrigin, IVector3f i_rayDirection,
 		TreeSearch i_search);
 
 	/**

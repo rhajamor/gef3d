@@ -207,7 +207,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 		}
 
 		Vector3f point = Draw3DCache.getVector3f();
-		Point figureSurfaceLocation = Draw3DCache.getPoint();
+		Point figureSLocation = Draw3DCache.getPoint();
 		try {
 
 			LightweightSystem3D lws = getLightweightSystem3D();
@@ -228,11 +228,11 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 				if (figureSurface != null) {
 					hit.getWorldLocation(point);
 					figureSurface.getSurfaceLocation2D(point,
-						figureSurfaceLocation);
+						figureSLocation);
 
 					figure =
-						figure3D.findFigureAt(figureSurfaceLocation.x,
-							figureSurfaceLocation.y, search);
+						figure3D.findFigureAt(figureSLocation.x,
+							figureSLocation.y, search);
 				}
 
 				while (part == null && figure != null) {
@@ -247,7 +247,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 			return part;
 		} finally {
 			Draw3DCache.returnVector3f(point);
-			Draw3DCache.returnPoint(figureSurfaceLocation);
+			Draw3DCache.returnPoint(figureSLocation);
 		}
 	}
 

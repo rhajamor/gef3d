@@ -101,7 +101,7 @@ public abstract class AbstractSurface implements ISurface {
 	 *      org.eclipse.draw3d.geometry.IVector3f,
 	 *      org.eclipse.draw2d.geometry.Point)
 	 */
-	public Point getSurfaceLocation2D(IVector3f i_rayStart,
+	public Point getSurfaceLocation2D(IVector3f i_rayOrigin,
 		IVector3f i_rayDirection, Point io_result) {
 
 		Point result = io_result;
@@ -110,7 +110,7 @@ public abstract class AbstractSurface implements ISurface {
 
 		Vector3f sLocation = Draw3DCache.getVector3f();
 		try {
-			getSurfaceLocation3D(i_rayStart, i_rayDirection, sLocation);
+			getSurfaceLocation3D(i_rayOrigin, i_rayDirection, sLocation);
 
 			result.x = (int) sLocation.getX();
 			result.y = (int) sLocation.getY();
@@ -192,7 +192,7 @@ public abstract class AbstractSurface implements ISurface {
 	 *      org.eclipse.draw3d.geometry.IVector3f,
 	 *      org.eclipse.draw3d.geometry.Vector3f)
 	 */
-	public Vector3f getSurfaceLocation3D(IVector3f i_rayStart,
+	public Vector3f getSurfaceLocation3D(IVector3f i_rayOrigin,
 		IVector3f i_rayDirection, Vector3f io_result) {
 
 		Vector3f p = Draw3DCache.getVector3f();
@@ -203,15 +203,13 @@ public abstract class AbstractSurface implements ISurface {
 			getOrigin(p);
 			getZAxis(n);
 
-			Math3D.rayIntersectsPlane(i_rayStart, i_rayDirection, p, n, w);
+			Math3D.rayIntersectsPlane(i_rayOrigin, i_rayDirection, p, n, w);
 			if (w == null)
 				return null;
 
 			return getSurfaceLocation3D(w, io_result);
 		} finally {
-			Draw3DCache.returnVector3f(p);
-			Draw3DCache.returnVector3f(n);
-			Draw3DCache.returnVector3f(w);
+			Draw3DCache.returnVector3f(p, n, w);
 		}
 	}
 
@@ -360,11 +358,10 @@ public abstract class AbstractSurface implements ISurface {
 		if (m_surfaceToWorldValid)
 			return;
 
+		Vector3f origin = Draw3DCache.getVector3f();
 		Vector3f xAxis = Draw3DCache.getVector3f();
 		Vector3f yAxis = Draw3DCache.getVector3f();
 		Vector3f zAxis = Draw3DCache.getVector3f();
-		Vector3f origin = Draw3DCache.getVector3f();
-
 		try {
 			getXAxis(xAxis);
 			getYAxis(yAxis);
@@ -393,10 +390,7 @@ public abstract class AbstractSurface implements ISurface {
 
 			m_surfaceToWorldValid = true;
 		} finally {
-			Draw3DCache.returnVector3f(xAxis);
-			Draw3DCache.returnVector3f(yAxis);
-			Draw3DCache.returnVector3f(zAxis);
-			Draw3DCache.returnVector3f(origin);
+			Draw3DCache.returnVector3f(origin, xAxis, yAxis, zAxis);
 		}
 	}
 

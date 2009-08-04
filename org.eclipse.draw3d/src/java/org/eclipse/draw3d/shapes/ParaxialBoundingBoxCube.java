@@ -102,8 +102,7 @@ public class ParaxialBoundingBoxCube implements Shape {
 			g3d.glVertex3f(p2.getX(), p2.getY(), p2.getZ());
 			g3d.glEnd();
 		} finally {
-			Math3DCache.returnVector3f(p1);
-			Math3DCache.returnVector3f(p2);
+			Math3DCache.returnVector3f(p1, p2);
 		}
 	}
 }

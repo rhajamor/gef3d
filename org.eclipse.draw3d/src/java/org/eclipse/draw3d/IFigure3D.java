@@ -180,30 +180,6 @@ public interface IFigure3D extends IFigure, Pickable, IFigure2DHost3D,
 	public void invalidateParaxialBoundsTree();
 
 	/**
-	 * Returns the distance between the given ray start point and the point of
-	 * intersection of the given ray and this figure, if any. The returned
-	 * distance is actually the scalar value x by which the given ray direction
-	 * vector must be multiplied so that the following equation is true:
-	 * 
-	 * <pre>
-	 * p = i_rayStart + x * i_rayDirection
-	 * </pre>
-	 * 
-	 * in which p is the point of intersection, if any. If the given ray does
-	 * not intersect with this figure, {@link Float#NaN} is returned.
-	 * 
-	 * @param i_rayStart the starting point of the ray
-	 * @param i_rayDirection the direction vector of the ray, which must be
-	 *            normalised
-	 * @return the scalar value as described above or {@link Float#NaN} if the
-	 *         given ray does not intersect with this figure
-	 * @throws IllegalArgumentException if the given direction vector has a
-	 *             length of zero
-	 */
-	// public float intersectRay(IVector3f i_rayStart, IVector3f
-	// i_rayDirection);
-
-	/**
 	 * Sets the alpha value of this figure. This value controls the transparency
 	 * of this figure, where 0 means translucent and 255 means opaque.
 	 * 

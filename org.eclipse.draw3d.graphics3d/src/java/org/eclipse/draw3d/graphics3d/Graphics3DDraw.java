@@ -17,6 +17,8 @@ import java.nio.IntBuffer;
 
 import org.eclipse.draw3d.geometry.IHost3D;
 import org.eclipse.draw3d.geometry.IPosition3D;
+import org.eclipse.draw3d.geometry.IVector2f;
+import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Position3D;
 
 /**
@@ -401,6 +403,8 @@ public interface Graphics3DDraw {
 	public abstract void glColor4f(float red, float green, float blue,
 			float alpha);
 
+	public abstract void glColor4f(float[] rgba);
+
 	public abstract void glDisable(int cap);
 
 	public abstract void glEnable(int cap);
@@ -411,9 +415,13 @@ public interface Graphics3DDraw {
 
 	public abstract void glTexCoord2f(float s, float t);
 
+	public abstract void glTexCoord2f(IVector2f coords);
+
 	public abstract void glPolygonMode(int face, int mode);
 
 	public abstract void glVertex2f(float x, float y);
+
+	public abstract void glVertex2f(IVector2f vertex);
 
 	public abstract void glMatrixMode(int mode);
 
@@ -449,6 +457,8 @@ public interface Graphics3DDraw {
 
 	public abstract void glVertex3f(float x, float y, float z);
 
+	public abstract void glVertex3f(IVector3f vertex);
+
 	public abstract void glNormal3f(int nx, int ny, int nz);
 
 	public abstract void glFlush();
@@ -476,9 +486,13 @@ public interface Graphics3DDraw {
 
 	public abstract void glColor3f(float red, float green, float blue);
 
+	public abstract void glColor3f(float[] rgb);
+
 	public abstract void glFinish();
 
 	public abstract void glNormal3f(float nx, float ny, float nz);
+
+	public abstract void glNormal3f(IVector3f normal);
 
 	public void useContext(Object context) throws Graphics3DException;
 

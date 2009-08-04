@@ -88,9 +88,7 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 				Math3D.sub(tmp, origin3D, size3D);
 				return new BoundingBoxImpl(origin3D, size3D);
 			} finally {
-				Draw3DCache.returnVector3f(origin3D);
-				Draw3DCache.returnVector3f(tmp);
-				Draw3DCache.returnVector3f(size3D);
+				Draw3DCache.returnVector3f(origin3D, tmp, size3D);
 			}
 		}
 	}
@@ -250,8 +248,7 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 			}
 		} finally {
 		    Draw3DCache.returnPoint(surfaceRef);
-			Draw3DCache.returnVector3f(center);
-			Draw3DCache.returnVector3f(tmp);
+			Draw3DCache.returnVector3f(center, tmp);
 		}
 	}
 

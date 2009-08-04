@@ -26,7 +26,7 @@ public interface Pickable {
 	 * vector must be multiplied so that the following equation is true:
 	 * 
 	 * <pre>
-	 * p = rayStart + x * rayDirection
+	 * p = rayOrigin + x * rayDirection
 	 * </pre>
 	 * 
 	 * in which p is the point of intersection, if any. If the given ray does

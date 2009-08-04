@@ -115,9 +115,9 @@ public class GeometryPicker implements Picker {
 	 * @see org.eclipse.draw3d.picking.Picker#getHit(org.eclipse.draw3d.geometry.IVector3f,
 	 *      org.eclipse.draw3d.geometry.IVector3f)
 	 */
-	public Hit getHit(IVector3f i_rayStart, IVector3f i_rayDirection) {
+	public Hit getHit(IVector3f i_rayOrigin, IVector3f i_rayDirection) {
 
-		return getHit(i_rayStart, i_rayDirection, null);
+		return getHit(i_rayOrigin, i_rayDirection, null);
 	}
 
 	/**
@@ -127,17 +127,17 @@ public class GeometryPicker implements Picker {
 	 *      org.eclipse.draw3d.geometry.IVector3f,
 	 *      org.eclipse.draw2d.TreeSearch)
 	 */
-	public Hit getHit(IVector3f i_rayStart, IVector3f i_rayDirection,
+	public Hit getHit(IVector3f i_rayOrigin, IVector3f i_rayDirection,
 		TreeSearch i_search) {
 
-		if (i_rayStart == null)
-			throw new NullPointerException("i_rayStart must not be null");
+		if (i_rayOrigin == null)
+			throw new NullPointerException("i_rayOrigin must not be null");
 
 		if (i_rayDirection == null)
 			throw new NullPointerException("i_rayDirection must not be null");
 
 		Query query =
-			new Query(i_rayStart, i_rayDirection, m_rootFigure, i_search);
+			new Query(i_rayOrigin, i_rayDirection, m_rootFigure, i_search);
 
 		return query.execute();
 	}
@@ -153,21 +153,20 @@ public class GeometryPicker implements Picker {
 		if (i_rayPoint == null)
 			throw new NullPointerException("i_rayPoint must not be null");
 
-		Vector3f rayStart = Draw3DCache.getVector3f();
+		Vector3f rayOrigin = Draw3DCache.getVector3f();
 		Vector3f rayDirection = Draw3DCache.getVector3f();
 		try {
 			ICamera camera = m_scene.getCamera();
-			camera.getPosition(rayStart);
+			camera.getPosition(rayOrigin);
 
-			if (rayStart.equals(i_rayPoint))
+			if (rayOrigin.equals(i_rayPoint))
 				throw new IllegalArgumentException(
-					"i_rayPoint must not be equal to the camera position");
+					"rayOrigin must not be equal to the camera position");
 
-			Math3D.getRayDirection(rayStart, i_rayPoint, rayDirection);
-			return getHit(rayStart, rayDirection, i_search);
+			Math3D.getRayDirection(rayOrigin, i_rayPoint, rayDirection);
+			return getHit(rayOrigin, rayDirection, i_search);
 		} finally {
-			Draw3DCache.returnVector3f(rayStart);
-			Draw3DCache.returnVector3f(rayDirection);
+			Draw3DCache.returnVector3f(rayOrigin, rayDirection);
 		}
 	}
 

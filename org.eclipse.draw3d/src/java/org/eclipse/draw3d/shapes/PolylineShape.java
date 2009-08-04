@@ -58,6 +58,33 @@ public class PolylineShape implements Shape {
 		if (m_points.size() < 2)
 			return Float.NaN;
 
+		/*
+		 * To determine whether a polyline is hit by a ray, we implement the
+		 * following method. First, we reduce the problem to line segments by
+		 * checking individually the segments of the polyline for intersections
+		 * with the ray. To reduce the number of checks, we divide the world
+		 * space into five subspaces using three planes. One plane contains the
+		 * origin of the picking ray and has the ray direction as its normal.
+		 * This plane divides the world space into two subspaces we call "front"
+		 * and "behind" for obvious reasons. Furthermore, we subdive the front
+		 * and back spaces space "horizontally" and "vertically" using two
+		 * planes that are orthogonal to each other and whose line of
+		 * intersection is parallel to the ray direction and contains the ray
+		 * origin. This is easy to image, just place yourself at the origin of
+		 * the ray and look into its direction. The "horizontal" and "vertical"
+		 * division planes would be visible as two orthogonal lines which
+		 * intersect exactly at the point you are looking at. Be aware that from
+		 * your point of view, neither of these planes is usually horizontal or
+		 * vertical - we only use these words to differentiate the two planes.
+		 * Now that we have subdivided space, we can formulate conditions for
+		 * intersecting line segments. Firstly, a segment can only intersect
+		 * with the ray if at least one of its vertices is the front space and
+		 * if its vertices are contained in opposite sub spaces (for example,
+		 * vertex 1 is in the upper left and vertex2 in the lower right
+		 * subspace). After we have found such a candidate, we can easily
+		 * calculate the point of intersection between the segment and the ray.
+		 */
+
 		Plane visBorder = getVisibleBorder(i_query);
 		Plane hBorder = getHorizontalBorder(i_query);
 		Plane vBorder = getVerticalBorder(i_query);
@@ -72,7 +99,7 @@ public class PolylineShape implements Shape {
 			p2 = m_points.get(i);
 			visSide2 = visBorder.getSide(p2);
 
-			// is at least one point in front of the camera?
+			// is at least one point in the front subspace?
 			if (visSide1 != visSide2 || visSide1 == Side.FRONT) {
 
 				if (hSide1 == null)
@@ -105,10 +132,10 @@ public class PolylineShape implements Shape {
 
 							// intersection only if tmp is on the
 							// picking ray
-							IVector3f rayStart = i_query.getRayStart();
+							IVector3f rayOrigin = i_query.getRayOrigin();
 							IVector3f rayDirection = i_query.getRayDirection();
 
-							Math3D.sub(intersection, rayStart, tmp);
+							Math3D.sub(intersection, rayOrigin, tmp);
 							float fx = tmp.getX() / rayDirection.getX();
 							float fy = tmp.getY() / rayDirection.getY();
 							float fz = tmp.getZ() / rayDirection.getZ();
@@ -124,22 +151,24 @@ public class PolylineShape implements Shape {
 
 							return (fx + fy + fz) / 3f;
 						} finally {
-							Math3DCache.returnVector3f(intersection);
-							Math3DCache.returnVector3f(tmp);
+							Math3DCache.returnVector3f(intersection, tmp);
 						}
 					}
 
+					// carry the "vertical" side of point 2 to point 1
 					vSide1 = vSide2;
 				} else {
 					vSide1 = null;
 				}
 
+				// carry the "horizontal" side of point 2 to point 1
 				hSide1 = hSide2;
 			} else {
 				hSide1 = null;
 				vSide1 = null;
 			}
 
+			// carry the "visible" side of point 2 to point 1
 			visSide1 = visSide2;
 			p1 = p2;
 		}
@@ -153,12 +182,14 @@ public class PolylineShape implements Shape {
 		if (horizontalBorder == null) {
 			Vector3f normal = Math3DCache.getVector3f();
 			try {
-				Math3D.cross(i_query.getRayStart(), i_query.getRayDirection(),
-					normal);
+				IVector3f rayOrigin = i_query.getRayOrigin();
+				IVector3f rayDirection = i_query.getRayDirection();
+
+				Math3D.cross(rayOrigin, rayDirection, normal);
 				Math3D.normalise(normal, normal);
 
 				horizontalBorder = new Plane();
-				horizontalBorder.set(i_query.getRayStart(), normal);
+				horizontalBorder.set(rayOrigin, normal);
 
 				i_query.set(KEY_HORIZONTAL_BORDER, horizontalBorder);
 			} finally {
@@ -185,15 +216,16 @@ public class PolylineShape implements Shape {
 			try {
 				Plane horizontalBorder = getHorizontalBorder(i_query);
 				horizontalBorder.getNormal(hNormal);
-				Math3D.cross(i_query.getRayDirection(), hNormal, vNormal);
+				IVector3f rayDirection = i_query.getRayDirection();
+
+				Math3D.cross(rayDirection, hNormal, vNormal);
 
 				verticalBorder = new Plane();
-				verticalBorder.set(i_query.getRayStart(), vNormal);
+				verticalBorder.set(i_query.getRayOrigin(), vNormal);
 
 				i_query.set(KEY_VERTICAL_BORDER, verticalBorder);
 			} finally {
-				Math3DCache.returnVector3f(hNormal);
-				Math3DCache.returnVector3f(vNormal);
+				Math3DCache.returnVector3f(hNormal, vNormal);
 			}
 		}
 
@@ -204,8 +236,11 @@ public class PolylineShape implements Shape {
 
 		Plane visibleBorder = (Plane) i_query.get(KEY_VISIBLE_BORDER);
 		if (visibleBorder == null) {
+			IVector3f rayOrigin = i_query.getRayOrigin();
+			IVector3f rayDirection = i_query.getRayDirection();
+
 			visibleBorder = new Plane();
-			visibleBorder.set(i_query.getRayStart(), i_query.getRayDirection());
+			visibleBorder.set(rayOrigin, rayDirection);
 
 			i_query.set(KEY_VISIBLE_BORDER, visibleBorder);
 		}

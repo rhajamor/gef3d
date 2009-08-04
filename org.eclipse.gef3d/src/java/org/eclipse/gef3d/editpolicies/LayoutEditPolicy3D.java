@@ -53,9 +53,6 @@ public abstract class LayoutEditPolicy3D extends LayoutEditPolicy {
 		} else { // use 3D implementation otherwise
 			FeedbackFigure3D feedback = new FeedbackFigure3D();
 
-			getFeedbackHelper().update(feedback, i_createRequest.getLocation(),
-				i_createRequest.getSize());
-
 			addFeedback(feedback);
 			return feedback;
 		}
@@ -93,8 +90,8 @@ public abstract class LayoutEditPolicy3D extends LayoutEditPolicy {
 			IFigure3D feedback =
 				(IFigure3D) getSizeOnDropFeedback(createRequest);
 
-			getFeedbackHelper().update(feedback, createRequest.getLocation(),
-				createRequest.getSize());
+			getFeedbackHelper().setAbsoluteFeedbackBounds(feedback,
+				createRequest.getLocation(), createRequest.getSize());
 		}
 	}
 }

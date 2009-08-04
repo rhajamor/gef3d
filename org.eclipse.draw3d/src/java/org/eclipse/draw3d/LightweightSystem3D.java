@@ -44,7 +44,6 @@ import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.picking.Query;
-import org.eclipse.draw3d.shapes.ParaxialBoundingBoxCube;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.draw3d.util.DebugPrimitives;
 import org.eclipse.swt.events.DisposeEvent;
@@ -606,9 +605,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 		 * @see org.eclipse.draw3d.IFigure3D#render()
 		 */
 		public void render(RenderContext i_renderContext) {
-
-			ParaxialBoundingBoxCube pbCube = new ParaxialBoundingBoxCube(this);
-			pbCube.render(i_renderContext);
 
 			i_renderContext.renderTransparency();
 

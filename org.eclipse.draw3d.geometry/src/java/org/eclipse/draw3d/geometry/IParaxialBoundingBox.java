@@ -36,13 +36,13 @@ public interface IParaxialBoundingBox extends IBoundingBox {
 	 * vector must be multiplied so that the following equation is true:
 	 * 
 	 * <pre>
-	 * p = i_rayStart + x * i_rayDirection
+	 * p = i_rayOrigin + x * i_rayDirection
 	 * </pre>
 	 * 
 	 * in which p is the point of intersection, if any. If the given ray does
 	 * not intersect with this bounding box, {@link Float#NaN} is returned.
 	 * 
-	 * @param i_rayStart the starting point of the ray
+	 * @param i_rayOrigin the origin of the ray
 	 * @param i_rayDirection the direction vector of the ray, which must be
 	 *            normalised
 	 * @return the scalar value as described above or {@link Float#NaN} if the
@@ -50,5 +50,5 @@ public interface IParaxialBoundingBox extends IBoundingBox {
 	 * @throws IllegalArgumentException if the given direction vector has a
 	 *             length of zero
 	 */
-	public float intersectRay(IVector3f i_rayStart, IVector3f i_rayDirection);
+	public float intersectRay(IVector3f i_rayOrigin, IVector3f i_rayDirection);
 }

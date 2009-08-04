@@ -24,110 +24,104 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
  */
 public class Ray {
 
-    private Vector3f m_direction = new Vector3fImpl();
+	private Vector3f m_direction = new Vector3fImpl();
 
-    private Vector3f m_start = new Vector3fImpl();
+	private Vector3f m_origin = new Vector3fImpl();
 
-    /**
-     * Creates a new, uninitialized ray.
-     */
-    public Ray() {
+	/**
+	 * Creates a new, uninitialized ray.
+	 */
+	public Ray() {
 
-        // nothing to initialize
-    }
+		// nothing to initialize
+	}
 
-    /**
-     * Creates a new ray with the given start point and direction vector.
-     * 
-     * @param i_start
-     *            the start point
-     * @param i_direction
-     *            the direction vector
-     * 
-     * @throws NullPointerException
-     *             if any of the given arguments is <code>null</code>
-     */
-    public Ray(IVector3f i_start, IVector3f i_direction) {
+	/**
+	 * Creates a new ray with the given origin and direction vector.
+	 * 
+	 * @param i_origin the origin
+	 * @param i_direction the direction vector
+	 * @throws NullPointerException if any of the given arguments is
+	 *             <code>null</code>
+	 */
+	public Ray(IVector3f i_origin, IVector3f i_direction) {
 
-        set(i_start, i_direction);
-    }
+		set(i_origin, i_direction);
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object i_obj) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object i_obj) {
 
-        if (i_obj == null)
-            return false;
+		if (i_obj == null)
+			return false;
 
-        if (!(i_obj instanceof Ray))
-            return false;
+		if (!(i_obj instanceof Ray))
+			return false;
 
-        Ray ray = (Ray) i_obj;
+		Ray ray = (Ray) i_obj;
 
-        return m_start.equals(ray.m_start)
-                && m_direction.equals(ray.m_direction);
+		return m_origin.equals(ray.m_origin)
+			&& m_direction.equals(ray.m_direction);
 
-    }
+	}
 
-    /**
-     * Returns the direction vector of this ray.
-     * 
-     * @return the direction vector
-     */
-    public IVector3f getDirection() {
+	/**
+	 * Returns the direction vector of this ray.
+	 * 
+	 * @return the direction vector
+	 */
+	public IVector3f getDirection() {
 
-        return m_direction;
-    }
+		return m_direction;
+	}
 
-    /**
-     * Returns the starting point of this ray.
-     * 
-     * @return the starting point
-     */
-    public IVector3f getStart() {
+	/**
+	 * Returns the starting point of this ray.
+	 * 
+	 * @return the starting point
+	 */
+	public IVector3f getStart() {
 
-        return m_start;
-    }
+		return m_origin;
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
 
-        int result = 17;
-        result = 37 * result + m_start.hashCode();
-        result = 37 * result + m_direction.hashCode();
+		int result = 17;
+		result = 37 * result + m_origin.hashCode();
+		result = 37 * result + m_direction.hashCode();
 
-        return result;
-    }
+		return result;
+	}
 
-    /**
-     * Sets the start point and direction vector to the given values.
-     * 
-     * @param i_start
-     *            the start point
-     * @param i_direction
-     *            the direction vector
-     * 
-     * @throws NullPointerException
-     *             if any of the given arguments is <code>null</code>
-     */
-    public void set(IVector3f i_start, IVector3f i_direction) {
+	/**
+	 * Sets the origin and direction vector to the given values.
+	 * 
+	 * @param i_origin the origin
+	 * @param i_direction the direction vector
+	 * @throws NullPointerException if any of the given arguments is
+	 *             <code>null</code>
+	 */
+	public void set(IVector3f i_origin, IVector3f i_direction) {
 
-        if (i_start == null)
-            throw new NullPointerException("i_start must not be null");
+		if (i_origin == null)
+			throw new NullPointerException("i_start must not be null");
 
-        if (i_direction == null)
-            throw new NullPointerException("i_direction must not be null");
+		if (i_direction == null)
+			throw new NullPointerException("i_direction must not be null");
 
-        m_start.set(i_start);
-        m_direction.set(i_direction);
-    }
+		m_origin.set(i_origin);
+		m_direction.set(i_direction);
+	}
 }

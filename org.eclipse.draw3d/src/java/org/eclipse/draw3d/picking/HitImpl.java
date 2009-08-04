@@ -31,7 +31,7 @@ public class HitImpl implements Hit {
 
 	private IVector3f m_rayDirection;
 
-	private IVector3f m_rayStart;
+	private IVector3f m_rayOrigin;
 
 	private Vector3f m_wLocation;
 
@@ -41,26 +41,26 @@ public class HitImpl implements Hit {
 	 * @param i_figure the figure that was hit
 	 * @param i_distance the distance of the hit point to the origin of the
 	 *            picking ray
-	 * @param i_rayStart the origin of the picking ray
+	 * @param i_rayOrigin the origin of the picking ray
 	 * @param i_rayDirection the direction of the picking ray
 	 * @throws NullPointerException if the given figure or any of the given
 	 *             vectors is <code>null</code>
 	 */
-	public HitImpl(IFigure3D i_figure, float i_distance, IVector3f i_rayStart,
+	public HitImpl(IFigure3D i_figure, float i_distance, IVector3f i_rayOrigin,
 			IVector3f i_rayDirection) {
 
 		if (i_figure == null)
 			throw new NullPointerException("i_figure must not be null");
 
-		if (i_rayStart == null)
-			throw new NullPointerException("i_rayStart must not be null");
+		if (i_rayOrigin == null)
+			throw new NullPointerException("i_rayOrigin must not be null");
 
 		if (i_rayDirection == null)
 			throw new NullPointerException("i_rayDirection must not be null");
 
 		m_figure = i_figure;
 		m_distance = i_distance;
-		m_rayStart = i_rayStart;
+		m_rayOrigin = i_rayOrigin;
 		m_rayDirection = i_rayDirection;
 	}
 
@@ -98,7 +98,7 @@ public class HitImpl implements Hit {
 		if (m_wLocation == null) {
 			m_wLocation = new Vector3fImpl(m_rayDirection);
 			m_wLocation.scale(m_distance);
-			Math3D.add(m_rayStart, m_wLocation, m_wLocation);
+			Math3D.add(m_rayOrigin, m_wLocation, m_wLocation);
 		}
 
 		result.set(m_wLocation);

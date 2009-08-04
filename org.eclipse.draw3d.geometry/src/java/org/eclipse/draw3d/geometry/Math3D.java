@@ -25,6 +25,119 @@ package org.eclipse.draw3d.geometry;
 public class Math3D extends Math3DMatrixOps {
 
 	/**
+	 * In
+	 * {@link Math3D#rayIntersectsPolygon(IVector3f, IVector3f, IVector3f[], IVector3f)}
+	 * , we need to project the polygon and the point of intersection on one of
+	 * the three 2D planes defined by the axes of the world coordinate system.
+	 * It is advisable to select the plane on which the projected polygon has
+	 * the largest surface area. This enum helps with the selection and with the
+	 * projection of the 3D vectors onto the appropriate plane.
+	 * 
+	 * @author Kristian Duske
+	 * @version $Revision$
+	 * @since 04.08.2009
+	 */
+	private enum ProjectionPlane {
+		/**
+		 * The 2D plane defined by the X and Y axes.
+		 */
+		XY,
+		/**
+		 * The 2D plane defined by the X and Z axes.
+		 */
+		XZ,
+		/**
+		 * The 2D plane defined by the Z and Y axes.
+		 */
+		ZY;
+
+		/**
+		 * Returns the appropriate 2D projection plane for a polygon with the
+		 * given front face normal. This is the plane on which the projection of
+		 * the polygon has the largest surface area.
+		 * 
+		 * @param i_normal the normal of the front face of the polygon
+		 * @return the plane on which the projection of the polygon has the
+		 *         largest surface area
+		 */
+		public static ProjectionPlane getPlane(IVector3f i_normal) {
+
+			float xy = Math.abs(Math3D.dot(XY.getNormal(), i_normal));
+			float xz = Math.abs(Math3D.dot(XZ.getNormal(), i_normal));
+			float zy = Math.abs(Math3D.dot(ZY.getNormal(), i_normal));
+
+			ProjectionPlane plane = null;
+			float max;
+			if (xy > xz) {
+				plane = XY;
+				max = xy;
+			} else {
+				plane = XZ;
+				max = xz;
+			}
+
+			if (zy > max)
+				plane = ZY;
+
+			return plane;
+		}
+
+		/**
+		 * Returns the normal vector of this 2D projection plane.
+		 * 
+		 * @return the normal vector
+		 */
+		public IVector3f getNormal() {
+
+			switch (this) {
+			case XY:
+				return IVector3f.Z_AXIS;
+			case XZ:
+				return IVector3f.Y_AXIS;
+			default:
+				return IVector3f.X_AXIS;
+			}
+		}
+
+		/**
+		 * Returns the component of the given vector that is projected onto the
+		 * X axis of this 2D projection plane.
+		 * 
+		 * @param i_vector the vector to project
+		 * @return the 2D X component of the given vector
+		 */
+		public float getX(IVector3f i_vector) {
+
+			switch (this) {
+			case XY:
+				return i_vector.getX();
+			case XZ:
+				return i_vector.getX();
+			default:
+				return i_vector.getZ();
+			}
+		}
+
+		/**
+		 * Returns the component of the given vector that is projected onto the
+		 * Y axis of this 2D projection plane.
+		 * 
+		 * @param i_vector the vector to project
+		 * @return the 2D Y component of the given vector
+		 */
+		public float getY(IVector3f i_vector) {
+			switch (this) {
+			case XY:
+				return i_vector.getY();
+			case XZ:
+				return i_vector.getZ();
+			default:
+				return i_vector.getY();
+			}
+		}
+	}
+
+	/**
 	 * Enumerates the sides of a plane.
 	 * 
 	 * @author Kristian Duske
@@ -40,6 +153,49 @@ public class Math3D extends Math3DMatrixOps {
 		 * The front side.
 		 */
 		FRONT;
+	}
+
+	/**
+	 * Calculates a point on a ray from a distance like this
+	 * 
+	 * <pre>
+	 * i_rayOrigin + i_distance * i_rayDirection
+	 * </pre>
+	 * 
+	 * @param i_rayOrigin the origin of a ray
+	 * @param i_rayDirection the direction vector of a ray, must be normalised
+	 * @param i_distance the distance between the origin of the ray and the
+	 *            point to return
+	 * @param o_result the result vector, if <code>null</code>, a new vector
+	 *            will be returned
+	 * @return a point on the given ray or <code>null</code> if the given
+	 *         distance is {@link Float#NaN}
+	 */
+	public static Vector3f getRayPoint(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, float i_distance, Vector3f o_result) {
+
+		if (i_rayOrigin == null)
+			throw new NullPointerException("i_rayOrigin must not be null");
+
+		if (i_rayDirection == null)
+			throw new NullPointerException("i_rayDirection must not be null");
+
+		if (Float.isNaN(i_distance))
+			return null;
+
+		Vector3f result = o_result;
+		if (result == null)
+			result = new Vector3fImpl();
+
+		if (i_distance == 0)
+			result.set(i_rayOrigin);
+		else {
+			result.set(i_rayDirection);
+			result.scale(i_distance);
+			Math3D.add(i_rayOrigin, result, result);
+		}
+
+		return result;
 	}
 
 	/**
@@ -153,146 +309,113 @@ public class Math3D extends Math3DMatrixOps {
 		}
 	}
 
-	private enum ProjectionPlane {
-		XY, XZ, ZY;
+	/**
+	 * Calculcates the point of intersection between a ray and a plane. The ray
+	 * is specified by a starting point and a direction and the plane is
+	 * specified in Hessian normal form, e.g. by a contained point and a normal
+	 * vector. This method returns a scalar x so that
+	 * 
+	 * <pre>
+	 * p = i_rayOrigin + x * i_rayDirection
+	 * </pre>
+	 * 
+	 * in which p is the point of intersection of the given ray and the given
+	 * plane, if any. A result of <code>0</code> indicates that the ray starting
+	 * point is contained within the plane.
+	 * 
+	 * @param i_rayOrigin the origin of the ray
+	 * @param i_rayDirection the direction vector of the ray, which must be
+	 *            normalised
+	 * @param i_planePoint a point that is contained in the plane
+	 * @param i_planeNormal the normal vector of the plane
+	 * @return the scalar factor for the ray direction vector or
+	 *         {@link Float#NaN} if the given ray does not intersect with or is
+	 *         contained entirely in the given plane
+	 */
+	public static float rayIntersectsPlane(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, IVector3f i_planePoint,
+		IVector3f i_planeNormal) {
 
-		public IVector3f getNormal() {
-
-			switch (this) {
-			case XY:
-				return IVector3f.Z_AXIS;
-			case XZ:
-				return IVector3f.Y_AXIS;
-			default:
-				return IVector3f.X_AXIS;
-			}
-		}
-
-		public float getX(IVector3f i_vector) {
-
-			switch (this) {
-			case XY:
-				return i_vector.getX();
-			case XZ:
-				return i_vector.getX();
-			default:
-				return i_vector.getZ();
-			}
-		}
-
-		public float getY(IVector3f i_vector) {
-			switch (this) {
-			case XY:
-				return i_vector.getY();
-			case XZ:
-				return i_vector.getZ();
-			default:
-				return i_vector.getY();
-			}
-		}
-
-		public static ProjectionPlane getPlane(IVector3f i_normal) {
-
-			float xy = Math.abs(Math3D.dot(XY.getNormal(), i_normal));
-			float xz = Math.abs(Math3D.dot(XZ.getNormal(), i_normal));
-			float zy = Math.abs(Math3D.dot(ZY.getNormal(), i_normal));
-
-			ProjectionPlane plane = null;
-			float max;
-			if (xy > xz) {
-				plane = XY;
-				max = xy;
-			} else {
-				plane = XZ;
-				max = xz;
-			}
-
-			if (zy > max)
-				plane = ZY;
-
-			return plane;
-		}
+		float denominator = Math3D.dot(i_rayDirection, i_planeNormal);
+		return rayIntersectsPlane(i_rayOrigin, i_rayDirection, i_planePoint,
+			i_planeNormal, denominator);
 	}
 
-	public static float rayIntersectsPolygon(IVector3f i_rayStart,
-		IVector3f i_rayDirection, IVector3f[] i_polygon, IVector3f i_normal) {
+	/**
+	 * This method only exists because we already know the denominator in
+	 * {@link #rayIntersectsPolygon(IVector3f, IVector3f, IVector3f[], IVector3f)}
+	 * , so there is no need to calculate it again.
+	 */
+	private static float rayIntersectsPlane(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, IVector3f i_planePoint,
+		IVector3f i_planeNormal, float i_denominator) {
 
-		if (i_rayStart == null)
-			throw new NullPointerException("i_rayStart must not be null");
+		if (i_denominator == 0)
+			return Float.NaN;
 
-		if (i_rayDirection == null)
-			throw new NullPointerException("i_rayDirection must not be null");
+		float d = Math3D.dot(i_planePoint, i_planeNormal);
+		float numerator = d - Math3D.dot(i_rayOrigin, i_planeNormal);
 
-		if (i_polygon == null)
-			throw new NullPointerException("i_polygon must not be null");
+		float t = numerator / i_denominator;
+		if (t < 0)
+			return Float.NaN;
 
-		if (i_normal == null)
-			throw new NullPointerException("i_normal must not be null");
-
-		if (i_polygon.length < 3)
-			throw new IllegalArgumentException(
-				"a polygon must have at least three vertices");
-
-		Vector3f tmp = Math3DCache.getVector3f();
-		Vector3f intersection = Math3DCache.getVector3f();
-		try {
-			float cos = Math3D.dot(i_rayDirection, i_normal);
-			if (cos >= 0)
-				return Float.NaN;
-
-			rayIntersectsPlane(i_rayStart, i_rayDirection, i_polygon[0],
-				i_normal, intersection);
-
-			ProjectionPlane projectionPlane =
-				ProjectionPlane.getPlane(i_normal);
-
-			float ix = projectionPlane.getX(intersection);
-			float iy = projectionPlane.getY(intersection);
-
-			int c = 0;
-			float x0, y0, x1, y1;
-			IVector3f p0 = i_polygon[i_polygon.length - 1];
-			for (int i = 0; i < i_polygon.length; i++) {
-				IVector3f p1 = i_polygon[i];
-
-				// move point of intersection into origin
-				x0 = projectionPlane.getX(p0) - ix;
-				y0 = projectionPlane.getY(p0) - iy;
-				x1 = projectionPlane.getX(p1) - ix;
-				y1 = projectionPlane.getY(p1) - iy;
-
-				if (x0 == 0 && y0 == 0 || x1 == 0 && y1 == 0) {
-					// we hit a corner cancel search and return distance
-					c = 1;
-					break;
-				}
-
-				if ((y0 > 0 && y1 <= 0) || (y0 <= 0 && y1 > 0)) {
-					if (x0 > 0 && x1 > 0) {
-						c += 1;
-					} else if ((x0 > 0 && x1 <= 0) || (x0 <= 0 && x1 > 0)) {
-						float x = -y0 * (x1 - x0) / (y1 - y0) + x0;
-						if (x >= 0)
-							c += 1;
-					}
-				}
-
-				p0 = p1;
-			}
-
-			if (c % 2 == 0)
-				return Float.NaN;
-
-			Math3D.sub(intersection, i_rayStart, tmp);
-			return tmp.length();
-		} finally {
-			Math3DCache.returnVector3f(intersection);
-			Math3DCache.returnVector3f(tmp);
-		}
+		return t;
 	}
 
-	public static float rayIntersectsPolygon(IVector3f i_rayStart,
-		IVector3f i_rayDirection, IVector3f[] i_polygon) {
+	/**
+	 * Calculcates the point of intersection between a ray and a plane. The ray
+	 * is specified by a starting point and a direction and the plane is
+	 * specified in Hessian normal form, e.g. by a contained point and a normal
+	 * vector. If the result is equal to the ray starting point, the ray
+	 * starting point is contained within the plane.
+	 * 
+	 * @param i_rayOrigin the origin of the ray
+	 * @param i_rayDirection the direction vector of the ray, which must be
+	 *            normalised
+	 * @param i_planePoint a point that is contained in the plane
+	 * @param i_planeNormal the normal vector of the plane, which must be
+	 *            normalised
+	 * @param io_result the result vector, if <code>null</code>, a new vector
+	 *            will be returned
+	 * @return the point of intersection between the given ray and plane or
+	 *         <code>null</code> if the given ray either does not intersect with
+	 *         or is contained entirely in the given plane
+	 */
+	public static Vector3f rayIntersectsPlane(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, IVector3f i_planePoint,
+		IVector3f i_planeNormal, Vector3f io_result) {
+
+		float distance =
+			rayIntersectsPlane(i_rayOrigin, i_rayDirection, i_planePoint,
+				i_planeNormal);
+
+		return getRayPoint(i_rayOrigin, i_rayDirection, distance, io_result);
+	}
+
+	/**
+	 * Calculates the point of intersection between the given ray and front face
+	 * the given polygon and returns the distance between that point and the
+	 * origin of the given picking ray. If the given ray does not intersect with
+	 * the given polygon or hits its back face, {@link Float#NaN} is returned.
+	 * The front and back face of the polygon are determined by the winding
+	 * order of the vertices. The side from which the vertices appear to be
+	 * wound in counter-clockwise order is considered the front.
+	 * 
+	 * @param i_rayOrigin the origin of the ray
+	 * @param i_rayDirection the direction vector of the ray, must be normalised
+	 * @param i_polygon the vertices in counter-clockwise order
+	 * @param o_intersection if not null, the world coordinates of the point of
+	 *            intersection will be set to this vector
+	 * @return the distance between the origin of the given ray and the point of
+	 *         intersection or {@link Float#NaN} if the given ray does not
+	 *         intersect with the front face of the given polygon
+	 * @throws NullPointerException if any of the given arguments is
+	 *             <code>null</code> or if the given polygon has less than 3
+	 *             vertices
+	 */
+	public static float rayIntersectsPolygon(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, IVector3f[] i_polygon, Vector3f o_intersection) {
 
 		if (i_polygon == null)
 			throw new NullPointerException("i_polygon must not be null");
@@ -311,100 +434,160 @@ public class Math3D extends Math3DMatrixOps {
 			Math3D.cross(a, b, normal);
 			Math3D.normalise(normal, normal);
 
-			return rayIntersectsPolygon(i_rayStart, i_rayDirection, i_polygon,
-				normal);
+			return rayIntersectsPolygon(i_rayOrigin, i_rayDirection, i_polygon,
+				normal, o_intersection);
 		} finally {
-			Math3DCache.returnVector3f(a);
-			Math3DCache.returnVector3f(b);
-			Math3DCache.returnVector3f(normal);
+			Math3DCache.returnVector3f(a, b, normal);
 		}
 	}
 
 	/**
-	 * Calculcates the point of intersection between a ray and a plane. The ray
-	 * is specified by a starting point and a direction and the plane is
-	 * specified in Hessian normal form, e.g. by a contained point and a normal
-	 * vector. This method returns a scalar x so that
+	 * Calculates the point of intersection between the given ray and front face
+	 * the given polygon and returns the distance between that point and the
+	 * origin of the given picking ray. If the given ray does not intersect with
+	 * the given polygon or hits its back face, {@link Float#NaN} is returned.
+	 * The front and back face of the polygon are determined by the given normal
+	 * vector, which points away from the front face.
+	 * <p>
+	 * Attention, this method does not check whether the vertices of the given
+	 * polygon all lie on a plane. If they don't, the results are undefined.
+	 * </p>
 	 * 
-	 * <pre>
-	 * p = i_rayStart + x * i_rayDirection
-	 * </pre>
-	 * 
-	 * in which p is the point of intersection of the given ray and the given
-	 * plane, if any. A result of <code>0</code> indicates that the ray starting
-	 * point is contained within the plane.
-	 * 
-	 * @param i_rayStart the starting point of the ray
-	 * @param i_rayDirection the direction vector of the ray, which must be
-	 *            normalised
-	 * @param i_planePoint a point that is contained in the plane
-	 * @param i_planeNormal the normal vector of the plane
-	 * @return the scalar factor for the ray direction vector or
-	 *         {@link Float#NaN} if the given ray does not intersect with or is
-	 *         contained entirely in the given plane
+	 * @param i_rayOrigin the origin of the ray
+	 * @param i_rayDirection the direction vector of the ray, must be normalised
+	 * @param i_polygon the vertices in counter-clockwise order
+	 * @param i_normal the normal vector of the polygon's front face
+	 * @param o_intersection if not null, the world coordinates of the point of
+	 *            intersection will be set to this vector
+	 * @return the distance between the origin of the given ray and the point of
+	 *         intersection or {@link Float#NaN} if the given ray does not
+	 *         intersect with the front face of the given polygon
+	 * @throws NullPointerException if any of the given arguments is
+	 *             <code>null</code>
+	 * @throws IllegalArgumentException if the given polygon has less than 3
+	 *             vertices
 	 */
-	public static float rayIntersectsPlane(IVector3f i_rayStart,
-		IVector3f i_rayDirection, IVector3f i_planePoint,
-		IVector3f i_planeNormal) {
+	public static float rayIntersectsPolygon(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, IVector3f[] i_polygon, IVector3f i_normal,
+		Vector3f o_intersection) {
 
-		float d = Math3D.dot(i_planePoint, i_planeNormal);
+		if (i_rayOrigin == null)
+			throw new NullPointerException("i_rayOrigin must not be null");
 
-		float numerator = d - Math3D.dot(i_rayStart, i_planeNormal);
-		float denominator = Math3D.dot(i_rayDirection, i_planeNormal);
+		if (i_rayDirection == null)
+			throw new NullPointerException("i_rayDirection must not be null");
 
-		if (denominator == 0)
-			return Float.NaN;
+		if (i_polygon == null)
+			throw new NullPointerException("i_polygon must not be null");
 
-		float t = numerator / denominator;
-		if (t < 0)
-			return Float.NaN;
+		if (i_normal == null)
+			throw new NullPointerException("i_normal must not be null");
 
-		return t;
-	}
+		if (i_polygon.length < 3)
+			throw new IllegalArgumentException(
+				"a polygon must have at least three vertices");
 
-	/**
-	 * Calculcates the point of intersection between a ray and a plane. The ray
-	 * is specified by a starting point and a direction and the plane is
-	 * specified in Hessian normal form, e.g. by a contained point and a normal
-	 * vector. If the result is equal to the ray starting point, the ray
-	 * starting point is contained within the plane.
-	 * 
-	 * @param i_rayStart the starting point of the ray
-	 * @param i_rayDirection the direction vector of the ray, which must be
-	 *            normalised
-	 * @param i_planePoint a point that is contained in the plane
-	 * @param i_planeNormal the normal vector of the plane, which must be
-	 *            normalised
-	 * @param io_result the result vector, if <code>null</code>, a new vector
-	 *            will be returned
-	 * @return the point of intersection between the given ray and plane or
-	 *         <code>null</code> if the given ray either does not intersect with
-	 *         or is contained entirely in the given plane
-	 */
-	public static Vector3f rayIntersectsPlane(IVector3f i_rayStart,
-		IVector3f i_rayDirection, IVector3f i_planePoint,
-		IVector3f i_planeNormal, Vector3f io_result) {
+		/*
+		 * This algorithm works as follows: First, we check whether the given
+		 * ray would hit the front or back face of the given polygon. Then, the
+		 * point of intersection of the given ray and the plane defined by the
+		 * given polygon is calculated. After that, we need to check whether the
+		 * point of intersection is inside or outside of the polygon. In order
+		 * to determine that, we project the polygon and the point of
+		 * intersection onto one of the planes defined by the coordinate system
+		 * axes and thereby reduce the 3D problem to a 2D problem. To find out
+		 * whether a 2D point is inside or outside of a 2D polygon, you shoot a
+		 * ray from the point and count how often it intersects with the edges
+		 * of the polygon. If that number is odd, the point is inside the
+		 * polygon, if it is even, it is outside. To make this a little easier,
+		 * we translate the polygon and the point so that the point is in the
+		 * origin and then check how many of the polygon edges intersect with
+		 * the (positive) X axis (which acts as our ray).
+		 */
 
-		float t =
-			rayIntersectsPlane(i_rayStart, i_rayDirection, i_planePoint,
-				i_planeNormal);
-		if (Float.isNaN(t))
-			return null;
+		Vector3f intersection = o_intersection;
+		if (intersection == null)
+			intersection = Math3DCache.getVector3f();
+		try {
+			// do we hit the front face?
+			float cos = Math3D.dot(i_rayDirection, i_normal);
+			if (cos >= 0)
+				return Float.NaN;
 
-		Vector3f result = io_result;
-		if (result == null)
-			result = new Vector3fImpl();
+			// calculate point of intersection reusing the dot product
+			float distance =
+				rayIntersectsPlane(i_rayOrigin, i_rayDirection, i_polygon[0],
+					i_normal, cos);
+			getRayPoint(i_rayOrigin, i_rayDirection, distance, intersection);
 
-		if (t == 0)
-			result.set(i_rayStart);
-		else {
-			result.set(i_rayDirection);
-			result.scale(t);
+			// which plane should we project onto?
+			ProjectionPlane projectionPlane =
+				ProjectionPlane.getPlane(i_normal);
 
-			Math3D.add(i_rayStart, result, result);
+			// project the point of intersection
+			float ix = projectionPlane.getX(intersection);
+			float iy = projectionPlane.getY(intersection);
+
+			int c = 0; // number of edges that intersect with positive X axis
+			float x0, y0, x1, y1;
+
+			// start with last polygon edge
+			IVector3f p0 = i_polygon[i_polygon.length - 1];
+			for (int i = 0; i < i_polygon.length; i++) {
+				IVector3f p1 = i_polygon[i];
+
+				// translate the vertices by the coordinates of the point
+				x0 = projectionPlane.getX(p0) - ix;
+				y0 = projectionPlane.getY(p0) - iy;
+				x1 = projectionPlane.getX(p1) - ix;
+				y1 = projectionPlane.getY(p1) - iy;
+
+				if (x0 == 0 && y0 == 0 || x1 == 0 && y1 == 0) {
+					// the point is identical to a polygon vertex, cancel search
+					c = 1;
+					break;
+				}
+
+				/*
+				 * A polygon edge intersects with the positive X axis if the
+				 * following conditions are met: The Y coordinates of its
+				 * vertices must have different signs (we assign a negative sign
+				 * to 0 here in order to count it as a negative number) and one
+				 * of the following two conditions must be met: Either the X
+				 * coordinates of the vertices are both positive or the X
+				 * coordinates of the edge have different signs (again, we
+				 * assign a negative sign to 0 here). In the latter case, we
+				 * must calculate the point of intersection between the edge and
+				 * the X axis and determine whether its X coordinate is positive
+				 * or zero.
+				 */
+
+				// do the Y coordinates have different signs?
+				if ((y0 > 0 && y1 <= 0) || (y0 <= 0 && y1 > 0)) {
+					// Is segment entirely on the positive side of the X axis?
+					if (x0 > 0 && x1 > 0) {
+						c += 1; // edge intersects with the X axis
+						// if not, do the X coordinates have different signs?
+					} else if ((x0 > 0 && x1 <= 0) || (x0 <= 0 && x1 > 0)) {
+						// calculate the point of intersection between the edge
+						// and the X axis
+						float x = -y0 * (x1 - x0) / (y1 - y0) + x0;
+						if (x >= 0)
+							c += 1; // edge intersects with the X axis
+					}
+				}
+
+				p0 = p1;
+			}
+
+			if (c % 2 == 0)
+				return Float.NaN;
+
+			return distance;
+		} finally {
+			if (o_intersection == null)
+				Math3DCache.returnVector3f(intersection);
 		}
-
-		return result;
 	}
 
 	/**

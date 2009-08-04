@@ -204,136 +204,142 @@ public class Math3DCache {
 	}
 
 	/**
-	 * Returns the given bounding box to the cache. If the given bounding box is
-	 * <code>null</code>, it is ignored.
+	 * Returns the given bounding boxes to the cache. If any of the given
+	 * bounding boxes is <code>null</code>, it is ignored.
 	 * 
-	 * @param i_b the boundingbox to return
+	 * @param i_bs the bounding boxes to return
 	 */
-	public static void returnBoundingBox(BoundingBox i_b) {
+	public static void returnBoundingBox(BoundingBox... i_bs) {
 
-		if (i_b == null)
-			return;
-
-		if (m_synchronized) {
+		if (m_synchronized)
 			synchronized (m_boundingBox) {
-				m_boundingBox.offer(i_b);
+				for (BoundingBox b : i_bs)
+					if (b != null)
+						m_boundingBox.offer(b);
 			}
-		} else
-			m_boundingBox.offer(i_b);
+		else
+			for (BoundingBox b : i_bs)
+				if (b != null)
+					m_boundingBox.offer(b);
 	}
 
 	/**
-	 * Returns the given matrix to the cache. If the given matrix is
+	 * Returns the given matrices to the cache. If any of the given matrices is
 	 * <code>null</code>, it is ignored.
 	 * 
-	 * @param i_m the matrix to return
+	 * @param i_ms the matrices to return
 	 */
-	public static void returnMatrix2f(Matrix2f i_m) {
+	public static void returnMatrix2f(Matrix2f... i_ms) {
 
-		if (i_m == null)
-			return;
-
-		if (m_synchronized) {
+		if (m_synchronized)
 			synchronized (m_matrix2f) {
-				m_matrix2f.offer(i_m);
+				for (Matrix2f m : i_ms)
+					if (m != null)
+						m_matrix2f.offer(m);
 			}
-		} else
-			m_matrix2f.offer(i_m);
+		else
+			for (Matrix2f m : i_ms)
+				if (m != null)
+					m_matrix2f.offer(m);
 	}
 
 	/**
-	 * Returns the given matrix to the cache. If the given matrix is
+	 * Returns the given matrices to the cache. If any of the given matrices is
 	 * <code>null</code>, it is ignored.
 	 * 
-	 * @param i_m the matrix to return
+	 * @param i_ms the matrices to return
 	 */
-	public static void returnMatrix3f(Matrix3f i_m) {
+	public static void returnMatrix3f(Matrix3f... i_ms) {
 
-		if (i_m == null)
-			return;
-
-		if (m_synchronized) {
+		if (m_synchronized)
 			synchronized (m_matrix3f) {
-				m_matrix3f.offer(i_m);
+				for (Matrix3f m : i_ms)
+					if (m != null)
+						m_matrix3f.offer(m);
 			}
-		} else
-			m_matrix3f.offer(i_m);
+		else
+			for (Matrix3f m : i_ms)
+				if (m != null)
+					m_matrix3f.offer(m);
 	}
 
 	/**
-	 * Returns the given matrix to the cache. If the given matrix is
+	 * Returns the given matrices to the cache. If any of the given matrices is
 	 * <code>null</code>, it is ignored.
 	 * 
-	 * @param i_m the matrix to return
+	 * @param i_ms the matrices to return
 	 */
-	public static void returnMatrix4f(Matrix4f i_m) {
+	public static void returnMatrix4f(Matrix4f... i_ms) {
 
-		if (i_m == null)
-			return;
-
-		if (m_synchronized) {
+		if (m_synchronized)
 			synchronized (m_matrix4f) {
-				m_matrix4f.offer(i_m);
+				for (Matrix4f m : i_ms)
+					if (m != null)
+						m_matrix4f.offer(m);
 			}
-		} else
-			m_matrix4f.offer(i_m);
+		else
+			for (Matrix4f m : i_ms)
+				if (m != null)
+					m_matrix4f.offer(m);
 	}
 
 	/**
-	 * Returns the given vector to the cache. If the given vector is
+	 * Returns the given vectors to the cache. If any of the given vectors is
 	 * <code>null</code>, it is ignored.
 	 * 
-	 * @param i_v the vector to return
+	 * @param i_vs the vectors to return
 	 */
-	public static void returnVector2f(Vector2f i_v) {
+	public static void returnVector2f(Vector2f... i_vs) {
 
-		if (i_v == null)
-			return;
-
-		if (m_synchronized) {
+		if (m_synchronized)
 			synchronized (m_vector2f) {
-				m_vector2f.offer(i_v);
+				for (Vector2f v : i_vs)
+					if (v != null)
+						m_vector2f.offer(v);
 			}
-		} else
-			m_vector2f.offer(i_v);
+		else
+			for (Vector2f v : i_vs)
+				if (v != null)
+					m_vector2f.offer(v);
 	}
 
 	/**
-	 * Returns the given vector to the cache. If the given vector is
+	 * Returns the given vectors to the cache. If any of the given vectors is
 	 * <code>null</code>, it is ignored.
 	 * 
-	 * @param i_v the vector to return
+	 * @param i_vs the vectors to return
 	 */
-	public static void returnVector3f(Vector3f i_v) {
+	public static void returnVector3f(Vector3f... i_vs) {
 
-		if (i_v == null)
-			return;
-
-		if (m_synchronized) {
+		if (m_synchronized)
 			synchronized (m_vector3f) {
-				m_vector3f.offer(i_v);
+				for (Vector3f v : i_vs)
+					if (v != null)
+						m_vector3f.offer(v);
 			}
-		} else
-			m_vector3f.offer(i_v);
+		else
+			for (Vector3f v : i_vs)
+				if (v != null)
+					m_vector3f.offer(v);
 	}
 
 	/**
-	 * Returns the given vector to the cache. If the given vector is
+	 * Returns the given vectors to the cache. If any of the given vectors is
 	 * <code>null</code>, it is ignored.
 	 * 
-	 * @param i_v the vector to return
+	 * @param i_vs the vectors to return
 	 */
-	public static void returnVector4f(Vector4f i_v) {
+	public static void returnVector4f(Vector4f... i_vs) {
 
-		if (i_v == null)
-			return;
-
-		if (m_synchronized) {
+		if (m_synchronized)
 			synchronized (m_vector4f) {
-				m_vector4f.offer(i_v);
+				for (Vector4f v : i_vs)
+					if (v != null)
+						m_vector4f.offer(v);
 			}
-		} else
-			m_vector4f.offer(i_v);
+		else
+			for (Vector4f v : i_vs)
+				if (v != null)
+					m_vector4f.offer(v);
 	}
-
 }

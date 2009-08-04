@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.geometry.IPosition3D;
+import org.eclipse.draw3d.graphics3d.AbstractGraphics3DDraw;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
@@ -44,7 +45,8 @@ import org.lwjgl.opengl.GLContext;
  * @version $Revision$
  * @since 06.12.2008
  */
-public class Graphics3DLwjgl implements Graphics3D {
+public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
+		Graphics3D {
 	/**
 	 * Logger for this class
 	 */

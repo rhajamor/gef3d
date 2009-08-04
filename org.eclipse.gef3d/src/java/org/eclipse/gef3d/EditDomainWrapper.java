@@ -202,9 +202,7 @@ public class EditDomainWrapper extends DefaultEditDomain {
 			Math3D.getRayDirection(eye, point, direction);
 			return surface.getSurfaceLocation2D(eye, direction, io_result);
 		} finally {
-			Draw3DCache.returnVector3f(eye);
-			Draw3DCache.returnVector3f(point);
-			Draw3DCache.returnVector3f(direction);
+			Draw3DCache.returnVector3f(eye, point, direction);
 		}
 	}
 

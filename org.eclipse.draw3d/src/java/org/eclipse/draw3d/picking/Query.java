@@ -30,13 +30,13 @@ import org.eclipse.draw3d.geometry.IVector3f;
  */
 public class Query {
 
-	private TreeSearch m_figureSearch;
+	private TreeSearch m_search;
 
 	private Map<Object, Object> m_objects;
 
 	private IVector3f m_rayDirection;
 
-	private IVector3f m_rayStart;
+	private IVector3f m_rayOrigin;
 
 	private IFigure3D m_rootFigure;
 
@@ -44,20 +44,19 @@ public class Query {
 	 * Constructs a new picking query with the given parameters. All figures
 	 * which are not accepted or pruned by the given figure search are ignored.
 	 * 
-	 * @param i_rayStart the starting point of the picking ray
+	 * @param i_rayOrigin the origin of the picking ray
 	 * @param i_rayDirection the direction of the picking ray, must be
 	 *            normalised
 	 * @param i_rootFigure the root figure
-	 * @param i_figureSearch the search instance for the figure search, may be
-	 *            <code>null</code>
+	 * @param i_search the search instance, may be <code>null</code>
 	 * @throws NullPointerException if the given ray starting point, ray
 	 *             direction or root figure is <code>null</code>
 	 */
-	public Query(IVector3f i_rayStart, IVector3f i_rayDirection,
-			IFigure3D i_rootFigure, TreeSearch i_figureSearch) {
+	public Query(IVector3f i_rayOrigin, IVector3f i_rayDirection,
+			IFigure3D i_rootFigure, TreeSearch i_search) {
 
-		if (i_rayStart == null)
-			throw new NullPointerException("i_rayStart must not be null");
+		if (i_rayOrigin == null)
+			throw new NullPointerException("i_rayOrigin must not be null");
 
 		if (i_rayDirection == null)
 			throw new NullPointerException("i_rayDirection must not be null");
@@ -65,10 +64,10 @@ public class Query {
 		if (i_rootFigure == null)
 			throw new NullPointerException("i_rootFigure must not be null");
 
-		m_rayStart = i_rayStart;
+		m_rayOrigin = i_rayOrigin;
 		m_rayDirection = i_rayDirection;
 		m_rootFigure = i_rootFigure;
-		m_figureSearch = i_figureSearch;
+		m_search = i_search;
 	}
 
 	private boolean accept(IFigure i_figure, TreeSearch i_search) {
@@ -93,12 +92,12 @@ public class Query {
 			return i_childHit;
 
 		HitImpl hit = i_childHit;
-		if (accept(parentFigure3D, m_figureSearch)) {
+		if (accept(parentFigure3D, m_search)) {
 			float realDistance = parentFigure3D.getDistance(this);
 			if (!Float.isNaN(realDistance)
 				&& (hit == null || realDistance < hit.getDistance()))
 				hit =
-					new HitImpl(parentFigure3D, i_parentDistance, m_rayStart,
+					new HitImpl(parentFigure3D, realDistance, m_rayOrigin,
 						m_rayDirection);
 		}
 
@@ -131,7 +130,7 @@ public class Query {
 		for (Iterator iter = children.iterator(); iter.hasNext();) {
 			IFigure child = (IFigure) iter.next();
 
-			if (!prune(child, m_figureSearch)) {
+			if (!prune(child, m_search)) {
 				float childDistance;
 				if (child instanceof IFigure3D)
 					childDistance = getBoundingBoxDistance((IFigure3D) child);
@@ -158,7 +157,7 @@ public class Query {
 	@SuppressWarnings("unchecked")
 	public Hit execute() {
 
-		if (prune(m_rootFigure, m_figureSearch))
+		if (prune(m_rootFigure, m_search))
 			return null;
 
 		return doExecute(m_rootFigure, getBoundingBoxDistance(m_rootFigure));
@@ -186,7 +185,7 @@ public class Query {
 	private float getBoundingBoxDistance(IFigure3D i_figure) {
 
 		IParaxialBoundingBox pBounds = i_figure.getParaxialBoundingBox();
-		return pBounds.intersectRay(m_rayStart, m_rayDirection);
+		return pBounds.intersectRay(m_rayOrigin, m_rayDirection);
 	}
 
 	/**
@@ -200,13 +199,13 @@ public class Query {
 	}
 
 	/**
-	 * Returns the starting point of the picking ray.
+	 * Returns the origin of the picking ray.
 	 * 
-	 * @return the starting point
+	 * @return the origin
 	 */
-	public IVector3f getRayStart() {
+	public IVector3f getRayOrigin() {
 
-		return m_rayStart;
+		return m_rayOrigin;
 	}
 
 	private boolean prune(IFigure i_figure, TreeSearch i_search) {
