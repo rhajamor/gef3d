@@ -23,7 +23,7 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.shapes.TransparencyAdapter;
+import org.eclipse.draw3d.shapes.TransparentShape;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
@@ -45,7 +45,7 @@ public class GraphFigure3D extends FreeformLayer3D {
 
 	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
 
-	private TransparencyAdapter m_adapter;
+	private TransparentShape m_adapter;
 
 	private Shape m_shape = new CuboidFigureShape(this);
 
@@ -86,7 +86,7 @@ public class GraphFigure3D extends FreeformLayer3D {
 		setAlpha((byte) 0x44);
 
 		m_shape = new CuboidFigureShape(this);
-		m_adapter = new TransparencyAdapter(this, m_shape);
+		m_adapter = new TransparentShape(this, m_shape);
 	}
 
 	/**

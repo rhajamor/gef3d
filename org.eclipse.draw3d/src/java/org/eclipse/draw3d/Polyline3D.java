@@ -19,8 +19,8 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometryext.PointList3D;
+import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.PolylineShape;
-import org.eclipse.draw3d.shapes.Shape;
 
 /**
  * 3D version of {@link org.eclipse.draw2d.Polyline}.
@@ -60,12 +60,12 @@ public class Polyline3D extends ShapeFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(org.eclipse.draw3d.shapes.CompositeShape)
 	 */
 	@Override
-	protected Shape createShape() {
+	protected void createShape(CompositeShape i_composite) {
 
-		return new PolylineShape(this);
+		i_composite.addOpaque(new PolylineShape(this));
 	}
 
 	/**

@@ -24,6 +24,8 @@ import org.eclipse.draw3d.picking.Query;
  */
 public class CuboidFigureShape extends FigureShape {
 
+	private CuboidShape m_shape;
+
 	/**
 	 * Creates a new cuboid figure shape.
 	 * 
@@ -32,13 +34,20 @@ public class CuboidFigureShape extends FigureShape {
 	public CuboidFigureShape(IFigure3D i_figure) {
 
 		super(i_figure);
-		m_shape = new CuboidShape();
-
-		m_shape.setFill(true);
-		m_shape.setOutline(true);
+		m_shape = new CuboidShape(i_figure.getPosition3D());
 	}
 
-	private CuboidShape m_shape = new CuboidShape();
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.FigureShape#doGetDistance(org.eclipse.draw3d.IFigure3D,
+	 *      org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	protected float doGetDistance(IFigure3D i_figure, Query i_query) {
+
+		return m_shape.getDistance(i_query);
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -61,21 +70,29 @@ public class CuboidFigureShape extends FigureShape {
 		else
 			m_shape.setTextureId(null);
 
-		m_shape.setPosition3D(i_figure.getPosition3D());
 		m_shape.render(i_renderContext);
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Specifies whether this cuboid should render its faces.
 	 * 
-	 * @see org.eclipse.draw3d.shapes.FigureShape#doGetDistance(org.eclipse.draw3d.IFigure3D,
-	 *      org.eclipse.draw3d.picking.Query)
+	 * @param i_fill <code>true</code> if the cuboid should render its faces and
+	 *            <code>false</code> otherwise
 	 */
-	@Override
-	protected float doGetDistance(IFigure3D i_figure, Query i_query) {
+	public void setFill(boolean i_fill) {
 
-		m_shape.setPosition3D(i_figure.getPosition3D());
-		return m_shape.getDistance(i_query);
+		m_shape.setFill(i_fill);
+	}
+
+	/**
+	 * Specifies whether this cuboid should render its outline.
+	 * 
+	 * @param i_outline <code>true</code> if the cuboid should render its
+	 *            outline and <code>false</code> otherwise
+	 */
+	public void setOutline(boolean i_outline) {
+
+		m_shape.setOutline(i_outline);
 	}
 
 }

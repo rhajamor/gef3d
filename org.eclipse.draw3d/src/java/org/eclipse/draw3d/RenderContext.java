@@ -11,11 +11,12 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import org.eclipse.draw3d.graphics3d.Graphics3D;
@@ -60,7 +61,7 @@ public class RenderContext {
 	private static final Logger log =
 		Logger.getLogger(RenderContext.class.getName());
 
-	private final Comparator<TransparentObject> depthComparator =
+	private final Comparator<TransparentObject> m_depthComparator =
 		new DepthComparator(this);
 
 	private GLCanvas m_Canvas;
@@ -71,9 +72,9 @@ public class RenderContext {
 
 	private IScene m_scene;
 
-	private final SortedSet<TransparentObject> m_superimposedObjects;
+	private final List<TransparentObject> m_superimposedObjects;
 
-	private final SortedSet<TransparentObject> m_transparentObjects;
+	private final List<TransparentObject> m_transparentObjects;
 
 	/**
 	 * Creates a new render context. The context is created by the
@@ -81,8 +82,8 @@ public class RenderContext {
 	 */
 	public RenderContext() {
 
-		m_transparentObjects = new TreeSet<TransparentObject>(depthComparator);
-		m_superimposedObjects = new TreeSet<TransparentObject>(depthComparator);
+		m_transparentObjects = new ArrayList<TransparentObject>();
+		m_superimposedObjects = new ArrayList<TransparentObject>();
 
 		m_displayListManagers = new HashMap<Graphics3D, DisplayListManager>();
 	}
@@ -108,7 +109,14 @@ public class RenderContext {
 			throw new NullPointerException(
 				"i_transparentObject must not be null");
 
-		m_superimposedObjects.add(i_transparentObject);
+		int index =
+			Collections.binarySearch(m_superimposedObjects,
+				i_transparentObject, m_depthComparator);
+
+		if (index < 0)
+			index = -index - 1;
+
+		m_superimposedObjects.add(index, i_transparentObject);
 	}
 
 	/**
@@ -123,7 +131,14 @@ public class RenderContext {
 			throw new NullPointerException(
 				"i_transparentObject must not be null");
 
-		m_transparentObjects.add(i_transparentObject);
+		int index =
+			Collections.binarySearch(m_transparentObjects, i_transparentObject,
+				m_depthComparator);
+
+		if (index < 0)
+			index = -index - 1;
+
+		m_transparentObjects.add(index, i_transparentObject);
 	}
 
 	/**
@@ -222,9 +237,8 @@ public class RenderContext {
 	 */
 	public void renderTransparency() {
 
-		for (TransparentObject transparentObject : m_transparentObjects) {
+		for (TransparentObject transparentObject : m_transparentObjects)
 			transparentObject.renderTransparent(this);
-		}
 
 		Graphics3D g3d = getGraphics3D();
 		// disable depth test
@@ -233,11 +247,9 @@ public class RenderContext {
 		// GL11.glDisable(GL11.GL_CULL_FACE);
 
 		try {
-			for (TransparentObject transparentObject : m_superimposedObjects) {
+			for (TransparentObject transparentObject : m_superimposedObjects)
 				transparentObject.renderTransparent(this);
-			}
 		} finally {
-
 			g3d.glEnable(Graphics3DDraw.GL_DEPTH_TEST);
 		}
 

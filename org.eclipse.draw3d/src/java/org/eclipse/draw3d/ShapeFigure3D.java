@@ -11,8 +11,8 @@
 package org.eclipse.draw3d;
 
 import org.eclipse.draw3d.picking.Query;
+import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.shapes.TransparencyAdapter;
 
 /**
  * A figure that is represented visually by a {@link Shape}. Automatically
@@ -24,16 +24,15 @@ import org.eclipse.draw3d.shapes.TransparencyAdapter;
  */
 public abstract class ShapeFigure3D extends Figure3D {
 
-	private TransparencyAdapter m_adapter;
-
-	private Shape m_shape;
+	private CompositeShape m_shape;
 
 	/**
-	 * Creates the shape that represents this figure.
+	 * Creates the shape(s) that represent this figure and adds them to the
+	 * given composite shape.
 	 * 
-	 * @return the shape
+	 * @param i_composite the composite shape to add the shapes to
 	 */
-	protected abstract Shape createShape();
+	protected abstract void createShape(CompositeShape i_composite);
 
 	/**
 	 * {@inheritDoc}
@@ -53,23 +52,12 @@ public abstract class ShapeFigure3D extends Figure3D {
 	 */
 	protected Shape getShape() {
 
-		if (m_shape == null)
-			m_shape = createShape();
+		if (m_shape == null) {
+			m_shape = new CompositeShape();
+			createShape(m_shape);
+		}
 
 		return m_shape;
-	}
-
-	/**
-	 * Returns the transparency adapter for this figure.
-	 * 
-	 * @return the transparency adapter for this figurre
-	 */
-	protected TransparencyAdapter getTransparencyAdapter() {
-
-		if (m_adapter == null)
-			m_adapter = new TransparencyAdapter(this, getShape());
-
-		return m_adapter;
 	}
 
 	/**
@@ -80,9 +68,6 @@ public abstract class ShapeFigure3D extends Figure3D {
 	@Override
 	public void render(RenderContext i_renderContext) {
 
-		if (getAlpha() == 255)
-			getShape().render(i_renderContext);
-		else
-			i_renderContext.addTransparentObject(getTransparencyAdapter());
+		getShape().render(i_renderContext);
 	}
 }

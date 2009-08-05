@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
@@ -164,6 +165,59 @@ public class CuboidShape extends PositionableShape {
 	private Vector3f[] m_transformedVertices;
 
 	/**
+	 * Creates a new cuboid shape with the given position.
+	 * 
+	 * @param i_position3D the position of this cuboid shape
+	 * @throws NullPointerException if the given position is <code>null</code>
+	 */
+	public CuboidShape(IPosition3D i_position3D) {
+
+		super(i_position3D);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doRender(org.eclipse.draw3d.RenderContext)
+	 */
+	@Override
+	protected void doRender(RenderContext i_renderContext) {
+		DisplayListManager displayListManager =
+			i_renderContext.getDisplayListManager();
+
+		Graphics3D g3d = i_renderContext.getGraphics3D();
+		initDisplayLists(displayListManager, g3d);
+
+		if (m_fill) {
+			g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
+				Graphics3DDraw.GL_FILL);
+
+			if (m_textureId != null) {
+				g3d.glColor4f(0, 0, 0, 0);
+
+				g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, m_textureId);
+				g3d.glTexEnvi(Graphics3DDraw.GL_TEXTURE_ENV,
+					Graphics3DDraw.GL_TEXTURE_ENV_MODE,
+					Graphics3DDraw.GL_REPLACE);
+				displayListManager.executeDisplayList(DL_TEXTURE);
+				g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, 0);
+
+				g3d.glColor4f(m_fillColor);
+			} else {
+				g3d.glColor4f(m_fillColor);
+				displayListManager.executeDisplayList(DL_FILL_FRONT);
+			}
+
+			displayListManager.executeDisplayList(DL_FILL_REST);
+		}
+
+		if (m_outline) {
+			g3d.glColor4f(m_outlineColor);
+			displayListManager.executeDisplayList(DL_OUTLINE);
+		}
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see Shape#getDistance(Query)
@@ -274,48 +328,6 @@ public class CuboidShape extends PositionableShape {
 		i_displayListManager.createDisplayList(DL_FILL_FRONT, front);
 		i_displayListManager.createDisplayList(DL_TEXTURE, texture);
 		i_displayListManager.createDisplayList(DL_FILL_REST, rest);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.shapes.PositionableShape#doRender(org.eclipse.draw3d.RenderContext)
-	 */
-	@Override
-	protected void doRender(RenderContext i_renderContext) {
-		DisplayListManager displayListManager =
-			i_renderContext.getDisplayListManager();
-
-		Graphics3D g3d = i_renderContext.getGraphics3D();
-		initDisplayLists(displayListManager, g3d);
-
-		if (m_fill) {
-			g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
-				Graphics3DDraw.GL_FILL);
-
-			if (m_textureId != null) {
-				g3d.glColor4f(0, 0, 0, 0);
-
-				g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, m_textureId);
-				g3d.glTexEnvi(Graphics3DDraw.GL_TEXTURE_ENV,
-					Graphics3DDraw.GL_TEXTURE_ENV_MODE,
-					Graphics3DDraw.GL_REPLACE);
-				displayListManager.executeDisplayList(DL_TEXTURE);
-				g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, 0);
-
-				g3d.glColor4f(m_fillColor);
-			} else {
-				g3d.glColor4f(m_fillColor);
-				displayListManager.executeDisplayList(DL_FILL_FRONT);
-			}
-
-			displayListManager.executeDisplayList(DL_FILL_REST);
-		}
-
-		if (m_outline) {
-			g3d.glColor4f(m_outlineColor);
-			displayListManager.executeDisplayList(DL_OUTLINE);
-		}
 	}
 
 	/**

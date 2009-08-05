@@ -17,8 +17,10 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw3d.ShapeFigure3D;
+import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
+import org.eclipse.draw3d.shapes.TransparentShape;
 import org.eclipse.swt.graphics.Color;
 
 /**
@@ -48,18 +50,19 @@ public class ConnectedElementFigure extends ShapeFigure3D {
 
 	}
 
-	public void setTag(String strTag) {
-		tagLabel.setText(strTag);
-	}
-
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(org.eclipse.draw3d.shapes.CompositeShape)
 	 */
 	@Override
-	protected Shape createShape() {
+	protected void createShape(CompositeShape i_composite) {
 
-		return new CuboidFigureShape(this);
+		Shape shape = new CuboidFigureShape(this);
+		i_composite.addTransparent(new TransparentShape(this, shape));
+	}
+
+	public void setTag(String strTag) {
+		tagLabel.setText(strTag);
 	}
 }

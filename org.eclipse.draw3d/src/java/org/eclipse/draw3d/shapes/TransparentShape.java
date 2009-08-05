@@ -15,20 +15,40 @@ import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.TransparentObject;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * Adapter for shapes with transparency. This class can be used for simply
  * adapting {@link Shape} objects to enable transparent shapes used by
  * {@link IFigure3D} objects. The figure is used to calculate the transparency
- * depth of the shape, it is simply the center of the figure's bound. This is a
+ * depth of the shape, it is simply the center of the figure's bounds. This is a
  * not very accurate method, but it works in most cases.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Aug 16, 2008
  */
-public class TransparencyAdapter implements TransparentObject {
+public class TransparentShape implements TransparentObject, Shape {
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+
+		StringBuilder b = new StringBuilder();
+
+		b.append("TransparentShape[figure=");
+		b.append(m_figure);
+		b.append(", shape=");
+		b.append(m_shape);
+		b.append("]\n");
+
+		return b.toString();
+	}
 
 	/**
 	 * The figure to which the shape belongs.
@@ -48,7 +68,7 @@ public class TransparencyAdapter implements TransparentObject {
 	 * @throws NullPointerException if either of the given arguments is
 	 *             <code>null</code>
 	 */
-	public TransparencyAdapter(IFigure3D i_figure, Shape i_shape) {
+	public TransparentShape(IFigure3D i_figure, Shape i_shape) {
 
 		if (i_figure == null)
 			throw new NullPointerException("i_figure must not be null");
@@ -58,6 +78,16 @@ public class TransparencyAdapter implements TransparentObject {
 
 		m_figure = i_figure;
 		m_shape = i_shape;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	public float getDistance(Query i_query) {
+
+		return m_shape.getDistance(i_query);
 	}
 
 	/**
@@ -80,12 +110,22 @@ public class TransparencyAdapter implements TransparentObject {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.Shape#render(org.eclipse.draw3d.RenderContext)
+	 */
+	public void render(RenderContext i_renderContext) {
+
+		m_shape.render(i_renderContext);
+	}
+
+	/**
 	 * Calls figure's {@link Shape#render()} method. {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.TransparentObject#renderTransparent()
 	 */
-	public void renderTransparent(RenderContext renderContext) {
+	public void renderTransparent(RenderContext i_renderContext) {
 
-		m_shape.render(renderContext);
+		render(i_renderContext);
 	}
 }

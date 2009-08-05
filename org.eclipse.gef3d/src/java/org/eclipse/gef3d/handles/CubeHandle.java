@@ -15,8 +15,10 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
+import org.eclipse.draw3d.shapes.TransparentShape;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.handles.SquareHandle;
@@ -81,12 +83,16 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(CompositeShape)
 	 */
 	@Override
-	protected Shape createShape() {
+	protected void createShape(CompositeShape i_composite) {
 
-		return new CuboidFigureShape(this);
+		Shape alphaShape = new CuboidFigureShape(this);
+		i_composite.addTransparent(new TransparentShape(this, alphaShape));
+
+		Shape superShape = new CuboidFigureShape(this);
+		i_composite.addSuperimposed(new TransparentShape(this, superShape));
 	}
 
 	/**
@@ -123,7 +129,7 @@ public abstract class CubeHandle extends AbstractHandle3D {
 
 		setPreferredSize3D(new Vector3fImpl(DEFAULT_HANDLE_SIZE,
 			DEFAULT_HANDLE_SIZE, DEFAULT_HANDLE_SIZE));
-		setAlpha(127);
+		setAlpha(40);
 	}
 
 	/**

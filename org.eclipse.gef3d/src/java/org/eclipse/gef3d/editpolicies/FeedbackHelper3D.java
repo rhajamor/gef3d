@@ -141,7 +141,6 @@ public class FeedbackHelper3D extends FeedbackHelper {
 		Vector3f wSize = Draw3DCache.getVector3f();
 		try {
 			bounds.set(i_feedback.getBounds3D());
-			ISurface surface = m_picker.getCurrentSurface();
 
 			if (i_surfaceMoveDelta != null) {
 				// surface.getWorldLocation(i_surfaceMoveDelta, wLocation);
@@ -218,6 +217,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			}
 		} else {
 			Point sLocation = m_hostFigure.getBounds().getLocation();
+			m_hostFigure.getParent().translateToAbsolute(sLocation);
 			Dimension sSize = m_hostFigure.getBounds().getSize();
 
 			setAbsoluteFeedbackBounds(i_feedback, sLocation, sSize);

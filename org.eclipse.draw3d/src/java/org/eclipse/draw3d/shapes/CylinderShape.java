@@ -12,6 +12,7 @@ package org.eclipse.draw3d.shapes;
 
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Query;
@@ -97,23 +98,27 @@ public class CylinderShape extends PositionableShape {
 	/**
 	 * Convenience method that creates a new cone.
 	 * 
+	 * @param i_position3D the position of the cone
 	 * @param i_segments the number of segments
 	 * @return the cone
 	 */
-	public static CylinderShape createCone(int i_segments) {
+	public static CylinderShape createCone(IPosition3D i_position3D,
+		int i_segments) {
 
-		return new CylinderShape(i_segments, 0);
+		return new CylinderShape(i_position3D, i_segments, 0);
 	}
 
 	/**
 	 * Convenience method that creates a new cylinder.
 	 * 
+	 * @param i_position3D the position of the cylinder
 	 * @param i_segments the number of segments
 	 * @return the cylinder
 	 */
-	public static CylinderShape createCylinder(int i_segments) {
+	public static CylinderShape createCylinder(IPosition3D i_position3D,
+		int i_segments) {
 
-		return new CylinderShape(i_segments, 1);
+		return new CylinderShape(i_position3D, i_segments, 1);
 	}
 
 	private float[] m_bottomVertices;
@@ -137,13 +142,17 @@ public class CylinderShape extends PositionableShape {
 	private float[] m_topVertices;
 
 	/**
-	 * Creates a new cylinder with the given number of segments and radius
-	 * proportions.
+	 * Creates a new cylinder with the given position, number of segments and
+	 * radius proportions.
 	 * 
+	 * @param i_position3D the position of this shape
 	 * @param i_segments the number of segments
 	 * @param i_radiusProportions the radius proportions
 	 */
-	public CylinderShape(int i_segments, float i_radiusProportions) {
+	public CylinderShape(IPosition3D i_position3D, int i_segments,
+			float i_radiusProportions) {
+
+		super(i_position3D);
 
 		if (i_segments < 3)
 			throw new IllegalArgumentException(

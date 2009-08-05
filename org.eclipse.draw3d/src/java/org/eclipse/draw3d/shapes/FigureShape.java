@@ -111,7 +111,7 @@ public abstract class FigureShape implements Shape {
 	public TransparentObject getTransparencyAdapter() {
 
 		if (m_adapter == null)
-			m_adapter = new TransparencyAdapter(m_figure, this);
+			m_adapter = new TransparentShape(m_figure, this);
 
 		return m_adapter;
 	}

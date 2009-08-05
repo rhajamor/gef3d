@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008 Jens von Pilgrim and others.
+ * Copyright (c) 2009 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,75 +8,197 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-
 package org.eclipse.draw3d.shapes;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.picking.Query;
 
 /**
- * A shape that contains other shapes and does no rendering itself. Instead,
- * rendering is delegated to the child shapes in the order they were added.
+ * CompositePositionableShape There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 31.03.2008
+ * @since 05.08.2009
  */
-public class CompositeShape implements Shape {
+public class CompositeShape extends PositionableShape {
 
-	private List<Shape> m_shapes = new LinkedList<Shape>();
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(CompositeShape.class.getName());
+
+	private Set<Shape> m_opaqueShapes;
+
+	private Set<TransparentShape> m_superimposedShapes;
+
+	private Set<TransparentShape> m_transparentShapes;
 
 	/**
-	 * Creates a new composite shape that contains the given shapes.
-	 * 
-	 * @param i_shapes the shapes which this shape is composited of
+	 * Creates a new composite shape.
 	 */
-	public CompositeShape(Shape... i_shapes) {
+	public CompositeShape() {
 
-		for (Shape shape : i_shapes)
-			add(shape);
+		this(null);
+	}
+
+	/**
+	 * Creates a new composite shape. The given position is applied to all
+	 * children.
+	 * 
+	 * @param i_position3D the position of this shape
+	 */
+	public CompositeShape(IPosition3D i_position3D) {
+
+		super(i_position3D);
+
+		if (i_position3D != null)
+			log
+				.warning("attention, composite positionable shapes do not properly implement getDistance yet");
 	}
 
 	/**
 	 * Adds the given shape to this composite. If the given shape was already
-	 * added to this composite, it will be added again.
+	 * added to this composite, even with a different render type, it will be
+	 * ignored.
 	 * 
 	 * @param i_shape the shape to add
 	 * @throws NullPointerException if the given shape is <code>null</code>
 	 */
-	public void add(Shape i_shape) {
+	public void addOpaque(Shape i_shape) {
 
 		if (i_shape == null)
 			throw new NullPointerException("i_shape must not be null");
 
-		m_shapes.add(i_shape);
+		if (!contains(i_shape)) {
+			if (m_opaqueShapes == null)
+				m_opaqueShapes = new HashSet<Shape>();
+			m_opaqueShapes.add(i_shape);
+		}
+	}
+
+	/**
+	 * Adds the given shape to this composite. If the given shape was already
+	 * added to this composite, even with a different render type, it will be
+	 * ignored.
+	 * 
+	 * @param i_shape the shape to add
+	 * @throws NullPointerException if the given shape is <code>null</code>
+	 */
+	public void addSuperimposed(TransparentShape i_shape) {
+
+		if (i_shape == null)
+			throw new NullPointerException("i_shape must not be null");
+
+		if (!contains(i_shape)) {
+			if (m_superimposedShapes == null)
+				m_superimposedShapes = new HashSet<TransparentShape>();
+			m_superimposedShapes.add(i_shape);
+		}
+	}
+
+	/**
+	 * Adds the given shape to this composite. If the given shape was already
+	 * added to this composite, even with a different render type, it will be
+	 * ignored.
+	 * 
+	 * @param i_shape the shape to add
+	 * @throws NullPointerException if the given shape is <code>null</code>
+	 */
+	public void addTransparent(TransparentShape i_shape) {
+
+		if (i_shape == null)
+			throw new NullPointerException("i_shape must not be null");
+
+		if (!contains(i_shape)) {
+			if (m_transparentShapes == null)
+				m_transparentShapes = new HashSet<TransparentShape>();
+			m_transparentShapes.add(i_shape);
+		}
+	}
+
+	/**
+	 * Indicates whether this composite shape contains the given shape.
+	 * 
+	 * @param i_shape the shape to check
+	 * @return if this composite shape contains the given shape
+	 * @throws NullPointerException if the given shape is <code>null</code>
+	 */
+	public boolean contains(Shape i_shape) {
+
+		if (i_shape == null)
+			throw new NullPointerException("i_shape must not be null");
+
+		if (m_opaqueShapes != null && m_opaqueShapes.contains(i_shape))
+			return true;
+
+		if (m_transparentShapes != null
+			&& m_transparentShapes.contains(i_shape))
+			return true;
+
+		if (m_superimposedShapes != null
+			&& m_superimposedShapes.contains(i_shape))
+			return true;
+
+		return false;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
-	 *      org.eclipse.draw3d.geometry.Position3D)
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doRender(org.eclipse.draw3d.RenderContext)
+	 */
+	@Override
+	protected void doRender(RenderContext i_renderContext) {
+
+		if (m_opaqueShapes != null)
+			for (Shape shape : m_opaqueShapes)
+				shape.render(i_renderContext);
+
+		if (m_transparentShapes != null)
+			for (TransparentShape shape : m_transparentShapes)
+				i_renderContext.addTransparentObject(shape);
+
+		if (m_superimposedShapes != null)
+			for (TransparentShape shape : m_superimposedShapes)
+				i_renderContext.addSuperimposedObject(shape);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
 	 */
 	public float getDistance(Query i_query) {
 
-		float distance = Float.NaN;
-		for (Shape shape : m_shapes)
-			distance = Math3D.minDistance(distance, shape.getDistance(i_query));
+		// TODO this only works if our own position is null or identity - we
+		// need to implement this properly by transforming the picking ray
+		// according to our model matrix, delegating the actual picking to our
+		// shapes, and then transform their result back to world coordinates
 
-		return distance;
+		float d = Float.NaN;
+		if (m_opaqueShapes != null)
+			for (Shape shape : m_opaqueShapes)
+				d = Math3D.minDistance(d, shape.getDistance(i_query));
+
+		if (m_transparentShapes != null)
+			for (Shape shape : m_transparentShapes)
+				d = Math3D.minDistance(d, shape.getDistance(i_query));
+
+		if (m_superimposedShapes != null)
+			for (Shape shape : m_superimposedShapes)
+				d = Math3D.minDistance(d, shape.getDistance(i_query));
+
+		return d;
 	}
 
 	/**
 	 * Removes the given shape from this composite. If the given shape is not
-	 * part of this composite, it is ignored. If the given shaped was added to
-	 * this composite more than once, the first occurence of the given shape
-	 * within this composite is removed, much like the {@link List} interface
-	 * describes.
+	 * part of this composite, it is ignored.
 	 * 
 	 * @param i_shape the shape to remove
 	 * @throws NullPointerException if the given shape is <code>null</code>
@@ -86,17 +208,10 @@ public class CompositeShape implements Shape {
 		if (i_shape == null)
 			throw new NullPointerException("i_shape must not be null");
 
-		m_shapes.remove(i_shape);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#render()
-	 */
-	public void render(RenderContext renderContext) {
-
-		for (Shape shape : m_shapes)
-			shape.render(renderContext);
+		if (m_opaqueShapes == null || !m_opaqueShapes.remove(i_shape))
+			if (m_transparentShapes == null
+				|| !m_transparentShapes.remove(i_shape))
+				if (m_superimposedShapes != null)
+					m_superimposedShapes.remove(i_shape);
 	}
 }

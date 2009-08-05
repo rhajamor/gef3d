@@ -119,9 +119,12 @@ public class SphereShape extends PositionableShape {
 	/**
 	 * Creates a new sphere with the given precision.
 	 * 
+	 * @param i_position3D the position of the sphere
 	 * @param i_precision the precision of the sphere
 	 */
-	public SphereShape(int i_precision) {
+	public SphereShape(IPosition3D i_position3D, int i_precision) {
+
+		super(i_position3D);
 
 		m_stripes[0] =
 			new SphereTriangle[] { new SphereTriangle(

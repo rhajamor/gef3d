@@ -12,8 +12,10 @@ package org.eclipse.gef3d.handles;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw3d.ShapeFigure3D;
+import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
+import org.eclipse.draw3d.shapes.TransparentShape;
 
 /**
  * Cube like transparent figure used for visualizing feedback during edit
@@ -39,11 +41,12 @@ public class FeedbackFigure3D extends ShapeFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(org.eclipse.draw3d.shapes.CompositeShape)
 	 */
 	@Override
-	protected Shape createShape() {
+	protected void createShape(CompositeShape i_composite) {
 
-		return new CuboidFigureShape(this);
+		Shape shape = new CuboidFigureShape(this);
+		i_composite.addTransparent(new TransparentShape(this, shape));
 	}
 }

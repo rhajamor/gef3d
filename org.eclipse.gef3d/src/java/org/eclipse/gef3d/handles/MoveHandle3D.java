@@ -16,8 +16,9 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Cursors;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.Locator;
+import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
-import org.eclipse.draw3d.shapes.Shape;
+import org.eclipse.draw3d.shapes.TransparentShape;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.handles.MoveHandle;
@@ -93,12 +94,15 @@ public class MoveHandle3D extends AbstractHandle3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(org.eclipse.draw3d.shapes.CompositeShape)
 	 */
 	@Override
-	protected Shape createShape() {
+	protected void createShape(CompositeShape i_composite) {
 
-		return new CuboidFigureShape(this);
+		CuboidFigureShape shape = new CuboidFigureShape(this);
+		shape.setFill(false);
+
+		i_composite.addTransparent(new TransparentShape(this, shape));
 	}
 
 	/**
@@ -118,7 +122,5 @@ public class MoveHandle3D extends AbstractHandle3D {
 		setAlpha(100);
 		setBackgroundColor(ColorConstants.green);
 		setForegroundColor(ColorConstants.green);
-
 	}
-
 }

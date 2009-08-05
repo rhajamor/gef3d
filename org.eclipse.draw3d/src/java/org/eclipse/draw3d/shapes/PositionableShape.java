@@ -28,6 +28,17 @@ public abstract class PositionableShape implements Shape {
 	private IPosition3D m_position3D;
 
 	/**
+	 * Creates a new positionable shape with the given position.
+	 * 
+	 * @param i_position3D the position of this shape
+	 * @throws NullPointerException if the given position is <code>null</code>
+	 */
+	public PositionableShape(IPosition3D i_position3D) {
+
+		m_position3D = i_position3D;
+	}
+
+	/**
 	 * Performs the actual rendering.
 	 * 
 	 * @param i_renderContext the current render context
@@ -55,34 +66,26 @@ public abstract class PositionableShape implements Shape {
 
 		if (m_position3D == null)
 			doRender(i_renderContext);
+		else {
 
-		IMatrix4f modelMatrix = m_position3D.getModelMatrix();
+			IMatrix4f modelMatrix = m_position3D.getModelMatrix();
 
-		boolean useModelMatrix = !IMatrix4f.IDENTITY.equals(modelMatrix);
-		g3d.glMatrixMode(Graphics3DDraw.GL_MODELVIEW);
+			boolean useModelMatrix = !IMatrix4f.IDENTITY.equals(modelMatrix);
+			g3d.glMatrixMode(Graphics3DDraw.GL_MODELVIEW);
 
-		if (useModelMatrix)
-			g3d.glPushMatrix();
-
-		try {
-			// TODO this must be optimized
 			if (useModelMatrix)
-				g3d.setPosition(g3d.createRawPosition(m_position3D));
+				g3d.glPushMatrix();
 
-			doRender(i_renderContext);
-		} finally {
-			if (useModelMatrix)
-				g3d.glPopMatrix();
+			try {
+				// TODO this must be optimized
+				if (useModelMatrix)
+					g3d.setPosition(g3d.createRawPosition(m_position3D));
+
+				doRender(i_renderContext);
+			} finally {
+				if (useModelMatrix)
+					g3d.glPopMatrix();
+			}
 		}
-	}
-
-	/**
-	 * Sets the position of this shape.
-	 * 
-	 * @param i_position3D the position of this shape
-	 */
-	public void setPosition3D(IPosition3D i_position3D) {
-
-		m_position3D = i_position3D;
 	}
 }

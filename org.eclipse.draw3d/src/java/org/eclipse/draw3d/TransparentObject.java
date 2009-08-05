@@ -23,12 +23,15 @@ public interface TransparentObject {
 	/**
 	 * Returns the distance between the camera and the object.
 	 * 
+	 * @param i_renderContext the current render context
 	 * @return the distance
 	 */
-	public float getTransparencyDepth(RenderContext renderContext);
+	public float getTransparencyDepth(RenderContext i_renderContext);
 
 	/**
 	 * Actually renders the transparent object.
+	 * 
+	 * @param i_renderContext the current render context
 	 */
-	public void renderTransparent(RenderContext renderContext);
+	public void renderTransparent(RenderContext i_renderContext);
 }

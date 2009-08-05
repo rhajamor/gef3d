@@ -16,7 +16,7 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.shapes.Shape;
+import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
@@ -34,12 +34,11 @@ public class ShapeDecoration extends ShapeFigure3D implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(org.eclipse.draw3d.shapes.CompositeShape)
 	 */
 	@Override
-	protected Shape createShape() {
+	protected void createShape(CompositeShape i_composite) {
 		// TODO implement method ShapeDecoration.createShape
-		return null;
 	}
 
 	/**
