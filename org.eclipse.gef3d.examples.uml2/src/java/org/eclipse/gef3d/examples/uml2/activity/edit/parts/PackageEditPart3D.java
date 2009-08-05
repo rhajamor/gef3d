@@ -13,7 +13,13 @@ package org.eclipse.gef3d.examples.uml2.activity.edit.parts;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.gef.DragTracker;
+import org.eclipse.gef.Request;
+import org.eclipse.gef.requests.SelectionRequest;
+import org.eclipse.gef.tools.DeselectAllTracker;
 import org.eclipse.gef3d.examples.uml2.figures.DiagramFigure3D;
+import org.eclipse.gmf.runtime.diagram.ui.internal.tools.RubberbandDragTracker;
+import org.eclipse.gmf.runtime.diagram.ui.tools.DragEditPartsTrackerEx;
 import org.eclipse.gmf.runtime.notation.View;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
@@ -53,4 +59,20 @@ public class PackageEditPart3D extends PackageEditPart {
 
 		return f;
 	}
+	
+	/**
+	 * Replaces the {@link RubberbandDragTracker} with an old school
+	 * {@link DragEditPartsTrackerEx}, since the former performs a cast which
+	 * fails.
+	 * 
+	 * @see org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart#getDragTracker(org.eclipse.gef.Request)
+	 */
+	@Override
+	public DragTracker getDragTracker(Request req) {
+		if (req instanceof SelectionRequest
+			&& ((SelectionRequest) req).getLastButtonPressed() == 3)
+			return new DeselectAllTracker(this);
+		return new DragEditPartsTrackerEx(this);
+	}
+
 }

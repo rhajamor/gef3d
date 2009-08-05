@@ -35,8 +35,8 @@ import org.eclipse.uml2.diagram.clazz.providers.UMLEditPartProvider;
  */
 public class UMLClassEditPartProvider3D extends UMLEditPartProvider {
 
-	public static String[] SUPPORTED_EDITORS =
-	{ UMLClassDiagramEditor3D.class.getName() };
+	// public static String[] SUPPORTED_EDITORS =
+	// { UMLClassDiagramEditor3D.class.getName() };
 
 	/**
 	 * Logger for this class
@@ -56,65 +56,63 @@ public class UMLClassEditPartProvider3D extends UMLEditPartProvider {
 
 	/**
 	 * Returns true if editor is accepts this provider, this is evaluated using
-	 * the {@link ProviderAcceptor} retrieved from the operation. The
-	 * {@link ProviderAcceptor} must have set flag
-	 * {@link #CLASSDIAGRAM_3D_ACCEPTED}.
+	 * the {@link ProviderAcceptor} retrieved from the operation. The acceptor
+	 * must accept 3D providers, i.e.
+	 * {@link ProviderAcceptor#evaluate3DAcceptance(org.eclipse.gmf.runtime.common.core.service.IProvider, IOperation)}
+	 * must return true.
 	 * 
 	 * @see org.eclipse.uml2.diagram.clazz.providers.UMLEditPartProvider#provides(org.eclipse.gmf.runtime.common.core.service.IOperation)
 	 */
 	@Override
 	public synchronized boolean provides(IOperation i_operation) {
 		if (i_operation instanceof CreateGraphicEditPartOperation) {
-			ProviderAcceptor providerAcceptor =
-				ProviderAcceptor.retrieveProviderAcceptor(i_operation);
+			// ProviderAcceptor providerAcceptor =
+			// ProviderAcceptor.retrieveProviderAcceptor(i_operation);
 			boolean bIsAccepted =
 				ProviderAcceptor.evaluate3DAcceptance(this, i_operation);
-			boolean bIsSupported = isSupported();
-			
-			CreateGraphicEditPartOperation op = (CreateGraphicEditPartOperation) i_operation;
-			
+			// boolean bIsSupported = isSupported();
+			// CreateGraphicEditPartOperation op =
+			// (CreateGraphicEditPartOperation) i_operation;
+
 			bIsAccepted &= super.provides(i_operation);
-				
-			
-//			if (bIsAccepted!=bIsSupported) {
-//				if (log.isLoggable(Level.INFO)) {
-//					log.info("Warning, isSupported = " + bIsSupported + 
-//							", acceptor says " + bIsAccepted +
-//							", acceptor: " + providerAcceptor +
-//							", model: " + op.getView().getElement()
-//							); //$NON-NLS-1$
-//				}
-//			}
-			
+
+			// if (bIsAccepted!=bIsSupported) {
+			// if (log.isLoggable(Level.INFO)) {
+			// log.info("Warning, isSupported = " + bIsSupported +
+			// ", acceptor says " + bIsAccepted +
+			// ", acceptor: " + providerAcceptor +
+			// ", model: " + op.getView().getElement()
+			//							); //$NON-NLS-1$
+			// }
+			// }
+
 			return bIsAccepted;
-			
-			
-		}
-		return false;
-	}
-	
-	/**
-	 * Tests if the editor using this provider is supported. This method
-	 * actually is a hack and we have to find a better solution.
-	 * 
-	 * @return
-	 */
-	public boolean isSupported() {
-		Exception ex = new Exception();
-//	 ex.printStackTrace();
-		String name;
-		for (StackTraceElement element : ex.getStackTrace()) {
-			name = element.getClassName();
-			if (name.startsWith("org.eclipse.ui"))
-				break;
-			for (int i = 0; i < SUPPORTED_EDITORS.length; i++) {
-				if (name.equals(SUPPORTED_EDITORS[i]))
-					return true;
-			}
+
 		}
 		return false;
 	}
 
+	// /**
+	// * Tests if the editor using this provider is supported. This method
+	// * actually is a hack and we have to find a better solution.
+	// *
+	// * @return
+	// */
+	// public boolean isSupported() {
+	// Exception ex = new Exception();
+	// // ex.printStackTrace();
+	// String name;
+	// for (StackTraceElement element : ex.getStackTrace()) {
+	// name = element.getClassName();
+	// if (name.startsWith("org.eclipse.ui"))
+	// break;
+	// for (int i = 0; i < SUPPORTED_EDITORS.length; i++) {
+	// if (name.equals(SUPPORTED_EDITORS[i]))
+	// return true;
+	// }
+	// }
+	// return false;
+	// }
 
 	/**
 	 * Returns null as the root edit part is expected to be created by a

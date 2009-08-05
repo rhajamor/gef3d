@@ -48,6 +48,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.uml2.diagram.clazz.part.DiagramEditorContextMenuProvider;
 import org.eclipse.uml2.diagram.clazz.part.UMLDiagramEditor;
 
@@ -208,7 +209,7 @@ public class UMLClassDiagramEditor3D extends UMLDiagramEditor implements
     @Override
     protected PaletteRoot createPaletteRoot(PaletteRoot i_existingPaletteRoot) {
 
-        PaletteRoot root = super.createPaletteRoot(i_existingPaletteRoot);
+    	PaletteRoot root = super.createPaletteRoot(i_existingPaletteRoot);
 
         if (!fNested) {
             PaletteDrawer drawer = new PaletteDrawer("GEF3D");

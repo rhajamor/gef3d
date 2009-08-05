@@ -71,7 +71,36 @@
    </extension>
    
    
-   
+   <!-- Palette Providers (new with 3.5)-->
+   <extension  point="org.eclipse.gmf.runtime.diagram.ui.paletteProviders" id="palette-provider">
+   <paletteProvider
+         class="org.eclipse.uml2.diagram.clazz.part.PaletteFactoryProvider">
+      <Priority name="Lowest" />
+      <editor id="org.eclipse.gef3d.examples.uml2.clazz.part.UMLDiagramEditor3D"/>
+   </paletteProvider>
+   </extension>
+   <extension  point="org.eclipse.gmf.runtime.diagram.ui.paletteProviders" id="palette-provider">
+	   <paletteProvider
+    	     class="org.eclipse.uml2.diagram.usecase.part.PaletteFactoryProvider">
+      	<Priority name="Lowest" />
+         <editor id="org.eclipse.gef3d.examples.uml2.usecase.part.UMLDiagramEditor3D"/>
+   	</paletteProvider>
+	</extension>
+	
+	<extension  point="org.eclipse.gmf.runtime.diagram.ui.paletteProviders" id="palette-provider">
+   <paletteProvider
+         class="org.eclipse.uml2.diagram.clazz.part.PaletteFactoryProvider">
+      <Priority name="Lowest" />
+      <editor id="org.eclipse.gef3d.examples.uml2.multi.part.MultiGraphicalEditor3D"/>
+   </paletteProvider>
+   </extension>
+   <extension  point="org.eclipse.gmf.runtime.diagram.ui.paletteProviders" id="palette-provider">
+	   <paletteProvider
+    	     class="org.eclipse.uml2.diagram.usecase.part.PaletteFactoryProvider">
+      	<Priority name="Lowest" />
+         <editor id="org.eclipse.gef3d.examples.uml2.multi.part.MultiGraphicalEditor3D"/>
+   	</paletteProvider>
+	</extension>
   
    
  
