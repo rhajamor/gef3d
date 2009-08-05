@@ -13,6 +13,8 @@ package org.eclipse.gef3d.examples.ecore.figures;
 import org.eclipse.draw2d.FreeformLayout;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.Figure3D;
+import org.eclipse.draw3d.FigureSurface;
+import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.TransparentObject;
 import org.eclipse.draw3d.camera.ICamera;
@@ -38,6 +40,13 @@ public class DiagramFigure3D extends Figure3D implements TransparentObject {
 
 	private Shape m_shape = new CuboidFigureShape(this);
 
+	
+	/**
+	 * The surface of this figure. This is where 2D children are placed.
+	 */
+	private ISurface m_surface = new FigureSurface(this);
+	
+	
 	public DiagramFigure3D() {
 
 		setLayoutManager(new FreeformLayout());
@@ -94,5 +103,16 @@ public class DiagramFigure3D extends Figure3D implements TransparentObject {
 	 */
 	public void renderTransparent(RenderContext renderContext) {
 		m_shape.render(renderContext);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getSurface()
+	 */
+	@Override
+	public ISurface getSurface() {
+
+		return m_surface;
 	}
 }
