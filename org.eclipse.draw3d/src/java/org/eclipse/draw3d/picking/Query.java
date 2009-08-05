@@ -32,6 +32,9 @@ public class Query {
 
 	private TreeSearch m_search;
 
+	/**
+	 * This is a simple map for storing client specific data.
+	 */
 	private Map<Object, Object> m_objects;
 
 	private IVector3f m_rayDirection;
@@ -249,4 +252,17 @@ public class Query {
 
 		m_objects.put(i_key, i_object);
 	}
+
+	/** 
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Query [rayDirection="
+			+ m_rayDirection + ", rayOrigin=" + m_rayOrigin
+			+ ", rootFigure=" + m_rootFigure + ", search=" + m_search + "]";
+	}
+	
+	
 }
