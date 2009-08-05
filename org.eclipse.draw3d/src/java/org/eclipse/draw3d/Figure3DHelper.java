@@ -528,10 +528,13 @@ public class Figure3DHelper {
 						IVector3f location3D =
 							figure.getPosition3D().getLocation3D();
 
-						int dx = -Math.round(location3D.getX());
-						int dy = -Math.round(location3D.getY());
-
-						graphics.translate(dx, dy);
+						// 2D connections have surface relative coordinates, no
+						// translation necessary:
+//						int dx = -Math.round(location3D.getX());
+//						int dy = -Math.round(location3D.getY());
+//						graphics.translate(dx, dy);
+						
+						
 						connectionLayer.paint(graphics);
 						graphics.restoreState();
 					}
