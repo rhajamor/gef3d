@@ -60,6 +60,44 @@ import org.eclipse.swt.widgets.Control;
  */
 public class GraphicalViewer3DHelper {
 
+	class ConditionalTreeSearch extends ExclusionSearch {
+
+		final Conditional condition;
+
+		ConditionalTreeSearch(Collection coll, Conditional condition) {
+			super(coll);
+			this.condition = condition;
+		}
+
+		@Override
+		public boolean accept(IFigure i_figure) {
+
+			IFigure current = i_figure;
+			EditPart editpart = null;
+			while (editpart == null && current != null) {
+				editpart = (EditPart) viewer.getVisualPartMap().get(current);
+				current = current.getParent();
+			}
+
+			return editpart != null
+				&& (condition == null || condition.evaluate(editpart));
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			StringBuilder result = new StringBuilder("ConditionalTreeSearch [");
+			result.append("condition: ").append(String.valueOf(condition));
+			result.append("]");
+			return result.toString();
+		}
+
+	}
+
 	/**
 	 * The viewer which uses this helper.
 	 */
@@ -144,29 +182,6 @@ public class GraphicalViewer3DHelper {
 	public EditPart findObjectAtExcluding(Point i_sLocation,
 		Collection i_exclude, final Conditional i_condition) {
 
-		class ConditionalTreeSearch extends ExclusionSearch {
-
-			ConditionalTreeSearch(Collection coll) {
-
-				super(coll);
-			}
-
-			@Override
-			public boolean accept(IFigure i_figure) {
-
-				IFigure current = i_figure;
-				EditPart editpart = null;
-				while (editpart == null && current != null) {
-					editpart =
-						(EditPart) viewer.getVisualPartMap().get(current);
-					current = current.getParent();
-				}
-
-				return editpart != null
-					&& (i_condition == null || i_condition.evaluate(editpart));
-			}
-		}
-
 		Vector3f point = Draw3DCache.getVector3f();
 		Point figureSLocation = Draw3DCache.getPoint();
 		try {
@@ -177,7 +192,8 @@ public class GraphicalViewer3DHelper {
 			ISurface surface = picker.getCurrentSurface();
 			surface.getWorldLocation(i_sLocation, point);
 
-			TreeSearch search = new ConditionalTreeSearch(i_exclude);
+			TreeSearch search =
+				new ConditionalTreeSearch(i_exclude, i_condition);
 			Hit hit = picker.getHit(point, search);
 
 			EditPart part = null;
