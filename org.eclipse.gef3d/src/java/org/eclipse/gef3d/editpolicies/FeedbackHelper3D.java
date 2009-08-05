@@ -103,13 +103,12 @@ public class FeedbackHelper3D extends FeedbackHelper {
 				bounds.setLocation(0, 0, 0);
 
 			if (i_sSize != null) {
-				surface.getWorldDimension(i_sSize, wSize);
-				bounds.setSize(wSize);
-			} else
-				bounds.setSize(0, 0, 0);
-
-			wSize.setZ(1);
-
+				// surface.getWorldDimension(i_sSize, wSize);
+				bounds.setSize(i_sSize.width, i_sSize.height, 1);
+			} else {
+				bounds.setSize(0, 0, 1);
+			}
+			
 			bounds.expand(0.01f);
 			bounds.getPosition(wLocation);
 			bounds.getSize(wSize);
@@ -145,13 +144,15 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			ISurface surface = m_picker.getCurrentSurface();
 
 			if (i_surfaceMoveDelta != null) {
-				surface.getWorldLocation(i_surfaceMoveDelta, wLocation);
+				// surface.getWorldLocation(i_surfaceMoveDelta, wLocation);
+				wLocation.set(i_surfaceMoveDelta.x, i_surfaceMoveDelta.y, 0);
 				bounds.translate(wLocation);
 			}
 
 			if (i_surfaceSizeDelta != null) {
-				surface.getWorldDimension(i_surfaceSizeDelta, wSize);
-				bounds.resize(wSize);
+//				surface.getWorldDimension(i_surfaceSizeDelta, wSize);
+//				bounds.resize(wSize);
+				bounds.resize(i_surfaceSizeDelta.width,i_surfaceSizeDelta.height,0);
 			}
 
 			bounds.getPosition(wLocation);
