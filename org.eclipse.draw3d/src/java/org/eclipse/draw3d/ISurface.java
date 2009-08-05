@@ -146,16 +146,17 @@ public interface ISurface {
 	 */
 	public Vector3f getSurfaceLocation3D(IVector3f i_world, Vector3f io_result);
 
-	/**
-	 * Returns the world dimensions of the given dimension specified in 2D
-	 * surface coordinates.
-	 * 
-	 * @param i_surface the 2D surface coordinates of the dimension
-	 * @param io_result the result vector, if <code>null</code>, a new vector
-	 *            will be created
-	 * @return the result vector
-	 */
-	public Vector3f getWorldDimension(Dimension i_surface, Vector3f io_result);
+//	Seems needless
+//	/**
+//	 * Returns the world dimensions of the given dimension specified in 2D
+//	 * surface coordinates.
+//	 * 
+//	 * @param i_surface the 2D surface coordinates of the dimension
+//	 * @param io_result the result vector, if <code>null</code>, a new vector
+//	 *            will be created
+//	 * @return the result vector
+//	 */
+//	public Vector3f getWorldDimension(Dimension i_surface, Vector3f io_result);
 
 	/**
 	 * Returns the world coordinates of the given point specified in 3D surface

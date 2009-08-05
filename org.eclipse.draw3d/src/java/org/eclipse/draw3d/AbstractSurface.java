@@ -238,23 +238,25 @@ public abstract class AbstractSurface implements ISurface {
 		return result;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.ISurface#getWorldDimension(org.eclipse.draw2d.geometry.Dimension,
-	 *      org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	public Vector3f getWorldDimension(Dimension i_surface, Vector3f io_result) {
-
-		Point p = Draw3DCache.getPoint();
-		try {
-			p.x = i_surface.width;
-			p.y = i_surface.height;
-			return getWorldLocation(p, io_result);
-		} finally {
-			Draw3DCache.returnPoint(p);
-		}
-	}
+//	Does not work like this, origin must be transformed as well and difference
+//	must be calculated.
+//	/**
+//	 * {@inheritDoc}
+//	 * 
+//	 * @see org.eclipse.draw3d.ISurface#getWorldDimension(org.eclipse.draw2d.geometry.Dimension,
+//	 *      org.eclipse.draw3d.geometry.Vector3f)
+//	 */
+//	public Vector3f getWorldDimension(Dimension i_surface, Vector3f io_result) {
+//
+//		Point p = Draw3DCache.getPoint();
+//		try {
+//			p.x = i_surface.width;
+//			p.y = i_surface.height;
+//			return getWorldLocation(p, io_result);
+//		} finally {
+//			Draw3DCache.returnPoint(p);
+//		}
+//	}
 
 	/**
 	 * {@inheritDoc}
