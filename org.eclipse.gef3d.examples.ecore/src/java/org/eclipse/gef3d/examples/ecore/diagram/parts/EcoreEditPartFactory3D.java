@@ -14,9 +14,14 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.emf.ecoretools.diagram.edit.parts.EcoreEditPartFactory;
+import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.EditPart;
+import org.eclipse.gef.Request;
+import org.eclipse.gef.requests.SelectionRequest;
+import org.eclipse.gef.tools.DeselectAllTracker;
 import org.eclipse.gef3d.examples.ecore.figures.DiagramFigure3D;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart;
+import org.eclipse.gmf.runtime.diagram.ui.tools.DragEditPartsTrackerEx;
 import org.eclipse.gmf.runtime.notation.Diagram;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
@@ -61,6 +66,18 @@ public class EcoreEditPartFactory3D extends EcoreEditPartFactory {
 					f.setAlpha((byte) (255 / 2));
 
 					return f;
+				}
+				
+				/** 
+				 * {@inheritDoc}
+				 * @see org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart#getDragTracker(org.eclipse.gef.Request)
+				 */
+				@Override
+				public DragTracker getDragTracker(Request req) {
+					if (req instanceof SelectionRequest
+						&& ((SelectionRequest) req).getLastButtonPressed() == 3)
+						return new DeselectAllTracker(this);
+					return new DragEditPartsTrackerEx(this);
 				}
 			};
 		}

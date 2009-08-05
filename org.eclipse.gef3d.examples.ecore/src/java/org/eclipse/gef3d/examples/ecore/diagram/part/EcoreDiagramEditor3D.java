@@ -31,6 +31,7 @@ import org.eclipse.gef3d.ext.multieditor.INestableEditor;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
 import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
+import org.eclipse.gef3d.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer3D;
 import org.eclipse.gef3d.tools.CameraTool;
 import org.eclipse.gef3d.ui.parts.FpsStatusLineItem;
 import org.eclipse.gmf.runtime.common.core.service.IProvider;
