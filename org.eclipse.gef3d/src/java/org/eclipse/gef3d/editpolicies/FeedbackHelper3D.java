@@ -108,7 +108,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			} else {
 				bounds.setSize(0, 0, 1);
 			}
-			
+
 			bounds.expand(0.01f);
 			bounds.getPosition(wLocation);
 			bounds.getSize(wSize);
@@ -150,9 +150,10 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			}
 
 			if (i_surfaceSizeDelta != null) {
-//				surface.getWorldDimension(i_surfaceSizeDelta, wSize);
-//				bounds.resize(wSize);
-				bounds.resize(i_surfaceSizeDelta.width,i_surfaceSizeDelta.height,0);
+				// surface.getWorldDimension(i_surfaceSizeDelta, wSize);
+				// bounds.resize(wSize);
+				bounds.resize(i_surfaceSizeDelta.width,
+					i_surfaceSizeDelta.height, 0);
 			}
 
 			bounds.getPosition(wLocation);
@@ -172,12 +173,19 @@ public class FeedbackHelper3D extends FeedbackHelper {
 	 * @param i_hostFigure the host figure
 	 */
 	public void setHostFigure(IFigure i_hostFigure) {
+		if (i_hostFigure == null) // parameter precondition
+			throw new NullPointerException("i_hostFigure must not be null");
 
 		m_hostFigure = i_hostFigure;
 
 		UpdateManager updateManager = m_hostFigure.getUpdateManager();
 		if (updateManager instanceof PickingUpdateManager3D)
 			m_picker = ((PickingUpdateManager3D) updateManager).getPicker();
+		else {
+			throw new IllegalArgumentException(
+				"figure's update manager must be instanceof PickingUpdateManager3D, was "
+					+ updateManager);
+		}
 	}
 
 	/**

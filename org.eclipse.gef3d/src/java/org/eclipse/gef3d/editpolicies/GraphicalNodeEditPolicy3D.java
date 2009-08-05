@@ -61,6 +61,7 @@ public abstract class GraphicalNodeEditPolicy3D extends GraphicalNodeEditPolicy 
 	protected FeedbackHelper getFeedbackHelper(CreateConnectionRequest request) {
 		if (feedbackHelper == null) {
 			feedbackHelper = new FeedbackHelper3D();
+			((FeedbackHelper3D) feedbackHelper).setHostFigure(getHostFigure());
 			Point p = request.getLocation();
 			connectionFeedback = createDummyConnection(request);
 			connectionFeedback
@@ -69,11 +70,12 @@ public abstract class GraphicalNodeEditPolicy3D extends GraphicalNodeEditPolicy 
 				.setSourceAnchor(getSourceConnectionAnchor(request));
 			feedbackHelper.setConnection(connectionFeedback);
 			addFeedback(connectionFeedback);
+			
 			feedbackHelper.update(null, p);
+		} else {
+			if (feedbackHelper instanceof FeedbackHelper3D)
+				((FeedbackHelper3D) feedbackHelper).setHostFigure(getHostFigure());
 		}
-
-		if (feedbackHelper instanceof FeedbackHelper3D)
-			((FeedbackHelper3D) feedbackHelper).setHostFigure(getHostFigure());
 
 		return feedbackHelper;
 	}
