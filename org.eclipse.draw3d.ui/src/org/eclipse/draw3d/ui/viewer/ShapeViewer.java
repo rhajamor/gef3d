@@ -10,13 +10,11 @@
  ******************************************************************************/
 package org.eclipse.draw3d.ui.viewer;
 
-import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.picking.Query;
-import org.eclipse.draw3d.shapes.Cylinder;
-import org.eclipse.draw3d.shapes.Sphere;
+import org.eclipse.draw3d.shapes.CylinderShape;
+import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.widgets.Display;
@@ -38,44 +36,13 @@ public class ShapeViewer extends Draw3DViewer {
 	@Override
 	protected IFigure3D createContents() {
 
-		IFigure3D figure = new Figure3D() {
+		IFigure3D figure = new ShapeFigure3D() {
 
-			private Cylinder m_cylinder = new Cylinder(12, 0.4f);
-
-			private Sphere m_sphere = new Sphere(2);
-
-			/**
-			 * {@inheritDoc}
-			 * 
-			 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
-			 */
 			@Override
-			public float getDistance(Query i_query) {
+			protected Shape createShape() {
 
-				return m_sphere.getDistance(i_query, getPosition3D());
-			}
-
-			/**
-			 * {@inheritDoc}
-			 * 
-			 * @see org.eclipse.draw3d.Figure3D#render(org.eclipse.draw3d.RenderContext)
-			 */
-			@Override
-			public void render(RenderContext i_renderContext) {
-
-				m_sphere.setFill(false);
-				m_sphere.setPosition(getPosition3D());
-				m_sphere.render(i_renderContext);
-
-				/*
-				 * m_cylinder.setOutlineColor(getForegroundColor(), 127);
-				 * m_cylinder.setFillColor(getBackgroundColor(), 127);
-				 * m_cylinder.setPosition(getPosition3D());
-				 * m_cylinder.setOutline(true); m_cylinder.setFill(true);
-				 * m_cylinder.setRadiusProportions(0);
-				 * m_cylinder.setSegments(30);
-				 * m_cylinder.render(i_renderContext);
-				 */
+				// return new SphereShape(12);
+				return new CylinderShape(12, 0.4f);
 			}
 		};
 

@@ -10,8 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
-import java.util.Collection;
-
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;

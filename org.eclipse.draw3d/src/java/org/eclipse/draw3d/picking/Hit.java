@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.picking;
 
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 
@@ -31,11 +32,21 @@ public interface Hit {
 	public float getDistance();
 
 	/**
-	 * The figure that was hit by the picking operation.
+	 * The 3D figure that was hit by the pick ray.
 	 * 
-	 * @return the figure
+	 * @return the 3D figure
 	 */
-	public IFigure3D getFigure();
+	public IFigure3D getFigure3D();
+
+	/**
+	 * The figure that was hit by the picking operation. This is either the 3D
+	 * figure returned by {@link #getFigure3D()} or a 2D figure on surface of
+	 * the 3D figure if such a figure was hit by the picking ray and if it was
+	 * accepted by the search.
+	 * 
+	 * @return the search result
+	 */
+	public IFigure getSearchResult();
 
 	/**
 	 * Returns the world location of this hit, in other words the world location

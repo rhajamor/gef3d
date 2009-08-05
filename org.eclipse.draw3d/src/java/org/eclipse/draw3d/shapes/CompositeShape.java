@@ -16,7 +16,6 @@ import java.util.List;
 
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.picking.Query;
 
 /**
@@ -32,6 +31,17 @@ public class CompositeShape implements Shape {
 	private List<Shape> m_shapes = new LinkedList<Shape>();
 
 	/**
+	 * Creates a new composite shape that contains the given shapes.
+	 * 
+	 * @param i_shapes the shapes which this shape is composited of
+	 */
+	public CompositeShape(Shape... i_shapes) {
+
+		for (Shape shape : i_shapes)
+			add(shape);
+	}
+
+	/**
 	 * Adds the given shape to this composite. If the given shape was already
 	 * added to this composite, it will be added again.
 	 * 
@@ -44,6 +54,21 @@ public class CompositeShape implements Shape {
 			throw new NullPointerException("i_shape must not be null");
 
 		m_shapes.add(i_shape);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
+	 *      org.eclipse.draw3d.geometry.Position3D)
+	 */
+	public float getDistance(Query i_query) {
+
+		float distance = Float.NaN;
+		for (Shape shape : m_shapes)
+			distance = Math3D.minDistance(distance, shape.getDistance(i_query));
+
+		return distance;
 	}
 
 	/**
@@ -73,22 +98,5 @@ public class CompositeShape implements Shape {
 
 		for (Shape shape : m_shapes)
 			shape.render(renderContext);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
-	 *      org.eclipse.draw3d.geometry.Position3D)
-	 */
-	public float getDistance(Query i_query, Position3D i_position) {
-
-		float distance = Float.NaN;
-		for (Shape shape : m_shapes)
-			distance =
-				Math3D.minDistance(distance, shape.getDistance(i_query,
-					i_position));
-
-		return distance;
 	}
 }

@@ -14,10 +14,10 @@ package org.eclipse.draw3d;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.picking.Query;
-import org.eclipse.draw3d.shapes.ConeFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * A connection decoration that renders a shape.
@@ -26,39 +26,20 @@ import org.eclipse.draw3d.shapes.Shape;
  * @version $Revision$
  * @since 18.05.2008
  */
-public class ShapeDecoration extends Figure3D implements RotatableDecoration3D {
-
-	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
-
-	private static final IVector3f Z_AXIS_NEG = new Vector3fImpl(0, 0, -1);
+public class ShapeDecoration extends ShapeFigure3D implements
+		RotatableDecoration3D {
 
 	private Vector3fImpl m_lastReference = new Vector3fImpl(0, 0, 0);
 
 	/**
-	 * The shape that represents this decoration visually.
-	 */
-	protected Shape m_shape = new ConeFigureShape(this);
-
-	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
-	public float getDistance(Query i_query) {
-
-		return m_shape.getDistance(i_query, getPosition3D());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render()
-	 */
-	@Override
-	public void render(RenderContext renderContext) {
-
-		m_shape.render(renderContext);
+	protected Shape createShape() {
+		// TODO implement method ShapeDecoration.createShape
+		return null;
 	}
 
 	/**
@@ -88,26 +69,18 @@ public class ShapeDecoration extends Figure3D implements RotatableDecoration3D {
 			if (i_reference.equals(m_lastReference))
 				return;
 
-			TMP_V3.set(getPosition3D().getLocation3D());
-			Math3D.sub(i_reference, TMP_V3, TMP_V3);
-			Math3D.getEulerAngles(Z_AXIS_NEG, TMP_V3, TMP_V3);
+			Vector3f tmp = Draw3DCache.getVector3f();
+			try {
+				tmp.set(getPosition3D().getLocation3D());
 
-			getPosition3D().setRotation3D(TMP_V3);
-			m_lastReference.set(TMP_V3);
+				Math3D.sub(i_reference, tmp, tmp);
+				Math3D.getEulerAngles(IVector3f.Z_AXIS_NEG, tmp, tmp);
+
+				getPosition3D().setRotation3D(tmp);
+				m_lastReference.set(tmp);
+			} finally {
+				Draw3DCache.returnVector3f(tmp);
+			}
 		}
 	}
-
-	/**
-	 * Sets the shape of this decoration.
-	 * 
-	 * @param i_shape the shape of this decoration
-	 */
-	public void setShape(Shape i_shape) {
-
-		if (i_shape == null)
-			throw new NullPointerException("i_shape must not be null");
-
-		m_shape = i_shape;
-	}
-
 }

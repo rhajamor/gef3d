@@ -12,7 +12,6 @@ package org.eclipse.draw3d.shapes;
 
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Query;
@@ -29,9 +28,9 @@ import org.eclipse.swt.graphics.Color;
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 03.06.2009
+ * @since 05.08.2009
  */
-public class Cylinder extends AbstractModelShape {
+public class CylinderShape extends PositionableShape {
 
 	/**
 	 * A key to store a display list for a cylinder in the display list manager.
@@ -47,22 +46,19 @@ public class Cylinder extends AbstractModelShape {
 		/**
 		 * Creates a new key with the given values.
 		 * 
-		 * @param i_segments
-		 *            the number of segments
-		 * @param i_radiusProportions
-		 *            the radius proportions
-		 * @param i_outline
-		 *            <code>true</code> if this key is for the display list that
-		 *            draws the outline and <code>false</code> if it is for the
-		 *            display list that fills the cylinder
+		 * @param i_segments the number of segments
+		 * @param i_radiusProportions the radius proportions
+		 * @param i_outline <code>true</code> if this key is for the display
+		 *            list that draws the outline and <code>false</code> if it
+		 *            is for the display list that fills the cylinder
 		 */
 		public CylinderKey(int i_segments, float i_radiusProportions,
 				boolean i_outline) {
 
 			m_hashCode = 17;
 			m_hashCode = 37 * m_hashCode + new Integer(i_segments).hashCode();
-			m_hashCode = 37 * m_hashCode
-					+ new Float(i_radiusProportions).hashCode();
+			m_hashCode =
+				37 * m_hashCode + new Float(i_radiusProportions).hashCode();
 			m_hashCode = 37 * m_hashCode + new Boolean(i_outline).hashCode();
 		}
 
@@ -101,25 +97,23 @@ public class Cylinder extends AbstractModelShape {
 	/**
 	 * Convenience method that creates a new cone.
 	 * 
-	 * @param i_segments
-	 *            the number of segments
+	 * @param i_segments the number of segments
 	 * @return the cone
 	 */
-	public static Cylinder createCone(int i_segments) {
+	public static CylinderShape createCone(int i_segments) {
 
-		return new Cylinder(i_segments, 0);
+		return new CylinderShape(i_segments, 0);
 	}
 
 	/**
 	 * Convenience method that creates a new cylinder.
 	 * 
-	 * @param i_segments
-	 *            the number of segments
+	 * @param i_segments the number of segments
 	 * @return the cylinder
 	 */
-	public static Cylinder createCylinder(int i_segments) {
+	public static CylinderShape createCylinder(int i_segments) {
 
-		return new Cylinder(i_segments, 1);
+		return new CylinderShape(i_segments, 1);
 	}
 
 	private float[] m_bottomVertices;
@@ -146,20 +140,18 @@ public class Cylinder extends AbstractModelShape {
 	 * Creates a new cylinder with the given number of segments and radius
 	 * proportions.
 	 * 
-	 * @param i_segments
-	 *            the number of segments
-	 * @param i_radiusProportions
-	 *            the radius proportions
+	 * @param i_segments the number of segments
+	 * @param i_radiusProportions the radius proportions
 	 */
-	public Cylinder(int i_segments, float i_radiusProportions) {
+	public CylinderShape(int i_segments, float i_radiusProportions) {
 
 		if (i_segments < 3)
 			throw new IllegalArgumentException(
-					"cylinders must have at least 3 segments");
+				"cylinders must have at least 3 segments");
 
 		if (i_radiusProportions < 0 || i_radiusProportions > 1)
 			throw new IllegalArgumentException(
-					"radius proportions must be between 0 and 1, inclusive");
+				"radius proportions must be between 0 and 1, inclusive");
 
 		m_segments = i_segments;
 		m_radiusProportions = i_radiusProportions;
@@ -191,6 +183,33 @@ public class Cylinder extends AbstractModelShape {
 		m_outlineKey = new CylinderKey(m_segments, m_radiusProportions, true);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doRender(org.eclipse.draw3d.RenderContext)
+	 */
+	@Override
+	protected void doRender(RenderContext i_renderContext) {
+
+		Graphics3D g3d = i_renderContext.getGraphics3D();
+		DisplayListManager displayListManager =
+			i_renderContext.getDisplayListManager();
+
+		initDisplayLists(displayListManager, g3d);
+
+		if (m_fill) {
+			g3d.glColor4f(m_fillColor[0], m_fillColor[1], m_fillColor[2],
+				m_fillColor[3]);
+			displayListManager.executeDisplayList(m_fillKey);
+		}
+
+		if (m_outline) {
+			g3d.glColor4f(m_outlineColor[0], m_outlineColor[1],
+				m_outlineColor[2], m_outlineColor[3]);
+			displayListManager.executeDisplayList(m_outlineKey);
+		}
+	}
+
 	private float[] getBottomVertices() {
 
 		if (m_bottomVertices == null) {
@@ -212,12 +231,11 @@ public class Cylinder extends AbstractModelShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
-	 *      org.eclipse.draw3d.geometry.Position3D)
+	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query)
 	 */
-	public float getDistance(Query i_query, Position3D i_position) {
+	public float getDistance(Query i_query) {
 
-		// TODO: Implement this
+		// TODO implement this
 		return Float.NaN;
 	}
 
@@ -240,7 +258,7 @@ public class Cylinder extends AbstractModelShape {
 	}
 
 	private void initDisplayLists(DisplayListManager i_manager,
-			final Graphics3D i_graphics3D) {
+		final Graphics3D i_graphics3D) {
 
 		if (m_fill && !i_manager.isDisplayList(m_fillKey)) {
 			i_manager.createDisplayList(m_fillKey, new Runnable() {
@@ -259,37 +277,10 @@ public class Cylinder extends AbstractModelShape {
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.shapes.AbstractModelShape#performRender(org.eclipse.draw3d.RenderContext)
-	 */
-	@Override
-	protected void performRender(RenderContext i_renderContext) {
-
-		Graphics3D g3d = i_renderContext.getGraphics3D();
-		DisplayListManager displayListManager = i_renderContext
-				.getDisplayListManager();
-
-		initDisplayLists(displayListManager, g3d);
-
-		if (m_fill) {
-			g3d.glColor4f(m_fillColor[0], m_fillColor[1], m_fillColor[2],
-					m_fillColor[3]);
-			displayListManager.executeDisplayList(m_fillKey);
-		}
-
-		if (m_outline) {
-			g3d.glColor4f(m_outlineColor[0], m_outlineColor[1],
-					m_outlineColor[2], m_outlineColor[3]);
-			displayListManager.executeDisplayList(m_outlineKey);
-		}
-	}
-
 	private void renderFill(Graphics3D g3d) {
 
 		g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
-				Graphics3DDraw.GL_FILL);
+			Graphics3DDraw.GL_FILL);
 
 		float[] bVerts = getBottomVertices();
 
@@ -353,7 +344,7 @@ public class Cylinder extends AbstractModelShape {
 	private void renderOutline(Graphics3D g3d) {
 
 		g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
-				Graphics3DDraw.GL_LINE);
+			Graphics3DDraw.GL_LINE);
 
 		float[] bVerts = getBottomVertices();
 
@@ -405,8 +396,7 @@ public class Cylinder extends AbstractModelShape {
 	/**
 	 * Specifies whether the polygons should be filled.
 	 * 
-	 * @param i_fill
-	 *            <code>true</code> if the polygons should be filled and
+	 * @param i_fill <code>true</code> if the polygons should be filled and
 	 *            <code>false</code> otherwise
 	 */
 	public void setFill(boolean i_fill) {
@@ -417,10 +407,8 @@ public class Cylinder extends AbstractModelShape {
 	/**
 	 * Sets the fill color of this cylinder.
 	 * 
-	 * @param i_color
-	 *            the fill color
-	 * @param i_alpha
-	 *            the alpha value
+	 * @param i_color the fill color
+	 * @param i_alpha the alpha value
 	 */
 	public void setFillColor(Color i_color, int i_alpha) {
 
@@ -430,8 +418,7 @@ public class Cylinder extends AbstractModelShape {
 	/**
 	 * Specifies whether an outline should be drawn.
 	 * 
-	 * @param i_outline
-	 *            <code>true</code> if an outline should be drawn and
+	 * @param i_outline <code>true</code> if an outline should be drawn and
 	 *            <code>false</code> otherwise
 	 */
 	public void setOutline(boolean i_outline) {
@@ -449,5 +436,4 @@ public class Cylinder extends AbstractModelShape {
 
 		ColorConverter.toFloatArray(i_color, i_alpha, m_outlineColor);
 	}
-
 }

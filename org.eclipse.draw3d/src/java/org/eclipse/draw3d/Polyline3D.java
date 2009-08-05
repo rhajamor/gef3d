@@ -19,9 +19,8 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometryext.PointList3D;
-import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.PolylineShape;
-import org.eclipse.swt.graphics.Color;
+import org.eclipse.draw3d.shapes.Shape;
 
 /**
  * 3D version of {@link org.eclipse.draw2d.Polyline}.
@@ -32,14 +31,12 @@ import org.eclipse.swt.graphics.Color;
  * @version $Revision$
  * @since 26.11.2007
  */
-public class Polyline3D extends Figure3D {
+public class Polyline3D extends ShapeFigure3D {
 
 	/**
 	 * The width of this poly line.
 	 */
 	float lineWidth = 1.0f;
-
-	private PolylineShape m_shape = new PolylineShape();
 
 	/**
 	 * The point list. This list is derived from {@link PointList} and can thus
@@ -63,13 +60,12 @@ public class Polyline3D extends Figure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
-	public float getDistance(Query i_query) {
+	protected Shape createShape() {
 
-		m_shape.setPoints(points);
-		return m_shape.getDistance(i_query, null);
+		return new PolylineShape(this);
 	}
 
 	/**
@@ -90,6 +86,16 @@ public class Polyline3D extends Figure3D {
 		log.info("getEnd(): " + pt);
 
 		return pt;
+	}
+
+	/**
+	 * Returns the line width.
+	 * 
+	 * @return the line width
+	 */
+	public float getLineWidth() {
+
+		return lineWidth;
 	}
 
 	/**
@@ -180,23 +186,6 @@ public class Polyline3D extends Figure3D {
 		erase();
 		// bounds = null;
 		points.remove(index);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render()
-	 */
-	@Override
-	public void render(RenderContext renderContext) {
-
-		m_shape.setPoints(points);
-
-		Color color = getForegroundColor();
-		int alpha = getAlpha();
-
-		m_shape.setColor(color, alpha);
-		m_shape.render(renderContext);
 	}
 
 	/**

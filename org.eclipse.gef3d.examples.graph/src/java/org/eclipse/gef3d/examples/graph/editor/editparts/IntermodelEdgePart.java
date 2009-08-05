@@ -14,9 +14,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw3d.RotatableDecoration3D;
 import org.eclipse.draw3d.ShapeDecoration;
-import org.eclipse.draw3d.shapes.ConeFigureShape;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef3d.examples.graph.editor.figures.EdgeFigure3D;
 import org.eclipse.gef3d.examples.graph.model.Edge;

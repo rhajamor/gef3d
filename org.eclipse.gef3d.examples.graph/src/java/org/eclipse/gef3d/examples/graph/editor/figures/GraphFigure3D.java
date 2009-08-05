@@ -18,13 +18,12 @@ import org.eclipse.draw3d.FreeformLayer3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.SurfaceLayout;
-import org.eclipse.draw3d.TransparentObject;
-import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
+import org.eclipse.draw3d.shapes.TransparencyAdapter;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
@@ -35,7 +34,7 @@ import org.eclipse.swt.widgets.Display;
  * @version $Revision$
  * @since 21.11.2007
  */
-public class GraphFigure3D extends FreeformLayer3D implements TransparentObject {
+public class GraphFigure3D extends FreeformLayer3D {
 
 	/**
 	 * Logger for this class
@@ -45,6 +44,8 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 		Logger.getLogger(GraphFigure3D.class.getName());
 
 	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
+
+	private TransparencyAdapter m_adapter;
 
 	private Shape m_shape = new CuboidFigureShape(this);
 
@@ -83,6 +84,9 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 		Color bgColor = new Color(Display.getCurrent(), 0xFF, 0xFF, 0xFF);
 		setBackgroundColor(bgColor);
 		setAlpha((byte) 0x44);
+
+		m_shape = new CuboidFigureShape(this);
+		m_adapter = new TransparencyAdapter(this, m_shape);
 	}
 
 	/**
@@ -93,7 +97,7 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 	@Override
 	public float getDistance(Query i_query) {
 
-		return m_shape.getDistance(i_query, getPosition3D());
+		return m_shape.getDistance(i_query);
 	}
 
 	/**
@@ -110,35 +114,14 @@ public class GraphFigure3D extends FreeformLayer3D implements TransparentObject 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth()
-	 */
-	public float getTransparencyDepth(RenderContext renderContext) {
-
-		ICamera camera = renderContext.getScene().getCamera();
-
-		getBounds3D().getCenter(TMP_V3);
-		return camera.getDistance(TMP_V3);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render()
+	 * @see org.eclipse.draw3d.Figure3D#render(org.eclipse.draw3d.RenderContext)
 	 */
 	@Override
 	public void render(RenderContext i_renderContext) {
 
-		i_renderContext.addTransparentObject(this);
+		if (getAlpha() == 255)
+			m_shape.render(i_renderContext);
+		else
+			i_renderContext.addTransparentObject(m_adapter);
 	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.TransparentObject#renderTransparent(org.eclipse.draw3d.RenderContext)
-	 */
-	public void renderTransparent(RenderContext renderContext) {
-		m_shape.render(renderContext);
-
-	}
-
 }

@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.picking;
 
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
@@ -33,12 +34,15 @@ public class HitImpl implements Hit {
 
 	private IVector3f m_rayOrigin;
 
+	private IFigure m_searchResult;
+
 	private Vector3f m_wLocation;
 
 	/**
 	 * Creates a new hit with the given figure and distance.
 	 * 
-	 * @param i_figure the figure that was hit
+	 * @param i_figure the 3D figure that was hit
+	 * @param i_searchResult the search result
 	 * @param i_distance the distance of the hit point to the origin of the
 	 *            picking ray
 	 * @param i_rayOrigin the origin of the picking ray
@@ -46,11 +50,14 @@ public class HitImpl implements Hit {
 	 * @throws NullPointerException if the given figure or any of the given
 	 *             vectors is <code>null</code>
 	 */
-	public HitImpl(IFigure3D i_figure, float i_distance, IVector3f i_rayOrigin,
-			IVector3f i_rayDirection) {
+	public HitImpl(IFigure3D i_figure, IFigure i_searchResult,
+			float i_distance, IVector3f i_rayOrigin, IVector3f i_rayDirection) {
 
 		if (i_figure == null)
 			throw new NullPointerException("i_figure must not be null");
+
+		if (i_searchResult == null)
+			throw new NullPointerException("i_searchResult must not be null");
 
 		if (i_rayOrigin == null)
 			throw new NullPointerException("i_rayOrigin must not be null");
@@ -59,6 +66,7 @@ public class HitImpl implements Hit {
 			throw new NullPointerException("i_rayDirection must not be null");
 
 		m_figure = i_figure;
+		m_searchResult = i_searchResult;
 		m_distance = i_distance;
 		m_rayOrigin = i_rayOrigin;
 		m_rayDirection = i_rayDirection;
@@ -77,11 +85,21 @@ public class HitImpl implements Hit {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.picking.Hit#getFigure()
+	 * @see org.eclipse.draw3d.picking.Hit#getFigure3D()
 	 */
-	public IFigure3D getFigure() {
+	public IFigure3D getFigure3D() {
 
 		return m_figure;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Hit#getSearchResult()
+	 */
+	public IFigure getSearchResult() {
+
+		return m_searchResult;
 	}
 
 	/**

@@ -14,9 +14,8 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.TransparentObject;
 import org.eclipse.draw3d.camera.ICamera;
-import org.eclipse.draw3d.geometry.Position3D;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.picking.Query;
+import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * Adapter for shapes with transparency. This class can be used for simply
@@ -31,34 +30,34 @@ import org.eclipse.draw3d.picking.Query;
  */
 public class TransparencyAdapter implements TransparentObject {
 
-	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
-
-	protected IFigure3D containerFigure;
-
-	protected Shape transparentShape;
-
 	/**
-	 * @param i_containerFigure
-	 * @param i_transparentShape
+	 * The figure to which the shape belongs.
 	 */
-	public TransparencyAdapter(IFigure3D i_containerFigure,
-			Shape i_transparentShape) {
-		containerFigure = i_containerFigure;
-		transparentShape = i_transparentShape;
-	}
+	protected IFigure3D m_figure;
 
 	/**
-	 * Returns the distance of the point of intersection between the picking ray
-	 * that is stored in the given query and this shape at the given position.
+	 * The shape to adapt.
+	 */
+	protected Shape m_shape;
+
+	/**
+	 * Creates a new transparency adapter for the given figure and shape.
 	 * 
-	 * @param i_query the query
-	 * @param i_position the position of this shape
-	 * @return the distance or {@link Float#NaN} if this shape is not hit by the
-	 *         picking ray
+	 * @param i_figure the figure to which the shape belongs
+	 * @param i_shape the shape to adapt
+	 * @throws NullPointerException if either of the given arguments is
+	 *             <code>null</code>
 	 */
-	public float getDistance(Query i_query, Position3D i_position) {
+	public TransparencyAdapter(IFigure3D i_figure, Shape i_shape) {
 
-		return transparentShape.getDistance(i_query, i_position);
+		if (i_figure == null)
+			throw new NullPointerException("i_figure must not be null");
+
+		if (i_shape == null)
+			throw new NullPointerException("i_shape must not be null");
+
+		m_figure = i_figure;
+		m_shape = i_shape;
 	}
 
 	/**
@@ -69,9 +68,15 @@ public class TransparencyAdapter implements TransparentObject {
 	 */
 	public float getTransparencyDepth(RenderContext renderContext) {
 		ICamera camera = renderContext.getScene().getCamera();
-		containerFigure.getBounds3D().getCenter(TMP_V3);
-		float dist = camera.getDistance(TMP_V3);
-		return dist;
+
+		Vector3f center = Draw3DCache.getVector3f();
+		try {
+			m_figure.getBounds3D().getCenter(center);
+			float dist = camera.getDistance(center);
+			return dist;
+		} finally {
+			Draw3DCache.returnVector3f(center);
+		}
 	}
 
 	/**
@@ -80,7 +85,7 @@ public class TransparencyAdapter implements TransparentObject {
 	 * @see org.eclipse.draw3d.TransparentObject#renderTransparent()
 	 */
 	public void renderTransparent(RenderContext renderContext) {
-		transparentShape.render(renderContext);
-	}
 
+		m_shape.render(renderContext);
+	}
 }

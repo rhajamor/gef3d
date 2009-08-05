@@ -199,7 +199,7 @@ public class GeometryPicker implements Picker {
 
 		Hit hit = getHit(i_mx, i_my, m_surfaceSearch);
 		if (hit != null) {
-			ISurface surface = hit.getFigure().getSurface();
+			ISurface surface = hit.getFigure3D().getSurface();
 			if (surface != null) {
 				if (!surface.equals(m_currentSurface))
 					log.info("new current surface is " + surface);

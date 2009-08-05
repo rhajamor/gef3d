@@ -23,9 +23,25 @@ import java.nio.FloatBuffer;
 public interface IVector3f extends Serializable, Cloneable {
 
 	/**
+	 * Number format of a single entry value of vectors or matrices.
+	 */
+	final static String NF = "%12s";
+
+	/**
 	 * Constant null vector (0,0,0), all vectors are created with (0,0,0).
 	 */
 	public final static IVector3f NULLVEC3f = new Vector3fImpl(0, 0, 0);
+
+	/**
+	 * Format used in toString() methods
+	 */
+	public final static String TO_STRING_FORMAT =
+		"(" + NF + ", " + NF + ", " + NF + ")";
+
+	/**
+	 * A vector (1,1,1).
+	 */
+	public final static IVector3f UNITVEC3f = new Vector3fImpl(1, 1, 1);
 
 	/**
 	 * A vector that points in the direction of the positive X axis.
@@ -33,90 +49,29 @@ public interface IVector3f extends Serializable, Cloneable {
 	public final static IVector3f X_AXIS = new Vector3fImpl(1, 0, 0);
 
 	/**
+	 * A vector that points in the direction of the negative X axis.
+	 */
+	public final static IVector3f X_AXIS_NEG = new Vector3fImpl(-1, 0, 0);
+
+	/**
 	 * A vector that points in the direction of the positive Y axis.
 	 */
 	public final static IVector3f Y_AXIS = new Vector3fImpl(0, 1, 0);
 
 	/**
+	 * A vector that points in the direction of the negative Y axis.
+	 */
+	public final static IVector3f Y_AXIS_NEG = new Vector3fImpl(0, -1, 0);
+
+	/**
 	 * A vector that points in the direction of the positive Z axis.
 	 */
 	public final static IVector3f Z_AXIS = new Vector3fImpl(0, 0, 1);
-	
-	/**
-	 * A vector (1,1,1).
-	 */
-	public final static IVector3f UNITVEC3f = new Vector3fImpl(1, 1, 1);
 
 	/**
-	 * Number format of a single entry value of vectors or matrices.
+	 * A vector that points in the direction of the negative Z axis.
 	 */
-	final static String NF = "%12s";
-
-	/**
-	 * Format used in toString() methods
-	 */
-	public final static String TO_STRING_FORMAT = "(" + NF + ", " + NF + ", "
-			+ NF + ")";
-
-	/**
-	 * Returns the value of attribute x.
-	 * 
-	 * @return
-	 */
-	public float getX();
-
-	/**
-	 * Returns the value of attribute y.
-	 * 
-	 * @return
-	 */
-	public float getY();
-
-	/**
-	 * Returns the value of attribute z.
-	 * 
-	 * @return
-	 */
-	public float getZ();
-
-	/**
-	 * Returns the length of the vector.
-	 * 
-	 * @return
-	 */
-	public float length();
-
-	/**
-	 * Returns the squared length of the vector.
-	 * 
-	 * @return
-	 */
-	public float lengthSquared();
-
-	/**
-	 * Store this vector in a FloatBuffer. The buffer is <em>not</em> rewinded
-	 * (neither before nor after storing the vector). The entries are stored in
-	 * the following order: x, y, z.
-	 * 
-	 * @param buf The buffer to store it in, at the current position
-	 */
-	public void toBuffer(FloatBuffer o_floatBuffer);
-
-	/**
-	 * Stores this vector in an array of float with x at index 0, y at index 1,
-	 * and z at index 2.
-	 * 
-	 * @param o_arrayOfFloat The array to store in
-	 */
-	public void toArray(float[] o_arrayOfFloat);
-
-	/**
-	 * Stores this vector in an array of float, starting at given offset.
-	 * 
-	 * @param o_arrayOfFloat The array to store in
-	 * @param i_iOffset The offset to start storing at
-	 */
-	public void toArray(float[] o_arrayOfFloat, int i_iOffset);
+	public final static IVector3f Z_AXIS_NEG = new Vector3fImpl(0, 0, -1);
 
 	/**
 	 * Compares two vectors. A vector v0 equals a vector v1 iff v0==v1
@@ -145,6 +100,27 @@ public interface IVector3f extends Serializable, Cloneable {
 	public boolean equals(IVector3f v, float epsilon);
 
 	/**
+	 * Returns the value of attribute x.
+	 * 
+	 * @return
+	 */
+	public float getX();
+
+	/**
+	 * Returns the value of attribute y.
+	 * 
+	 * @return
+	 */
+	public float getY();
+
+	/**
+	 * Returns the value of attribute z.
+	 * 
+	 * @return
+	 */
+	public float getZ();
+
+	/**
 	 * Returns a hash code. Two instances a0 and a1 will return the same hash
 	 * code, if a0.equals(a1)==true.
 	 * <p>
@@ -157,5 +133,44 @@ public interface IVector3f extends Serializable, Cloneable {
 	 * @return the hash code
 	 */
 	public int hashCode();
+
+	/**
+	 * Returns the length of the vector.
+	 * 
+	 * @return
+	 */
+	public float length();
+
+	/**
+	 * Returns the squared length of the vector.
+	 * 
+	 * @return
+	 */
+	public float lengthSquared();
+
+	/**
+	 * Stores this vector in an array of float with x at index 0, y at index 1,
+	 * and z at index 2.
+	 * 
+	 * @param o_arrayOfFloat The array to store in
+	 */
+	public void toArray(float[] o_arrayOfFloat);
+
+	/**
+	 * Stores this vector in an array of float, starting at given offset.
+	 * 
+	 * @param o_arrayOfFloat The array to store in
+	 * @param i_iOffset The offset to start storing at
+	 */
+	public void toArray(float[] o_arrayOfFloat, int i_iOffset);
+
+	/**
+	 * Store this vector in a FloatBuffer. The buffer is <em>not</em> rewinded
+	 * (neither before nor after storing the vector). The entries are stored in
+	 * the following order: x, y, z.
+	 * 
+	 * @param buf The buffer to store it in, at the current position
+	 */
+	public void toBuffer(FloatBuffer o_floatBuffer);
 
 }

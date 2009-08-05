@@ -12,8 +12,10 @@ package org.eclipse.draw3d;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.logging.Logger;
 
 import org.eclipse.draw3d.graphics3d.Graphics3D;
@@ -29,18 +31,19 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 public class DisplayListManager {
 
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(DisplayListManager.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(DisplayListManager.class.getName());
 
 	private static final int RANGE = 10;
 
-	HashMap<Graphics3D, Map<String, Integer>> displayLists;
-
 	private List<Integer> m_baseIds = new ArrayList<Integer>();
 
-	private Map<Object, Integer> m_displayLists = new HashMap<Object, Integer>();
+	private Map<Object, Integer> m_displayLists =
+		new HashMap<Object, Integer>();
 
 	private final boolean m_disposed = false;
+
+	private Queue<Integer> m_freeIds = new LinkedList<Integer>();
 
 	private Graphics3D m_graphics3D;
 
@@ -49,8 +52,7 @@ public class DisplayListManager {
 	/**
 	 * Creates a new display list manager for the given graphics3D object.
 	 * 
-	 * @param i_graphics3D
-	 *            the graphics3D object that contains this manager
+	 * @param i_graphics3D the graphics3D object that contains this manager
 	 */
 	public DisplayListManager(Graphics3D i_graphics3D) {
 
@@ -63,8 +65,7 @@ public class DisplayListManager {
 	/**
 	 * Clears all displays lists in this manager.
 	 * 
-	 * @throws IllegalStateException
-	 *             if this display list manager is disposed
+	 * @throws IllegalStateException if this display list manager is disposed
 	 */
 	public void clear() {
 
@@ -77,6 +78,7 @@ public class DisplayListManager {
 		m_index = RANGE;
 		m_baseIds.clear();
 		m_displayLists.clear();
+		m_freeIds.clear();
 	}
 
 	/**
@@ -84,14 +86,12 @@ public class DisplayListManager {
 	 * contain the GL commands that are executed by the given runnable. If there
 	 * already is a display list with the given key, it will be overwritten.
 	 * 
-	 * @param i_key
-	 *            the key of the new display list
-	 * @param i_runnable
-	 *            the code that generates the GL commands for the display list
-	 * @throws NullPointerException
-	 *             if either of the given arguments is <code>null</code>
-	 * @throws IllegalStateException
-	 *             if this display list manager is disposed
+	 * @param i_key the key of the new display list
+	 * @param i_runnable the code that generates the GL commands for the display
+	 *            list
+	 * @throws NullPointerException if either of the given arguments is
+	 *             <code>null</code>
+	 * @throws IllegalStateException if this display list manager is disposed
 	 */
 	public void createDisplayList(Object i_key, Runnable i_runnable) {
 
@@ -116,6 +116,27 @@ public class DisplayListManager {
 	}
 
 	/**
+	 * Deletes the display lists with the given keys. If any of the given keys
+	 * is not the key of a display list that was created with this manager, it
+	 * is ignored.
+	 * 
+	 * @param i_keys the keys of the display lists to delete
+	 * @throws IllegalStateException if this display list manager is disposed
+	 */
+	public void deleteDisplayLists(Object... i_keys) {
+
+		if (m_disposed)
+			throw new IllegalStateException("display list manager is disposed");
+
+		for (Object key : i_keys) {
+			int id = m_displayLists.get(key);
+			m_graphics3D.glDeleteLists(id, 1);
+			m_displayLists.remove(key);
+			m_freeIds.offer(id);
+		}
+	}
+
+	/**
 	 * Disposes all ressources associated with this display list manager.
 	 */
 	public void dispose() {
@@ -131,17 +152,13 @@ public class DisplayListManager {
 	/**
 	 * Executes the display list with the given key.
 	 * 
-	 * @param i_key
-	 *            the key of the display list to execute
-	 * @throws NullPointerException
-	 *             if the given name is <code>null</code>
-	 * @throws IllegalArgumentException
-	 *             if there is no display list with the given name
-	 * @throws IllegalStateException
-	 *             if the display list with the given name was created before,
-	 *             but has since been discarded
-	 * @throws IllegalStateException
-	 *             if this display list manager is disposed
+	 * @param i_key the key of the display list to execute
+	 * @throws NullPointerException if the given name is <code>null</code>
+	 * @throws IllegalArgumentException if there is no display list with the
+	 *             given name
+	 * @throws IllegalStateException if the display list with the given name was
+	 *             created before, but has since been discarded
+	 * @throws IllegalStateException if this display list manager is disposed
 	 */
 	public void executeDisplayList(Object i_key) {
 
@@ -162,13 +179,15 @@ public class DisplayListManager {
 	 * Returns an unused display list ID.
 	 * 
 	 * @return an unused display list ID
-	 * @throws IllegalStateException
-	 *             if this display list manager is disposed
+	 * @throws IllegalStateException if this display list manager is disposed
 	 */
 	private int getNewId() {
 
 		if (m_disposed)
 			throw new IllegalStateException("display list manager is disposed");
+
+		if (!m_freeIds.isEmpty())
+			return m_freeIds.poll();
 
 		if (m_index == RANGE) {
 			int baseId = m_graphics3D.glGenLists(RANGE);
@@ -184,12 +203,10 @@ public class DisplayListManager {
 	 * Indicates whether a number of display lists have been registered with
 	 * this manager.
 	 * 
-	 * @param i_keys
-	 *            the keys of the display lists to check for
+	 * @param i_keys the keys of the display lists to check for
 	 * @return <code>true</code> if all display lists with the given keys are
 	 *         ready to use or <code>false</code> otherwise
-	 * @throws IllegalStateException
-	 *             if this display list manager is disposed
+	 * @throws IllegalStateException if this display list manager is disposed
 	 */
 	public boolean isDisplayList(Object... i_keys) {
 
@@ -197,8 +214,8 @@ public class DisplayListManager {
 			throw new IllegalStateException("display list manager is disposed");
 
 		if (i_keys != null && i_keys.length > 0)
-			for (Object name : i_keys)
-				if (!m_displayLists.containsKey(name))
+			for (Object key : i_keys)
+				if (!m_displayLists.containsKey(key))
 					return false;
 
 		return true;

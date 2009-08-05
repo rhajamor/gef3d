@@ -38,15 +38,15 @@ import org.eclipse.swt.graphics.Color;
  * @version $Revision$
  * @since 27.02.2008
  */
-public class SolidCube extends AbstractModelShape {
+public class CuboidShape extends PositionableShape {
 
-	private static final float[] DEFAULT_COLOR = new float[] { 0, 0, 0, 1 };
+	private static final String DL_FILL_FRONT = "fill_cube_front";
 
-	private static final String DL_FRONT = "solid_cube_front";
+	private static final String DL_FILL_REST = "fill_cube_rest";
 
-	private static final String DL_REST = "solid_cube_rest";
+	private static final String DL_OUTLINE = "outline_cube";
 
-	private static final String DL_TEXTURE = "solid_cube_texture";
+	private static final String DL_TEXTURE = "cube_texture";
 
 	/**
 	 * Contains the indices of the vertices of the faces in the following order:
@@ -64,7 +64,7 @@ public class SolidCube extends AbstractModelShape {
 
 	@SuppressWarnings("unused")
 	private static final Logger log =
-		Logger.getLogger(SolidCube.class.getName());
+		Logger.getLogger(CuboidShape.class.getName());
 
 	/**
 	 * Contains the normal vectors of the faces in the same order as the faces
@@ -97,7 +97,7 @@ public class SolidCube extends AbstractModelShape {
 		FACES[0][1] = 6;
 		FACES[0][2] = 4;
 		FACES[0][3] = 0;
-		NORMALS[0] = Math3D.scale(-1, IVector3f.Z_AXIS, null);
+		NORMALS[0] = IVector3f.Z_AXIS_NEG;
 
 		FACES[1][0] = 5;
 		FACES[1][1] = 7;
@@ -109,7 +109,7 @@ public class SolidCube extends AbstractModelShape {
 		FACES[2][1] = 3;
 		FACES[2][2] = 2;
 		FACES[2][3] = 0;
-		NORMALS[2] = Math3D.scale(-1, IVector3f.X_AXIS, null);
+		NORMALS[2] = IVector3f.X_AXIS_NEG;
 
 		FACES[3][0] = 6;
 		FACES[3][1] = 7;
@@ -121,7 +121,7 @@ public class SolidCube extends AbstractModelShape {
 		FACES[4][1] = 5;
 		FACES[4][2] = 1;
 		FACES[4][3] = 0;
-		NORMALS[4] = Math3D.scale(-1, IVector3f.Y_AXIS, null);
+		NORMALS[4] = IVector3f.Y_AXIS_NEG;
 
 		FACES[5][0] = 3;
 		FACES[5][1] = 7;
@@ -135,15 +135,19 @@ public class SolidCube extends AbstractModelShape {
 		TEX_COORDS[3] = new Vector2fImpl(0, 1);
 	}
 
-	private final float[] m_color =
-		new float[] { DEFAULT_COLOR[0], DEFAULT_COLOR[1], DEFAULT_COLOR[2],
-			DEFAULT_COLOR[3] };
+	private boolean m_fill = true;
+
+	private float[] m_fillColor = new float[] { 1, 1, 1, 1 };
 
 	/**
 	 * The model matrix which the vertices and normals have been transformed
 	 * last. This speeds up {@link #getDistance(Query, Position3D)}.
 	 */
 	private Matrix4fImpl m_lastModelMatrix = null;
+
+	private boolean m_outline = true;
+
+	private float[] m_outlineColor = new float[] { 0, 0, 0, 1 };
 
 	private Integer m_textureId;
 
@@ -162,12 +166,11 @@ public class SolidCube extends AbstractModelShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
-	 *      org.eclipse.draw3d.geometry.Position3D)
+	 * @see Shape#getDistance(Query)
 	 */
-	public float getDistance(Query i_query, Position3D i_position) {
+	public float getDistance(Query i_query) {
 
-		updateTransformed(i_position.getModelMatrix());
+		updateTransformed(getPosition3D().getModelMatrix());
 
 		IVector3f rayOrigin = i_query.getRayOrigin();
 		IVector3f rayDirection = i_query.getRayDirection();
@@ -193,8 +196,39 @@ public class SolidCube extends AbstractModelShape {
 	private void initDisplayLists(DisplayListManager i_displayListManager,
 		final Graphics3D g3d) {
 
-		if (i_displayListManager.isDisplayList(DL_REST, DL_FRONT, DL_TEXTURE))
+		if (i_displayListManager.isDisplayList(DL_OUTLINE, DL_FILL_REST,
+			DL_FILL_FRONT, DL_TEXTURE))
 			return;
+
+		Runnable outline = new Runnable() {
+
+			public void run() {
+				g3d.glBegin(Graphics3DDraw.GL_LINE_LOOP);
+				g3d.glVertex3f(0, 0, 0);
+				g3d.glVertex3f(1, 0, 0);
+				g3d.glVertex3f(1, 0, 1);
+				g3d.glVertex3f(0, 0, 1);
+				g3d.glEnd();
+
+				g3d.glBegin(Graphics3DDraw.GL_LINE_LOOP);
+				g3d.glVertex3f(0, 1, 0);
+				g3d.glVertex3f(1, 1, 0);
+				g3d.glVertex3f(1, 1, 1);
+				g3d.glVertex3f(0, 1, 1);
+				g3d.glEnd();
+
+				g3d.glBegin(Graphics3DDraw.GL_LINES);
+				g3d.glVertex3f(0, 0, 0);
+				g3d.glVertex3f(0, 1, 0);
+				g3d.glVertex3f(1, 0, 0);
+				g3d.glVertex3f(1, 1, 0);
+				g3d.glVertex3f(0, 0, 1);
+				g3d.glVertex3f(0, 1, 1);
+				g3d.glVertex3f(1, 0, 1);
+				g3d.glVertex3f(1, 1, 1);
+				g3d.glEnd();
+			}
+		};
 
 		Runnable front = new Runnable() {
 			public void run() {
@@ -236,76 +270,108 @@ public class SolidCube extends AbstractModelShape {
 			}
 		};
 
-		i_displayListManager.createDisplayList(DL_FRONT, front);
+		i_displayListManager.createDisplayList(DL_OUTLINE, outline);
+		i_displayListManager.createDisplayList(DL_FILL_FRONT, front);
 		i_displayListManager.createDisplayList(DL_TEXTURE, texture);
-		i_displayListManager.createDisplayList(DL_REST, rest);
+		i_displayListManager.createDisplayList(DL_FILL_REST, rest);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doRender(org.eclipse.draw3d.RenderContext)
+	 */
 	@Override
-	protected void performRender(RenderContext renderContext) {
-
+	protected void doRender(RenderContext i_renderContext) {
 		DisplayListManager displayListManager =
-			renderContext.getDisplayListManager();
-		Graphics3D g3d = renderContext.getGraphics3D();
+			i_renderContext.getDisplayListManager();
+
+		Graphics3D g3d = i_renderContext.getGraphics3D();
 		initDisplayLists(displayListManager, g3d);
 
-		if (m_textureId != null) {
-			g3d.glColor4f(0, 0, 0, 0);
-			g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, m_textureId);
-			g3d.glTexEnvi(Graphics3DDraw.GL_TEXTURE_ENV,
-				Graphics3DDraw.GL_TEXTURE_ENV_MODE, Graphics3DDraw.GL_REPLACE);
-			displayListManager.executeDisplayList(DL_TEXTURE);
-			g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, 0);
-			g3d.glColor4f(m_color);
-		} else {
-			g3d.glColor4f(m_color);
-			displayListManager.executeDisplayList(DL_FRONT);
+		if (m_fill) {
+			g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
+				Graphics3DDraw.GL_FILL);
+
+			if (m_textureId != null) {
+				g3d.glColor4f(0, 0, 0, 0);
+
+				g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, m_textureId);
+				g3d.glTexEnvi(Graphics3DDraw.GL_TEXTURE_ENV,
+					Graphics3DDraw.GL_TEXTURE_ENV_MODE,
+					Graphics3DDraw.GL_REPLACE);
+				displayListManager.executeDisplayList(DL_TEXTURE);
+				g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, 0);
+
+				g3d.glColor4f(m_fillColor);
+			} else {
+				g3d.glColor4f(m_fillColor);
+				displayListManager.executeDisplayList(DL_FILL_FRONT);
+			}
+
+			displayListManager.executeDisplayList(DL_FILL_REST);
 		}
 
-		displayListManager.executeDisplayList(DL_REST);
+		if (m_outline) {
+			g3d.glColor4f(m_outlineColor);
+			displayListManager.executeDisplayList(DL_OUTLINE);
+		}
 	}
 
 	/**
-	 * Sets the color of this cube.
+	 * Specifies whether this cuboid should render its faces.
 	 * 
-	 * @param i_color the color
-	 * @param i_alpha the alpha value
-	 * @throws NullPointerException if the given color is <code>null</code>
+	 * @param i_fill <code>true</code> if the cuboid should render its faces and
+	 *            <code>false</code> otherwise
 	 */
-	public void setColor(Color i_color, int i_alpha) {
+	public void setFill(boolean i_fill) {
 
-		if (i_color == null)
-			throw new NullPointerException("i_color must not be null");
-
-		ColorConverter.toFloatArray(i_color, i_alpha, m_color);
+		m_fill = i_fill;
 	}
 
 	/**
-	 * Sets the color of the given face.
+	 * Sets the fill color.
 	 * 
-	 * @param i_color the color as an int value (fomat 0x00BBGGRR)
-	 * @param i_alpha the alpha value
+	 * @param i_fillColor the fill color
+	 * @param i_fillAlpha the alpha value
 	 */
-	public void setColor(int i_color, int i_alpha) {
+	public void setFillColor(Color i_fillColor, int i_fillAlpha) {
 
-		ColorConverter.toFloatArray(i_color, i_alpha, m_color);
+		ColorConverter.toFloatArray(i_fillColor, i_fillAlpha, m_fillColor);
 	}
 
 	/**
-	 * Sets the texture of the font face.
+	 * Specifies whether this cuboid should render its outline.
+	 * 
+	 * @param i_outline <code>true</code> if the cuboid should render its
+	 *            outline and <code>false</code> otherwise
+	 */
+	public void setOutline(boolean i_outline) {
+
+		m_outline = i_outline;
+	}
+
+	/**
+	 * Sets the outline color.
+	 * 
+	 * @param i_outlineColor the outline color
+	 * @param i_outlineAlpha the alpha value
+	 */
+	public void setOutlineColor(Color i_outlineColor, int i_outlineAlpha) {
+
+		ColorConverter.toFloatArray(i_outlineColor, i_outlineAlpha,
+			m_outlineColor);
+	}
+
+	/**
+	 * Sets the id of the texture to render on the front face. If the given id
+	 * is <code>null</code>, no texture is rendered.
 	 * 
 	 * @param i_textureId the texture id
 	 */
-	public void setTexture(Integer i_textureId) {
+	public void setTextureId(Integer i_textureId) {
 
 		m_textureId = i_textureId;
-	}
-
-	@Override
-	protected void setup(RenderContext renderContext) {
-		Graphics3D g3d = renderContext.getGraphics3D();
-		g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
-			Graphics3DDraw.GL_FILL);
 	}
 
 	private void updateTransformed(IMatrix4f i_modelMatrix) {

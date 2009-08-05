@@ -16,17 +16,13 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Cursors;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.Locator;
-import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.geometry.Position3D;
-import org.eclipse.draw3d.picking.Query;
-import org.eclipse.draw3d.shapes.SolidCube;
-import org.eclipse.draw3d.shapes.WiredCube;
+import org.eclipse.draw3d.shapes.CuboidFigureShape;
+import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.handles.MoveHandle;
 import org.eclipse.gef.tools.DragEditPartsTracker;
 import org.eclipse.gef3d.editpolicies.ResizableEditPolicy3D;
-import org.eclipse.swt.graphics.Color;
 
 /**
  * 3D version of {@link MoveHandle}. The move handle is created via a
@@ -45,10 +41,6 @@ import org.eclipse.swt.graphics.Color;
  */
 public class MoveHandle3D extends AbstractHandle3D {
 
-	protected SolidCube solidcube = new SolidCube();
-
-	protected WiredCube wiredcube = new WiredCube();
-
 	/**
 	 * Creates a MoveHandle for the given <code>GraphicalEditPart</code> using a
 	 * default {@link Locator}.
@@ -60,6 +52,7 @@ public class MoveHandle3D extends AbstractHandle3D {
 	 * @param owner The GraphicalEditPart to be moved by this handle.
 	 */
 	public MoveHandle3D(GraphicalEditPart owner) {
+
 		this(owner, new MoveHandleLocator3D(owner.getFigure()));
 	}
 
@@ -75,38 +68,10 @@ public class MoveHandle3D extends AbstractHandle3D {
 	 * @param loc The Locator used to place the handle.
 	 */
 	public MoveHandle3D(GraphicalEditPart owner, Locator loc) {
+
 		super(owner, loc);
 		initialize();
 	}
-
-	// /**
-	// * Returns <code>true</code> if the point (x,y) is contained within this
-	// handle.
-	// * @param x The x coordinate.
-	// * @param y The y coordinate.
-	// * @return <code>true</code> if the point (x,y) is contained within this
-	// handle.
-	// */
-	// public boolean containsPoint(int x, int y) {
-	// if (!super.containsPoint(x, y))
-	// return false;
-	// return !Rectangle.SINGLETON.
-	// setBounds(getBounds()).
-	// shrink(INNER_PAD, INNER_PAD).
-	// contains(x, y);
-	// }
-	//
-	// /**
-	// * Returns a point along the right edge of the handle.
-	// * @see org.eclipse.gef.Handle#getAccessibleLocation()
-	// */
-	// public Point getAccessibleLocation() {
-	// Point p = getBounds().
-	// getTopRight().
-	// translate(-1, getBounds().height / 4);
-	// translateToAbsolute(p);
-	// return p;
-	// }
 
 	/**
 	 * {@inheritDoc}
@@ -128,12 +93,12 @@ public class MoveHandle3D extends AbstractHandle3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
-	public float getDistance(Query i_query) {
+	protected Shape createShape() {
 
-		return solidcube.getDistance(i_query, getPosition3D());
+		return new CuboidFigureShape(this);
 	}
 
 	/**
@@ -154,30 +119,6 @@ public class MoveHandle3D extends AbstractHandle3D {
 		setBackgroundColor(ColorConstants.green);
 		setForegroundColor(ColorConstants.green);
 
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render()
-	 */
-	@Override
-	public void render(RenderContext renderContext) {
-
-		int alpha = getAlpha();
-		// IMatrix4f modelMatrix = getModelMatrix();
-		Position3D position3D = getPosition3D();
-
-		Color color = getForegroundColor();
-		wiredcube.setColor(color, alpha);
-		wiredcube.setPosition(position3D);
-		wiredcube.render(renderContext);
-
-		// solidcube.setModelMatrix(modelMatrix);
-		// solidcube.setColor(SolidCube.Face.ALL, color, alpha);
-		// solidcube.setTexture(SolidCube.Face.FRONT, null);
-		// solidcube.render();
-		//			
 	}
 
 }

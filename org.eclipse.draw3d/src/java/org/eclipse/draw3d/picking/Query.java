@@ -17,9 +17,12 @@ import java.util.Map;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.IFigure3D;
+import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.geometry.IParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * Executes a search query and returns a hit.
@@ -85,7 +88,7 @@ public class Query {
 	}
 
 	private HitImpl combineParentChildHits(IFigure i_parentFigure,
-		float i_parentDistance, HitImpl i_childHit) {
+		HitImpl i_childHit) {
 
 		if (!(i_parentFigure instanceof IFigure3D))
 			return i_childHit;
@@ -94,14 +97,33 @@ public class Query {
 		if (parentFigure3D.equals(m_rootFigure))
 			return i_childHit;
 
+		IFigure searchResult = null;
+		ISurface parentSurface = parentFigure3D.getSurface();
+		if (parentSurface != null) {
+			Point sLocation = Draw3DCache.getPoint();
+			try {
+				parentSurface.getSurfaceLocation2D(m_rayOrigin, m_rayDirection,
+					sLocation);
+				searchResult =
+					parentSurface.findFigureAt(sLocation.x, sLocation.y,
+						m_search);
+			} finally {
+				Draw3DCache.returnPoint(sLocation);
+			}
+		}
+
 		HitImpl hit = i_childHit;
-		if (accept(parentFigure3D, m_search)) {
+		if (accept(parentFigure3D, m_search) || searchResult != null) {
 			float realDistance = parentFigure3D.getDistance(this);
 			if (!Float.isNaN(realDistance)
-				&& (hit == null || realDistance < hit.getDistance()))
+				&& (hit == null || realDistance < hit.getDistance())) {
+				if (searchResult == null)
+					searchResult = parentFigure3D;
+
 				hit =
-					new HitImpl(parentFigure3D, realDistance, m_rayOrigin,
-						m_rayDirection);
+					new HitImpl(parentFigure3D, searchResult, realDistance,
+						m_rayOrigin, m_rayDirection);
+			}
 		}
 
 		return hit;
@@ -144,7 +166,7 @@ public class Query {
 			}
 		}
 
-		return combineParentChildHits(i_figure, i_boundingBoxDistance, hit);
+		return combineParentChildHits(i_figure, hit);
 	}
 
 	/**
@@ -253,16 +275,16 @@ public class Query {
 		m_objects.put(i_key, i_object);
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "Query [rayDirection="
-			+ m_rayDirection + ", rayOrigin=" + m_rayOrigin
-			+ ", rootFigure=" + m_rootFigure + ", search=" + m_search + "]";
+		return "Query [rayDirection=" + m_rayDirection + ", rayOrigin="
+			+ m_rayOrigin + ", rootFigure=" + m_rootFigure + ", search="
+			+ m_search + "]";
 	}
-	
-	
+
 }

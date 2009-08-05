@@ -11,34 +11,23 @@
 package org.eclipse.gef3d.handles;
 
 import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.draw3d.Figure3D;
-import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.TransparentObject;
-import org.eclipse.draw3d.camera.ICamera;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.Query;
+import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * Cube like transparent figure used for visualizing feedback during edit
  * operations like resizing. While GEF uses a RectangleFigure, here an explicit
  * figure is used.
- * <p>
- * Important note: The feedback figure must not be painted in picking mode!
  * 
- * @todo: Why must a feedback figure not be painted in picking mode?
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Mar 31, 2008
  */
-public class FeedbackFigure3D extends Figure3D implements TransparentObject {
-
-	private Shape m_shape = new CuboidFigureShape(this);
+public class FeedbackFigure3D extends ShapeFigure3D {
 
 	/**
-	 * 
+	 * Creates a new feedback figure.
 	 */
 	public FeedbackFigure3D() {
 
@@ -50,50 +39,11 @@ public class FeedbackFigure3D extends Figure3D implements TransparentObject {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
-	public float getDistance(Query i_query) {
+	protected Shape createShape() {
 
-		return m_shape.getDistance(i_query, getPosition3D());
+		return new CuboidFigureShape(this);
 	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth()
-	 */
-	public float getTransparencyDepth(RenderContext renderContext) {
-		ICamera camera = renderContext.getScene().getCamera();
-
-		Vector3f center = Draw3DCache.getVector3f();
-		try {
-			getPosition3D().getBounds3D().getCenter(center);
-			return camera.getDistance(center);
-		} finally {
-			Draw3DCache.returnVector3f(center);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render(org.eclipse.draw3d.RenderContext)
-	 */
-	@Override
-	public void render(RenderContext renderContext) {
-
-		renderContext.addTransparentObject(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.TransparentObject#renderTransparent(org.eclipse.draw3d.RenderContext)
-	 */
-	public void renderTransparent(RenderContext renderContext) {
-
-		m_shape.render(renderContext);
-	}
-
 }

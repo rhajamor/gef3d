@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008 Jens von Pilgrim and others.
+ * Copyright (c) 2009 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,87 +10,72 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
-import java.util.logging.Logger;
-
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.Query;
-import org.eclipse.swt.graphics.Color;
 
 /**
- * A shape that draws a 3D figure as a cuboid. The colors and textures are
- * retrieved from the figure's settings. This is a convience class.
+ * A figure shape that renders itself as a cuboid.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 31.03.2008
+ * @since 05.08.2009
  */
-public class CuboidFigureShape implements Shape {
-
-	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(CuboidFigureShape.class.getName());
-
-	private final IFigure3D m_figure;
-
-	private final SolidCube m_solidCube = new SolidCube();
-
-	private final WiredCube m_wiredCube = new WiredCube();
+public class CuboidFigureShape extends FigureShape {
 
 	/**
-	 * Creates a new shape that retrieves its configuration from the given
-	 * figure.
+	 * Creates a new cuboid figure shape.
 	 * 
-	 * @param i_figure the figure
-	 * @throws NullPointerException if the given figure is <code>null</code>
+	 * @param i_figure the figure which this shape represents
 	 */
 	public CuboidFigureShape(IFigure3D i_figure) {
 
-		if (i_figure == null)
-			throw new NullPointerException("i_figure must not be null");
+		super(i_figure);
+		m_shape = new CuboidShape();
 
-		m_figure = i_figure;
+		m_shape.setFill(true);
+		m_shape.setOutline(true);
 	}
+
+	private CuboidShape m_shape = new CuboidShape();
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
-	 *      org.eclipse.draw3d.geometry.Position3D)
+	 * @see org.eclipse.draw3d.shapes.FigureShape#doRender(org.eclipse.draw3d.IFigure3D,
+	 *      org.eclipse.draw3d.RenderContext)
 	 */
-	public float getDistance(Query i_query, Position3D i_position) {
+	@Override
+	protected void doRender(IFigure3D i_figure, RenderContext i_renderContext) {
 
-		return m_solidCube.getDistance(i_query, i_position);
-	}
+		m_shape
+			.setFillColor(i_figure.getBackgroundColor(), i_figure.getAlpha());
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#render()
-	 */
-	public void render(RenderContext renderContext) {
+		m_shape.setOutlineColor(i_figure.getForegroundColor(), i_figure
+			.getAlpha());
 
-		int alpha = m_figure.getAlpha();
-		// IMatrix4f modelMatrix = m_figure.getModelMatrix();
-		Position3D position3D = m_figure.getPosition3D();
-
-		Color foregroundColor = m_figure.getForegroundColor();
-		m_wiredCube.setColor(foregroundColor, alpha);
-		m_wiredCube.setPosition(position3D);
-		m_wiredCube.render(renderContext);
-
-		m_solidCube.setPosition(position3D);
-
-		Graphics3D g3d = renderContext.getGraphics3D();
-		if (g3d.hasGraphics2D(m_figure))
-			m_solidCube.setTexture(g3d.getGraphics2DId(m_figure));
+		Graphics3D g3d = i_renderContext.getGraphics3D();
+		if (g3d.hasGraphics2D(i_figure))
+			m_shape.setTextureId(g3d.getGraphics2DId(i_figure));
 		else
-			m_solidCube.setTexture(null);
+			m_shape.setTextureId(null);
 
-		Color backgroundColor = m_figure.getBackgroundColor();
-		m_solidCube.setColor(backgroundColor, alpha);
-		m_solidCube.render(renderContext);
+		m_shape.setPosition3D(i_figure.getPosition3D());
+		m_shape.render(i_renderContext);
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.FigureShape#doGetDistance(org.eclipse.draw3d.IFigure3D,
+	 *      org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	protected float doGetDistance(IFigure3D i_figure, Query i_query) {
+
+		m_shape.setPosition3D(i_figure.getPosition3D());
+		return m_shape.getDistance(i_query);
+	}
+
 }

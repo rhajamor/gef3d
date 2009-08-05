@@ -13,8 +13,6 @@ package org.eclipse.draw3d.shapes;
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IPosition3D;
-import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DImpl;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
@@ -24,26 +22,13 @@ import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.swt.graphics.Color;
 
 /**
- * A shape that renders a sphere. The sphere is created by triangulating a unit
- * sphere with radius 1. The precision p indicates the number of triangles n by
- * means of the following formula: n = 8 *
- * &Sigma;<sub>i=0</sub><sup>p</sup>&nbsp;(2*i + 1). In words: Eight times the
- * sum of i = 0 to p over 2*i + 1 Some common values:
- * <ul>
- * <li>p = 0 -> n = 8</li>
- * <li>p = 1 -> n = 32</li>
- * <li>p = 2 -> n = 72</li>
- * <li>p = 3 -> n = 128</li>
- * <li>p = 4 -> n = 200</li>
- * <li>p = 5 -> n = 288</li>
- * </ul>
+ * SphereShape There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 04.06.2009
+ * @since 05.08.2009
  */
-public class Sphere extends AbstractModelShape {
-
+public class SphereShape extends PositionableShape {
 	/**
 	 * A key to store a display list for a sphere in the display list manager.
 	 * 
@@ -136,7 +121,7 @@ public class Sphere extends AbstractModelShape {
 	 * 
 	 * @param i_precision the precision of the sphere
 	 */
-	public Sphere(int i_precision) {
+	public SphereShape(int i_precision) {
 
 		m_stripes[0] =
 			new SphereTriangle[] { new SphereTriangle(
@@ -198,18 +183,39 @@ public class Sphere extends AbstractModelShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
-	 *      org.eclipse.draw3d.geometry.Position3D)
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doRender(org.eclipse.draw3d.RenderContext)
 	 */
-	public float getDistance(Query i_query, Position3D i_position) {
+	@Override
+	protected void doRender(RenderContext i_renderContext) {
 
-		// TODO: Implement this
-		return Float.NaN;
+		Graphics3D g3d = i_renderContext.getGraphics3D();
+		DisplayListManager displayListManager =
+			i_renderContext.getDisplayListManager();
+
+		initDisplayLists(displayListManager, g3d);
+
+		if (m_fill) {
+			g3d.glColor4f(m_fillColor[0], m_fillColor[1], m_fillColor[2],
+				m_fillColor[3]);
+			displayListManager.executeDisplayList(m_fillKey);
+		}
+
+		if (m_outline) {
+			g3d.glColor4f(m_outlineColor[0], m_outlineColor[1],
+				m_outlineColor[2], m_outlineColor[3]);
+			displayListManager.executeDisplayList(m_outlineKey);
+		}
 	}
 
-	private void glVertexV3f(Graphics3D i_g3d, IVector3f i_vector) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	public float getDistance(Query i_query) {
 
-		i_g3d.glVertex3f(i_vector.getX(), i_vector.getY(), i_vector.getZ());
+		// TODO implementthis
+		return Float.NaN;
 	}
 
 	private void initDisplayLists(DisplayListManager i_manager,
@@ -256,33 +262,6 @@ public class Sphere extends AbstractModelShape {
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.shapes.AbstractModelShape#performRender(org.eclipse.draw3d.RenderContext)
-	 */
-	@Override
-	protected void performRender(RenderContext i_renderContext) {
-
-		Graphics3D g3d = i_renderContext.getGraphics3D();
-		DisplayListManager displayListManager =
-			i_renderContext.getDisplayListManager();
-
-		initDisplayLists(displayListManager, g3d);
-
-		if (m_fill) {
-			g3d.glColor4f(m_fillColor[0], m_fillColor[1], m_fillColor[2],
-				m_fillColor[3]);
-			displayListManager.executeDisplayList(m_fillKey);
-		}
-
-		if (m_outline) {
-			g3d.glColor4f(m_outlineColor[0], m_outlineColor[1],
-				m_outlineColor[2], m_outlineColor[3]);
-			displayListManager.executeDisplayList(m_outlineKey);
-		}
-	}
-
 	private void renderFill(Graphics3D i_g3d) {
 
 		i_g3d.glColor4f(0, 0, 1, 0.5f);
@@ -295,18 +274,18 @@ public class Sphere extends AbstractModelShape {
 			if (i < m_stripes.length / 2) {
 				i_g3d.glBegin(Graphics3DDraw.GL_TRIANGLE_STRIP);
 				for (int j = stripe.length - 1; j >= 0; j -= 2) {
-					glVertexV3f(i_g3d, stripe[j].getB());
-					glVertexV3f(i_g3d, stripe[j].getC());
+					i_g3d.glVertex3f(stripe[j].getB());
+					i_g3d.glVertex3f(stripe[j].getC());
 				}
-				glVertexV3f(i_g3d, stripe[0].getA());
+				i_g3d.glVertex3f(stripe[0].getA());
 				i_g3d.glEnd();
 			} else {
 				i_g3d.glBegin(Graphics3DDraw.GL_TRIANGLE_STRIP);
 				for (int j = 0; j < stripe.length; j += 2) {
-					glVertexV3f(i_g3d, stripe[j].getA());
-					glVertexV3f(i_g3d, stripe[j].getC());
+					i_g3d.glVertex3f(stripe[j].getA());
+					i_g3d.glVertex3f(stripe[j].getC());
 				}
-				glVertexV3f(i_g3d, stripe[stripe.length - 1].getB());
+				i_g3d.glVertex3f(stripe[stripe.length - 1].getB());
 				i_g3d.glEnd();
 			}
 		}
@@ -323,24 +302,24 @@ public class Sphere extends AbstractModelShape {
 			if (i < m_stripes.length / 2) {
 				i_g3d.glBegin(Graphics3DDraw.GL_LINE_STRIP);
 				for (int j = 0; j < stripe.length; j += 2)
-					glVertexV3f(i_g3d, stripe[j].getA());
-				glVertexV3f(i_g3d, stripe[stripe.length - 1].getB());
+					i_g3d.glVertex3f(stripe[j].getA());
+				i_g3d.glVertex3f(stripe[stripe.length - 1].getB());
 				i_g3d.glEnd();
 			} else {
 				if (i < m_stripes.length - 1) {
 					i_g3d.glBegin(Graphics3DDraw.GL_LINE_STRIP);
 					for (int j = 1; j < stripe.length; j += 2)
-						glVertexV3f(i_g3d, stripe[j].getA());
-					glVertexV3f(i_g3d, stripe[stripe.length - 2].getB());
+						i_g3d.glVertex3f(stripe[j].getA());
+					i_g3d.glVertex3f(stripe[stripe.length - 2].getB());
 					i_g3d.glEnd();
 				}
 			}
 
 			// zig-zag
 			i_g3d.glBegin(Graphics3DDraw.GL_LINE_STRIP);
-			glVertexV3f(i_g3d, stripe[0].getA());
+			i_g3d.glVertex3f(stripe[0].getA());
 			for (int j = 0; j < stripe.length; j++)
-				glVertexV3f(i_g3d, stripe[j].getC());
+				i_g3d.glVertex3f(stripe[j].getC());
 			i_g3d.glEnd();
 		}
 	}

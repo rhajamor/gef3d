@@ -12,28 +12,17 @@
 package org.eclipse.draw3d.shapes;
 
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.geometry.Position3D;
-import org.eclipse.draw3d.picking.Query;
+import org.eclipse.draw3d.picking.Pickable;
 
 /**
- * A shape is a geometric object that can render itself using OpenGL commands.
+ * A shape is a geometric object. Shapes can render themselves and determine the
+ * point of intersection with a ray.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 27.02.2008
  */
-public interface Shape {
-
-	/**
-	 * Returns the distance of the point of intersection between the picking ray
-	 * that is stored in the given query and this shape at the given position.
-	 * 
-	 * @param i_query the query
-	 * @param i_position the position of this shape
-	 * @return the distance or {@link Float#NaN} if this shape is not hit by the
-	 *         picking ray
-	 */
-	public float getDistance(Query i_query, Position3D i_position);
+public interface Shape extends Pickable {
 
 	/**
 	 * Render the shape.

@@ -28,7 +28,6 @@ import org.eclipse.draw3d.picking.Hit;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.EditPart;
-import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.Handle;
 import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.EditPartViewer.Conditional;
@@ -154,7 +153,7 @@ public class GraphicalViewer3DHelper {
 			if (hit == null)
 				return null;
 
-			IFigure3D figure3D = hit.getFigure();
+			IFigure3D figure3D = hit.getFigure3D();
 			if (figure3D instanceof Handle)
 				return (Handle) figure3D;
 
@@ -198,18 +197,7 @@ public class GraphicalViewer3DHelper {
 
 			EditPart part = null;
 			if (hit != null) {
-				IFigure3D figure3D = hit.getFigure();
-				IFigure figure = figure3D;
-
-				ISurface figureSurface = figure3D.getSurface();
-				if (figureSurface != null) {
-					hit.getWorldLocation(point);
-					figureSurface.getSurfaceLocation2D(point, figureSLocation);
-
-					figure =
-						figure3D.findFigureAt(figureSLocation.x,
-							figureSLocation.y, search);
-				}
+				IFigure figure = hit.getSearchResult();
 
 				while (part == null && figure != null) {
 					part = (EditPart) viewer.getVisualPartMap().get(figure);

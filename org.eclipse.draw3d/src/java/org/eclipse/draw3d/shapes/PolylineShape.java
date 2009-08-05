@@ -10,21 +10,19 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
-import java.util.List;
-
+import org.eclipse.draw3d.IFigure3D;
+import org.eclipse.draw3d.Polyline3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Math3DCache;
-import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Math3D.Side;
 import org.eclipse.draw3d.geometryext.Plane;
+import org.eclipse.draw3d.geometryext.PointList3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Query;
-import org.eclipse.draw3d.util.ColorConverter;
-import org.eclipse.swt.graphics.Color;
 
 /**
  * A polyline shape can be used to render polylines.
@@ -33,7 +31,7 @@ import org.eclipse.swt.graphics.Color;
  * @version $Revision$
  * @since 03.04.2008
  */
-public class PolylineShape implements Shape {
+public class PolylineShape extends FigureShape {
 
 	private static final float ACCURACY = 10f;
 
@@ -43,19 +41,30 @@ public class PolylineShape implements Shape {
 
 	private static final String KEY_VISIBLE_BORDER = "visible border";
 
-	private final float[] m_color = new float[] { 0, 0, 0, 1 };
-
-	private List<IVector3f> m_points;
+	/**
+	 * Creates a new shape for the given polyline figure.
+	 * 
+	 * @param i_figure the figure to which this shape belongs
+	 */
+	public PolylineShape(Polyline3D i_figure) {
+		super(i_figure);
+	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query,
-	 *      org.eclipse.draw3d.geometry.Position3D)
+	 * @see org.eclipse.draw3d.shapes.FigureShape#doGetDistance(org.eclipse.draw3d.IFigure3D,
+	 *      org.eclipse.draw3d.picking.Query)
 	 */
-	public float getDistance(Query i_query, Position3D i_position) {
+	@Override
+	protected float doGetDistance(IFigure3D i_figure, Query i_query) {
 
-		if (m_points.size() < 2)
+		// TODO handle line width!
+
+		Polyline3D polyline = (Polyline3D) i_figure;
+		PointList3D points = polyline.getPoints3D();
+
+		if (points.size() < 2)
 			return Float.NaN;
 
 		/*
@@ -89,14 +98,14 @@ public class PolylineShape implements Shape {
 		Plane hBorder = getHorizontalBorder(i_query);
 		Plane vBorder = getVerticalBorder(i_query);
 
-		IVector3f p1 = m_points.get(0);
+		IVector3f p1 = points.get(0);
 		IVector3f p2;
 
 		Side visSide1 = visBorder.getSide(p1);
 		Side hSide1 = null, vSide1 = null, visSide2, hSide2, vSide2;
 
-		for (int i = 1; i < m_points.size(); i++) {
-			p2 = m_points.get(i);
+		for (int i = 1; i < points.size(); i++) {
+			p2 = points.get(i);
 			visSide2 = visBorder.getSide(p2);
 
 			// is at least one point in the front subspace?
@@ -200,13 +209,6 @@ public class PolylineShape implements Shape {
 		return horizontalBorder;
 	}
 
-	/**
-	 * @return the points
-	 */
-	public List<IVector3f> getPoints() {
-		return m_points;
-	}
-
 	private Plane getVerticalBorder(Query i_query) {
 
 		Plane verticalBorder = (Plane) i_query.get(KEY_VERTICAL_BORDER);
@@ -251,62 +253,27 @@ public class PolylineShape implements Shape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#render()
+	 * @see org.eclipse.draw3d.shapes.FigureShape#doRender(org.eclipse.draw3d.IFigure3D,
+	 *      org.eclipse.draw3d.RenderContext)
 	 */
-	public void render(RenderContext renderContext) {
+	@Override
+	protected void doRender(IFigure3D i_figure, RenderContext i_renderContext) {
 
-		if (m_points == null || m_points.isEmpty())
+		Polyline3D polyline = (Polyline3D) i_figure;
+		PointList3D points = polyline.getPoints3D();
+
+		if (points.size() < 2)
 			return;
 
-		float red = m_color[0];
-		float green = m_color[1];
-		float blue = m_color[2];
-		float alpha = m_color[3];
-		Graphics3D g3d = renderContext.getGraphics3D();
+		Graphics3D g3d = i_renderContext.getGraphics3D();
+		g3d.glColor4f(getForegroundColor());
 
-		g3d.glColor4f(red, green, blue, alpha);
+		g3d.glLineWidth(polyline.getLineWidth());
 
 		g3d.glBegin(Graphics3DDraw.GL_LINE_STRIP);
-		for (IVector3f point : m_points)
-			g3d.glVertex3f(point.getX(), point.getY(), point.getZ());
+		for (IVector3f point : points)
+			g3d.glVertex3f(point);
 		g3d.glEnd();
-	}
-
-	/**
-	 * Sets the color of this polyline shape.
-	 * 
-	 * @param i_color the color
-	 * @param i_alpha the alpha value
-	 * @throws NullPointerException if the given color is <code>null</code>
-	 */
-	public void setColor(Color i_color, int i_alpha) {
-
-		ColorConverter.toFloatArray(i_color, i_alpha, m_color);
-	}
-
-	/**
-	 * Sets the color of this polyline shape.
-	 * 
-	 * @param i_color the color in BBGGRR format
-	 * @param i_alpha the alpha value
-	 */
-	public void setColor(int i_color, int i_alpha) {
-
-		ColorConverter.toFloatArray(i_color, i_alpha, m_color);
-	}
-
-	/**
-	 * Sets the points of the polyline to render.
-	 * 
-	 * @param i_points the points
-	 * @throws NullPointerException if the given list is <code>null</code>
-	 */
-	public void setPoints(List<IVector3f> i_points) {
-
-		if (i_points == null)
-			throw new NullPointerException("i_points must not be null");
-
-		m_points = i_points;
 	}
 
 }

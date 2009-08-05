@@ -11,16 +11,11 @@
 package org.eclipse.gef3d.examples.ecore.figures;
 
 import org.eclipse.draw2d.FreeformLayout;
-import org.eclipse.draw2d.Graphics;
-import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.FigureSurface;
 import org.eclipse.draw3d.ISurface;
-import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.TransparentObject;
-import org.eclipse.draw3d.camera.ICamera;
+import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 
@@ -32,21 +27,15 @@ import org.eclipse.draw3d.shapes.Shape;
  * @version $Revision$
  * @since 08.04.2009
  */
-public class DiagramFigure3D extends Figure3D implements TransparentObject {
-
-	private static final Vector3f TMP_V3 = new Vector3fImpl();
+public class DiagramFigure3D extends ShapeFigure3D {
 
 	protected int headerStyle;
 
-	private Shape m_shape = new CuboidFigureShape(this);
-
-	
 	/**
 	 * The surface of this figure. This is where 2D children are placed.
 	 */
 	private ISurface m_surface = new FigureSurface(this);
-	
-	
+
 	public DiagramFigure3D() {
 
 		setLayoutManager(new FreeformLayout());
@@ -55,56 +44,14 @@ public class DiagramFigure3D extends Figure3D implements TransparentObject {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
-	public float getDistance(Query i_query) {
+	protected Shape createShape() {
 
-		return m_shape.getDistance(i_query, getPosition3D());
+		return new CuboidFigureShape(this);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth()
-	 */
-	public float getTransparencyDepth(RenderContext renderContext) {
-		ICamera camera = renderContext.getScene().getCamera();
-
-		getBounds3D().getCenter(TMP_V3);
-		return camera.getDistance(TMP_V3);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#paint(org.eclipse.draw2d.Graphics)
-	 */
-	@Override
-	public void paint(Graphics i_graphics) {
-		// TODO implement method DiagramFigure3D.paint
-		super.paint(i_graphics);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render()
-	 */
-	@Override
-	public void render(RenderContext renderContext) {
-		renderContext.addTransparentObject(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.TransparentObject#renderTransparent()
-	 */
-	public void renderTransparent(RenderContext renderContext) {
-		m_shape.render(renderContext);
-	}
-	
 	/**
 	 * {@inheritDoc}
 	 * 

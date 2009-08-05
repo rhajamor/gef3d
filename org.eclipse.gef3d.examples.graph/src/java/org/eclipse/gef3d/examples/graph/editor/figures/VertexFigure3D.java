@@ -14,12 +14,10 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Label;
-import org.eclipse.draw3d.Figure3D;
-import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.SurfaceLayout;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.SWT;
@@ -33,7 +31,7 @@ import org.eclipse.swt.widgets.Display;
  * @version $Revision$
  * @since 21.11.2007
  */
-public class VertexFigure3D extends Figure3D {
+public class VertexFigure3D extends ShapeFigure3D {
 	private static int counter = 1;
 
 	/**
@@ -41,8 +39,6 @@ public class VertexFigure3D extends Figure3D {
 	 */
 	private static final Logger log =
 		Logger.getLogger(VertexFigure3D.class.getName());
-
-	private Shape m_shape = new CuboidFigureShape(this);
 
 	private int number = 0;
 
@@ -67,28 +63,6 @@ public class VertexFigure3D extends Figure3D {
 		// add(new Label("---------"));
 		// add(new Label("+ someOp()"));
 
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
-	 */
-	@Override
-	public float getDistance(Query i_query) {
-
-		return m_shape.getDistance(i_query, getPosition3D());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render()
-	 */
-	@Override
-	public void render(RenderContext i_renderContext) {
-
-		m_shape.render(i_renderContext);
 	}
 
 	// public static int loadImage(String path, int mag_filter, int min_filter)
@@ -140,6 +114,17 @@ public class VertexFigure3D extends Figure3D {
 	// }
 	// return ret;
 	// }
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
+	 */
+	@Override
+	protected Shape createShape() {
+
+		return new CuboidFigureShape(this);
+	}
 
 	/**
 	 * {@inheritDoc}
