@@ -79,7 +79,7 @@ public abstract class PositionableShape implements Shape {
 			try {
 				// TODO this must be optimized
 				if (useModelMatrix)
-					g3d.setPosition(g3d.createRawPosition(m_position3D));
+					g3d.setPosition(m_position3D);
 
 				doRender(i_renderContext);
 			} finally {

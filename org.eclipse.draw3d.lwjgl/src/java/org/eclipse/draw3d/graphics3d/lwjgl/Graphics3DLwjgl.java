@@ -29,7 +29,7 @@ import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
 import org.eclipse.draw3d.graphics3d.lwjgl.texture.LwjglTextureFbo;
 import org.eclipse.draw3d.graphics3d.lwjgl.texture.LwjglTextureManager;
-import org.eclipse.draw3d.util.BufferUtils;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.LogGraphics;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
@@ -50,8 +50,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger.getLogger(Graphics3DLwjgl.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(Graphics3DLwjgl.class.getName());
 
 	/**
 	 * Descriptor of this instance.
@@ -97,7 +97,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 *      int, int, int, Color))
 	 */
 	public Graphics activateGraphics2D(Object i_key, int i_width, int i_height,
-			int i_alpha, Color i_color) {
+		int i_alpha, Color i_color) {
 
 		if (m_textureManager == null) {
 			m_textureManager = new LwjglTextureManager(m_context);
@@ -118,18 +118,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			return new LogGraphics(m_textureManager.getGraphics());
 		else
 			return m_textureManager.getGraphics();
-	}
-
-	/**
-	 * This concrete implementation returns a FloatBuffer of the model matrix of
-	 * the given position. The buffer is not rewound.
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#createRawPosition(org.eclipse.draw3d.geometry.IPosition3D)
-	 */
-	public Object createRawPosition(IPosition3D i_position3D) {
-		FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
-		i_position3D.getModelMatrix().toBufferRowMajor(buffer);
-		return buffer;
 	}
 
 	/**
@@ -181,14 +169,14 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 *      int, org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig)
 	 */
 	public Graphics3DOffscreenBuffers getGraphics3DOffscreenBuffer(
-			int i_height, int i_width,
-			Graphics3DOffscreenBufferConfig i_bufferConfig) {
+		int i_height, int i_width,
+		Graphics3DOffscreenBufferConfig i_bufferConfig) {
 		if (LwjglTextureFbo.isSuppported()) {
 			return new LwjglOffscreenBuffersFbo(i_height, i_width,
-					i_bufferConfig);
+				i_bufferConfig);
 		} else {
 			return new LwjglOffscreenBackBuffers(i_height, i_width,
-					i_bufferConfig);
+				i_bufferConfig);
 		}
 	}
 
@@ -199,7 +187,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 *      int[])
 	 */
 	public Graphics3DOffscreenBufferConfig getGraphics3DOffscreenBufferConfig(
-			int i_buffers, int... i_args) {
+		int i_buffers, int... i_args) {
 		return new LwjglOffscreenBufferConfig(this, i_buffers, i_args);
 	}
 
@@ -590,9 +578,9 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 *      float, float, float, float, float, float, float)
 	 */
 	public void gluLookAt(float eyex, float eyey, float eyez, float centerx,
-			float centery, float centerz, float upx, float upy, float upz) {
+		float centery, float centerz, float upx, float upy, float upz) {
 		org.lwjgl.util.glu.GLU.gluLookAt(eyex, eyey, eyez, centerx, centery,
-				centerz, upx, upy, upz);
+			centerz, upx, upy, upz);
 	}
 
 	/**
@@ -623,10 +611,10 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 *      java.nio.IntBuffer, java.nio.FloatBuffer)
 	 */
 	public void gluUnProject(int winx, int winy, float winz,
-			FloatBuffer modelMatrix, FloatBuffer projMatrix,
-			IntBuffer viewport, FloatBuffer obj_pos) {
+		FloatBuffer modelMatrix, FloatBuffer projMatrix, IntBuffer viewport,
+		FloatBuffer obj_pos) {
 		org.lwjgl.util.glu.GLU.gluUnProject(winx, winy, winz, modelMatrix,
-				projMatrix, viewport, obj_pos);
+			projMatrix, viewport, obj_pos);
 	}
 
 	/**
@@ -705,7 +693,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	public void setGLCanvas(GLCanvas i_canvas) {
 		if (m_textureManager != null) {
 			throw new IllegalStateException(
-					"Texture manager already initialized, cannot set new canvas");
+				"Texture manager already initialized, cannot set new canvas");
 		}
 
 		m_context = i_canvas;
@@ -721,20 +709,25 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 		m_log2D = i_log2D;
 	}
-	
+
 	/**
-	 * Sets the position, the given raw position is expected to be a FloatBuffer
-	 * (size=16).
+	 * Sets the position.
 	 * 
-	 * @throws ClassCastException
-	 *             if given object is not an instance of FLoatBuffer.
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#setPosition(java.lang.Object)
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#setPosition(IPosition3D)
 	 */
-	public void setPosition(Object i_theRawPosition) {
-		((FloatBuffer) i_theRawPosition).rewind();
-		org.lwjgl.opengl.GL11.glMultMatrix((FloatBuffer) i_theRawPosition);
+	public void setPosition(IPosition3D i_position) {
+
+		FloatBuffer buffer = Draw3DCache.getFloatBuffer(16);
+		try {
+			buffer.rewind();
+			i_position.getModelMatrix().toBufferRowMajor(buffer);
+			buffer.rewind();
+			org.lwjgl.opengl.GL11.glMultMatrix(buffer);
+		} finally {
+			Draw3DCache.returnFloatBuffer(buffer);
+		}
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * 

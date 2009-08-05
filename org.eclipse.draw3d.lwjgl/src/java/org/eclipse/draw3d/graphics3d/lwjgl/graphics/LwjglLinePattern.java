@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import org.eclipse.draw2d.Graphics;
-import org.eclipse.draw3d.util.BufferUtils;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.converter.BufferInfo;
 import org.eclipse.draw3d.util.converter.ImageConverter;
 import org.eclipse.swt.SWT;
@@ -34,14 +34,6 @@ import org.lwjgl.opengl.GL11;
  */
 public class LwjglLinePattern {
 
-	private static final IntBuffer INT_BUF = BufferUtils.createIntBuffer(16);
-
-	private boolean m_disposed = false;
-
-	private int m_length;
-
-	private int m_textureId = -1;
-
 	/**
 	 * Returns a key that uniquely identifies the given dashing pattern.
 	 * 
@@ -56,6 +48,12 @@ public class LwjglLinePattern {
 
 		return hashCode;
 	}
+
+	private boolean m_disposed = false;
+
+	private int m_length;
+
+	private int m_textureId = -1;
 
 	/**
 	 * Creates a new line pattern for the given dashing pattern.
@@ -88,32 +86,37 @@ public class LwjglLinePattern {
 			gc.drawLine(0, 0, m_length, 0);
 
 			// create a luminance alpha buffer from the image
-			BufferInfo info = new BufferInfo(m_length, 1,
-					GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, 1);
+			BufferInfo info =
+				new BufferInfo(m_length, 1, GL11.GL_LUMINANCE_ALPHA,
+					GL11.GL_UNSIGNED_BYTE, 1);
 
 			ImageConverter converter = ImageConverter.getInstance();
-			ByteBuffer buffer = converter.imageToBuffer(image, info, null,
-					false);
+			ByteBuffer buffer =
+				converter.imageToBuffer(image, info, null, false);
 
 			// create the texture
 			GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 			try {
-				GL11.glDisable(GL11.GL_TEXTURE_2D);
-				GL11.glEnable(GL11.GL_TEXTURE_1D);
-				INT_BUF.limit(1);
-				GL11.glGenTextures(INT_BUF);
-				m_textureId = INT_BUF.get(0);
+				IntBuffer intBuf = Draw3DCache.getIntBuffer(1);
+				try {
+					GL11.glDisable(GL11.GL_TEXTURE_2D);
+					GL11.glEnable(GL11.GL_TEXTURE_1D);
+					GL11.glGenTextures(intBuf);
+					m_textureId = intBuf.get(0);
 
-				GL11.glBindTexture(GL11.GL_TEXTURE_1D, m_textureId);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_1D,
+					GL11.glBindTexture(GL11.GL_TEXTURE_1D, m_textureId);
+					GL11.glTexParameteri(GL11.GL_TEXTURE_1D,
 						GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_1D,
+					GL11.glTexParameteri(GL11.GL_TEXTURE_1D,
 						GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_1D,
+					GL11.glTexParameteri(GL11.GL_TEXTURE_1D,
 						GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-				GL11.glTexImage1D(GL11.GL_TEXTURE_1D, 0,
+					GL11.glTexImage1D(GL11.GL_TEXTURE_1D, 0,
 						GL11.GL_LUMINANCE_ALPHA, m_length, 0,
 						GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, buffer);
+				} finally {
+					Draw3DCache.returnIntBuffer(intBuf);
+				}
 			} finally {
 				GL11.glPopAttrib();
 				GL11.glBindTexture(GL11.GL_TEXTURE_1D, 0);
@@ -142,7 +145,7 @@ public class LwjglLinePattern {
 		GL11.glEnable(GL11.GL_TEXTURE_1D);
 		GL11.glBindTexture(GL11.GL_TEXTURE_1D, m_textureId);
 		GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE,
-				GL11.GL_BLEND);
+			GL11.GL_BLEND);
 	}
 
 	/**
@@ -168,10 +171,14 @@ public class LwjglLinePattern {
 			return;
 
 		if (m_textureId != -1) {
-			INT_BUF.limit(1);
-			INT_BUF.put(0, m_textureId);
-			GL11.glDeleteTextures(INT_BUF);
-			m_textureId = -1;
+			IntBuffer intBuf = Draw3DCache.getIntBuffer(1);
+			try {
+				intBuf.put(0, m_textureId);
+				GL11.glDeleteTextures(intBuf);
+				m_textureId = -1;
+			} finally {
+				Draw3DCache.returnIntBuffer(intBuf);
+			}
 		}
 
 		m_disposed = true;

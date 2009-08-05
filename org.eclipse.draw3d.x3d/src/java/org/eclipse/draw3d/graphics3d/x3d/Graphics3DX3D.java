@@ -70,8 +70,8 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger.getLogger(Graphics3DX3D.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(Graphics3DX3D.class.getName());
 
 	/**
 	 * Descriptor of this instance.
@@ -172,24 +172,16 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	 *      int, int, int, org.eclipse.swt.graphics.Color)
 	 */
 	public Graphics activateGraphics2D(Object i_key, int i_width, int i_height,
-			int i_alpha, Color i_color) {
+		int i_alpha, Color i_color) {
 
-		Graphics graphics = m_g2dManager.activateGraphics2D(i_key, i_width,
-				i_height, i_alpha, i_color);
+		Graphics graphics =
+			m_g2dManager.activateGraphics2D(i_key, i_width, i_height, i_alpha,
+				i_color);
 
 		if (m_log2D)
 			return new LogGraphics(graphics);
 		else
 			return graphics;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#createRawPosition(org.eclipse.draw3d.geometryext.IPosition3D)
-	 */
-	public Object createRawPosition(IPosition3D i_position3D) {
-		return i_position3D;
 	}
 
 	/**
@@ -217,24 +209,23 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	 * case, a glEnd and glBegin is simulated. This construction is required due
 	 * to the fact that X3D has not a counterpart to every OpenGL primitive.
 	 * 
-	 * @param i_cmdName
-	 *            The command's name.
-	 * @param parameter
-	 *            A list of the parameter.
+	 * @param i_cmdName The command's name.
+	 * @param parameter A list of the parameter.
 	 */
 	private void executeDraw(String i_cmdName, X3DParameterList parameter) {
-		X3DDrawCommand command = new X3DDrawCommand(i_cmdName, parameter,
-				m_propertyContainer, m_transformationManager
-						.getTransformationNode());
+		X3DDrawCommand command =
+			new X3DDrawCommand(i_cmdName, parameter, m_propertyContainer,
+				m_transformationManager.getTransformationNode());
 		if (m_activeDrawTarget.draw(command)) {
 			// The active draw target requested completion. To do this:
 			// IF this was not an end command itself
 			// 1. simulate END
 			if (!i_cmdName.equals(X3DDrawCommand.CMD_NAME_END)) {
-				X3DDrawCommand commandEnd = new X3DDrawCommand(
-						X3DDrawCommand.CMD_NAME_END, new X3DParameterList(
-								new ArrayList<Object>()), m_propertyContainer,
-						m_transformationManager.getTransformationNode());
+				X3DDrawCommand commandEnd =
+					new X3DDrawCommand(X3DDrawCommand.CMD_NAME_END,
+						new X3DParameterList(new ArrayList<Object>()),
+						m_propertyContainer, m_transformationManager
+							.getTransformationNode());
 				m_activeDrawTarget.draw(commandEnd);
 			}
 
@@ -245,14 +236,15 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 			// 3. exchange the active draw target against a new one of the same
 			// type
 			if (!i_cmdName.equals(X3DDrawCommand.CMD_NAME_END)) {
-				m_activeDrawTarget = X3DDrawTargetFactory
-						.createNewInstance(m_activeDrawTarget);
+				m_activeDrawTarget =
+					X3DDrawTargetFactory.createNewInstance(m_activeDrawTarget);
 
 				// 4. simulate BEGIN.
-				X3DDrawCommand commandBegin = new X3DDrawCommand(
-						X3DDrawCommand.CMD_NAME_BEGIN, new X3DParameterList(
-								new ArrayList<Object>()), m_propertyContainer,
-						m_transformationManager.getTransformationNode());
+				X3DDrawCommand commandBegin =
+					new X3DDrawCommand(X3DDrawCommand.CMD_NAME_BEGIN,
+						new X3DParameterList(new ArrayList<Object>()),
+						m_propertyContainer, m_transformationManager
+							.getTransformationNode());
 				m_activeDrawTarget.draw(commandBegin);
 			}
 		}
@@ -284,10 +276,10 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	 *      int, org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig)
 	 */
 	public Graphics3DOffscreenBuffers getGraphics3DOffscreenBuffer(
-			int i_height, int i_width,
-			Graphics3DOffscreenBufferConfig i_bufferConfig) {
+		int i_height, int i_width,
+		Graphics3DOffscreenBufferConfig i_bufferConfig) {
 		throw new Graphics3DException(
-				"X3D getGraphics3DOffscreenBuffer not supported");
+			"X3D getGraphics3DOffscreenBuffer not supported");
 	}
 
 	/**
@@ -297,9 +289,9 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	 *      int[])
 	 */
 	public Graphics3DOffscreenBufferConfig getGraphics3DOffscreenBufferConfig(
-			int i_buffers, int... i_args) {
+		int i_buffers, int... i_args) {
 		throw new Graphics3DException(
-				"X3D getGraphics3DOffscreenBufferConfig not supported");
+			"X3D getGraphics3DOffscreenBufferConfig not supported");
 	}
 
 	/**
@@ -322,7 +314,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		if (osName.startsWith("Windows")) {
 			return PLATFORM_WINDOWS;
 		} else if (osName.startsWith("Linux") || osName.startsWith("FreeBSD")
-				|| osName.startsWith("SunOS")) {
+			|| osName.startsWith("SunOS")) {
 			return PLATFORM_LINUX;
 		} else if (osName.startsWith("Mac OS X")) {
 			return PLATFORM_MACOSX;
@@ -350,57 +342,64 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glBegin",
-					new Object[] { i_mode });
+				new Object[] { i_mode });
 			return;
 		}
 
 		// Begin has to be followed by end, before called again.
 		if (m_activeDrawTarget != null) {
 			throw new Graphics3DException(
-					"Begin before End called. I still have an active DrawTarget!");
+				"Begin before End called. I still have an active DrawTarget!");
 		}
 
 		// Depending on type, a new draw target is created.
 		switch (i_mode) {
 
 		case Graphics3DDraw.GL_LINES:
-			m_activeDrawTarget = X3DDrawTargetFactory
+			m_activeDrawTarget =
+				X3DDrawTargetFactory
 					.createDrawTarget(X3DDrawTargetFactory.DRAW_TARGET_LINE);
 			break;
 
 		case Graphics3DDraw.GL_LINE_STRIP:
-			m_activeDrawTarget = X3DDrawTargetFactory
+			m_activeDrawTarget =
+				X3DDrawTargetFactory
 					.createDrawTarget(X3DDrawTargetFactory.DRAW_TARGET_POLYGON);
 			break;
 
 		case Graphics3DDraw.GL_LINE_LOOP:
-			m_activeDrawTarget = X3DDrawTargetFactory
+			m_activeDrawTarget =
+				X3DDrawTargetFactory
 					.createDrawTarget(X3DDrawTargetFactory.DRAW_TARGET_POLYGON_LOOP);
 			break;
 
 		case Graphics3DDraw.GL_QUADS:
-			m_activeDrawTarget = X3DDrawTargetFactory
+			m_activeDrawTarget =
+				X3DDrawTargetFactory
 					.createDrawTarget(X3DDrawTargetFactory.DRAW_TARGET_QUAD);
 			break;
 
 		case Graphics3DDraw.GL_TRIANGLES:
-			m_activeDrawTarget = X3DDrawTargetFactory
+			m_activeDrawTarget =
+				X3DDrawTargetFactory
 					.createDrawTarget(X3DDrawTargetFactory.DRAW_TARGET_TRIANGLE_SET);
 			break;
 
 		case Graphics3DDraw.GL_TRIANGLE_STRIP:
-			m_activeDrawTarget = X3DDrawTargetFactory
+			m_activeDrawTarget =
+				X3DDrawTargetFactory
 					.createDrawTarget(X3DDrawTargetFactory.DRAW_TARGET_TRIANGLE_STRIP_SET);
 			break;
 
 		case Graphics3DDraw.GL_TRIANGLE_FAN:
-			m_activeDrawTarget = X3DDrawTargetFactory
+			m_activeDrawTarget =
+				X3DDrawTargetFactory
 					.createDrawTarget(X3DDrawTargetFactory.DRAW_TARGET_TRIANGLE_FAN_SET);
 			break;
 
 		default:
 			throw new Graphics3DException(
-					"Cannot export this type of primitive: " + i_mode);
+				"Cannot export this type of primitive: " + i_mode);
 
 		}
 
@@ -422,7 +421,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glBindTexture",
-					new Object[] { i_target, i_texture });
+				new Object[] { i_target, i_texture });
 			return;
 		}
 
@@ -464,7 +463,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glClear",
-					new Object[] { i_mask });
+				new Object[] { i_mask });
 			return;
 		}
 
@@ -473,8 +472,8 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		m_exportState = ExportState.IN_PROGRESS;
 
 		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_BG_COLOR,
-				X3DPropertyContainer.DEF_BG_COLOR);
+			X3DPropertyContainer.PRP_BG_COLOR,
+			X3DPropertyContainer.DEF_BG_COLOR);
 	}
 
 	/**
@@ -484,19 +483,19 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	 *      float, float, float)
 	 */
 	public void glClearColor(float i_red, float i_green, float i_blue,
-			float i_alpha) {
+		float i_alpha) {
 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glClearColor",
-					new Object[] { i_red, i_green, i_blue, i_alpha });
+				new Object[] { i_red, i_green, i_blue, i_alpha });
 			return;
 		}
 
 		// Clear sets the background color.
 		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_BG_COLOR,
-				new float[] { i_red, i_green, i_blue, i_alpha });
+			X3DPropertyContainer.PRP_BG_COLOR,
+			new float[] { i_red, i_green, i_blue, i_alpha });
 	}
 
 	/**
@@ -509,12 +508,12 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glClearDepth",
-					new Object[] { i_depth });
+				new Object[] { i_depth });
 			return;
 		}
 
 		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_DEF_DEPTH, i_depth);
+			X3DPropertyContainer.PRP_DEF_DEPTH, i_depth);
 	}
 
 	/**
@@ -528,14 +527,14 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glColor3f", new Object[] {
-					i_red, i_green, i_blue });
+				i_red, i_green, i_blue });
 			return;
 		}
 
 		// Save the new current color
 		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_CURRENT_COLOR,
-				new java.awt.Color(i_red, i_green, i_blue, 1.0f));
+			X3DPropertyContainer.PRP_CURRENT_COLOR,
+			new java.awt.Color(i_red, i_green, i_blue, 1.0f));
 	}
 
 	/**
@@ -545,19 +544,19 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	 *      float, float)
 	 */
 	public void glColor4f(float i_red, float i_green, float i_blue,
-			float i_alpha) {
+		float i_alpha) {
 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glColor4f", new Object[] {
-					i_red, i_green, i_blue, i_alpha });
+				i_red, i_green, i_blue, i_alpha });
 			return;
 		}
 
 		// Save the new current color
 		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_CURRENT_COLOR,
-				new java.awt.Color(i_red, i_green, i_blue, i_alpha));
+			X3DPropertyContainer.PRP_CURRENT_COLOR,
+			new java.awt.Color(i_red, i_green, i_blue, i_alpha));
 	}
 
 	/**
@@ -586,7 +585,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glDisable",
-					new Object[] { i_cap });
+				new Object[] { i_cap });
 			return;
 		}
 
@@ -595,7 +594,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 
 		case Graphics3DDraw.GL_LINE_STIPPLE:
 			m_propertyContainer.getProperties().put(
-					X3DPropertyContainer.PRP_LINE_DASHED, false);
+				X3DPropertyContainer.PRP_LINE_DASHED, false);
 			break;
 
 		case Graphics3DDraw.GL_TEXTURE_2D:
@@ -611,7 +610,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		default:
 			if (log.isLoggable(Level.INFO)) {
 				log.info("int - Property not supported for export. - i_cap="
-						+ i_cap);
+					+ i_cap);
 			}
 			break;
 
@@ -628,7 +627,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glEnable",
-					new Object[] { i_cap });
+				new Object[] { i_cap });
 			return;
 		}
 
@@ -637,7 +636,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 
 		case Graphics3DDraw.GL_LINE_STIPPLE:
 			m_propertyContainer.getProperties().put(
-					X3DPropertyContainer.PRP_LINE_DASHED, true);
+				X3DPropertyContainer.PRP_LINE_DASHED, true);
 			break;
 		case Graphics3DDraw.GL_TEXTURE_2D:
 		case Graphics3DDraw.GL_MULTISAMPLE:
@@ -652,7 +651,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		default:
 			if (log.isLoggable(Level.INFO)) {
 				log.info("int - Property not supported for export. - i_cap="
-						+ i_cap);
+					+ i_cap);
 			}
 			break;
 
@@ -675,8 +674,8 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Forward the end command and set the active draw target to null
 		// afterwards. Before drawing is continued, a new draw target has to be
 		// created with glBegin.
-		X3DParameterList parameter = new X3DParameterList(
-				new ArrayList<Object>());
+		X3DParameterList parameter =
+			new X3DParameterList(new ArrayList<Object>());
 
 		executeDraw(X3DDrawCommand.CMD_NAME_END, parameter);
 
@@ -747,7 +746,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	public void glGetFloat(int i_pname, FloatBuffer i_params) {
 		// no matrix support in X3D
 		throw new Graphics3DException(
-				"No modelview/projection matrix support in X3D.");
+			"No modelview/projection matrix support in X3D.");
 	}
 
 	/**
@@ -761,8 +760,9 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		switch (i_pname) {
 
 		case Graphics3DDraw.GL_VIEWPORT:
-			int[] viewportParameter = (int[]) m_propertyContainer
-					.getProperties().get(X3DPropertyContainer.PRP_VIEWPORT);
+			int[] viewportParameter =
+				(int[]) m_propertyContainer.getProperties().get(
+					X3DPropertyContainer.PRP_VIEWPORT);
 			for (int i = 0; i < viewportParameter.length; i++) {
 				i_params.put(viewportParameter[i]);
 			}
@@ -775,8 +775,8 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		default:
 			if (log.isLoggable(Level.INFO)) {
 				log
-						.info("int, IntBuffer - Property not supported for export. - i_pname="
-								+ i_pname);
+					.info("int, IntBuffer - Property not supported for export. - i_pname="
+						+ i_pname);
 			}
 			break;
 
@@ -795,15 +795,16 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		switch (i_strName) {
 
 		case Graphics3DDraw.GL_VERSION:
-			ret = (String) m_propertyContainer.getProperties().get(
+			ret =
+				(String) m_propertyContainer.getProperties().get(
 					X3DPropertyContainer.PRP_VERSION);
 			break;
 
 		default:
 			if (log.isLoggable(Level.INFO)) {
 				log
-						.info("int - Property not supported for export. - i_strName="
-								+ i_strName);
+					.info("int - Property not supported for export. - i_strName="
+						+ i_strName);
 			}
 			break;
 
@@ -821,7 +822,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glHint", new Object[] {
-					i_target, i_mode });
+				i_target, i_mode });
 			return;
 		}
 
@@ -833,8 +834,8 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		default:
 			if (log.isLoggable(Level.INFO)) {
 				log
-						.info("int, int - Hint not supported for export. - i_target="
-								+ i_target + " i_mode=" + i_mode);
+					.info("int, int - Hint not supported for export. - i_target="
+						+ i_target + " i_mode=" + i_mode);
 			}
 			break;
 		}
@@ -870,7 +871,8 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 			break;
 
 		case Graphics3DDraw.GL_LINE_STIPPLE:
-			ret = (Boolean) m_propertyContainer.getProperties().get(
+			ret =
+				(Boolean) m_propertyContainer.getProperties().get(
 					X3DPropertyContainer.PRP_LINE_DASHED);
 			break;
 
@@ -906,12 +908,12 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glLineWidth",
-					new Object[] { i_width });
+				new Object[] { i_width });
 			return;
 		}
 
 		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_LINE_WIDTH, i_width);
+			X3DPropertyContainer.PRP_LINE_WIDTH, i_width);
 	}
 
 	/**
@@ -923,7 +925,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glLoadIdentity",
-					new Object[] {});
+				new Object[] {});
 			return;
 		}
 		m_transformationManager.setIdentity();
@@ -962,7 +964,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	public void glNormal3f(float i_nx, float i_ny, float i_nz) {
 		Vector3f normal = new Vector3fImpl(i_nx, i_ny, i_nz);
 		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_NORMAL, normal);
+			X3DPropertyContainer.PRP_NORMAL, normal);
 	}
 
 	/**
@@ -993,11 +995,20 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		default:
 			if (log.isLoggable(Level.INFO)) {
 				log.info("int, int - Unknown pixel storage setting. - i_pname="
-						+ i_pname + ", i_param=" + i_param);
+					+ i_pname + ", i_param=" + i_param);
 			}
 			break;
 		}
 
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glPointSize(float)
+	 */
+	public void glPointSize(float i_size) {
+		// TODO implement method Graphics3DDraw.glPointSize
 	}
 
 	/**
@@ -1010,7 +1021,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glPolygonMode",
-					new Object[] { i_face, i_mode });
+				new Object[] { i_face, i_mode });
 			return;
 		}
 
@@ -1019,15 +1030,15 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		case Graphics3DDraw.GL_FRONT_AND_BACK:
 			if (i_mode == Graphics3DDraw.GL_FILL) {
 				m_propertyContainer.getProperties().put(
-						X3DPropertyContainer.PRP_POLYGON_MODE_DO_FILL, true);
+					X3DPropertyContainer.PRP_POLYGON_MODE_DO_FILL, true);
 			} else if (i_mode == Graphics3DDraw.GL_LINE) {
 				m_propertyContainer.getProperties().put(
-						X3DPropertyContainer.PRP_POLYGON_MODE_DO_FILL, false);
+					X3DPropertyContainer.PRP_POLYGON_MODE_DO_FILL, false);
 			} else {
 				if (log.isLoggable(Level.INFO)) {
 					log
-							.info("int, int - Unknown mode for GL_FRONT_AND_BACK. - i_mode="
-									+ i_mode);
+						.info("int, int - Unknown mode for GL_FRONT_AND_BACK. - i_mode="
+							+ i_mode);
 				}
 			}
 			break;
@@ -1035,7 +1046,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		default:
 			if (log.isLoggable(Level.INFO)) {
 				log.info("int, int - Unknown face and mode. - i_face=" + i_face
-						+ ", i_mode=" + i_mode);
+					+ ", i_mode=" + i_mode);
 			}
 			break;
 
@@ -1052,7 +1063,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glPopMatrix",
-					new Object[] {});
+				new Object[] {});
 			return;
 		}
 
@@ -1069,7 +1080,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glPushMatrix",
-					new Object[] {});
+				new Object[] {});
 			return;
 		}
 
@@ -1086,7 +1097,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glShadeModel",
-					new Object[] { i_mode });
+				new Object[] { i_mode });
 			return;
 		}
 
@@ -1116,14 +1127,14 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glTexCoord2f",
-					new Object[] { i_s, i_t });
+				new Object[] { i_s, i_t });
 			return;
 		}
 
 		// Assign the current texture to the active draw target. The draw target
 		// has to check, that every texture is only assigned once.
-		String g2dPath = m_g2dManager.writeImage(m_texture, m_x3dModel
-				.getExportPath());
+		String g2dPath =
+			m_g2dManager.writeImage(m_texture, m_x3dModel.getExportPath());
 		m_activeDrawTarget.addGraphics2D(g2dPath, m_x3dModel.getExportPath());
 
 		// Execute the draw command afterwards.
@@ -1145,24 +1156,24 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glTexEnvi", new Object[] {
-					i_target, i_pname, i_param });
+				i_target, i_pname, i_param });
 			return;
 		}
 
 		if (i_target == Graphics3DDraw.GL_TEXTURE_ENV
-				&& i_pname == Graphics3DDraw.GL_TEXTURE_ENV_MODE) {
+			&& i_pname == Graphics3DDraw.GL_TEXTURE_ENV_MODE) {
 			switch (i_param) {
 
 			case Graphics3DDraw.GL_REPLACE:
 				m_propertyContainer.getProperties().put(
-						X3DPropertyContainer.PRP_TEX_ENVI_REPLACE, true);
+					X3DPropertyContainer.PRP_TEX_ENVI_REPLACE, true);
 				break;
 
 			default:
 				if (log.isLoggable(Level.INFO)) {
 					log
-							.info("int, int, int - Unknown parameter for TEXTURE_ENV and TEXTURE_ENV_MODE. - i_param="
-									+ i_param);
+						.info("int, int, int - Unknown parameter for TEXTURE_ENV and TEXTURE_ENV_MODE. - i_param="
+							+ i_param);
 				}
 				break;
 			}
@@ -1170,8 +1181,8 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 
 			if (log.isLoggable(Level.INFO)) {
 				log
-						.info("int, int, int - Unknown target and parameter name. - i_target="
-								+ i_target + ", i_pname=" + i_pname);
+					.info("int, int, int - Unknown target and parameter name. - i_target="
+						+ i_target + ", i_pname=" + i_pname);
 			}
 		}
 	}
@@ -1187,7 +1198,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glTranslatef",
-					new Object[] { i_x, i_y, i_z });
+				new Object[] { i_x, i_y, i_z });
 			return;
 		}
 
@@ -1201,16 +1212,16 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	 *      float, float, float, float, float, float, float)
 	 */
 	public void gluLookAt(float i_eyex, float i_eyey, float i_eyez,
-			float i_centerx, float i_centery, float i_centerz, float i_upx,
-			float i_upy, float i_upz) {
+		float i_centerx, float i_centery, float i_centerz, float i_upx,
+		float i_upy, float i_upz) {
 
 		float[] center = { i_centerx, i_centery, i_centerz };
 		float[] position = { i_eyex, i_eyey, i_eyez };
 
 		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_VIEWPOINT_CENTER, center);
+			X3DPropertyContainer.PRP_VIEWPOINT_CENTER, center);
 		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_VIEWPOINT_POSITION, position);
+			X3DPropertyContainer.PRP_VIEWPOINT_POSITION, position);
 
 	}
 
@@ -1242,8 +1253,8 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	 *      java.nio.IntBuffer, java.nio.FloatBuffer)
 	 */
 	public void gluUnProject(int i_winx, int i_winy, float i_winz,
-			FloatBuffer i_modelMatrix, FloatBuffer i_projMatrix,
-			IntBuffer i_viewport, FloatBuffer i_obj_pos) {
+		FloatBuffer i_modelMatrix, FloatBuffer i_projMatrix,
+		IntBuffer i_viewport, FloatBuffer i_obj_pos) {
 		throw new Graphics3DException("X3D doesn't support gluUnProject");
 	}
 
@@ -1258,7 +1269,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glVertex2f",
-					new Object[] { i_x, i_y });
+				new Object[] { i_x, i_y });
 			return;
 		}
 
@@ -1280,7 +1291,7 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glVertex3f",
-					new Object[] { i_x, i_y, i_z });
+				new Object[] { i_x, i_y, i_z });
 			return;
 		}
 
@@ -1305,13 +1316,13 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 		// Add this call to the current display list, if there is one.
 		if (m_currentDisplayList != null) {
 			m_currentDisplayList.addMethodCall(this, "glViewport",
-					new Object[] { i_x, i_y, i_width, i_height });
+				new Object[] { i_x, i_y, i_width, i_height });
 			return;
 		}
 
 		m_propertyContainer.getProperties().put(
-				X3DPropertyContainer.PRP_VIEWPORT,
-				new int[] { i_x, i_y, i_width, i_height });
+			X3DPropertyContainer.PRP_VIEWPORT,
+			new int[] { i_x, i_y, i_width, i_height });
 	}
 
 	/**
@@ -1366,16 +1377,11 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#setPosition(java.lang.Object)
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#setPosition(org.eclipse.draw3d.geometry.IPosition3D)
 	 */
-	public void setPosition(Object i_theRawPosition) {
+	public void setPosition(IPosition3D i_position) {
 
-		if (i_theRawPosition instanceof IPosition3D) {
-			m_transformationManager.setPosition((IPosition3D) i_theRawPosition);
-		} else {
-			throw new Graphics3DException("Incompatibe raw position.");
-		}
-
+		m_transformationManager.setPosition(i_position);
 	}
 
 	/**
@@ -1398,14 +1404,5 @@ public class Graphics3DX3D extends AbstractGraphics3DDraw implements Graphics3D 
 	 */
 	public void useContext(Object i_context) throws Graphics3DException {
 		m_context = i_context;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glPointSize(float)
-	 */
-	public void glPointSize(float i_size) {
-		// TODO implement method Graphics3DDraw.glPointSize
 	}
 }

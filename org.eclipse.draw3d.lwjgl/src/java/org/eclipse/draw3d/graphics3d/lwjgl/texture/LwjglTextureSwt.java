@@ -17,7 +17,7 @@ import java.util.Arrays;
 
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.SWTGraphics;
-import org.eclipse.draw3d.util.BufferUtils;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.converter.BufferInfo;
 import org.eclipse.draw3d.util.converter.ImageConverter;
 import org.eclipse.swt.graphics.Color;
@@ -38,15 +38,13 @@ import org.lwjgl.opengl.GL11;
  */
 public class LwjglTextureSwt extends AbstractLwjglTexture {
 
-	private static final IntBuffer INT_BUF = BufferUtils.createIntBuffer(1);
-	
-	protected SWTGraphics m_graphics;
-
 	private int m_clearAlpha;
 
 	private GC m_gc;
 
 	private int m_glTexture = 0;
+
+	protected SWTGraphics m_graphics;
 
 	private Image m_image;
 
@@ -54,8 +52,8 @@ public class LwjglTextureSwt extends AbstractLwjglTexture {
 
 	private ByteBuffer m_textureBuffer;
 
-	private final Color m_transparentColor = new Color(Display.getCurrent(),
-			0x99, 0x99, 0x99);
+	private final Color m_transparentColor =
+		new Color(Display.getCurrent(), 0x99, 0x99, 0x99);
 
 	private boolean m_uploadTexture;
 
@@ -67,7 +65,8 @@ public class LwjglTextureSwt extends AbstractLwjglTexture {
 	 */
 	public LwjglTextureSwt(int i_width, int i_height) {
 
-		m_info = new BufferInfo(i_width, i_height, GL11.GL_RGBA,
+		m_info =
+			new BufferInfo(i_width, i_height, GL11.GL_RGBA,
 				GL11.GL_UNSIGNED_BYTE, 1);
 	}
 
@@ -106,7 +105,7 @@ public class LwjglTextureSwt extends AbstractLwjglTexture {
 		try {
 			m_graphics.setBackgroundColor(i_color);
 			m_graphics.fillRectangle(0, 0, m_info.getWidth(), m_info
-					.getHeight());
+				.getHeight());
 		} finally {
 			m_graphics.popState();
 		}
@@ -134,25 +133,30 @@ public class LwjglTextureSwt extends AbstractLwjglTexture {
 
 	private void createTexture() {
 
-		INT_BUF.rewind();
-		GL11.glGenTextures(INT_BUF);
-		m_glTexture = INT_BUF.get(0);
+		IntBuffer buffer = Draw3DCache.getIntBuffer(1);
+		try {
+			buffer.rewind();
+			GL11.glGenTextures(buffer);
+			m_glTexture = buffer.get(0);
 
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_glTexture);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER,
-				GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,
-				GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S,
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_glTexture);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+				GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+				GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S,
 				GL11.GL_CLAMP);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T,
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T,
 				GL11.GL_CLAMP);
 
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, m_info
+			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, m_info
 				.getWidth(), m_info.getHeight(), 0, GL11.GL_RGBA,
 				GL11.GL_UNSIGNED_BYTE, m_textureBuffer);
 
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+		} finally {
+			Draw3DCache.returnIntBuffer(buffer);
+		}
 	}
 
 	/**
@@ -183,9 +187,14 @@ public class LwjglTextureSwt extends AbstractLwjglTexture {
 	private void deleteTexture() {
 
 		if (m_glTexture > 0) {
-			INT_BUF.rewind();
-			INT_BUF.put(m_glTexture);
-			GL11.glDeleteTextures(INT_BUF);
+			IntBuffer buffer = Draw3DCache.getIntBuffer(1);
+			try {
+				buffer.rewind();
+				buffer.put(m_glTexture);
+				GL11.glDeleteTextures(buffer);
+			} finally {
+				Draw3DCache.returnIntBuffer(buffer);
+			}
 		}
 	}
 
@@ -238,8 +247,8 @@ public class LwjglTextureSwt extends AbstractLwjglTexture {
 		if (m_uploadTexture) {
 
 			ImageConverter converter = ImageConverter.getInstance();
-			m_textureBuffer = converter.imageToBuffer(m_image, m_info,
-					m_textureBuffer, true);
+			m_textureBuffer =
+				converter.imageToBuffer(m_image, m_info, m_textureBuffer, true);
 
 			deleteTexture();
 			createTexture();
@@ -263,11 +272,12 @@ public class LwjglTextureSwt extends AbstractLwjglTexture {
 
 		if (i_width <= 0 || i_height <= 0)
 			throw new IllegalArgumentException(
-					"texture dimensions must not be negative");
+				"texture dimensions must not be negative");
 
 		if (m_info.getWidth() != i_width || m_info.getHeight() != i_height) {
 			m_valid = false;
-			m_info = new BufferInfo(i_width, i_height, m_info.getPixelFormat(),
+			m_info =
+				new BufferInfo(i_width, i_height, m_info.getPixelFormat(),
 					m_info.getDataType(), m_info.getAlignment());
 		}
 	}

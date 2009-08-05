@@ -15,8 +15,8 @@ import java.nio.IntBuffer;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics;
-import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.ColorConverter;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
@@ -36,15 +36,12 @@ import org.lwjgl.util.glu.GLU;
  */
 public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 
-	private static final IntBuffer INT_BUF = BufferUtils.createIntBuffer(1);
-
-	protected LwjglGraphics m_graphics;
-
 	private static Pbuffer createPBuffer(int i_width, int i_height)
-			throws LWJGLException {
+		throws LWJGLException {
 
-		RenderTexture renderTexture = new RenderTexture(false, true, false,
-				false, RenderTexture.RENDER_TEXTURE_RECTANGLE, 0);
+		RenderTexture renderTexture =
+			new RenderTexture(false, true, false, false,
+				RenderTexture.RENDER_TEXTURE_RECTANGLE, 0);
 
 		PixelFormat pixelFormat = new PixelFormat();
 
@@ -53,23 +50,28 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 
 	private static int createTexture() {
 
-		INT_BUF.rewind();
-		GL11.glGenTextures(INT_BUF);
-		int glTexture = INT_BUF.get(0);
+		IntBuffer buffer = Draw3DCache.getIntBuffer(1);
+		try {
+			buffer.rewind();
+			GL11.glGenTextures(buffer);
+			int glTexture = buffer.get(0);
 
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER,
-				GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,
-				GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S,
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+				GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+				GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S,
 				GL11.GL_CLAMP);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T,
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T,
 				GL11.GL_CLAMP);
 
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 
-		return glTexture;
+			return glTexture;
+		} finally {
+			Draw3DCache.returnIntBuffer(buffer);
+		}
 	}
 
 	private static void deletePBuffer(Pbuffer i_pBuffer) {
@@ -82,9 +84,14 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 	private static void deleteTexture(int i_glTexture) {
 
 		if (i_glTexture > 0) {
-			INT_BUF.rewind();
-			INT_BUF.put(i_glTexture);
-			GL11.glDeleteTextures(INT_BUF);
+			IntBuffer buffer = Draw3DCache.getIntBuffer(1);
+			try {
+				buffer.rewind();
+				buffer.put(i_glTexture);
+				GL11.glDeleteTextures(buffer);
+			} finally {
+				Draw3DCache.returnIntBuffer(buffer);
+			}
 		}
 	}
 
@@ -99,12 +106,6 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 
 		if (i_context == null) {
 			throw new NullPointerException("i_context must not be null");
-		}
-
-		if (Pbuffer.PBUFFER_SUPPORTED == 0
-				|| Pbuffer.RENDER_TEXTURE_SUPPORTED == 0
-				|| Pbuffer.RENDER_TEXTURE_RECTANGLE_SUPPORTED == 0) {
-			return false;
 		}
 
 		int glTexture = 0;
@@ -130,15 +131,17 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 
 	private final GLCanvas m_context;
 
+	private LwjglFontManager m_fontManager;
+
 	private int m_glTexture;
+
+	protected LwjglGraphics m_graphics;
 
 	private int m_height;
 
-	private int m_width;
-
 	private Pbuffer m_pBuffer;
 
-	private LwjglFontManager m_fontManager;
+	private int m_width;
 
 	/**
 	 * Creates a new texture. Since using pbuffers involves a context switch, we
@@ -148,12 +151,13 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 	 *            deactivated
 	 * @param i_width the width of the texture
 	 * @param i_height the height of the texture
+	 * @param i_fontManager the font manager
 	 * @throws IllegalArgumentException if the given width or height is not
 	 *             positive
 	 * @throws NullPointerException if the given context is <code>null</code>
 	 */
 	public LwjglTexturePbuffer(GLCanvas i_context, int i_width, int i_height,
-			LwjglFontManager fontManager) {
+			LwjglFontManager i_fontManager) {
 
 		if (i_context == null) {
 			throw new NullPointerException("i_context must not be null");
@@ -161,7 +165,7 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 
 		m_context = i_context;
 		setDimensions(i_width, i_height);
-		m_fontManager = fontManager;
+		m_fontManager = i_fontManager;
 	}
 
 	/**
@@ -179,8 +183,8 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 			if (!m_valid || (m_pBuffer != null && m_pBuffer.isBufferLost())) {
 
 				if (m_graphics == null) {
-					m_graphics = new LwjglGraphics(m_width, m_height,
-							m_fontManager);
+					m_graphics =
+						new LwjglGraphics(m_width, m_height, m_fontManager);
 				} else {
 					m_graphics.setDimensions(m_width, m_height);
 				}
@@ -210,7 +214,7 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 				GL11.glViewport(0, 0, m_width, m_height);
 
 				GL11.glTranslatef(LwjglGraphics.RASTER_OFFSET,
-						LwjglGraphics.RASTER_OFFSET, 0);
+					LwjglGraphics.RASTER_OFFSET, 0);
 
 				m_valid = true;
 			} else {
@@ -222,7 +226,7 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 		} catch (LWJGLException ex) {
 			throw new RuntimeException(
-					"caught exception while creating pbuffer", ex);
+				"caught exception while creating pbuffer", ex);
 		}
 	}
 
@@ -331,7 +335,7 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 
 		if (i_width <= 0 || i_height <= 0) {
 			throw new IllegalArgumentException(
-					"texture dimensions must not be negative");
+				"texture dimensions must not be negative");
 		}
 
 		m_valid = m_valid && m_width == i_width && m_height == i_height;

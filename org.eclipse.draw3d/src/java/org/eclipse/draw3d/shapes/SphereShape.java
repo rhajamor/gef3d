@@ -231,10 +231,7 @@ public class SphereShape extends PositionableShape {
 					try {
 						renderFill(i_graphics3D);
 						for (int i = 0; i < 3; i++) {
-							Object raw =
-								i_graphics3D.createRawPosition(ROTATE_Z90);
-
-							i_graphics3D.setPosition(raw);
+							i_graphics3D.setPosition(ROTATE_Z90);
 							renderFill(i_graphics3D);
 						}
 					} finally {
@@ -251,10 +248,7 @@ public class SphereShape extends PositionableShape {
 					try {
 						renderOutline(i_graphics3D);
 						for (int i = 0; i < 3; i++) {
-							Object raw =
-								i_graphics3D.createRawPosition(ROTATE_Z90);
-
-							i_graphics3D.setPosition(raw);
+							i_graphics3D.setPosition(ROTATE_Z90);
 							renderOutline(i_graphics3D);
 						}
 					} finally {

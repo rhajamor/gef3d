@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
-import org.eclipse.draw3d.util.BufferUtils;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.GL11;
 
@@ -28,15 +28,16 @@ import org.lwjgl.opengl.GL11;
  * @version $Revision$
  * @since 27.04.2008
  */
-public class LwjglOffscreenBuffersFbo implements
-		Graphics3DOffscreenBuffers {
-
-	private static final IntBuffer[] TMP_BUF = new IntBuffer[] {
-			BufferUtils.createIntBuffer(1), BufferUtils.createIntBuffer(2) };
+public class LwjglOffscreenBuffersFbo implements Graphics3DOffscreenBuffers {
 
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger
-			.getLogger(LwjglOffscreenBuffersFbo.class.getName());
+	private static final Logger log =
+		Logger.getLogger(LwjglOffscreenBuffersFbo.class.getName());
+
+	/**
+	 * The buffers uses the settings from this buffer configuration.
+	 */
+	private Graphics3DOffscreenBufferConfig m_bufferConfig;
 
 	private int m_glColorBuffer;
 
@@ -44,17 +45,12 @@ public class LwjglOffscreenBuffersFbo implements
 
 	private int m_glFrameBuffer;
 
-	private boolean m_initBuffers;
-
-	/**
-	 * The buffers uses the settings from this buffer configuration.
-	 */
-	private Graphics3DOffscreenBufferConfig m_bufferConfig;
-
 	/**
 	 * The buffer's height.
 	 */
 	private int m_height;
+
+	private boolean m_initBuffers;
 
 	/**
 	 * The buffer's width.
@@ -70,19 +66,22 @@ public class LwjglOffscreenBuffersFbo implements
 	 *            configuration.
 	 */
 	public LwjglOffscreenBuffersFbo(int i_height, int i_width,
-			Graphics3DOffscreenBufferConfig bufferConfig) {
+			Graphics3DOffscreenBufferConfig i_bufferConfig) {
+
 		this.m_height = i_height;
 		this.m_width = i_width;
-		this.m_bufferConfig = bufferConfig;
+		this.m_bufferConfig = i_bufferConfig;
 	}
-	
-	/** 
-	 * {@inheritDoc}
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers#isBackBuffer()
-	 */
-	public boolean isBackBuffer() {
-		return false; //  not an instanceof LwjglOffscreenBackBuffers;
-		
+
+	private void createFbo() {
+
+		IntBuffer buffer = Draw3DCache.getIntBuffer(1);
+		try {
+			EXTFramebufferObject.glGenFramebuffersEXT(buffer);
+			m_glFrameBuffer = buffer.get(0);
+		} finally {
+			Draw3DCache.returnIntBuffer(buffer);
+		}
 	}
 
 	private void createRenderBuffers() {
@@ -97,49 +96,61 @@ public class LwjglOffscreenBuffersFbo implements
 		if (numBuffers == 0)
 			return;
 
-		IntBuffer buffer = TMP_BUF[numBuffers - 1];
-		EXTFramebufferObject.glGenRenderbuffersEXT(buffer);
+		IntBuffer buffer = Draw3DCache.getIntBuffer(numBuffers - 1);
+		try {
+			EXTFramebufferObject.glGenRenderbuffersEXT(buffer);
 
-		int width = m_width;
-		int height = m_height;
+			int width = m_width;
+			int height = m_height;
 
-		if (bufferConfig.isEnabled(GL11.GL_COLOR_BUFFER_BIT)) {
-			m_glColorBuffer = buffer.get(0);
-			EXTFramebufferObject.glBindRenderbufferEXT(
+			if (bufferConfig.isEnabled(GL11.GL_COLOR_BUFFER_BIT)) {
+				m_glColorBuffer = buffer.get(0);
+				EXTFramebufferObject.glBindRenderbufferEXT(
 					EXTFramebufferObject.GL_RENDERBUFFER_EXT, m_glColorBuffer);
 
-			int format = bufferConfig.getColorPixelFormat();
-			EXTFramebufferObject.glRenderbufferStorageEXT(
+				int format = bufferConfig.getColorPixelFormat();
+				EXTFramebufferObject.glRenderbufferStorageEXT(
 					EXTFramebufferObject.GL_RENDERBUFFER_EXT, format, width,
 					height);
 
-			EXTFramebufferObject.glFramebufferRenderbufferEXT(
+				EXTFramebufferObject.glFramebufferRenderbufferEXT(
 					EXTFramebufferObject.GL_FRAMEBUFFER_EXT,
 					EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT,
 					EXTFramebufferObject.GL_RENDERBUFFER_EXT, m_glColorBuffer);
-		}
+			}
 
-		if (bufferConfig.isEnabled(GL11.GL_DEPTH_BUFFER_BIT)) {
-			m_glDepthBuffer = buffer.get(numBuffers - 1);
+			if (bufferConfig.isEnabled(GL11.GL_DEPTH_BUFFER_BIT)) {
+				m_glDepthBuffer = buffer.get(numBuffers - 1);
 
-			EXTFramebufferObject.glBindRenderbufferEXT(
+				EXTFramebufferObject.glBindRenderbufferEXT(
 					EXTFramebufferObject.GL_RENDERBUFFER_EXT, m_glDepthBuffer);
-			EXTFramebufferObject.glRenderbufferStorageEXT(
+				EXTFramebufferObject.glRenderbufferStorageEXT(
 					EXTFramebufferObject.GL_RENDERBUFFER_EXT,
 					GL11.GL_DEPTH_COMPONENT, width, height);
 
-			EXTFramebufferObject.glFramebufferRenderbufferEXT(
+				EXTFramebufferObject.glFramebufferRenderbufferEXT(
 					EXTFramebufferObject.GL_FRAMEBUFFER_EXT,
 					EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT,
 					EXTFramebufferObject.GL_RENDERBUFFER_EXT, m_glDepthBuffer);
+			}
+		} finally {
+			Draw3DCache.returnIntBuffer(buffer);
 		}
 	}
 
-	private void createFbo() {
+	private void deleteFbo() {
 
-		IntBuffer buffer = TMP_BUF[0];
-		EXTFramebufferObject.glGenFramebuffersEXT(buffer);
-		m_glFrameBuffer = buffer.get(0);
+		if (EXTFramebufferObject.glIsFramebufferEXT(m_glFrameBuffer)) {
+			IntBuffer buffer = Draw3DCache.getIntBuffer(1);
+			try {
+				buffer.rewind();
+
+				buffer.put(m_glFrameBuffer);
+				EXTFramebufferObject.glDeleteFramebuffersEXT(buffer);
+			} finally {
+				Draw3DCache.returnIntBuffer(buffer);
+			}
+		}
 	}
 
 	private void deleteRenderBuffers() {
@@ -152,26 +163,19 @@ public class LwjglOffscreenBuffersFbo implements
 		if (numBuffers == 0)
 			return;
 
-		IntBuffer buffer = TMP_BUF[numBuffers - 1];
-		buffer.rewind();
-
-		if (EXTFramebufferObject.glIsRenderbufferEXT(m_glColorBuffer))
-			buffer.put(m_glColorBuffer);
-
-		if (EXTFramebufferObject.glIsRenderbufferEXT(m_glDepthBuffer))
-			buffer.put(m_glDepthBuffer);
-
-		EXTFramebufferObject.glDeleteRenderbuffersEXT(buffer);
-	}
-
-	private void deleteFbo() {
-
-		if (EXTFramebufferObject.glIsFramebufferEXT(m_glFrameBuffer)) {
-			IntBuffer buffer = TMP_BUF[0];
+		IntBuffer buffer = Draw3DCache.getIntBuffer(numBuffers);
+		try {
 			buffer.rewind();
 
-			buffer.put(m_glFrameBuffer);
-			EXTFramebufferObject.glDeleteFramebuffersEXT(buffer);
+			if (EXTFramebufferObject.glIsRenderbufferEXT(m_glColorBuffer))
+				buffer.put(m_glColorBuffer);
+
+			if (EXTFramebufferObject.glIsRenderbufferEXT(m_glDepthBuffer))
+				buffer.put(m_glDepthBuffer);
+
+			EXTFramebufferObject.glDeleteRenderbuffersEXT(buffer);
+		} finally {
+			Draw3DCache.returnIntBuffer(buffer);
 		}
 	}
 
@@ -230,6 +234,16 @@ public class LwjglOffscreenBuffersFbo implements
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers#isBackBuffer()
+	 */
+	public boolean isBackBuffer() {
+		return false; // not an instanceof LwjglOffscreenBackBuffers;
+
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers#postRender(java.nio.ByteBuffer,
 	 *      java.nio.FloatBuffer)
 	 */
@@ -253,11 +267,11 @@ public class LwjglOffscreenBuffersFbo implements
 
 			i_depthBuffer.rewind();
 			GL11.glReadPixels(0, 0, width, height, GL11.GL_DEPTH_COMPONENT,
-					type, i_depthBuffer);
+				type, i_depthBuffer);
 		}
 
 		EXTFramebufferObject.glBindFramebufferEXT(
-				EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
+			EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
 	}
 
 	/**
@@ -274,11 +288,12 @@ public class LwjglOffscreenBuffersFbo implements
 
 			createFbo();
 			EXTFramebufferObject.glBindFramebufferEXT(
-					EXTFramebufferObject.GL_FRAMEBUFFER_EXT, m_glFrameBuffer);
+				EXTFramebufferObject.GL_FRAMEBUFFER_EXT, m_glFrameBuffer);
 
 			createRenderBuffers();
 
-			int status = EXTFramebufferObject
+			int status =
+				EXTFramebufferObject
 					.glCheckFramebufferStatusEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT);
 			if (status != EXTFramebufferObject.GL_FRAMEBUFFER_COMPLETE_EXT)
 				throw new RuntimeException(getStatus(status));
@@ -286,7 +301,7 @@ public class LwjglOffscreenBuffersFbo implements
 			m_initBuffers = false;
 		} else
 			EXTFramebufferObject.glBindFramebufferEXT(
-					EXTFramebufferObject.GL_FRAMEBUFFER_EXT, m_glFrameBuffer);
+				EXTFramebufferObject.GL_FRAMEBUFFER_EXT, m_glFrameBuffer);
 	}
 
 	/**

@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.DeferredUpdateManager;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.opengl.GLCanvas;
 
 /**
@@ -26,8 +25,14 @@ import org.eclipse.swt.opengl.GLCanvas;
  */
 public class DeferredUpdateManager3D extends DeferredUpdateManager {
 
-	private static Logger log = Logger.getLogger(DeferredUpdateManager3D.class
-			.getName());
+	private static Logger log =
+		Logger.getLogger(DeferredUpdateManager3D.class.getName());
+
+	/**
+	 * Reference to canvas (created by GraphicalViewer3D) and passed via
+	 * LightweightSystem3D, required here for swapping buffers.
+	 */
+	protected GLCanvas canvas;
 
 	/**
 	 * This is actually the original root figure, but we need to hold a
@@ -36,11 +41,35 @@ public class DeferredUpdateManager3D extends DeferredUpdateManager {
 	 */
 	protected IFigure3D root3D;
 
+	public void dumpTree(IFigure fig, StringBuffer o_out, String level) {
+		o_out.append("\n").append(level).append("+" + fig);
+		level = level + "  ";
+		for (int i = 0; i < fig.getChildren().size(); i++) {
+			dumpTree((IFigure) fig.getChildren().get(i), o_out, level);
+		}
+	}
+
 	/**
-	 * Reference to canvas (created by GraphicalViewer3D) and passed via
-	 * LightweightSystem3D, required here for swapping buffers.
+	 * @return the canvas
 	 */
-	protected GLCanvas canvas;
+	public GLCanvas getCanvas() {
+		return canvas;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.DeferredUpdateManager#performUpdate()
+	 */
+	@Override
+	public synchronized void performUpdate() {
+
+		if (canvas.isDisposed())
+			return;
+
+		super.performUpdate();
+		canvas.redraw();
+	}
 
 	/**
 	 * {@inheritDoc} Draw regions are ignored here. If |{@link #isSwapBuffers()}
@@ -66,35 +95,36 @@ public class DeferredUpdateManager3D extends DeferredUpdateManager {
 		} else {
 
 			if (root3D == null && canvas == null)
-				log.warning("repairDamage called, but root figure and canvas are null");
-			else if (root3D==null) {
+				log
+					.warning("repairDamage called, but root figure and canvas are null");
+			else if (root3D == null) {
 				log.warning("repairDamage called, but root figure is null");
 			} else {
-				log.warning("repairDamage called, but canvas is null. Hint: call LightweightSystem.setControl(..)");
+				log
+					.warning("repairDamage called, but canvas is null. Hint: call LightweightSystem.setControl(..)");
 			}
 		}
 
 	}
 
-	/** 
-	 * {@inheritDoc}
-	 * @see org.eclipse.draw2d.DeferredUpdateManager#performUpdate()
-	 */
-	@Override
-	public synchronized void performUpdate() {
-
-		super.performUpdate();
-		canvas.redraw();
-	}
-	
 	/**
 	 * Called after repair damage is done. Here, buffers are swapped. Override
 	 * this method if buffers or other things have to be read after rendering.
 	 * (Reading buffers is extremly expensive)
 	 */
 	protected void repairDamageFinish() {
-		
+
+		if (canvas.isDisposed())
+			return;
+
 		canvas.swapBuffers();
+	}
+
+	/**
+	 * @param i_canvas the canvas to set
+	 */
+	public void setCanvas(GLCanvas i_canvas) {
+		canvas = i_canvas;
 	}
 
 	/**
@@ -106,28 +136,6 @@ public class DeferredUpdateManager3D extends DeferredUpdateManager {
 	public void setRoot(IFigure i_figure) {
 		root3D = (IFigure3D) i_figure;
 		super.setRoot(i_figure);
-	}
-
-	/**
-	 * @return the canvas
-	 */
-	public GLCanvas getCanvas() {
-		return canvas;
-	}
-
-	/**
-	 * @param i_canvas the canvas to set
-	 */
-	public void setCanvas(GLCanvas i_canvas) {
-		canvas = i_canvas;
-	}
-
-	public void dumpTree(IFigure fig, StringBuffer o_out, String level) {
-		o_out.append("\n").append(level).append("+" + fig);
-		level = level + "  ";
-		for (int i = 0; i < fig.getChildren().size(); i++) {
-			dumpTree((IFigure) fig.getChildren().get(i), o_out, level);
-		}
 	}
 
 	// /**

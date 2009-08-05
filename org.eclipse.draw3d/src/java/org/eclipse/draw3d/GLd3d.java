@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
-import org.eclipse.draw3d.util.BufferUtils;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * GLd3d There should really be more documentation here.
@@ -28,21 +28,16 @@ import org.eclipse.draw3d.util.BufferUtils;
  * @since 13.12.2007
  */
 public class GLd3d {
-	// ByteBuffer.allocateDirect(4 * 16)
-	// .order(ByteOrder.nativeOrder()).asIntBuffer();
-	private static FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(16);
 
-	private static IntBuffer intBuffer = BufferUtils.createIntBuffer(16);
-
-	private static final Pattern VERSION_PATTERN = Pattern
-			.compile("(\\d+)\\.(\\d+).*");
+	private static final Pattern VERSION_PATTERN =
+		Pattern.compile("(\\d+)\\.(\\d+).*");
 
 	/**
 	 * @param i_width
 	 */
 	public static int getAlignedWidth(Graphics3D g3d, int i_width) {
-		int unpackAlignment = GLd3d
-				.glGetInteger(g3d, Graphics3DDraw.GL_UNPACK_ALIGNMENT);
+		int unpackAlignment =
+			GLd3d.glGetInteger(g3d, Graphics3DDraw.GL_UNPACK_ALIGNMENT);
 		int alignedWidth = i_width;
 		int rest = alignedWidth % unpackAlignment;
 		if (rest > 0) {
@@ -63,7 +58,7 @@ public class GLd3d {
 
 		if (!matcher.matches())
 			throw new IllegalStateException("invalid OpenGL version string: "
-					+ versionString);
+				+ versionString);
 
 		int majorVersion = Integer.parseInt(matcher.group(1));
 		int minorVersion = Integer.parseInt(matcher.group(2));
@@ -72,14 +67,26 @@ public class GLd3d {
 	}
 
 	public static float glGetFloat(Graphics3D g3d, int pname) {
-		g3d.glGetFloat(pname, floatBuffer);
-		float value = floatBuffer.get(0);
-		return value;
+
+		FloatBuffer buffer = Draw3DCache.getFloatBuffer(16);
+		try {
+			buffer.rewind();
+			g3d.glGetFloat(pname, buffer);
+			return buffer.get(0);
+		} finally {
+			Draw3DCache.returnFloatBuffer(buffer);
+		}
 	}
 
 	public static int glGetInteger(Graphics3D g3d, int pname) {
-		g3d.glGetInteger(pname, intBuffer);
-		int value = intBuffer.get(0);
-		return value;
+
+		IntBuffer buffer = Draw3DCache.getIntBuffer(16);
+		try {
+			buffer.rewind();
+			g3d.glGetInteger(pname, buffer);
+			return buffer.get(0);
+		} finally {
+			Draw3DCache.returnIntBuffer(buffer);
+		}
 	}
 }

@@ -19,6 +19,7 @@ import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics;
 import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.ColorConverter;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.ImageConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -51,97 +52,96 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 	/**
 	 * Indicates which attribute groups must be saved prior to using this.
 	 */
-	private static final int ATTRIB_MASK = GL11.GL_LIGHTING_BIT
-			| GL11.GL_CURRENT_BIT | GL11.GL_TRANSFORM_BIT | GL11.GL_LINE_BIT
-			| GL11.GL_POLYGON_BIT | GL11.GL_TEXTURE_BIT | GL11.GL_VIEWPORT_BIT
-			| GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT
-			| GL13.GL_MULTISAMPLE_BIT | GL11.GL_ENABLE_BIT;
+	private static final int ATTRIB_MASK =
+		GL11.GL_LIGHTING_BIT | GL11.GL_CURRENT_BIT | GL11.GL_TRANSFORM_BIT
+			| GL11.GL_LINE_BIT | GL11.GL_POLYGON_BIT | GL11.GL_TEXTURE_BIT
+			| GL11.GL_VIEWPORT_BIT | GL11.GL_DEPTH_BUFFER_BIT
+			| GL11.GL_COLOR_BUFFER_BIT | GL13.GL_MULTISAMPLE_BIT
+			| GL11.GL_ENABLE_BIT;
 
-	private static final IntBuffer INT_BUF = BufferUtils.createIntBuffer(16);
+	/**
+	 * Cached flag indicating whether Fbo is supported (1) or not (0). If the
+	 * flag is -1, we have to resolve its value in {@link #isSuppported()}.
+	 */
+	private static int iFboIsSupported = -1;
 
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(LwjglTextureFbo.class
-			.getName());
-
-	protected LwjglGraphics m_graphics;
-
-	private int m_glFrameBuffer = 0;
-
-	private int m_glTexture = 0;
-
-	private int m_height = -1;
-
-	private int m_width = -1;
-
-	private LwjglFontManager m_fontManager;
+	private static final Logger log =
+		Logger.getLogger(LwjglTextureFbo.class.getName());
 
 	private static int createFbo() {
 
-		INT_BUF.limit(1);
-		INT_BUF.rewind();
-		EXTFramebufferObject.glGenFramebuffersEXT(INT_BUF);
-		return INT_BUF.get(0);
+		IntBuffer buffer = Draw3DCache.getIntBuffer(1);
+		try {
+			buffer.rewind();
+			EXTFramebufferObject.glGenFramebuffersEXT(buffer);
+			return buffer.get(0);
+		} finally {
+			Draw3DCache.returnIntBuffer(buffer);
+		}
 	}
 
 	private static int createTexture(int i_width, int i_height) {
 
-		INT_BUF.limit(1);
-		INT_BUF.rewind();
-		GL11.glGenTextures(INT_BUF);
-		int glTexture = INT_BUF.get(0);
+		IntBuffer buffer = Draw3DCache.getIntBuffer(1);
+		try {
+			buffer.rewind();
+			GL11.glGenTextures(buffer);
+			int glTexture = buffer.get(0);
 
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER,
-				GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,
-				GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S,
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+				GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+				GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S,
 				GL11.GL_CLAMP);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T,
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T,
 				GL11.GL_CLAMP);
 
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, i_width,
+			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, i_width,
 				i_height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE,
 				(ByteBuffer) null);
 
-		EXTFramebufferObject.glFramebufferTexture2DEXT(
+			EXTFramebufferObject.glFramebufferTexture2DEXT(
 				EXTFramebufferObject.GL_FRAMEBUFFER_EXT,
 				EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT,
 				GL11.GL_TEXTURE_2D, glTexture, 0);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 
-//		if (log.isLoggable(Level.INFO)) {
-//			log.info("int, int - created texture - glTexture=" + glTexture); //$NON-NLS-1$
-//		}
-
-		return glTexture;
+			return glTexture;
+		} finally {
+			Draw3DCache.returnIntBuffer(buffer);
+		}
 	}
 
 	private static void deleteFbo(int i_glFrameBuffer) {
 
 		if (i_glFrameBuffer > 0) {
-			INT_BUF.limit(1);
-			INT_BUF.rewind();
-			INT_BUF.put(i_glFrameBuffer);
-			EXTFramebufferObject.glDeleteFramebuffersEXT(INT_BUF);
+			IntBuffer buffer = Draw3DCache.getIntBuffer(1);
+			try {
+				buffer.rewind();
+				buffer.put(i_glFrameBuffer);
+				EXTFramebufferObject.glDeleteFramebuffersEXT(buffer);
+			} finally {
+				Draw3DCache.returnIntBuffer(buffer);
+			}
 		}
 	}
 
 	private static void deleteTexture(int i_glTexture) {
 
 		if (i_glTexture > 0) {
-			INT_BUF.limit(1);
-			INT_BUF.rewind();
-			INT_BUF.put(i_glTexture);
-			GL11.glDeleteTextures(INT_BUF);
+			IntBuffer buffer = Draw3DCache.getIntBuffer(1);
+			try {
+				buffer.rewind();
+				buffer.put(i_glTexture);
+				GL11.glDeleteTextures(buffer);
+			} finally {
+				Draw3DCache.returnIntBuffer(buffer);
+			}
 		}
 	}
-
-	/**
-	 * Cached flag indicating whether Fbo is supported (1) or not (0). If
-	 * the flag is -1, we have to resolve its value in {@link #isSuppported()}.
-	 */
-	private static int iFboIsSupported = -1;
 
 	/**
 	 * Indicates whether FBOs are supported on this system.
@@ -153,11 +153,11 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 
 		if (iFboIsSupported == -1) {
 			iFboIsSupported = 0;
-			ContextCapabilities contextCapabilities = GLContext
-					.getCapabilities();
+			ContextCapabilities contextCapabilities =
+				GLContext.getCapabilities();
 
 			if (contextCapabilities == null
-					|| !contextCapabilities.GL_EXT_framebuffer_object) {
+				|| !contextCapabilities.GL_EXT_framebuffer_object) {
 				return false;
 			}
 
@@ -167,7 +167,8 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 			try {
 				glFrameBuffer = createFbo();
 				glTexture = createTexture(32, 32);
-				int status = EXTFramebufferObject
+				int status =
+					EXTFramebufferObject
 						.glCheckFramebufferStatusEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT);
 				if (status != EXTFramebufferObject.GL_FRAMEBUFFER_COMPLETE_EXT) {
 					return false;
@@ -183,6 +184,18 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 		return iFboIsSupported == 1;
 
 	}
+
+	private LwjglFontManager m_fontManager;
+
+	private int m_glFrameBuffer = 0;
+
+	private int m_glTexture = 0;
+
+	protected LwjglGraphics m_graphics;
+
+	private int m_height = -1;
+
+	private int m_width = -1;
 
 	/**
 	 * Creates a new texture with the given initial dimensions.
@@ -212,10 +225,11 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 
 		GL11.glFlush();
 		EXTFramebufferObject.glBindFramebufferEXT(
-				EXTFramebufferObject.GL_FRAMEBUFFER_EXT, m_glFrameBuffer);
+			EXTFramebufferObject.GL_FRAMEBUFFER_EXT, m_glFrameBuffer);
 		if (!m_valid) {
 			if (m_graphics == null) {
-				m_graphics = new LwjglGraphics(m_width, m_height, m_fontManager);
+				m_graphics =
+					new LwjglGraphics(m_width, m_height, m_fontManager);
 			} else {
 				m_graphics.setDimensions(m_width, m_height);
 			}
@@ -224,7 +238,8 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 			m_glTexture = createTexture(m_width, m_height);
 			m_valid = true;
 
-			int status = EXTFramebufferObject
+			int status =
+				EXTFramebufferObject
 					.glCheckFramebufferStatusEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT);
 			if (status != EXTFramebufferObject.GL_FRAMEBUFFER_COMPLETE_EXT) {
 				throw new RuntimeException(getStatus(status));
@@ -257,7 +272,7 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 		GL11.glViewport(0, 0, m_width, m_height);
 
 		GL11.glTranslatef(LwjglGraphics.RASTER_OFFSET,
-				LwjglGraphics.RASTER_OFFSET, 0);
+			LwjglGraphics.RASTER_OFFSET, 0);
 	}
 
 	/**
@@ -300,7 +315,7 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 		GL11.glPopAttrib();
 
 		EXTFramebufferObject.glBindFramebufferEXT(
-				EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
+			EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
 	}
 
 	/**
@@ -329,17 +344,19 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 	@SuppressWarnings("unused")
 	private void dump() {
 
-		ByteBuffer buffer = BufferUtils
-				.createByteBuffer(m_width * m_height * 4);
+		ByteBuffer buffer =
+			BufferUtils.createByteBuffer(m_width * m_height * 4);
 		GL11.glReadPixels(0, 0, m_width, m_height, GL11.GL_RGBA,
-				GL11.GL_UNSIGNED_BYTE, buffer);
+			GL11.GL_UNSIGNED_BYTE, buffer);
 
-		ImageData imageData = ImageConverter.colorBufferToImage(buffer,
-				GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, m_width, m_height);
+		ImageData imageData =
+			ImageConverter.colorBufferToImage(buffer, GL11.GL_RGBA,
+				GL11.GL_UNSIGNED_BYTE, m_width, m_height);
 		ImageLoader imageLoader = new ImageLoader();
 		imageLoader.data = new ImageData[] { imageData };
 
-		String path = "/Users/kristian/Temp/texture" + m_glTexture + "_"
+		String path =
+			"/Users/kristian/Temp/texture" + m_glTexture + "_"
 				+ System.currentTimeMillis() + ".png";
 		imageLoader.save(path, SWT.IMAGE_PNG);
 
@@ -415,7 +432,7 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 
 		if (i_width <= 0 || i_height <= 0) {
 			throw new IllegalArgumentException(
-					"texture dimensions must not be negative");
+				"texture dimensions must not be negative");
 		}
 
 		m_valid = m_valid && m_width == i_width && m_height == i_height;

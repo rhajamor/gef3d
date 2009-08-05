@@ -15,7 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.logging.Logger;
 
-import org.eclipse.draw3d.util.BufferUtils;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.converter.BufferInfo;
 import org.eclipse.draw3d.util.converter.ImageConverter;
 import org.eclipse.swt.SWT;
@@ -48,11 +48,9 @@ import org.lwjgl.opengl.GL11;
  */
 public class LwjglFont {
 
-	private static final IntBuffer INT_BUF = BufferUtils.createIntBuffer(16);
-
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(LwjglFont.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(LwjglFont.class.getName());
 
 	private int m_baseListId = -1;
 
@@ -177,36 +175,42 @@ public class LwjglFont {
 			}
 
 			// create a luminance alpha texture from the image
-			BufferInfo info = new BufferInfo(m_width, m_height,
-					GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, 1);
+			BufferInfo info =
+				new BufferInfo(m_width, m_height, GL11.GL_LUMINANCE_ALPHA,
+					GL11.GL_UNSIGNED_BYTE, 1);
 
 			ImageConverter converter = ImageConverter.getInstance();
-			ByteBuffer buffer = converter.imageToBuffer(image, info, null,
-					false);
+			ByteBuffer buffer =
+				converter.imageToBuffer(image, info, null, false);
 
 			GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 			try {
-				INT_BUF.limit(1);
-				GL11.glGenTextures(INT_BUF);
-				m_textureId = INT_BUF.get(0);
+				IntBuffer intBuf = Draw3DCache.getIntBuffer(1);
+				try {
+					GL11.glGenTextures(intBuf);
+					m_textureId = intBuf.get(0);
 
-				GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_textureId);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_textureId);
+					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
 						GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
 						GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
 						GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
 						GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-				GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0,
+					GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0,
 						GL11.GL_LUMINANCE_ALPHA, m_width, m_height, 0,
 						GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, buffer);
 
-				// generate a display list for each available character
-				m_baseListId = GL11.glGenLists(numChars);
-				for (int i = 0; i < m_chars.length; i++)
-					m_chars[i].buildList(m_baseListId + i, m_width, m_height);
+					// generate a display list for each available character
+					m_baseListId = GL11.glGenLists(numChars);
+					for (int i = 0; i < m_chars.length; i++)
+						m_chars[i].buildList(m_baseListId + i, m_width,
+							m_height);
+				} finally {
+					Draw3DCache.returnIntBuffer(intBuf);
+				}
 			} finally {
 				GL11.glPopAttrib();
 				GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
@@ -250,10 +254,14 @@ public class LwjglFont {
 			return;
 
 		if (m_textureId != -1) {
-			INT_BUF.limit(1);
-			INT_BUF.put(0, m_textureId);
-			GL11.glDeleteTextures(INT_BUF);
-			m_textureId = -1;
+			IntBuffer intBuf = Draw3DCache.getIntBuffer(1);
+			try {
+				intBuf.put(0, m_textureId);
+				GL11.glDeleteTextures(intBuf);
+				m_textureId = -1;
+			} finally {
+				Draw3DCache.returnIntBuffer(intBuf);
+			}
 		}
 
 		if (m_baseListId != -1) {
@@ -345,58 +353,63 @@ public class LwjglFont {
 		if (i_string == null)
 			throw new NullPointerException("i_string must not be null");
 
-		INT_BUF.limit(16);
-		INT_BUF.rewind();
-		GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D, INT_BUF);
-		int currentTexture = INT_BUF.get(0);
-
-		GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
+		IntBuffer intBuf = Draw3DCache.getIntBuffer(16);
 		try {
-			GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_textureId);
-			GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE,
-					GL11.GL_BLEND);
-			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+			intBuf.rewind();
+			GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D, intBuf);
+			int currentTexture = intBuf.get(0);
 
-			GL11.glMatrixMode(GL11.GL_MODELVIEW);
-			GL11.glPushMatrix();
+			GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 			try {
-				GL11.glTranslatef(i_x, i_y, 0);
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_textureId);
+				GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE,
+					GL11.GL_BLEND);
+				GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 
-				int height = m_fontMetrics.getHeight();
-				int line = 0;
-				for (int i = 0; i < i_string.length(); i++) {
-					char c = i_string.charAt(i);
+				GL11.glMatrixMode(GL11.GL_MODELVIEW);
+				GL11.glPushMatrix();
+				try {
+					GL11.glTranslatef(i_x, i_y, 0);
 
-					switch (c) {
-					case '\t':
-						if (i_expand)
-							GL11.glTranslatef(m_tabWidth, 0, 0);
-						break;
+					int height = m_fontMetrics.getHeight();
+					int line = 0;
+					for (int i = 0; i < i_string.length(); i++) {
+						char c = i_string.charAt(i);
 
-					case '\n':
-						if (i_expand) {
-							GL11.glPopMatrix();
-							GL11.glPushMatrix();
-							GL11.glTranslatef(i_x, i_y + (++line * height), 0);
+						switch (c) {
+						case '\t':
+							if (i_expand)
+								GL11.glTranslatef(m_tabWidth, 0, 0);
+							break;
+
+						case '\n':
+							if (i_expand) {
+								GL11.glPopMatrix();
+								GL11.glPushMatrix();
+								GL11.glTranslatef(i_x, i_y + (++line * height),
+									0);
+							}
+							break;
+						default:
+							int index = c - m_startChar;
+							if (index >= 0 && index < m_chars.length) {
+								LwjglFontChar fontChar = m_chars[index];
+								GL11.glCallList(fontChar.getListId());
+								GL11.glTranslatef(fontChar.getWidth(), 0, 0);
+							}
+							break;
 						}
-						break;
-					default:
-						int index = c - m_startChar;
-						if (index >= 0 && index < m_chars.length) {
-							LwjglFontChar fontChar = m_chars[index];
-							GL11.glCallList(fontChar.getListId());
-							GL11.glTranslatef(fontChar.getWidth(), 0, 0);
-						}
-						break;
 					}
+				} finally {
+					GL11.glPopMatrix();
 				}
 			} finally {
-				GL11.glPopMatrix();
+				GL11.glPopAttrib();
+				if (currentTexture != m_textureId)
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, currentTexture);
 			}
 		} finally {
-			GL11.glPopAttrib();
-			if (currentTexture != m_textureId)
-				GL11.glBindTexture(GL11.GL_TEXTURE_2D, currentTexture);
+			Draw3DCache.returnIntBuffer(intBuf);
 		}
 	}
 
