@@ -12,7 +12,6 @@ package org.eclipse.draw3d.geometry;
 
 import java.util.EnumSet;
 
-
 /**
  * Abstract implementation of {@link Position3D}, this implementation is the
  * base class for 2D-bounds synchronized and independent implementations.
@@ -23,26 +22,14 @@ import java.util.EnumSet;
  */
 public abstract class AbstractPosition3D implements Position3D {
 
-	protected transient Matrix4fImpl locationMatrix;
+	private transient Matrix4fImpl m_rotationLocationMatrix;
 
-	protected MatrixState matrixState;
+	private transient Matrix4fImpl m_transformationMatrix;
 
-	/**
-	 * The object matrix is the matrix that transforms a unit cube into the
-	 * cuboid that represents this figure's shape in world space. It is used as
-	 * the OpenGL modelview matrix when the figure is drawn. <br /> <br /> The
-	 * object matrix is derived from
-	 * <ol>
-	 * <li>the figure's dimension</li>
-	 * <li>the figure's rotation</li>
-	 * <li>the figure's location</li>
-	 * <li>the figure's parent's location</li>
-	 * </ol>
-	 */
-	protected transient Matrix4fImpl modelMatrix;
+	private boolean m_valid;
 
 	/**
-	 * The rotation angles ofthis figure.
+	 * The rotation angles of this figure.
 	 */
 	protected Vector3f rotation;
 
@@ -53,13 +40,14 @@ public abstract class AbstractPosition3D implements Position3D {
 	protected boolean updatingBounds;
 
 	/**
-	 * 
+	 * Creates and initializes a new instance.
 	 */
 	public AbstractPosition3D() {
-		rotation = new Vector3fImpl(0, 0, 0);
-		modelMatrix = new Matrix4fImpl(); // IDENTITY
-		locationMatrix = new Matrix4fImpl(); // IDENTITY
-		matrixState = MatrixState.INVALID;
+
+		rotation = new Vector3fImpl(); // null vector
+		m_transformationMatrix = new Matrix4fImpl(); // identity
+		m_rotationLocationMatrix = new Matrix4fImpl(); // identity
+		m_valid = false;
 		updatingBounds = false;
 	}
 
@@ -74,41 +62,17 @@ public abstract class AbstractPosition3D implements Position3D {
 			getHost().positionChanged(EnumSet.of(hint), delta);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.geometry.IPosition3D#getLocationMatrix()
-	 */
-	public IMatrix4f getLocationMatrix() {
-		recalculateMatrices();
-		return locationMatrix;
-	}
+	private Position3D getParentPosition() {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.geometry.IPosition3D#getMatrixState()
-	 */
-	public MatrixState getMatrixState() {
-		if (getHost() != null) {
-			IHost3D parent = getHost().getParentHost3D();
-			if (parent != null
-					&& parent.getPosition3D() != null
-					&& parent.getPosition3D().getMatrixState() == MatrixState.INVALID) {
-				invalidateMatrices();
-			}
+		IHost3D host = getHost();
+		if (host != null) {
+			IHost3D parent = host.getParentHost3D();
+			if (parent != null)
+				return parent.getPosition3D();
+
 		}
-		return matrixState;
-	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.geometry.IPosition3D#getModelMatrix()
-	 */
-	public IMatrix4f getModelMatrix() {
-		recalculateMatrices();
-		return modelMatrix;
+		return null;
 	}
 
 	/**
@@ -117,58 +81,56 @@ public abstract class AbstractPosition3D implements Position3D {
 	 * @see org.eclipse.draw3d.geometry.IPosition3D#getRotation3D()
 	 */
 	public IVector3f getRotation3D() {
+
 		return rotation;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometry.Position3D#invalidateMatrices()
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getRotationLocationMatrix()
 	 */
-	public void invalidateMatrices() {
-		matrixState = MatrixState.INVALID;
+	public IMatrix4f getRotationLocationMatrix() {
+
+		validate();
+		return m_rotationLocationMatrix;
 	}
 
 	/**
-	 * Recalculates the location matrix.
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getTransformationMatrix()
 	 */
-	private void recalculateLocationMatrix() {
+	public IMatrix4f getTransformationMatrix() {
 
-		IMatrix4f parentLocationMatrix = Position3DUtil
-				.getParentLocationMatrix(this);
-
-		locationMatrix.set(parentLocationMatrix);
-
-		IVector3f location = getLocation3D();
-		Math3D.translate(locationMatrix, location, locationMatrix);
-
-        Math3D.rotate(rotation, locationMatrix, locationMatrix);
+		validate();
+		return m_transformationMatrix;
 	}
 
 	/**
-	 * Precondition: matrixstate == invalid Postcondition: matrixstate ==
-	 * updated
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.Position3D#invalidate()
 	 */
-	private void recalculateMatrices() {
-		if (getMatrixState() != MatrixState.INVALID)
-			return;
+	public void invalidate() {
 
-		recalculateLocationMatrix();
-		recalculateModelMatrix();
-
-		matrixState = MatrixState.VALID;
-
+		m_valid = false;
 	}
 
 	/**
-	 * Recalculates the model matrix. Make sure that
-	 * {@link #recalculateLocationMatrix()} has been called before calling this
-	 * method.
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#isValid()
 	 */
-	private void recalculateModelMatrix() {
-		modelMatrix.set(locationMatrix);
-		IVector3f size = getSize3D();
-		Math3D.scale(size, modelMatrix, modelMatrix);
+	public boolean isValid() {
+
+		boolean valid = m_valid;
+
+		Position3D parentPosition = getParentPosition();
+		if (parentPosition != null)
+			valid &= parentPosition.isValid();
+
+		return valid;
 	}
 
 	/**
@@ -198,7 +160,7 @@ public abstract class AbstractPosition3D implements Position3D {
 		Math3D.sub(i_rotation, rotation, delta);
 
 		rotation.set(i_rotation);
-		invalidateMatrices();
+		invalidate();
 
 		firePositionChanged(PositionHint.ROTATION, delta);
 	}
@@ -216,6 +178,42 @@ public abstract class AbstractPosition3D implements Position3D {
 		result.append(", r=").append(getRotation3D());
 		result.append(", host=").append(getHost());
 		return result.toString();
+	}
+
+	private void validate() {
+
+		if (isValid())
+			return;
+
+		Vector3f center = Math3DCache.getVector3f();
+		try {
+			// transformations are applied in reverse order
+			Position3D parent = getParentPosition();
+			if (parent != null)
+				Math3D.translate(parent.getRotationLocationMatrix(),
+					getLocation3D(), m_rotationLocationMatrix);
+			else
+				Math3D.translate(IMatrix4f.IDENTITY, getLocation3D(),
+					m_rotationLocationMatrix);
+
+			Math3D.scale(0.5f, getSize3D(), center);
+			Math3D.translate(m_rotationLocationMatrix, center,
+				m_rotationLocationMatrix);
+
+			Math3D.rotate(getRotation3D(), m_rotationLocationMatrix,
+				m_rotationLocationMatrix);
+
+			Math3D.scale(-0.5f, getSize3D(), center);
+			Math3D.translate(m_rotationLocationMatrix, center,
+				m_rotationLocationMatrix);
+
+			Math3D.scale(getSize3D(), m_rotationLocationMatrix,
+				m_transformationMatrix);
+
+			m_valid = true;
+		} finally {
+			Math3DCache.returnVector3f(center);
+		}
 	}
 
 }

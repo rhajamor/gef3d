@@ -36,24 +36,6 @@ package org.eclipse.draw3d.geometry;
 public interface IPosition3D {
 
 	/**
-	 * Defines the state of the internal matrices.
-	 * 
-	 * @author Jens von Pilgrim
-	 * @version $Revision$
-	 * @since 23.11.2007
-	 */
-	public enum MatrixState {
-		/**
-		 * Matrices are invalid and need to be recalculated.
-		 */
-		INVALID,
-		/**
-		 * Matrices are valid.
-		 */
-		VALID;
-	}
-
-	/**
 	 * Hint passed in events, see Host3D#positionChanged
 	 * 
 	 * @author Jens von Pilgrim
@@ -91,7 +73,6 @@ public interface IPosition3D {
 	 * </p>
 	 * 
 	 * @return the bounding box
-	 * 
 	 * @see org.eclipse.draw3d.IFigure3D#getBounds3D()
 	 */
 	public IBoundingBox getBounds3D();
@@ -111,29 +92,12 @@ public interface IPosition3D {
 	public IVector3f getLocation3D();
 
 	/**
-	 * Returns the matrix that performs the absolute transformation to this
-	 * figure's location. This is the matrix that transforms (0, 0, 0) to this
-	 * figure's origin.
+	 * Returns the matrix that performs the transformation of this figure's
+	 * rotation and location, but does not include the scaling transformation.
 	 * 
-	 * @return the location matrix
+	 * @return the rotation / location matrix
 	 */
-	public IMatrix4f getLocationMatrix();
-
-	/**
-	 * Returns matrix state of the model and location matrix. Note that these
-	 * matrices cannot be set directly, they are calculated from location, size,
-	 * and rotation.
-	 * <p>
-	 * Note: Some renderes, such as OpoenGL, use matrices to position an object
-	 * in the 3D scene. Others, like X3D, use the location, size, and rotation.
-	 * To enable objects to be renderable by both types, it is necessary to
-	 * always provide all information, the matrix is only used for chaching
-	 * reasons.
-	 * </p>
-	 * 
-	 * @return the current matrix state
-	 */
-	public MatrixState getMatrixState();
+	public IMatrix4f getRotationLocationMatrix();
 
 	/**
 	 * Returns the matrix that performs the transformation of this figure's
@@ -141,7 +105,7 @@ public interface IPosition3D {
 	 * 
 	 * @return the model matrix
 	 */
-	public IMatrix4f getModelMatrix();
+	public IMatrix4f getTransformationMatrix();
 
 	/**
 	 * Returns the rotation angles of the figure.
@@ -157,4 +121,13 @@ public interface IPosition3D {
 	 */
 	public IVector3f getSize3D();
 
+	/**
+	 * Indicates whether the internal cached information of this position and of
+	 * all its ancestors is valid.
+	 * 
+	 * @return <code>true</code> if the internal cached information of this
+	 *         position and of all its ancestors is valid and <code>false</code>
+	 *         otherwise
+	 */
+	public boolean isValid();
 }

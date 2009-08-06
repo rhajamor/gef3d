@@ -106,7 +106,7 @@ public class Position3DImpl extends AbstractPosition3D {
 
 		bounds3D.setLocation(i_point.getX(), i_point.getY(), i_point.getZ());
 
-		invalidateMatrices();
+		invalidate();
 
 		firePositionChanged(PositionHint.LOCATION, delta);
 
@@ -144,7 +144,7 @@ public class Position3DImpl extends AbstractPosition3D {
 
 		bounds3D.setSize(i_size);
 
-		invalidateMatrices();
+		invalidate();
 
 		firePositionChanged(PositionHint.SIZE, delta);
 	}

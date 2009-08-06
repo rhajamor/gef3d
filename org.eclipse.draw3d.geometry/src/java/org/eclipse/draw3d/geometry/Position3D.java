@@ -54,6 +54,6 @@ public interface Position3D extends IPosition3D {
 	 * state is automatically invalidated when size, location, or rotation
 	 * have been changed.
 	 */
-	public void invalidateMatrices();
+	public void invalidate();
 
 }

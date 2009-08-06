@@ -224,7 +224,7 @@ public class CuboidShape extends PositionableShape {
 	 */
 	public float getDistance(Query i_query) {
 
-		updateTransformed(getPosition3D().getModelMatrix());
+		updateTransformed(getPosition3D().getTransformationMatrix());
 
 		IVector3f rayOrigin = i_query.getRayOrigin();
 		IVector3f rayDirection = i_query.getRayDirection();

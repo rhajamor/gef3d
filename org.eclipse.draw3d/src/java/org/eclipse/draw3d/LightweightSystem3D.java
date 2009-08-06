@@ -100,10 +100,10 @@ public class LightweightSystem3D extends LightweightSystem implements
 				/**
 				 * {@inheritDoc}
 				 * 
-				 * @see org.eclipse.draw3d.geometry.AbstractPosition3D#invalidateMatrices()
+				 * @see org.eclipse.draw3d.geometry.AbstractPosition3D#invalidate()
 				 */
 				@Override
-				public void invalidateMatrices() {
+				public void invalidate() {
 
 					// this is not possible!
 				}

@@ -720,7 +720,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		FloatBuffer buffer = Draw3DCache.getFloatBuffer(16);
 		try {
 			buffer.rewind();
-			i_position.getModelMatrix().toBufferRowMajor(buffer);
+			i_position.getTransformationMatrix().toBufferRowMajor(buffer);
 			buffer.rewind();
 			org.lwjgl.opengl.GL11.glMultMatrix(buffer);
 		} finally {

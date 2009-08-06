@@ -172,7 +172,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	@Override
 	protected void fireFigureMoved() {
 
-		position3D.invalidateMatrices();
+		position3D.invalidate();
 
 		IFigure parent = getParent();
 		while (parent != null) {
@@ -398,7 +398,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	@Override
 	public void invalidate() {
 
-		position3D.invalidateMatrices();
+		position3D.invalidate();
 		super.invalidate();
 	}
 

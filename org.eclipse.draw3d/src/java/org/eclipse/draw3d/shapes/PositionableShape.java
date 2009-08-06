@@ -68,7 +68,7 @@ public abstract class PositionableShape implements Shape {
 			doRender(i_renderContext);
 		else {
 
-			IMatrix4f modelMatrix = m_position3D.getModelMatrix();
+			IMatrix4f modelMatrix = m_position3D.getTransformationMatrix();
 
 			boolean useModelMatrix = !IMatrix4f.IDENTITY.equals(modelMatrix);
 			g3d.glMatrixMode(Graphics3DDraw.GL_MODELVIEW);
