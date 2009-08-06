@@ -60,7 +60,7 @@ public class GraphFigure3D extends FreeformLayer3D {
 	public GraphFigure3D() {
 		SurfaceLayout.setDelegate(this, new FreeformLayout());
 
-		setLocation3D(IVector3f.NULLVEC3f);
+		getPosition3D().setLocation3D(IVector3f.NULLVEC3f);
 		// f.setSize3D(new Vector3f(1300, 900, 60));
 		// if (((Graph)getModel()).getVerteces().size()>50) {
 		// f.setSize3D(new Vector3f(1500, 1300, 60));

@@ -15,8 +15,8 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.FreeformLayer3D;
 import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.gef3d.ext.intermodel.IInterModelDiagram;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.gef3d.ext.intermodel.IInterModelDiagram;
 
 
 /**
@@ -51,9 +51,10 @@ public class MultiEditorModelContainerFigure extends FreeformLayer3D {
 
 			//TODO replace with layout manager
 			if (!(fig3D instanceof IInterModelDiagram)) {
-				Vector3fImpl vec = new Vector3fImpl(fig3D.getLocation3D());
+				Vector3fImpl vec =
+					new Vector3fImpl(fig3D.getPosition3D().getLocation3D());
 				vec.z += dz;
-				fig3D.setLocation3D(vec);
+				fig3D.getPosition3D().setLocation3D(vec);
 				
 				Vector3fImpl v = new Vector3fImpl();
 //				v.z = (float) (Math.PI/6 *dz/1000);

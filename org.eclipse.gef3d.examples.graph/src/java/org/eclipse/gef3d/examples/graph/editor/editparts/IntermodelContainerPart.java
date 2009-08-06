@@ -16,12 +16,10 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef3d.examples.graph.editor.figures.IntermodelContainerFigure;
 import org.eclipse.gef3d.examples.graph.model.IntermodelContainer;
-import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 
 /**
@@ -66,7 +64,7 @@ public class IntermodelContainerPart extends AbstractConnectionEditPart
 	@Override
 	protected IFigure createFigure() {
 		IntermodelContainerFigure figure = new IntermodelContainerFigure();
-		figure.setLocation3D(IVector3f.NULLVEC3f);
+		figure.getPosition3D().setLocation3D(IVector3f.NULLVEC3f);
 		return figure;
 	}
 

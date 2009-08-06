@@ -23,6 +23,7 @@ import org.eclipse.draw3d.RelativeLocator3D;
 import org.eclipse.draw3d.geometry.BoundingBox;
 import org.eclipse.draw3d.geometry.BoundingBoxImpl;
 import org.eclipse.draw3d.geometry.IBoundingBox;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.gef.handles.HandleBounds;
 import org.eclipse.gef.handles.MoveHandleLocator;
@@ -109,8 +110,9 @@ public class MoveHandleLocator3D extends MoveHandleLocator {
 			bounds.expand(0.01f);
 
 			// GEF: target.setBounds(bounds);
-			target3D.setLocation3D(bounds.getPosition(TEMP_V_1));
-			target3D.setSize3D(bounds.getSize(TEMP_V_1));
+			Position3D position3d = target3D.getPosition3D();
+			position3d.setLocation3D(bounds.getPosition(TEMP_V_1));
+			position3d.setSize3D(bounds.getSize(TEMP_V_1));
 		} else {
 			log.warning("IFigure - cannot relocate 2D figure: " + target); //$NON-NLS-1$
 		}

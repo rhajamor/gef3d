@@ -22,6 +22,7 @@ import org.eclipse.draw3d.geometry.BoundingBox;
 import org.eclipse.draw3d.geometry.BoundingBoxImpl;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 /**
@@ -241,8 +242,9 @@ public class RelativeLocator3D extends RelativeLocator {
 				// super: targetBounds.setSize(targetSize); // target size is
 				// its preferred size
 				// super: target.setBounds(targetBounds); // set target position
-				target3D.setLocation3D(TMP_V1);
-				target3D.setSize3D(targetSize);
+				Position3D position3d = target3D.getPosition3D();
+				position3d.setLocation3D(TMP_V1);
+				position3d.setSize3D(targetSize);
 			} else {
 				log.warning("Cannot position 2D Figure based "
 						+ "on 3D reference, reference: " + reference

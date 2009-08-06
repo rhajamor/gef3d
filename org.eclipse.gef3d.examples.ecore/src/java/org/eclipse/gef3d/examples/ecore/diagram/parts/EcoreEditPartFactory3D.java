@@ -58,8 +58,10 @@ public class EcoreEditPartFactory3D extends EcoreEditPartFactory {
 					Figure3D f = new DiagramFigure3D();
 					// Figure3D f = new ClassDiagramFigure3DEmbedded();
 
-					f.setLocation3D(new Vector3fImpl(0, 300, 0));
-					f.setSize3D(new Vector3fImpl(1400, 1400, 60));
+					f.getPosition3D()
+						.setLocation3D(new Vector3fImpl(0, 300, 0));
+					f.getPosition3D().setSize3D(
+						new Vector3fImpl(1400, 1400, 60));
 
 					f.setBackgroundColor(new Color(Display.getCurrent(), 255,
 							255, 255));

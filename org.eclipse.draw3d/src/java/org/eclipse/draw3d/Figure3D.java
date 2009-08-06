@@ -25,13 +25,11 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.geometry.Translatable;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IHost3D;
-import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Transformable;
-import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.geometryext.SyncedVector3f;
 import org.eclipse.draw3d.geometryext.SynchronizedPosition3DImpl;
@@ -225,13 +223,9 @@ public class Figure3D extends Figure implements IFigure3D {
 	}
 
 	/**
-	 * {@inheritDoc} Returns bounds, i.e. lower left back corner and size. The
-	 * coordinates are parent relative coordinates.
+	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.IFigure3D#getBounds3D()
-	 * @deprecated use {@link Position3D#getBounds3D()
-	 *             getPosition3D().getBounds3D()}, or simply
-	 *             {@link #getPosition3D()}
 	 */
 	public IBoundingBox getBounds3D() {
 
@@ -291,54 +285,6 @@ public class Figure3D extends Figure implements IFigure3D {
 	public float getDistance(Query i_query) {
 
 		return Float.NaN;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getLocation3D()
-	 * @deprecated use {@link Position3D#getLocation3D()
-	 *             getPosition3D().getLocation3D()}
-	 */
-	public IVector3f getLocation3D() {
-
-		return position3D.getLocation3D();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getLocationMatrix()
-	 * @deprecated use {@link Position3D#getLocationMatrix()
-	 *             getPosition3D().getLocationMatrix()}
-	 */
-	public IMatrix4f getLocationMatrix() {
-
-		return position3D.getLocationMatrix();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getMatrixState()
-	 * @deprecated use {@link Position3D#getMatrixState()
-	 *             getPosition3D().getMatrixState()}
-	 */
-	public MatrixState getMatrixState() {
-
-		return position3D.getMatrixState();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getModelMatrix()
-	 * @deprecated use {@link Position3D#getModelMatrix()
-	 *             getPosition3D().getModelMatrix()}
-	 */
-	public IMatrix4f getModelMatrix() {
-
-		return position3D.getModelMatrix();
 	}
 
 	/**
@@ -407,35 +353,11 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getRotation3D()
-	 * @deprecated use {@link Position3D#getRotation3D()
-	 *             getPosition3D().getRotation3D()}
-	 */
-	public IVector3f getRotation3D() {
-
-		return position3D.getRotation3D();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.draw3d.IFigure3D#getScene()
 	 */
 	public IScene getScene() {
 
 		return Figure3DHelper.getAncestor3D(getParent()).getScene();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getSize3D()
-	 * @deprecated use {@link Position3D#getSize3D()
-	 *             getPosition3D().getSize3D()}
-	 */
-	public IVector3f getSize3D() {
-
-		return position3D.getSize3D();
 	}
 
 	/**
@@ -654,18 +576,6 @@ public class Figure3D extends Figure implements IFigure3D {
 
 	/**
 	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
-	 * @deprecated use {@link Position3D#setLocation3D(IVector3f)
-	 *             getPosition3D().setLocation3D(point3D)}
-	 */
-	public void setLocation3D(IVector3f i_point) {
-
-		position3D.setLocation3D(i_point);
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * <p>
 	 * Internal note: preferredSize object is created lazily if it has not been
 	 * created before
@@ -698,31 +608,6 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#setRotation3D(org.eclipse.draw3d.geometry.IVector3f)
-	 * @deprecated use {@link Position3D#setRotation3D(IVector3f)
-	 *             getPosition3D().setRotation3D(rotation)}
-	 */
-	public void setRotation3D(IVector3f i_rotation) {
-
-		position3D.setRotation3D(i_rotation);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @param i_size new size, must not be null, no value must be less 0
-	 * @see org.eclipse.draw3d.IFigure3D#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
-	 * @deprecated use {@link Position3D#setSize3D(IVector3f)
-	 *             getPosition3D().setSize3D(size)}
-	 */
-	public void setSize3D(IVector3f i_size) {
-
-		position3D.setSize3D(i_size);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -730,12 +615,9 @@ public class Figure3D extends Figure implements IFigure3D {
 
 		StringBuffer strb = new StringBuffer();
 		strb.append(this.getClass().getName()).append(" at (");
-		strb.append(getLocation3D().getX()).append(",").append(
-			getLocation3D().getY()).append(",").append(getLocation3D().getZ())
-			.append(")");
+		strb.append(getPosition3D().getLocation3D()).append(")");
 		strb.append(", size (");
-		strb.append(getSize3D().getX()).append(",").append(getSize3D().getY())
-			.append(",").append(getSize3D().getZ()).append(")");
+		strb.append(getPosition3D().getSize3D()).append(")");
 		return strb.toString();
 	}
 

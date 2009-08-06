@@ -20,6 +20,7 @@ import org.eclipse.draw2d.LayoutManager;
 import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 /**
@@ -174,14 +175,15 @@ public class SurfaceLayout extends XYLayout implements DelegatingLayoutManager {
 						continue;
 
 					IFigure3D child3D = (IFigure3D) child;
-					IVector3f childLocation = child3D.getLocation3D();
+					Position3D position3d = child3D.getPosition3D();
+					IVector3f childLocation = position3d.getLocation3D();
 
-					float depth = child3D.getSize3D().getZ();
+					float depth = position3d.getSize3D().getZ();
 
 					Vector3fImpl newLocation = new Vector3fImpl(childLocation);
 					newLocation.z = -1 * depth;
 
-					child3D.setLocation3D(newLocation);
+					position3d.setLocation3D(newLocation);
 				}
 			}
 		}

@@ -156,7 +156,7 @@ public class ArrowLocator3D implements Locator {
 		RotatableDecoration3D arrow = (RotatableDecoration3D) i_target;
 
 		IVector3f location = getLocation(points, null);
-		arrow.setLocation3D(location);
+		arrow.getPosition3D().setLocation3D(location);
 
 		if (m_alignment == Alignment.SOURCE)
 			arrow.setReferencePoint3D(points.get(1));

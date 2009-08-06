@@ -69,7 +69,7 @@ public class MultiEditorModelContainerEditPart extends
 		Vector3f vec = new Vector3fImpl();
 		box.getPosition(vec);
 		vec.setZ(vec.getZ() + delta);
-		fig3D.setLocation3D(vec);
+		fig3D.getPosition3D().setLocation3D(vec);
 		refresh();
 	}
 

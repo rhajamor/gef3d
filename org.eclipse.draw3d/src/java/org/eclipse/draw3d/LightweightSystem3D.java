@@ -31,14 +31,12 @@ import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.camera.ICameraListener;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IHost3D;
-import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DImpl;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
@@ -69,21 +67,6 @@ import org.eclipse.swt.widgets.Canvas;
  */
 public class LightweightSystem3D extends LightweightSystem implements
 		ICameraListener, DisposeListener, IScene {
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.LightweightSystem#setEventDispatcher(org.eclipse.draw2d.EventDispatcher)
-	 */
-	@Override
-	public void setEventDispatcher(EventDispatcher i_dispatcher) {
-
-		EventDispatcher dispatcher = i_dispatcher;
-		if (!(dispatcher instanceof EventDispatcher3D))
-			dispatcher = new EventDispatcher3D(dispatcher, this);
-
-		super.setEventDispatcher(dispatcher);
-	}
 
 	/**
 	 * The 3D root figure class does not extend Figure3D for design reasons.
@@ -329,47 +312,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 		}
 
 		/**
-		 * Lightweight system's root figure as no location, this method returns
-		 * null.
-		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#getLocation3D()
-		 */
-		public IVector3f getLocation3D() {
-
-			return null;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#getLocationMatrix()
-		 */
-		public IMatrix4f getLocationMatrix() {
-
-			return IMatrix4f.IDENTITY;
-		}
-
-		/**
-		 * Returns always true. {@inheritDoc}
-		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#getMatrixState()
-		 */
-		public MatrixState getMatrixState() {
-
-			return MatrixState.VALID;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#getModelMatrix()
-		 */
-		public IMatrix4f getModelMatrix() {
-
-			return IMatrix4f.IDENTITY;
-		}
-
-		/**
 		 * {@inheritDoc}
 		 * 
 		 * @see org.eclipse.draw3d.IFigure3D#getParaxialBoundingBox()
@@ -423,17 +365,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 		}
 
 		/**
-		 * Lightweight system's root figure as no rotation, this method returns
-		 * null.
-		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#getRotation3D()
-		 */
-		public IVector3f getRotation3D() {
-
-			return null;
-		}
-
-		/**
 		 * {@inheritDoc}
 		 * 
 		 * @see org.eclipse.draw3d.IFigure3D#getScene()
@@ -441,17 +372,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 		public IScene getScene() {
 
 			return LightweightSystem3D.this;
-		}
-
-		/**
-		 * Lightweight system's root figure as no size, this method returns
-		 * null.
-		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#getSize3D()
-		 */
-		public IVector3f getSize3D() {
-
-			return null;
 		}
 
 		/**
@@ -647,44 +567,11 @@ public class LightweightSystem3D extends LightweightSystem implements
 		}
 
 		/**
-		 * Location of lightweight system's root figure cannot be set, this
-		 * method does nothing.
-		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
-		 */
-		public void setLocation3D(IVector3f i_point) {
-
-			// nothing to do
-		}
-
-		/**
 		 * Ignored. {@inheritDoc}
 		 * 
 		 * @see org.eclipse.draw3d.IFigure3D#setPreferredSize3D(org.eclipse.draw3d.geometry.IVector3f)
 		 */
 		public void setPreferredSize3D(IVector3f i_preferredSize3D) {
-
-			// nothing to do
-		}
-
-		/**
-		 * Rotation of lightweight system's root figure cannot be set, this
-		 * method does nothing.
-		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#setRotation3D(org.eclipse.draw3d.geometry.IVector3f)
-		 */
-		public void setRotation3D(IVector3f i_rotation) {
-
-			// nothing to do
-		}
-
-		/**
-		 * Size of lightweight system's root figure cannot be set, this method
-		 * does nothing.
-		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
-		 */
-		public void setSize3D(IVector3f i_size) {
 
 			// nothing to do
 		}
@@ -992,6 +879,21 @@ public class LightweightSystem3D extends LightweightSystem implements
 	public void setDrawAxes(boolean i_drawAxes) {
 
 		m_drawAxes = i_drawAxes;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.LightweightSystem#setEventDispatcher(org.eclipse.draw2d.EventDispatcher)
+	 */
+	@Override
+	public void setEventDispatcher(EventDispatcher i_dispatcher) {
+
+		EventDispatcher dispatcher = i_dispatcher;
+		if (!(dispatcher instanceof EventDispatcher3D))
+			dispatcher = new EventDispatcher3D(dispatcher, this);
+
+		super.setEventDispatcher(dispatcher);
 	}
 
 	/**

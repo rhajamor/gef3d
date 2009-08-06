@@ -294,11 +294,12 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 	 */
 	private void relocateFigure(IFigure3D fig) {
 		float size = 7;
-		fig.setSize3D(new Vector3fImpl(size, size, size));
+		fig.getPosition3D().setSize3D(new Vector3fImpl(size, size, size));
 
 		IFigure connectedFig = getModelEditPart().getFigure();
 		IVector3f v = getTopCenter3D(connectedFig, TMP_V3);
-		fig.setLocation3D(new Vector3fImpl(v.getX() - size / 2, v.getY() - size
+		fig.getPosition3D().setLocation3D(
+			new Vector3fImpl(v.getX() - size / 2, v.getY() - size
 				+ size / 2, v.getZ() - size / 2));
 	}
 

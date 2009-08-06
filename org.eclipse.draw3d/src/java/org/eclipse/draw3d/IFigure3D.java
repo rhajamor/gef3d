@@ -14,12 +14,9 @@ import java.util.List;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.geometry.IBoundingBox;
-import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IParaxialBoundingBox;
-import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Transformable;
-import org.eclipse.draw3d.geometry.IPosition3D.MatrixState;
 import org.eclipse.draw3d.geometryext.SyncHost3D;
 import org.eclipse.draw3d.picking.Pickable;
 
@@ -31,8 +28,7 @@ import org.eclipse.draw3d.picking.Pickable;
  * @since 24.10.2007
  */
 public interface IFigure3D extends IFigure, Pickable, IFigure2DHost3D,
-		Renderable,
-		SyncHost3D {
+		Renderable, SyncHost3D {
 
 	/**
 	 * Returns the alpha value of this figure.
@@ -87,38 +83,6 @@ public interface IFigure3D extends IFigure, Pickable, IFigure2DHost3D,
 	List<IFigure3D> getDescendants3D();
 
 	/**
-	 * Returns the location of this figure in world coordinates.
-	 * 
-	 * @return the location of this figure
-	 * @deprecated use {@link IPosition3D#getLocation3D()}
-	 */
-	public IVector3f getLocation3D();
-
-	/**
-	 * Returns the matrix that performs the absolute transformation to this
-	 * figure's location. This is the matrix that transforms (0, 0, 0) to this
-	 * figure's origin.
-	 * 
-	 * @return the location matrix of this figure
-	 */
-	public IMatrix4f getLocationMatrix();
-
-	/**
-	 * Returns matrix state of internal matrices
-	 * 
-	 * @return the matrix state
-	 */
-	public MatrixState getMatrixState();
-
-	/**
-	 * Returns the matrix that performs the transformation of this figure's
-	 * basic shape to it's intended shape.
-	 * 
-	 * @return the model matrix of this figure
-	 */
-	public IMatrix4f getModelMatrix();
-
-	/**
 	 * Returns the smallest paraxial (to the world coordinate system) bounding
 	 * box that contains this figure and all its children.
 	 * 
@@ -144,29 +108,11 @@ public interface IFigure3D extends IFigure, Pickable, IFigure2DHost3D,
 	public RenderContext getRenderContext();
 
 	/**
-	 * Returns the rotation angles of this figure as a vector (a,b,c) where a is
-	 * the angle of rotation about the X axis, b is the angle of rotation about
-	 * the Y axis and c is the angle of rotation about the Z axis.
-	 * 
-	 * @return the rotation angles
-	 * @deprecated use {@link IPosition3D#getRotation3D()}
-	 */
-	public IVector3f getRotation3D();
-
-	/**
 	 * Returns the scene that contains this figure.
 	 * 
 	 * @return the scene that contains this figure
 	 */
 	public IScene getScene();
-
-	/**
-	 * Returns the 3D dimensions of the figure.
-	 * 
-	 * @return the 3D dimensions
-	 * @deprecated use {@link IPosition3D#getSize3D()}
-	 */
-	public IVector3f getSize3D();
 
 	/**
 	 * Invalidates the paraxial of this figure;
@@ -190,37 +136,12 @@ public interface IFigure3D extends IFigure, Pickable, IFigure2DHost3D,
 	public void setAlpha(int alpha);
 
 	/**
-	 * Sets the location of this figure in world coordinates.
-	 * 
-	 * @param location the new location
-	 * @deprecated use {@link IPosition3D#setLocation3D(IVector3f)}
-	 */
-	public void setLocation3D(IVector3f location);
-
-	/**
 	 * Sets preferred size of this figure. The preferred size is synchronized
 	 * with the preferred 2D size.
 	 * 
 	 * @param i_preferredSize3D
 	 */
 	public void setPreferredSize3D(IVector3f i_preferredSize3D);
-
-	/**
-	 * Sets the rotation angles of this figure. Rotations are applied in the
-	 * following order: Y first, then Z and finally X.
-	 * 
-	 * @param rotation the rotation angles
-	 * @deprecated use {@link IPosition3D#setRotation3D(IVector3f)}
-	 */
-	public void setRotation3D(IVector3f rotation);
-
-	/**
-	 * Sets the 3D dimensions of this figure.
-	 * 
-	 * @param size the dimensions of this figure
-	 * @deprecated use {@link IPosition3D#setSize3D(IVector3f)}
-	 */
-	public void setSize3D(IVector3f size);
 
 	/**
 	 * Transforms the given transformable from this figure's parent's
