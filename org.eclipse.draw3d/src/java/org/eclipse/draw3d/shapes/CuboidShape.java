@@ -15,13 +15,10 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Matrix4fImpl;
-import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector2fImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
@@ -29,7 +26,6 @@ import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.ColorConverter;
-import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Color;
 
 /**
@@ -140,29 +136,11 @@ public class CuboidShape extends PositionableShape {
 
 	private float[] m_fillColor = new float[] { 1, 1, 1, 1 };
 
-	/**
-	 * The model matrix which the vertices and normals have been transformed
-	 * last. This speeds up {@link #getDistance(Query, Position3D)}.
-	 */
-	private Matrix4fImpl m_lastModelMatrix = null;
-
 	private boolean m_outline = true;
 
 	private float[] m_outlineColor = new float[] { 0, 0, 0, 1 };
 
 	private Integer m_textureId;
-
-	/**
-	 * A cache for the transformed normals of this cube. This speeds up
-	 * {@link #getDistance(Query, Position3D)}.
-	 */
-	private Vector3f[] m_transformedNormals;
-
-	/**
-	 * A cache for the transformed vertices of this cube. This speeds up
-	 * {@link #getDistance(Query, Position3D)}.
-	 */
-	private Vector3f[] m_transformedVertices;
 
 	/**
 	 * Creates a new cuboid shape with the given position.
@@ -173,6 +151,35 @@ public class CuboidShape extends PositionableShape {
 	public CuboidShape(IPosition3D i_position3D) {
 
 		super(i_position3D);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doGetDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	protected float doGetDistance(Query i_query) {
+
+		IVector3f rayOrigin = i_query.getRayOrigin();
+		IVector3f rayDirection = i_query.getRayDirection();
+
+		IVector3f[] face = new Vector3f[4];
+		float distance;
+
+		for (int i = 0; i < FACES.length; i++) {
+			for (int j = 0; j < FACES[i].length; j++)
+				face[j] = VERTICES[FACES[i][j]];
+
+			distance =
+				Math3D.rayIntersectsPolygon(rayOrigin, rayDirection, face,
+					NORMALS[i], null);
+
+			if (!Float.isNaN(distance))
+				return distance;
+		}
+
+		return Float.NaN;
 	}
 
 	/**
@@ -215,36 +222,6 @@ public class CuboidShape extends PositionableShape {
 			g3d.glColor4f(m_outlineColor);
 			displayListManager.executeDisplayList(DL_OUTLINE);
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see Shape#getDistance(Query)
-	 */
-	public float getDistance(Query i_query) {
-
-		updateTransformed(getPosition3D().getTransformationMatrix());
-
-		IVector3f rayOrigin = i_query.getRayOrigin();
-		IVector3f rayDirection = i_query.getRayDirection();
-
-		Vector3f[] face = new Vector3f[4];
-		float distance;
-
-		for (int i = 0; i < FACES.length; i++) {
-			for (int j = 0; j < FACES[i].length; j++)
-				face[j] = m_transformedVertices[FACES[i][j]];
-
-			distance =
-				Math3D.rayIntersectsPolygon(rayOrigin, rayDirection, face,
-					m_transformedNormals[i], null);
-
-			if (!Float.isNaN(distance))
-				return distance;
-		}
-
-		return Float.NaN;
 	}
 
 	private void initDisplayLists(DisplayListManager i_displayListManager,
@@ -384,50 +361,5 @@ public class CuboidShape extends PositionableShape {
 	public void setTextureId(Integer i_textureId) {
 
 		m_textureId = i_textureId;
-	}
-
-	private void updateTransformed(IMatrix4f i_modelMatrix) {
-
-		if (i_modelMatrix.equals(m_lastModelMatrix))
-			return;
-
-		Vector3f origin = Draw3DCache.getVector3f();
-		try {
-
-			if (m_transformedVertices == null) {
-				m_transformedVertices = new Vector3f[VERTICES.length];
-				for (int i = 0; i < m_transformedVertices.length; i++)
-					m_transformedVertices[i] = new Vector3fImpl();
-			}
-
-			if (m_transformedNormals == null) {
-				m_transformedNormals = new Vector3f[NORMALS.length];
-				for (int i = 0; i < m_transformedNormals.length; i++)
-					m_transformedNormals[i] = new Vector3fImpl();
-			}
-
-			if (m_lastModelMatrix == null)
-				m_lastModelMatrix = new Matrix4fImpl();
-
-			// transform vertices
-			for (int i = 0; i < VERTICES.length; i++)
-				Math3D.transform(VERTICES[i], i_modelMatrix,
-					m_transformedVertices[i]);
-
-			// transform normals and correct them
-			Math3D.transform(IVector3f.NULLVEC3f, i_modelMatrix, origin);
-			for (int i = 0; i < m_transformedNormals.length; i++) {
-				Math3D.transform(NORMALS[i], i_modelMatrix,
-					m_transformedNormals[i]);
-				Math3D.sub(m_transformedNormals[i], origin,
-					m_transformedNormals[i]);
-				Math3D.normalise(m_transformedNormals[i],
-					m_transformedNormals[i]);
-			}
-
-			m_lastModelMatrix.set(i_modelMatrix);
-		} finally {
-			Draw3DCache.returnVector3f(origin);
-		}
 	}
 }

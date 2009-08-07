@@ -10,25 +10,40 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IPosition3D;
+import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Position3DImpl;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.ColorConverter;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Color;
 
 /**
- * SphereShape There should really be more documentation here.
+ * A shape that renders a sphere.
  * 
+ * @todo Reuse more vertices for the stripes - currently we create a lot of
+ *       duplicates.
+ * @todo Dreate entire stripes, not just a single wedge.
+ * @todo Due to the approximate nature of the triangulation,
+ *       {@link #getDistance(Query)} will only return exact results when the ray
+ *       hits a vertex. It would be more precise to intersect with the
+ *       individual triangles of the sphere for low precision values.
  * @author Kristian Duske
  * @version $Revision$
  * @since 05.08.2009
  */
 public class SphereShape extends PositionableShape {
+
 	/**
 	 * A key to store a display list for a sphere in the display list manager.
 	 * 
@@ -87,10 +102,22 @@ public class SphereShape extends PositionableShape {
 		}
 	}
 
+	private static final IVector3f CENTER = new Vector3fImpl(0.5f, 0.5f, 0.5f);
+
+	private static final float RADIUS = 0.5f;
+
+	private static final float RADIUS_SQUARED = RADIUS * RADIUS;
+
 	/**
 	 * Contains a matrix that rotates 90 degress about the Z axis.
 	 */
 	private static final IPosition3D ROTATE_Z90;
+
+	/**
+	 * Caches the stripes across multiple instances since they never change.
+	 */
+	private static final Map<Integer, SphereTriangle[][]> STRIPE_CACHE =
+		new WeakHashMap<Integer, SphereTriangle[][]>();
 
 	static {
 		Position3DImpl pos = new Position3DImpl();
@@ -114,7 +141,7 @@ public class SphereShape extends PositionableShape {
 
 	private int m_precision;
 
-	private SphereTriangle[][] m_stripes = new SphereTriangle[2][];
+	private SphereTriangle[][] m_stripes;
 
 	/**
 	 * Creates a new sphere with the given precision.
@@ -126,57 +153,72 @@ public class SphereShape extends PositionableShape {
 
 		super(i_position3D);
 
-		m_stripes[0] =
-			new SphereTriangle[] { new SphereTriangle(
-				new Vector3fImpl(1, 0, 0), new Vector3fImpl(0, 1, 0),
-				new Vector3fImpl(0, 0, 1)) };
-		m_stripes[1] =
-			new SphereTriangle[] { new SphereTriangle(
-				new Vector3fImpl(1, 0, 0), new Vector3fImpl(0, 1, 0),
-				new Vector3fImpl(0, 0, -1)) };
+		m_stripes = STRIPE_CACHE.get(i_precision);
 
-		for (int i = 1; i <= i_precision; i++) {
+		if (m_stripes == null) {
+			Vector3f a = new Vector3fImpl(CENTER);
+			a.setX(a.getX() + RADIUS);
 
-			// initialize stripes arrays
-			int numStripes = (2 << i); // 2^p
-			SphereTriangle[][] newStripes = new SphereTriangle[numStripes][];
-			for (int j = 0; j < numStripes / 2; j++) {
-				int numTriangles = j * 2 + 1;
-				newStripes[j] = new SphereTriangle[numTriangles];
-				newStripes[numStripes - j - 1] =
-					new SphereTriangle[numTriangles];
-			}
+			Vector3f b = new Vector3fImpl(CENTER);
+			b.setY(b.getY() + RADIUS);
 
-			// divide stripes
-			for (int j = 0; j < m_stripes.length; j++) {
-				SphereTriangle[] stripe = m_stripes[j];
-				SphereTriangle[] newUpper = newStripes[j * 2];
-				SphereTriangle[] newLower = newStripes[j * 2 + 1];
+			Vector3f c = new Vector3fImpl(CENTER);
+			c.setZ(c.getZ() + RADIUS);
 
-				int upperIndex = 0;
-				int lowerIndex = 0;
+			Vector3f d = new Vector3fImpl(CENTER);
+			d.setZ(d.getZ() - RADIUS);
 
-				for (int k = 0; k < stripe.length; k++) {
-					SphereTriangle triangle = stripe[k];
-					SphereTriangle[] subTriangles = triangle.divide();
+			m_stripes = new SphereTriangle[2][];
+			m_stripes[0] = new SphereTriangle[] { new SphereTriangle(a, b, c) };
+			m_stripes[1] = new SphereTriangle[] { new SphereTriangle(a, b, d) };
 
-					// is the triangle standing on the segment a-b or on
-					// the edge c?
-					if (triangle.getC().getZ() > triangle.getA().getZ()) {
-						newUpper[upperIndex++] = subTriangles[0];
-						newLower[lowerIndex++] = subTriangles[1];
-						newLower[lowerIndex++] = subTriangles[2];
-						newLower[lowerIndex++] = subTriangles[3];
-					} else {
-						newLower[lowerIndex++] = subTriangles[0];
-						newUpper[upperIndex++] = subTriangles[1];
-						newUpper[upperIndex++] = subTriangles[2];
-						newUpper[upperIndex++] = subTriangles[3];
+			for (int i = 1; i <= i_precision; i++) {
+
+				// initialize stripes arrays
+				int numStripes = (2 << i); // 2^(p+1)
+				SphereTriangle[][] newStripes =
+					new SphereTriangle[numStripes][];
+				for (int j = 0; j < numStripes / 2; j++) {
+					int numTriangles = j * 2 + 1;
+					newStripes[j] = new SphereTriangle[numTriangles];
+					newStripes[numStripes - j - 1] =
+						new SphereTriangle[numTriangles];
+				}
+
+				// divide stripes
+				for (int j = 0; j < m_stripes.length; j++) {
+					SphereTriangle[] stripe = m_stripes[j];
+					SphereTriangle[] newUpper = newStripes[j * 2];
+					SphereTriangle[] newLower = newStripes[j * 2 + 1];
+
+					int upperIndex = 0;
+					int lowerIndex = 0;
+
+					for (int k = 0; k < stripe.length; k++) {
+						SphereTriangle triangle = stripe[k];
+						SphereTriangle[] subTriangles =
+							triangle.divide(CENTER, RADIUS);
+
+						// is the triangle standing on the segment a-b or on
+						// the edge c?
+						if (triangle.getC().getZ() > triangle.getA().getZ()) {
+							newUpper[upperIndex++] = subTriangles[0];
+							newLower[lowerIndex++] = subTriangles[1];
+							newLower[lowerIndex++] = subTriangles[2];
+							newLower[lowerIndex++] = subTriangles[3];
+						} else {
+							newLower[lowerIndex++] = subTriangles[0];
+							newUpper[upperIndex++] = subTriangles[1];
+							newUpper[upperIndex++] = subTriangles[2];
+							newUpper[upperIndex++] = subTriangles[3];
+						}
 					}
 				}
+
+				m_stripes = newStripes;
 			}
 
-			m_stripes = newStripes;
+			STRIPE_CACHE.put(i_precision, m_stripes);
 		}
 
 		m_outlineKey = new SphereKey(m_precision, true);
@@ -213,12 +255,60 @@ public class SphereShape extends PositionableShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doGetDistance(org.eclipse.draw3d.picking.Query)
 	 */
-	public float getDistance(Query i_query) {
+	@Override
+	protected float doGetDistance(Query i_query) {
 
-		// TODO implementthis
-		return Float.NaN;
+		// TODO: intersect with individual triangles for low precision
+
+		// vector from ray origin to sphere center
+		Vector3f roToC = Draw3DCache.getVector3f();
+		// projection of roToC onto the ray
+		Vector3f proj = Draw3DCache.getVector3f();
+		// vector from origin + proj to sphere center
+		Vector3f orth = Draw3DCache.getVector3f();
+		try {
+			IVector3f rayOrigin = i_query.getRayOrigin();
+			IVector3f rayDirection = i_query.getRayDirection();
+
+			// vector from ray origin to center
+			Math3D.sub(CENTER, rayOrigin, roToC);
+
+			// project that vector onto the ray direction
+			float dot = Math3D.dot(roToC, rayDirection);
+			Math3D.scale(dot, rayDirection, proj);
+
+			Math3D.sub(roToC, proj, orth);
+
+			// vector orth is now orthogonal to ray direction and points to
+			// center, its length measures the minimum distance between ray and
+			// center
+			if (orth.lengthSquared() > RADIUS_SQUARED)
+				return Float.NaN;
+
+			// compute solutions of ray equation inserted into sphere equation
+			float p = -2 * dot;
+			float q = roToC.length() - RADIUS_SQUARED;
+
+			float p2 = p / 2;
+			float r = p2 * p2 - q; // radicant
+
+			// this should not happen, but let's be cautious
+			if (r < 0)
+				return Float.NaN;
+
+			if (r == 0)
+				return -p2;
+
+			float s = (float) Math.sqrt(r);
+			float x1 = -p2 + s;
+			float x2 = -p2 - s;
+
+			return Math.min(x1, x2);
+		} finally {
+			Draw3DCache.returnVector3f(roToC, proj, orth);
+		}
 	}
 
 	private void initDisplayLists(DisplayListManager i_manager,

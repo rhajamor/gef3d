@@ -195,6 +195,18 @@ public class CylinderShape extends PositionableShape {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doGetDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	protected float doGetDistance(Query i_query) {
+
+		// TODO implement this
+		return Float.NaN;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.shapes.PositionableShape#doRender(org.eclipse.draw3d.RenderContext)
 	 */
 	@Override
@@ -235,17 +247,6 @@ public class CylinderShape extends PositionableShape {
 		}
 
 		return m_bottomVertices;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#getDistance(org.eclipse.draw3d.picking.Query)
-	 */
-	public float getDistance(Query i_query) {
-
-		// TODO implement this
-		return Float.NaN;
 	}
 
 	private float[] getTopVertices() {

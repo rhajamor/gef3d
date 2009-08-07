@@ -14,7 +14,7 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.shapes.CompositeShape;
-import org.eclipse.draw3d.shapes.CylinderShape;
+import org.eclipse.draw3d.shapes.SphereShape;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.widgets.Display;
@@ -46,8 +46,10 @@ public class ShapeViewer extends Draw3DViewer {
 			@Override
 			protected void createShape(CompositeShape i_composite) {
 
-				i_composite.addOpaque(new CylinderShape(this.getPosition3D(),
-					12, 0.4f));
+				// i_composite.addOpaque(new CylinderShape(this.getPosition3D(),
+				// 12, 0.4f));
+				SphereShape sphere = new SphereShape(this.getPosition3D(), 4);
+				i_composite.addOpaque(sphere);
 			}
 		};
 

@@ -92,12 +92,26 @@ public interface IPosition3D {
 	public IVector3f getLocation3D();
 
 	/**
+	 * Returns the rotation angles of the figure.
+	 * 
+	 * @return the rotation angles
+	 */
+	public IVector3f getRotation3D();
+
+	/**
 	 * Returns the matrix that performs the transformation of this figure's
 	 * rotation and location, but does not include the scaling transformation.
 	 * 
 	 * @return the rotation / location matrix
 	 */
 	public IMatrix4f getRotationLocationMatrix();
+
+	/**
+	 * Returns the 3D dimensions.
+	 * 
+	 * @return the dimensions
+	 */
+	public IVector3f getSize3D();
 
 	/**
 	 * Returns the matrix that performs the transformation of this figure's
@@ -108,20 +122,6 @@ public interface IPosition3D {
 	public IMatrix4f getTransformationMatrix();
 
 	/**
-	 * Returns the rotation angles of the figure.
-	 * 
-	 * @return the rotation angles
-	 */
-	public IVector3f getRotation3D();
-
-	/**
-	 * Returns the 3D dimensions.
-	 * 
-	 * @return the dimensions
-	 */
-	public IVector3f getSize3D();
-
-	/**
 	 * Indicates whether the internal cached information of this position and of
 	 * all its ancestors is valid.
 	 * 
@@ -130,4 +130,19 @@ public interface IPosition3D {
 	 *         otherwise
 	 */
 	public boolean isValid();
+
+	/**
+	 * Transforms the given picking ray by applying the inverse of the
+	 * transformation matrix to the given origin and the inverse of only the
+	 * rotation and scaling matrices to the given direction vector. After the
+	 * transformation, the direction vector may not be normalised and must be
+	 * corrected.
+	 * <p>
+	 * This method is used to transform a picking ray to model coordinates.
+	 * </p>
+	 * 
+	 * @param i_origin the origin of the ray to transform
+	 * @param i_direction the direction of the ray to transform
+	 */
+	public void transformRay(Vector3f i_origin, Vector3f i_direction);
 }

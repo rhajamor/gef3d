@@ -13,8 +13,12 @@ package org.eclipse.draw3d.shapes;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
+import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
+import org.eclipse.draw3d.picking.Query;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * PositionableShape There should really be more documentation here.
@@ -39,11 +43,60 @@ public abstract class PositionableShape implements Shape {
 	}
 
 	/**
+	 * Performs the intersection calculation using the given picking ray. The
+	 * picking ray may have been transformed due to the position of this shape.
+	 * 
+	 * @param i_query the modified query
+	 * @return the distance between the point of intersection of the picking ray
+	 *         and this shape or {@link Float#NaN} if the ray does not intersect
+	 *         with this shape
+	 */
+	protected abstract float doGetDistance(Query i_query);
+
+	/**
 	 * Performs the actual rendering.
 	 * 
 	 * @param i_renderContext the current render context
 	 */
 	protected abstract void doRender(RenderContext i_renderContext);
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	public float getDistance(Query i_query) {
+
+		if (m_position3D == null
+			|| m_position3D.getTransformationMatrix()
+				.equals(IMatrix4f.IDENTITY))
+			return doGetDistance(i_query);
+
+		Vector3f newOrigin = Draw3DCache.getVector3f();
+		Vector3f newDirection = Draw3DCache.getVector3f();
+		try {
+			IVector3f oldOrigin = i_query.getRayOrigin();
+			IVector3f oldDirection = i_query.getRayDirection();
+
+			newOrigin.set(oldOrigin);
+			newDirection.set(oldDirection);
+
+			// transform picking ray
+			m_position3D.transformRay(newOrigin, newDirection);
+
+			float newLength = newDirection.length();
+			if (newLength != 1)
+				newDirection.scale(1 / newLength); // normalise
+
+			i_query.setRay(newOrigin, newDirection);
+			float distance = doGetDistance(i_query);
+
+			i_query.setRay(oldOrigin, oldDirection);
+			return distance / newLength;
+		} finally {
+			Draw3DCache.returnVector3f(newOrigin, newDirection);
+		}
+	}
 
 	/**
 	 * Returns the position of this shape.

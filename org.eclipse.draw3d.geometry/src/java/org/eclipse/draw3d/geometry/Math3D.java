@@ -18,6 +18,8 @@ package org.eclipse.draw3d.geometry;
  * geometry classes or provide adapter interfaces, since only the data has to be
  * provided but not the logic.
  * 
+ * @todo investigate faster intersection detection for triangles
+ *       ("http://www.devmaster.net/wiki/Ray-triangle_intersection")
  * @author Jens von Pilgrim, Kristian Duske
  * @version $Revision$
  * @since 19.10.2008

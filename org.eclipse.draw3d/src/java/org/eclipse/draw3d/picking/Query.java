@@ -33,8 +33,6 @@ import org.eclipse.draw3d.util.Draw3DCache;
  */
 public class Query {
 
-	private TreeSearch m_search;
-
 	/**
 	 * This is a simple map for storing client specific data.
 	 */
@@ -46,9 +44,12 @@ public class Query {
 
 	private IFigure3D m_rootFigure;
 
+	private TreeSearch m_search;
+
 	/**
 	 * Constructs a new picking query with the given parameters. All figures
 	 * which are not accepted or pruned by the given figure search are ignored.
+	 * The vectors of the given ray are stored by reference and are not copied.
 	 * 
 	 * @param i_rayOrigin the origin of the picking ray
 	 * @param i_rayDirection the direction of the picking ray, must be
@@ -61,17 +62,10 @@ public class Query {
 	public Query(IVector3f i_rayOrigin, IVector3f i_rayDirection,
 			IFigure3D i_rootFigure, TreeSearch i_search) {
 
-		if (i_rayOrigin == null)
-			throw new NullPointerException("i_rayOrigin must not be null");
-
-		if (i_rayDirection == null)
-			throw new NullPointerException("i_rayDirection must not be null");
-
 		if (i_rootFigure == null)
 			throw new NullPointerException("i_rootFigure must not be null");
 
-		m_rayOrigin = i_rayOrigin;
-		m_rayDirection = i_rayDirection;
+		setRay(i_rayOrigin, i_rayDirection);
 		m_rootFigure = i_rootFigure;
 		m_search = i_search;
 	}
@@ -273,6 +267,27 @@ public class Query {
 			m_objects = new HashMap<Object, Object>();
 
 		m_objects.put(i_key, i_object);
+	}
+
+	/**
+	 * Sets the picking ray of this query. The given vectors are stored by
+	 * reference and are not copied.
+	 * 
+	 * @param i_rayOrigin the origin of the ray
+	 * @param i_rayDirection the direction vector of the ray, must be normalised
+	 * @throws NullPointerException if any of the given vectors is
+	 *             <code>null</code>
+	 */
+	public void setRay(IVector3f i_rayOrigin, IVector3f i_rayDirection) {
+
+		if (i_rayOrigin == null)
+			throw new NullPointerException("i_rayOrigin must not be null");
+
+		if (i_rayDirection == null)
+			throw new NullPointerException("i_rayDirection must not be null");
+
+		m_rayOrigin = i_rayOrigin;
+		m_rayDirection = i_rayDirection;
 	}
 
 	/**

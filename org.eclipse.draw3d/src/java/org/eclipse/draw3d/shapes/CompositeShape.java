@@ -20,7 +20,7 @@ import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.picking.Query;
 
 /**
- * CompositePositionableShape There should really be more documentation here.
+ * A positionable shape that is composed of other shapes.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -150,6 +150,30 @@ public class CompositeShape extends PositionableShape {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doGetDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	protected float doGetDistance(Query i_query) {
+
+		float d = Float.NaN;
+		if (m_opaqueShapes != null)
+			for (Shape shape : m_opaqueShapes)
+				d = Math3D.minDistance(d, shape.getDistance(i_query));
+
+		if (m_transparentShapes != null)
+			for (Shape shape : m_transparentShapes)
+				d = Math3D.minDistance(d, shape.getDistance(i_query));
+
+		if (m_superimposedShapes != null)
+			for (Shape shape : m_superimposedShapes)
+				d = Math3D.minDistance(d, shape.getDistance(i_query));
+
+		return d;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.shapes.PositionableShape#doRender(org.eclipse.draw3d.RenderContext)
 	 */
 	@Override
@@ -166,34 +190,6 @@ public class CompositeShape extends PositionableShape {
 		if (m_superimposedShapes != null)
 			for (TransparentShape shape : m_superimposedShapes)
 				i_renderContext.addSuperimposedObject(shape);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
-	 */
-	public float getDistance(Query i_query) {
-
-		// TODO this only works if our own position is null or identity - we
-		// need to implement this properly by transforming the picking ray
-		// according to our model matrix, delegating the actual picking to our
-		// shapes, and then transform their result back to world coordinates
-
-		float d = Float.NaN;
-		if (m_opaqueShapes != null)
-			for (Shape shape : m_opaqueShapes)
-				d = Math3D.minDistance(d, shape.getDistance(i_query));
-
-		if (m_transparentShapes != null)
-			for (Shape shape : m_transparentShapes)
-				d = Math3D.minDistance(d, shape.getDistance(i_query));
-
-		if (m_superimposedShapes != null)
-			for (Shape shape : m_superimposedShapes)
-				d = Math3D.minDistance(d, shape.getDistance(i_query));
-
-		return d;
 	}
 
 	/**
