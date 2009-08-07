@@ -51,15 +51,15 @@ public class ConnectedElementFigure extends ShapeFigure3D {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Returns a transparent cuboid figure shape (i.e. a {@link CuboidFigureShape}
+	 * nested into a {@link TransparentShape}.
 	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(org.eclipse.draw3d.shapes.CompositeShape)
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
-	protected void createShape(CompositeShape i_composite) {
-
+	protected Shape createShape() {
 		Shape shape = new CuboidFigureShape(this);
-		i_composite.addTransparent(new TransparentShape(this, shape));
+		return new TransparentShape(this, shape);
 	}
 
 	public void setTag(String strTag) {
