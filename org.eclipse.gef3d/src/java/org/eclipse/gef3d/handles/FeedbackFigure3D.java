@@ -38,15 +38,16 @@ public class FeedbackFigure3D extends ShapeFigure3D {
 		setAlpha(100);
 	}
 
-	/**
+	
+
+	/** 
 	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(org.eclipse.draw3d.shapes.CompositeShape)
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
-	protected void createShape(CompositeShape i_composite) {
-
-		Shape shape = new CuboidFigureShape(this);
-		i_composite.addTransparent(new TransparentShape(this, shape));
+	protected Shape createShape() {
+		return new CuboidFigureShape(this);
 	}
+	
+	
 }

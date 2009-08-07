@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.gef3d.handles;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ColorConstants;
@@ -19,6 +20,7 @@ import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.draw3d.shapes.TransparentShape;
+import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.handles.SquareHandle;
@@ -80,20 +82,33 @@ public abstract class CubeHandle extends AbstractHandle3D {
 		init();
 	}
 
-	/**
+	/** 
 	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(CompositeShape)
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
-	protected void createShape(CompositeShape i_composite) {
-
+	protected Shape createShape() {
+		CompositeShape composite = new CompositeShape();
 		Shape alphaShape = new CuboidFigureShape(this);
-		i_composite.addTransparent(new TransparentShape(this, alphaShape));
+		composite.addTransparent(new TransparentShape(this, alphaShape));
 
 		Shape superShape = new CuboidFigureShape(this);
-		i_composite.addSuperimposed(new TransparentShape(this, superShape));
+		composite.addSuperimposed(new TransparentShape(this, superShape));
+		return composite;
+				
 	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.gef3d.handles.AbstractHandle3D#createDragTracker()
+	 */
+	@Override
+	protected DragTracker createDragTracker() {
+		// TODO implement method CubeHandle.createDragTracker
+		return null;
+	}
+
+	
 
 	/**
 	 * {@inheritDoc}

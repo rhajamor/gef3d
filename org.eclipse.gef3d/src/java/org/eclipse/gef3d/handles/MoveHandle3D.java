@@ -18,6 +18,7 @@ import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
+import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.draw3d.shapes.TransparentShape;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.GraphicalEditPart;
@@ -91,18 +92,19 @@ public class MoveHandle3D extends AbstractHandle3D {
 		return tracker;
 	}
 
-	/**
+	
+	
+
+	/** 
 	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(org.eclipse.draw3d.shapes.CompositeShape)
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
-	protected void createShape(CompositeShape i_composite) {
-
+	protected Shape createShape() {
 		CuboidFigureShape shape = new CuboidFigureShape(this);
 		shape.setFill(false);
 
-		i_composite.addTransparent(new TransparentShape(this, shape));
+		return new TransparentShape(this, shape);
 	}
 
 	/**
