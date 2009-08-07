@@ -18,7 +18,6 @@ import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.SurfaceLayout;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.draw3d.shapes.TransparentShape;
@@ -39,6 +38,7 @@ public class VertexFigure3D extends ShapeFigure3D {
 	/**
 	 * Logger for this class
 	 */
+	@SuppressWarnings("unused")
 	private static final Logger log =
 		Logger.getLogger(VertexFigure3D.class.getName());
 
@@ -118,15 +118,15 @@ public class VertexFigure3D extends ShapeFigure3D {
 	// }
 
 	/**
-	 * {@inheritDoc}
+	 * Returns a transparent cuboid figure shape (i.e. a
+	 * {@link CuboidFigureShape} nested into a {@link TransparentShape}.
 	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(org.eclipse.draw3d.shapes.CompositeShape)
+	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
-	protected void createShape(CompositeShape i_composite) {
-
+	protected Shape createShape() {
 		Shape shape = new CuboidFigureShape(this);
-		i_composite.addTransparent(new TransparentShape(this, shape));
+		return new TransparentShape(this, shape);
 	}
 
 	/**

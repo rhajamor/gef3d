@@ -63,7 +63,7 @@ class GraphWizardConfigurePage extends WizardPage {
 		label.setText("Number of vertices per plane:");
 		Spinner spinner = new Spinner(composite, SWT.None);
 		spinner.setMinimum(0);
-		spinner.setMaximum(1000);
+		spinner.setMaximum(8000);
 		spinner.setIncrement(5);
 		spinner.setSelection(numberOfVerticesPerPlane);
 		spinner.addSelectionListener(new SelectionAdapter() {
