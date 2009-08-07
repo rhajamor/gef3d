@@ -174,6 +174,16 @@ public class Figure3D extends Figure implements IFigure3D {
 
 		position3D.invalidate();
 
+		invalidateAncestorParaxialBounds();
+		invalidateParaxialBoundsTree();
+
+		super.fireFigureMoved();
+	}
+
+	/**
+	 * 
+	 */
+	private void invalidateAncestorParaxialBounds() {
 		IFigure parent = getParent();
 		while (parent != null) {
 			if (parent instanceof IFigure3D)
@@ -181,10 +191,6 @@ public class Figure3D extends Figure implements IFigure3D {
 
 			parent = parent.getParent();
 		}
-
-		invalidateParaxialBoundsTree();
-
-		super.fireFigureMoved();
 	}
 
 	/**
@@ -399,6 +405,10 @@ public class Figure3D extends Figure implements IFigure3D {
 	public void invalidate() {
 
 		position3D.invalidate();
+
+		invalidateAncestorParaxialBounds();
+		invalidateParaxialBoundsTree();
+
 		super.invalidate();
 	}
 

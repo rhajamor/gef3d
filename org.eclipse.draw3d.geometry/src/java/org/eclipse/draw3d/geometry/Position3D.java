@@ -22,11 +22,12 @@ public interface Position3D extends IPosition3D {
 	
 	
 	/**
-	 * Sets this position by copying location, scale, and rotation from
-	 * given source.
-	 * @param source
+	 * Sets the matrix state to {@link MatrixState#INVALID}. That is, a next
+	 * time a matrix is queried, all matrices are recalculated. The matrix
+	 * state is automatically invalidated when size, location, or rotation
+	 * have been changed.
 	 */
-	public void setPosition(IPosition3D source);
+	public void invalidate();
 	
 	/**
 	 * Sets the location of this IFigure.
@@ -36,24 +37,23 @@ public interface Position3D extends IPosition3D {
 	public void setLocation3D(IVector3f point);
 
 	/**
+	 * Sets this position by copying location, scale, and rotation from
+	 * given source.
+	 * @param source
+	 */
+	public void setPosition(IPosition3D source);
+
+	/**
 	 * Sets rotation of figure, i.e. angles for X, Y and Z axis. Rotations are
 	 * applied in the following order: Y first, then Z and finally X.
 	 * 
 	 * @param rotation, must not be null
 	 */
 	public void setRotation3D(IVector3f rotation);
-
+	
 	/**
 	 * @param size, must not be null
 	 */
 	public void setSize3D(IVector3f size);
-	
-	/**
-	 * Sets the matrix state to {@link MatrixState#INVALID}. That is, a next
-	 * time a matrix is queried, all matrices are recalculated. The matrix
-	 * state is automatically invalidated when size, location, or rotation
-	 * have been changed.
-	 */
-	public void invalidate();
 
 }
