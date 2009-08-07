@@ -13,7 +13,7 @@ package org.eclipse.draw3d.ui.viewer;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.shapes.CompositeShape;
+import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.draw3d.shapes.SphereShape;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Device;
@@ -37,19 +37,14 @@ public class ShapeViewer extends Draw3DViewer {
 	protected IFigure3D createContents() {
 
 		IFigure3D figure = new ShapeFigure3D() {
-
-			/**
+			
+			/** 
 			 * {@inheritDoc}
-			 * 
-			 * @see org.eclipse.draw3d.ShapeFigure3D#createShape(org.eclipse.draw3d.shapes.CompositeShape)
+			 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 			 */
 			@Override
-			protected void createShape(CompositeShape i_composite) {
-
-				// i_composite.addOpaque(new CylinderShape(this.getPosition3D(),
-				// 12, 0.4f));
-				SphereShape sphere = new SphereShape(this.getPosition3D(), 4);
-				i_composite.addOpaque(sphere);
+			protected Shape createShape() {
+				return new SphereShape(this.getPosition3D(), 4);
 			}
 		};
 
