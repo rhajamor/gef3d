@@ -18,21 +18,25 @@ import org.eclipse.draw3d.shapes.Shape;
  * A figure that is represented visually by a {@link Shape}. Automatically
  * handles transparency.
  * 
- * @author Kristian Duske
+ * @author Kristian Duske, Jens von Pilgrim
  * @version $Revision$
  * @since 05.08.2009
  */
 public abstract class ShapeFigure3D extends Figure3D {
 
-	private CompositeShape m_shape;
+	/**
+	 * The shape of this figure, created in {@link #createShape()}.
+	 */
+	protected Shape m_shape;
 
 	/**
-	 * Creates the shape(s) that represent this figure and adds them to the
-	 * given composite shape.
+	 * Creates the shape(s) that represent this figure. This method must be 
+	 * overridden by subclasses and must not return null.
 	 * 
-	 * @param i_composite the composite shape to add the shapes to
+	 * @see CompositeShape
+	 * @return the shape of this figure, must not return null.
 	 */
-	protected abstract void createShape(CompositeShape i_composite);
+	protected abstract Shape createShape();
 
 	/**
 	 * {@inheritDoc}
@@ -41,20 +45,22 @@ public abstract class ShapeFigure3D extends Figure3D {
 	 */
 	@Override
 	public float getDistance(Query i_query) {
-
 		return getShape().getDistance(i_query);
 	}
 
 	/**
-	 * Returns the shape that represents this figure.
+	 * Returns the shape that represents this figure. If the shape doesn't exist
+	 * yet, it is lazily created by calling {@link #createShape()}. This method
+	 * never returns null.
 	 * 
 	 * @return the shape
 	 */
 	protected Shape getShape() {
-
 		if (m_shape == null) {
-			m_shape = new CompositeShape();
-			createShape(m_shape);
+			m_shape = createShape();
+			if (m_shape==null) {
+				throw new NullPointerException("created shape mmust not be null");
+			}
 		}
 
 		return m_shape;
@@ -67,7 +73,6 @@ public abstract class ShapeFigure3D extends Figure3D {
 	 */
 	@Override
 	public void render(RenderContext i_renderContext) {
-
 		getShape().render(i_renderContext);
 	}
 }
