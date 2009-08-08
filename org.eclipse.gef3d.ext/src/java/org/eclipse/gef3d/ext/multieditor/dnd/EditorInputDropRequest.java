@@ -37,6 +37,27 @@ public class EditorInputDropRequest extends Request implements DropRequest {
 
 	protected IMultiEditor multiEditor;
 
+	public static String UNDEF_TYPE = "UNDEF_TYPE";
+	
+	/**
+	 * Consructs this request and set type to {@link #UNDEF_TYPE}.
+	 */
+	public EditorInputDropRequest() {
+		this(UNDEF_TYPE);
+	}
+
+	/**
+	 * Constructs this request and set s type.
+	 * The type should not be null since some policies may throw
+	 * a {@link NullPointerException} in that case.
+	 * 
+	 * @param type type of this request, should not be null.
+	 * @see https://bugs.eclipse.org/bugs/show_bug.cgi?id=285741
+	 */
+	public EditorInputDropRequest(Object type) {
+		super(type);
+	}
+
 	/**
 	 * Returns the {@link IEditorInput}s which were dropped onto the
 	 * editor, i.e. the figure. This value is set after the mouse has been
