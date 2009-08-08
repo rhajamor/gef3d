@@ -17,7 +17,7 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Math3D.Side;
+import org.eclipse.draw3d.geometry.Math3DBase.Side;
 import org.eclipse.draw3d.geometryext.Plane;
 import org.eclipse.draw3d.geometryext.PointList3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;

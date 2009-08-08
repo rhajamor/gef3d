@@ -119,6 +119,8 @@ public class SphereShape extends PositionableShape {
 	private static final Map<Integer, SphereTriangle[][]> STRIPE_CACHE =
 		new WeakHashMap<Integer, SphereTriangle[][]>();
 
+	private static final float[] TMP_F2 = new float[2];
+
 	static {
 		Position3DImpl pos = new Position3DImpl();
 		pos.setSize3D(new Vector3fImpl(1, 1, 1));
@@ -228,33 +230,6 @@ public class SphereShape extends PositionableShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.PositionableShape#doRender(org.eclipse.draw3d.RenderContext)
-	 */
-	@Override
-	protected void doRender(RenderContext i_renderContext) {
-
-		Graphics3D g3d = i_renderContext.getGraphics3D();
-		DisplayListManager displayListManager =
-			i_renderContext.getDisplayListManager();
-
-		initDisplayLists(displayListManager, g3d);
-
-		if (m_fill) {
-			g3d.glColor4f(m_fillColor[0], m_fillColor[1], m_fillColor[2],
-				m_fillColor[3]);
-			displayListManager.executeDisplayList(m_fillKey);
-		}
-
-		if (m_outline) {
-			g3d.glColor4f(m_outlineColor[0], m_outlineColor[1],
-				m_outlineColor[2], m_outlineColor[3]);
-			displayListManager.executeDisplayList(m_outlineKey);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.draw3d.shapes.PositionableShape#doGetDistance(org.eclipse.draw3d.picking.Query)
 	 */
 	@Override
@@ -288,26 +263,40 @@ public class SphereShape extends PositionableShape {
 				return Float.NaN;
 
 			// compute solutions of ray equation inserted into sphere equation
-			float p = -2 * dot;
-			float q = roToC.length() - RADIUS_SQUARED;
+			float B = -2 * dot;
+			float C = roToC.length() - RADIUS_SQUARED;
 
-			float p2 = p / 2;
-			float r = p2 * p2 - q; // radicant
-
-			// this should not happen, but let's be cautious
-			if (r < 0)
-				return Float.NaN;
-
-			if (r == 0)
-				return -p2;
-
-			float s = (float) Math.sqrt(r);
-			float x1 = -p2 + s;
-			float x2 = -p2 - s;
-
-			return Math.min(x1, x2);
+			Math3D.solveQuadraticEquation(B, C, TMP_F2);
+			return Math3D.minDistance(TMP_F2);
 		} finally {
 			Draw3DCache.returnVector3f(roToC, proj, orth);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doRender(org.eclipse.draw3d.RenderContext)
+	 */
+	@Override
+	protected void doRender(RenderContext i_renderContext) {
+
+		Graphics3D g3d = i_renderContext.getGraphics3D();
+		DisplayListManager displayListManager =
+			i_renderContext.getDisplayListManager();
+
+		initDisplayLists(displayListManager, g3d);
+
+		if (m_fill) {
+			g3d.glColor4f(m_fillColor[0], m_fillColor[1], m_fillColor[2],
+				m_fillColor[3]);
+			displayListManager.executeDisplayList(m_fillKey);
+		}
+
+		if (m_outline) {
+			g3d.glColor4f(m_outlineColor[0], m_outlineColor[1],
+				m_outlineColor[2], m_outlineColor[3]);
+			displayListManager.executeDisplayList(m_outlineKey);
 		}
 	}
 

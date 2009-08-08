@@ -16,7 +16,7 @@ import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.geometry.Math3D.Side;
+import org.eclipse.draw3d.geometry.Math3DBase.Side;
 
 /**
  * A plane that allows some simple geometric operations. Internally, the plane
