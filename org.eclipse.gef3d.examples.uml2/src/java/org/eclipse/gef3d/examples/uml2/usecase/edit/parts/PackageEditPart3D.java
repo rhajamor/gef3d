@@ -77,18 +77,4 @@ public class PackageEditPart3D extends PackageEditPart {
 		return new DragEditPartsTrackerEx(this);
 	}
 
-	/**
-	 * Workaround due to bug
-	 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=285741
-	 * .
-	 * 
-	 * @see org.eclipse.gef.editparts.AbstractEditPart#getTargetEditPart(org.eclipse.gef.Request)
-	 */
-	@Override
-	public EditPart getTargetEditPart(Request request) {
-		if (request instanceof EditorInputDropRequest)
-			return null;
-		return super.getTargetEditPart(request);
-	}
-
 }
