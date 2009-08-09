@@ -13,8 +13,11 @@ package org.eclipse.draw3d.ui.viewer;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CylinderShape;
+import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
+import org.eclipse.draw3d.shapes.TransparentShape;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.widgets.Display;
@@ -46,13 +49,23 @@ public class ShapeViewer extends Draw3DViewer {
 			@Override
 			protected Shape createShape() {
 
-				return new CylinderShape(this.getPosition3D(), 12, 0.3f);
+				CompositeShape composite = new CompositeShape();
+				composite.addOpaque(new CylinderShape(this.getPosition3D(), 12,
+					0.3f));
+
+				ParaxialBoundsFigureShape pbShape =
+					new ParaxialBoundsFigureShape(this);
+
+				composite.addTransparent(new TransparentShape(this, pbShape));
+
+				return composite;
 				// return new SphereShape(this.getPosition3D(), 4);
 			}
 		};
 
 		figure.getPosition3D().setLocation3D(new Vector3fImpl(0, 0, 0));
 		figure.getPosition3D().setSize3D(new Vector3fImpl(100, 100, 100));
+		figure.getPosition3D().setRotation3D(new Vector3fImpl(20, 0, 0));
 
 		Device dev = Display.getCurrent();
 		figure.setBackgroundColor(dev.getSystemColor(SWT.COLOR_DARK_BLUE));

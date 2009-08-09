@@ -403,14 +403,19 @@ public class CylinderShape extends PositionableShape {
 		float zi0 = Float.isNaN(d0) ? Float.NaN : zo + zd * d0;
 		float zi1 = Float.isNaN(d1) ? Float.NaN : zo + zd * d1;
 
-		if (!Math3D.in(i_minZ, i_height, zi0))
-			return d1;
+		boolean v0 = Math3D.in(i_minZ, i_height, zi0);
+		boolean v1 = Math3D.in(i_minZ, i_height, zi1);
 
-		if (!Math3D.in(i_minZ, i_height, zi1))
+		if (!v0 && !v1)
+			return Float.NaN;
+
+		if (v0 && v1)
+			return Math3D.minDistance(d0, d1);
+
+		if (v0)
 			return d0;
 
-		// both hits are valid
-		return Math3D.minDistance(d0, d1);
+		return d1;
 	}
 
 	/**
@@ -544,8 +549,8 @@ public class CylinderShape extends PositionableShape {
 		Vector3f rayOrigin = Draw3DCache.getVector3f();
 		try {
 			float h = m_config.getHeight();
-			Math3D
-				.translate(i_query.getRayOrigin(), -0.5f, -0.5f, h, rayOrigin);
+			Math3D.translate(i_query.getRayOrigin(), -0.5f, -0.5f, h - 1,
+				rayOrigin);
 			IVector3f rayDirection = i_query.getRayDirection();
 
 			return doGetConeDistance(rayOrigin, rayDirection, h - 1, h);

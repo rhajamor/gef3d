@@ -35,6 +35,9 @@ public class Math3DCache {
 	private static final Queue<Matrix4f> m_matrix4f =
 		new LinkedList<Matrix4f>();
 
+	private static final Queue<ParaxialBoundingBox> m_paraxialBoundingBox =
+		new LinkedList<ParaxialBoundingBox>();
+
 	/**
 	 * Synchronize access to the cache queues.
 	 */
@@ -134,6 +137,28 @@ public class Math3DCache {
 				return new Matrix4fImpl();
 			else
 				return m_matrix4f.remove();
+		}
+	}
+
+	/**
+	 * Returns a cached {@link ParaxialBoundingBox}.
+	 * 
+	 * @return a cached paraxial bounding box
+	 */
+	public static ParaxialBoundingBox getParaxialBoundingBox() {
+
+		if (m_synchronized) {
+			synchronized (m_paraxialBoundingBox) {
+				if (m_paraxialBoundingBox.isEmpty())
+					return new ParaxialBoundingBoxImpl();
+				else
+					return m_paraxialBoundingBox.remove();
+			}
+		} else {
+			if (m_paraxialBoundingBox.isEmpty())
+				return new ParaxialBoundingBoxImpl();
+			else
+				return m_paraxialBoundingBox.remove();
 		}
 	}
 
@@ -281,6 +306,26 @@ public class Math3DCache {
 			for (Matrix4f m : i_ms)
 				if (m != null)
 					m_matrix4f.offer(m);
+	}
+
+	/**
+	 * Returns the given paraxial bounding boxes to the cache. If any of the
+	 * given paraxial bounding boxes is <code>null</code>, it is ignored.
+	 * 
+	 * @param i_ps the paraxial bounding boxes to return
+	 */
+	public static void returnParaxialBoundingBox(ParaxialBoundingBox... i_ps) {
+
+		if (m_synchronized)
+			synchronized (m_paraxialBoundingBox) {
+				for (ParaxialBoundingBox p : i_ps)
+					if (p != null)
+						m_paraxialBoundingBox.offer(p);
+			}
+		else
+			for (ParaxialBoundingBox p : i_ps)
+				if (p != null)
+					m_paraxialBoundingBox.offer(p);
 	}
 
 	/**

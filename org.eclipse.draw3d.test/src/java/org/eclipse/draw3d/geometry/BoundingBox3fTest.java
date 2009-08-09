@@ -53,8 +53,8 @@ public class BoundingBox3fTest extends TestCase {
 		IVector3f v0 = new Vector3fImpl();
 		IBoundingBox b0 = new BoundingBoxImpl();
 
-		assertTrue(v0.equals(b0.getPosition(null)));
-		assertTrue(v0.equals(b0.getPosition(null)));
+		assertTrue(v0.equals(b0.getLocation(null)));
+		assertTrue(v0.equals(b0.getLocation(null)));
 	}
 
 	/**
@@ -71,9 +71,9 @@ public class BoundingBox3fTest extends TestCase {
 		IBoundingBox b0 = new BoundingBoxImpl(v0, v1);
 		IBoundingBox b1 = new BoundingBoxImpl(b0);
 
-		if (!v0.equals(b1.getPosition(null))) {
+		if (!v0.equals(b1.getLocation(null))) {
 			fail("testBoundingBox3fImplIBoundingBox3f - Source position vector not stored correctly: "
-					+ v0.toString() + " " + b1.getPosition(null).toString());
+					+ v0.toString() + " " + b1.getLocation(null).toString());
 		}
 
 		if (!v1.equals(b1.getSize(null))) {
@@ -141,9 +141,9 @@ public class BoundingBox3fTest extends TestCase {
 		Math3D.translate(v0, delta * -0.5f, delta * -0.5f, delta * -0.5f, v0);
 		Math3D.translate(v1, delta, delta, delta, v1);
 
-		if (!v0.equals(b0.getPosition(null))) {
+		if (!v0.equals(b0.getLocation(null))) {
 			fail("testExpand - Position vector not equals to expected: "
-					+ v0.toString() + b0.getPosition(null).toString());
+					+ v0.toString() + b0.getLocation(null).toString());
 		}
 
 		if (!v1.equals(b0.getSize(null))) {
@@ -192,8 +192,8 @@ public class BoundingBox3fTest extends TestCase {
 					+ v0.toString() + v1.toString());
 		}
 
-		v0 = b0.getPosition(null);
-		v1 = b1.getPosition(null);
+		v0 = b0.getLocation(null);
+		v1 = b1.getLocation(null);
 		if (!v0.equals(v1)) {
 			fail("testSet - Position vectors to not match between source and destination: "
 					+ v0.toString() + v1.toString());
@@ -210,7 +210,7 @@ public class BoundingBox3fTest extends TestCase {
 		Vector3f v0 = GeometryTests.getRandomVector3f();
 
 		b0.setLocation(v0.getX(), v0.getY(), v0.getZ());
-		IVector3f v1 = b0.getPosition(null);
+		IVector3f v1 = b0.getLocation(null);
 
 		if (!v0.equals(v1)) {
 			fail("testSetLocation - Position vector not equal to source: "
@@ -226,7 +226,7 @@ public class BoundingBox3fTest extends TestCase {
 	public void testTranslateFloatFloatFloat() {
 		BoundingBox b0 = GeometryTests.getRandomBoundingBox3f();
 		Vector3f v0 = new Vector3fImpl();
-		b0.getPosition(v0);
+		b0.getLocation(v0);
 
 		float dX = GeometryTests.getRandomFloat();
 		float dY = GeometryTests.getRandomFloat();
@@ -235,7 +235,7 @@ public class BoundingBox3fTest extends TestCase {
 		b0.translate(dX, dY, dZ);
 		Math3D.translate(v0, dX, dY, dZ, v0);
 
-		if (!v0.equals(b0.getPosition(null))) {
+		if (!v0.equals(b0.getLocation(null))) {
 			fail("testTranslateFloatFloatFloat - Size vector not equals to expected: "
 					+ v0.toString() + b0.toString());
 		}
@@ -249,13 +249,13 @@ public class BoundingBox3fTest extends TestCase {
 	public void testTranslateIVector3f() {
 		BoundingBox b0 = GeometryTests.getRandomBoundingBox3f();
 		Vector3f v0 = new Vector3fImpl();
-		b0.getPosition(v0);
+		b0.getLocation(v0);
 		Vector3f v1 = GeometryTests.getRandomVector3f();
 
 		b0.translate(v1);
 		Math3D.translate(v0, v1.getX(), v1.getY(), v1.getZ(), v0);
 
-		if (!v0.equals(b0.getPosition(null))) {
+		if (!v0.equals(b0.getLocation(null))) {
 			fail("testResizeFloatFloatFloat - Size vector not equals to expected: "
 					+ v0.toString()
 					+ v1.toString()
@@ -271,7 +271,7 @@ public class BoundingBox3fTest extends TestCase {
 	public void testGetCenter() {
 		BoundingBox b0 = GeometryTests.getRandomBoundingBox3f();
 		Vector3f v0 = new Vector3fImpl();
-		IVector3f v1 = b0.getPosition(null);
+		IVector3f v1 = b0.getLocation(null);
 		IVector3f v2 = b0.getSize(null);
 
 		v0.setX(v1.getX() + v2.getX() / 2);
@@ -294,7 +294,7 @@ public class BoundingBox3fTest extends TestCase {
 
 	/**
 	 * Test method for
-	 * {@link org.eclipse.draw3d.geometryext.BoundingBoxImpl#getPosition(org.eclipse.draw3d.geometryext.Vector3f)}
+	 * {@link org.eclipse.draw3d.geometryext.BoundingBoxImpl#getLocation(org.eclipse.draw3d.geometryext.Vector3f)}
 	 * .
 	 */
 	public void testGetPosition() {
@@ -302,14 +302,14 @@ public class BoundingBox3fTest extends TestCase {
 		Vector3f v1 = GeometryTests.getRandomVector3f();
 		BoundingBox b0 = new BoundingBoxImpl(v0, v1);
 
-		IVector3f v2 = b0.getPosition(null);
+		IVector3f v2 = b0.getLocation(null);
 		if (!v0.equals(v2)) {
 			fail("testGetPosition - Expected values do not match: "
 					+ v0.toString() + v2.toString());
 		}
 
 		Vector3f v3 = new Vector3fImpl();
-		b0.getPosition(v3);
+		b0.getLocation(v3);
 		if (!v0.equals(v3)) {
 			fail("testGetCenter - Expected values do not match: "
 					+ v0.toString() + v3.toString());
@@ -367,7 +367,7 @@ public class BoundingBox3fTest extends TestCase {
 		IMatrix4f m0 = GeometryTests.getRandomMatrix4f();
 		BoundingBoxImpl b0 = GeometryTests.getRandomBoundingBox3f();
 
-		Vector3f v0 = new Vector3fImpl(b0.getPosition(null));
+		Vector3f v0 = new Vector3fImpl(b0.getLocation(null));
 		Vector4f v1 = new Vector4fImpl(v0.getX(), v0.getY(), v0.getZ(), 1);
 		Math3D.transform(m0, v1, v1);
 
@@ -377,9 +377,9 @@ public class BoundingBox3fTest extends TestCase {
 
 		b0.transform(m0);
 
-		if (!v0.equals(b0.getPosition(null))) {
+		if (!v0.equals(b0.getLocation(null))) {
 			fail("testTransform - Position vector not as expected: "
-					+ v0.toString() + b0.getPosition(null));
+					+ v0.toString() + b0.getLocation(null));
 		}
 	}
 }

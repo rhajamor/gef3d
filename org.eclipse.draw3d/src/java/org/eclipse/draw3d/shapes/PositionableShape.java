@@ -14,6 +14,10 @@ import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Math3DCache;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
@@ -30,6 +34,32 @@ import org.eclipse.draw3d.util.Draw3DCache;
 public abstract class PositionableShape implements Shape {
 
 	private IPosition3D m_position3D;
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getParaxialBoundingBox(ParaxialBoundingBox)
+	 */
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
+
+		ParaxialBoundingBox result = o_result;
+		if (result == null)
+			result = new ParaxialBoundingBoxImpl();
+
+		Vector3f location = Math3DCache.getVector3f();
+		Vector3f size = Math3DCache.getVector3f();
+		try {
+			Math3D.getCuboidParaxialBoundingBox(m_position3D, location, size);
+
+			result.setLocation(location);
+			result.setSize(size);
+
+			return result;
+		} finally {
+			Math3DCache.returnVector3f(location, size);
+		}
+	}
 
 	/**
 	 * Creates a new positionable shape with the given position.
@@ -82,7 +112,8 @@ public abstract class PositionableShape implements Shape {
 			newDirection.set(oldDirection);
 
 			// transform picking ray
-			m_position3D.transformRay(newOrigin, newDirection);
+			if (!m_position3D.transformRay(newOrigin, newDirection))
+				return Float.NaN;
 
 			float newLength = newDirection.length();
 			if (newLength != 1)
@@ -130,7 +161,6 @@ public abstract class PositionableShape implements Shape {
 				g3d.glPushMatrix();
 
 			try {
-				// TODO this must be optimized
 				if (useModelMatrix)
 					g3d.setPosition(m_position3D);
 

@@ -31,11 +31,13 @@ import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.camera.ICameraListener;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IHost3D;
-import org.eclipse.draw3d.geometry.IParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DImpl;
 import org.eclipse.draw3d.geometry.Transformable;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
@@ -44,6 +46,7 @@ import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.draw3d.util.DebugPrimitives;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
@@ -82,7 +85,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 
 		private final Figure3DHelper helper;
 
-		private IParaxialBoundingBox m_paraxialBounds;
+		private ParaxialBoundingBox m_paraxialBounds;
 
 		private ISurface m_surface =
 			new VoidSurface(this, LightweightSystem3D.this, 0.1f);
@@ -96,6 +99,21 @@ public class LightweightSystem3D extends LightweightSystem implements
 		RootFigure3D() {
 
 			universe = new Position3DImpl(this) {
+
+				private final IVector3f SIZE =
+					new Vector3fImpl(Float.MAX_VALUE, Float.MAX_VALUE,
+						Float.MAX_VALUE);
+
+				/**
+				 * {@inheritDoc}
+				 * 
+				 * @see org.eclipse.draw3d.geometry.Position3DImpl#getSize3D()
+				 */
+				@Override
+				public IVector3f getSize3D() {
+
+					return SIZE;
+				}
 
 				/**
 				 * {@inheritDoc}
@@ -142,9 +160,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 				}
 
 			};
-
-			universe.setSize3D(new Vector3fImpl(Float.MAX_VALUE,
-				Float.MAX_VALUE, Float.MAX_VALUE));
 
 			helper = new Figure3DHelper(new Figure3DFriend(this) {
 
@@ -314,14 +329,33 @@ public class LightweightSystem3D extends LightweightSystem implements
 		/**
 		 * {@inheritDoc}
 		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#getParaxialBoundingBox()
+		 * @see org.eclipse.draw3d.IFigure3D#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
 		 */
-		public IParaxialBoundingBox getParaxialBoundingBox() {
+		public ParaxialBoundingBox getParaxialBoundingBox(
+			ParaxialBoundingBox o_result) {
 
-			if (m_paraxialBounds == null)
-				m_paraxialBounds = helper.getParaxialBoundingBox();
+			ParaxialBoundingBox result = o_result;
+			if (o_result == null)
+				result = new ParaxialBoundingBoxImpl();
 
-			return m_paraxialBounds;
+			Vector3f location = Draw3DCache.getVector3f();
+			Vector3f size = Draw3DCache.getVector3f();
+			try {
+				if (m_paraxialBounds == null) {
+					m_paraxialBounds = new ParaxialBoundingBoxImpl();
+					helper.unionWithChildParaxialBounds(m_paraxialBounds);
+				}
+
+				m_paraxialBounds.getLocation(location);
+				m_paraxialBounds.getSize(size);
+
+				result.setLocation(location);
+				result.setSize(size);
+
+				return result;
+			} finally {
+				Draw3DCache.returnVector3f(location, size);
+			}
 		}
 
 		/**

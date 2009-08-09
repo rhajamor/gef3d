@@ -14,6 +14,7 @@ package org.eclipse.draw3d.shapes;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.TransparentObject;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.swt.graphics.Color;
@@ -56,6 +57,18 @@ public abstract class FigureShape implements Shape {
 	 *         picking ray
 	 */
 	protected abstract float doGetDistance(IFigure3D i_figure, Query i_query);
+
+	/**
+	 * Returns a paraxial (to the world coordinate system) bounding box that
+	 * contains this object.
+	 * 
+	 * @param i_figure the figure which this shape belongs to
+	 * @param o_result the result bounding box, if <code>null</code>, a new
+	 *            bounding box will be returned
+	 * @return the paraxial bounding box
+	 */
+	protected abstract ParaxialBoundingBox doGetParaxialBoundingBox(
+		IFigure3D i_figure, ParaxialBoundingBox o_result);
 
 	/**
 	 * Perform the actual rendering. Extenders of this class must override and
@@ -101,6 +114,17 @@ public abstract class FigureShape implements Shape {
 		Color foregroundColor = m_figure.getForegroundColor();
 
 		return ColorConverter.toFloatArray(foregroundColor, alpha, null);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
+
+		return doGetParaxialBoundingBox(m_figure, o_result);
 	}
 
 	/**

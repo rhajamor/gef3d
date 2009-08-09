@@ -30,10 +30,8 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.geometry.BoundingBox;
 import org.eclipse.draw3d.geometry.BoundingBoxImpl;
 import org.eclipse.draw3d.geometry.IBoundingBox;
-import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
-import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.Picker;
@@ -371,30 +369,27 @@ public class Figure3DHelper {
 	}
 
 	/**
-	 * Creates the paraxial bounding box for the figure.
+	 * Unites the given paraxial bounding box with the paraxial bounding boxes
+	 * of all 3D descendents of this figure.
 	 * 
-	 * @return the paraxial bounding box
+	 * @param i_figureBounds the paraxial bounding box of this figure
 	 */
 	@SuppressWarnings("unchecked")
-	public ParaxialBoundingBoxImpl getParaxialBoundingBox() {
+	public void unionWithChildParaxialBounds(ParaxialBoundingBox i_figureBounds) {
 
-		// TODO store the paraxial bounding box and invalidate it when either
-		// any of my descendents or any of my ancestors has moved or been
-		// resized
+		ParaxialBoundingBox tmp = Draw3DCache.getParaxialBoundingBox();
+		try {
+			List<IFigure3D> descendants3D = getDescendants3D();
+			for (IFigure3D descendant3D : descendants3D) {
+				ParaxialBoundingBox descBounds =
+					descendant3D.getParaxialBoundingBox(tmp);
+				if (descBounds != null)
+					i_figureBounds.union(descBounds);
 
-		IFigure3D figure = m_figuresFriend.figure;
-		Position3D position3D = figure.getPosition3D();
-
-		ParaxialBoundingBoxImpl pBoundingBox =
-			new ParaxialBoundingBoxImpl(position3D.getBounds3D(),
-				IMatrix4f.IDENTITY);
-
-		List<IFigure3D> descendants3D = getDescendants3D();
-		for (IFigure3D descendant3D : descendants3D)
-			if (!(descendant3D instanceof Connection3D))
-				pBoundingBox.union(descendant3D.getParaxialBoundingBox());
-
-		return pBoundingBox;
+			}
+		} finally {
+			Draw3DCache.returnParaxialBoundingBox(tmp);
+		}
 	}
 
 	/**
@@ -530,11 +525,10 @@ public class Figure3DHelper {
 
 						// 2D connections have surface relative coordinates, no
 						// translation necessary:
-//						int dx = -Math.round(location3D.getX());
-//						int dy = -Math.round(location3D.getY());
-//						graphics.translate(dx, dy);
-						
-						
+						// int dx = -Math.round(location3D.getX());
+						// int dy = -Math.round(location3D.getY());
+						// graphics.translate(dx, dy);
+
 						connectionLayer.paint(graphics);
 						graphics.restoreState();
 					}

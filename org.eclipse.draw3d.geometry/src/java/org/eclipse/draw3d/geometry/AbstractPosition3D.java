@@ -22,9 +22,19 @@ import java.util.EnumSet;
  */
 public abstract class AbstractPosition3D implements Position3D {
 
-	private transient Matrix4fImpl m_inverseScalingRotationMatrix;
+	/**
+	 * The matrix with which to transform the direction of a ray.
+	 * 
+	 * @see #transformRay(Vector3f, Vector3f)
+	 */
+	private transient Matrix4fImpl m_rayDirectionMatrix;
 
-	private transient Matrix4fImpl m_inverseTransformationMatrix;
+	/**
+	 * The matrix with which to transform the origin of a ray.
+	 * 
+	 * @see #transformRay(Vector3f, Vector3f)
+	 */
+	private transient Matrix4fImpl m_rayOriginMatrix;
 
 	private transient Matrix4fImpl m_rotationLocationMatrix;
 
@@ -32,10 +42,12 @@ public abstract class AbstractPosition3D implements Position3D {
 
 	private boolean m_valid;
 
+	private boolean m_invertible;
+
 	/**
 	 * The rotation angles of this figure.
 	 */
-	protected Vector3f rotation;
+	protected Vector3f rotationAngles;
 
 	/**
 	 * Boolean semaphore used by {@link #syncSize()} and {@link #syncSize3D()}
@@ -48,12 +60,13 @@ public abstract class AbstractPosition3D implements Position3D {
 	 */
 	public AbstractPosition3D() {
 
-		rotation = new Vector3fImpl(); // null vector
+		rotationAngles = new Vector3fImpl(); // null vector
 		m_transformationMatrix = new Matrix4fImpl(); // identity
 		m_rotationLocationMatrix = new Matrix4fImpl(); // identity
-		m_inverseTransformationMatrix = new Matrix4fImpl(); // identity
-		m_inverseScalingRotationMatrix = new Matrix4fImpl(); // identity
+		m_rayOriginMatrix = new Matrix4fImpl(); // identity
+		m_rayDirectionMatrix = new Matrix4fImpl(); // identiy
 		m_valid = false;
+		m_invertible = false;
 		updatingBounds = false;
 	}
 
@@ -88,7 +101,7 @@ public abstract class AbstractPosition3D implements Position3D {
 	 */
 	public IVector3f getRotation3D() {
 
-		return rotation;
+		return rotationAngles;
 	}
 
 	/**
@@ -161,13 +174,13 @@ public abstract class AbstractPosition3D implements Position3D {
 		if (i_rotation == null) // parameter precondition
 			throw new NullPointerException("i_rotation must not be null");
 
-		if (rotation.equals(i_rotation))
+		if (rotationAngles.equals(i_rotation))
 			return;
 
 		Vector3fImpl delta = new Vector3fImpl();
-		Math3D.sub(i_rotation, rotation, delta);
+		Math3D.sub(i_rotation, rotationAngles, delta);
 
-		rotation.set(i_rotation);
+		rotationAngles.set(i_rotation);
 		invalidate();
 
 		firePositionChanged(PositionHint.ROTATION, delta);
@@ -194,11 +207,16 @@ public abstract class AbstractPosition3D implements Position3D {
 	 * @see org.eclipse.draw3d.geometry.IPosition3D#transformRay(org.eclipse.draw3d.geometry.Vector3f,
 	 *      org.eclipse.draw3d.geometry.Vector3f)
 	 */
-	public void transformRay(Vector3f i_origin, Vector3f i_direction) {
+	public boolean transformRay(Vector3f i_origin, Vector3f i_direction) {
 
 		validate();
-		i_origin.transform(m_inverseTransformationMatrix);
-		i_direction.transform(m_inverseScalingRotationMatrix);
+
+		if (!m_invertible)
+			return false;
+
+		i_origin.transform(m_rayOriginMatrix);
+		i_direction.transform(m_rayDirectionMatrix);
+		return true;
 	}
 
 	private void validate() {
@@ -207,8 +225,10 @@ public abstract class AbstractPosition3D implements Position3D {
 			return;
 
 		Vector3f center = Math3DCache.getVector3f();
-		Matrix4f scalingRotation = Math3DCache.getMatrix4f();
+		Vector3f invRotation = Math3DCache.getVector3f();
+		Vector3f invScale = Math3DCache.getVector3f();
 		try {
+			// calculate the transformation and rotation / location matrices
 			// transformations are applied in reverse order
 			Position3D parent = getParentPosition();
 			if (parent != null)
@@ -218,34 +238,51 @@ public abstract class AbstractPosition3D implements Position3D {
 				Math3D.translate(IMatrix4f.IDENTITY, getLocation3D(),
 					m_rotationLocationMatrix);
 
-			scalingRotation.setIdentity();
-			Math3D.scale(0.5f, getSize3D(), center);
-			Math3D.translate(m_rotationLocationMatrix, center,
-				m_rotationLocationMatrix);
-			Math3D.translate(scalingRotation, center, scalingRotation);
+			if (!IVector3f.NULLVEC3f.equals(getRotation3D())) {
+				Math3D.scale(0.5f, getSize3D(), center);
+				Math3D.translate(m_rotationLocationMatrix, center,
+					m_rotationLocationMatrix);
 
-			Math3D.rotate(getRotation3D(), m_rotationLocationMatrix,
-				m_rotationLocationMatrix);
-			Math3D.rotate(getRotation3D(), scalingRotation, scalingRotation);
+				Math3D.rotate(getRotation3D(), m_rotationLocationMatrix,
+					m_rotationLocationMatrix);
 
-			Math3D.scale(-0.5f, getSize3D(), center);
-			Math3D.translate(m_rotationLocationMatrix, center,
-				m_rotationLocationMatrix);
-			Math3D.translate(scalingRotation, center, scalingRotation);
+				Math3D.scale(-0.5f, getSize3D(), center);
+				Math3D.translate(m_rotationLocationMatrix, center,
+					m_rotationLocationMatrix);
+			}
 
-			Math3D.scale(getSize3D(), m_rotationLocationMatrix,
+			m_transformationMatrix.set(m_rotationLocationMatrix);
+
+			Math3D.scale(getSize3D(), m_transformationMatrix,
 				m_transformationMatrix);
-			Math3D.scale(getSize3D(), scalingRotation, scalingRotation);
 
-			Math3D.invert(scalingRotation, m_inverseScalingRotationMatrix);
-			Math3D
-				.invert(m_transformationMatrix, m_inverseTransformationMatrix);
+			if (getSize3D().getX() == 0 || getSize3D().getY() == 0
+				|| getSize3D().getZ() == 0) {
+				m_invertible = false;
+			} else {
+				m_invertible = true;
+
+				// now calculate the inverse ray transformation matrices
+				Math3D.invert(m_transformationMatrix, m_rayOriginMatrix);
+
+				m_rayDirectionMatrix.setIdentity();
+				if (!IVector3f.NULLVEC3f.equals(getRotation3D())) {
+					invRotation.set(getRotation3D());
+					invRotation.scale(-1);
+					Math3D.rotate(invRotation, m_rayDirectionMatrix,
+						m_rayDirectionMatrix);
+				}
+
+				invScale.setX(1 / getSize3D().getX());
+				invScale.setY(1 / getSize3D().getY());
+				invScale.setZ(1 / getSize3D().getZ());
+				Math3D.scale(invScale, m_rayDirectionMatrix,
+					m_rayDirectionMatrix);
+			}
 
 			m_valid = true;
 		} finally {
-			Math3DCache.returnVector3f(center);
-			Math3DCache.returnMatrix4f(scalingRotation);
+			Math3DCache.returnVector3f(center, invRotation, invScale);
 		}
 	}
-
 }

@@ -111,7 +111,7 @@ public class MoveHandleLocator3D extends MoveHandleLocator {
 
 			// GEF: target.setBounds(bounds);
 			Position3D position3d = target3D.getPosition3D();
-			position3d.setLocation3D(bounds.getPosition(TEMP_V_1));
+			position3d.setLocation3D(bounds.getLocation(TEMP_V_1));
 			position3d.setSize3D(bounds.getSize(TEMP_V_1));
 		} else {
 			log.warning("IFigure - cannot relocate 2D figure: " + target); //$NON-NLS-1$

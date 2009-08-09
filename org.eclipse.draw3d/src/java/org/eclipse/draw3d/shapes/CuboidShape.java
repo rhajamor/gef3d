@@ -321,12 +321,29 @@ public class CuboidShape extends PositionableShape {
 	/**
 	 * Sets the fill color.
 	 * 
-	 * @param i_fillColor the fill color
-	 * @param i_fillAlpha the alpha value
+	 * @param i_color the fill color
+	 * @param i_alpha the alpha value
 	 */
-	public void setFillColor(Color i_fillColor, int i_fillAlpha) {
+	public void setFillColor(Color i_color, int i_alpha) {
 
-		ColorConverter.toFloatArray(i_fillColor, i_fillAlpha, m_fillColor);
+		ColorConverter.toFloatArray(i_color, i_alpha, m_fillColor);
+	}
+
+	/**
+	 * Sets the fill color.
+	 * 
+	 * @param i_red the red component
+	 * @param i_green the green component
+	 * @param i_blue the blue component
+	 * @param i_alpha the alpha value
+	 */
+	public void setFillColor(float i_red, float i_green, float i_blue,
+		float i_alpha) {
+
+		m_fillColor[0] = i_red;
+		m_fillColor[1] = i_green;
+		m_fillColor[2] = i_blue;
+		m_fillColor[3] = i_alpha;
 	}
 
 	/**
@@ -343,13 +360,29 @@ public class CuboidShape extends PositionableShape {
 	/**
 	 * Sets the outline color.
 	 * 
-	 * @param i_outlineColor the outline color
-	 * @param i_outlineAlpha the alpha value
+	 * @param i_color the outline color
+	 * @param i_alpha the alpha value
 	 */
-	public void setOutlineColor(Color i_outlineColor, int i_outlineAlpha) {
+	public void setOutlineColor(Color i_color, int i_alpha) {
 
-		ColorConverter.toFloatArray(i_outlineColor, i_outlineAlpha,
-			m_outlineColor);
+		ColorConverter.toFloatArray(i_color, i_alpha, m_outlineColor);
+	}
+
+	/**
+	 * Sets the outline color.
+	 * 
+	 * @param i_red the red component
+	 * @param i_green the green component
+	 * @param i_blue the blue component
+	 * @param i_alpha the alpha value
+	 */
+	public void setOutlineColor(float i_red, float i_green, float i_blue,
+		float i_alpha) {
+
+		m_outlineColor[0] = i_red;
+		m_outlineColor[1] = i_green;
+		m_outlineColor[2] = i_blue;
+		m_outlineColor[3] = i_alpha;
 	}
 
 	/**

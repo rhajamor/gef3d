@@ -197,6 +197,89 @@ public class Math3DBase {
 	}
 
 	/**
+	 * Calculates the start and size of the smallest paraxial bounding box that
+	 * contains a cuboid with the given position.
+	 * 
+	 * @param i_position the position
+	 * @param o_location the calculated location, must not be <code>null</code>
+	 * @param o_size the calculated size, must not be <code>null</code>
+	 * @throws NullPointerException if any of the given arguments is
+	 *             <code>null</code>
+	 */
+	public static void getCuboidParaxialBoundingBox(IPosition3D i_position,
+		Vector3f o_location, Vector3f o_size) {
+
+		if (i_position == null)
+			throw new NullPointerException("i_position must not be null");
+
+		if (o_location == null)
+			throw new NullPointerException("o_location must not be null");
+
+		if (o_size == null)
+			throw new NullPointerException("o_size must not be null");
+
+		if (IVector3f.NULLVEC3f.equals(i_position.getRotation3D())) {
+			o_location.set(i_position.getLocation3D());
+			o_size.set(i_position.getSize3D());
+		} else {
+			Vector3f end = Math3DCache.getVector3f();
+			Vector3f p = Math3DCache.getVector3f();
+			try {
+				IMatrix4f matrix = i_position.getTransformationMatrix();
+
+				p.set(0, 0, 0);
+				p.transform(matrix);
+				o_location.set(p);
+				end.set(p);
+
+				p.set(0, 0, 0);
+				p.transform(matrix);
+				Math3D.min(o_location, p, o_location);
+				Math3D.max(end, p, end);
+
+				p.set(0, 0, 1);
+				p.transform(matrix);
+				Math3D.min(o_location, p, o_location);
+				Math3D.max(end, p, end);
+
+				p.set(0, 1, 0);
+				p.transform(matrix);
+				Math3D.min(o_location, p, o_location);
+				Math3D.max(end, p, end);
+
+				p.set(0, 1, 1);
+				p.transform(matrix);
+				Math3D.min(o_location, p, o_location);
+				Math3D.max(end, p, end);
+
+				p.set(1, 0, 0);
+				p.transform(matrix);
+				Math3D.min(o_location, p, o_location);
+				Math3D.max(end, p, end);
+
+				p.set(1, 0, 1);
+				p.transform(matrix);
+				Math3D.min(o_location, p, o_location);
+				Math3D.max(end, p, end);
+
+				p.set(1, 1, 0);
+				p.transform(matrix);
+				Math3D.min(o_location, p, o_location);
+				Math3D.max(end, p, end);
+
+				p.set(1, 1, 1);
+				p.transform(matrix);
+				Math3D.min(o_location, p, o_location);
+				Math3D.max(end, p, end);
+
+				Math3D.sub(end, o_location, o_size);
+			} finally {
+				Math3DCache.returnVector3f(end, p);
+			}
+		}
+	}
+
+	/**
 	 * Calculates a point on a ray from a distance like this
 	 * 
 	 * <pre>

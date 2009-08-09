@@ -47,13 +47,13 @@ public interface IBoundingBox {
 	public Vector3f getEnd(Vector3f o_resultVector3f);
 
 	/**
-	 * Returns the position of this bounding box.
+	 * Returns the location of this bounding box.
 	 * 
 	 * @param o_resultVector3f The result vector, if <code>null</code>, a new
 	 *            vector will be returned
-	 * @return the position of this bounding box
+	 * @return the location of this bounding box
 	 */
-	public Vector3f getPosition(Vector3f o_resultVector3f);
+	public Vector3f getLocation(Vector3f o_resultVector3f);
 
 	/**
 	 * Returns the size of this bounding box. Depending on the implementation,

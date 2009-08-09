@@ -21,7 +21,7 @@ import java.util.List;
  * @since 30.07.2009
  */
 public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
-		IParaxialBoundingBox {
+		ParaxialBoundingBox {
 
 	/**
 	 * Enumerates the sides of a paraxial bounding box from the point of view of
@@ -65,7 +65,7 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 			Vector3f start = Math3DCache.getVector3f();
 			Vector3f end = Math3DCache.getVector3f();
 			try {
-				i_box.getPosition(start);
+				i_box.getLocation(start);
 				i_box.getEnd(end);
 				switch (this) {
 				case FRONT:
@@ -128,7 +128,7 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 			case LEFT:
 			case BACK:
 			case BOTTOM:
-				i_box.getPosition(o_result);
+				i_box.getLocation(o_result);
 				break;
 			case FRONT:
 			case RIGHT:
@@ -139,33 +139,9 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 		}
 	}
 
-	/**
-	 * Creates the smallest paraxial bounding box that contains the given
-	 * bounding box after the given bounding box was transformed by the given
-	 * matrix.
-	 * 
-	 * @param i_bounds3D the bounding box to contain
-	 * @param i_matrix the transformation matrix, usually the model matrix of a
-	 *            figure
-	 * @throws NullPointerException if any of the given arguments is
-	 *             <code>null</code>
-	 */
-	public ParaxialBoundingBoxImpl(IBoundingBox i_bounds3D, IMatrix4f i_matrix) {
-
-		update(i_bounds3D, i_matrix);
-	}
-
-	/**
-	 * Updates this paraxial bounding box so that it is the smallest paraxial
-	 * bounding box that contains the given bounding box after the given
-	 * bounding box was transformed by the given matrix.
-	 * 
-	 * @param i_bounds3D the bounding box to contain
-	 * @param i_matrix the transformation matrix, usually the model matrix of a
-	 *            figure
-	 * @throws NullPointerException if any of the given arguments is
-	 *             <code>null</code>
-	 * @todo optimize this by ditching size and using end to store dimensions
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.geometry.ParaxialBoundingBox#update(org.eclipse.draw3d.geometry.IBoundingBox, org.eclipse.draw3d.geometry.IMatrix4f)
 	 */
 	public void update(IBoundingBox i_bounds3D, IMatrix4f i_matrix) {
 
@@ -181,7 +157,7 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 		Vector3f pBoundsP1 = Math3DCache.getVector3f();
 		Vector3f tmp = Math3DCache.getVector3f();
 		try {
-			i_bounds3D.getPosition(boundsLoc);
+			i_bounds3D.getLocation(boundsLoc);
 			i_bounds3D.getSize(boundsSize);
 
 			tmp.set(boundsLoc);
@@ -299,16 +275,9 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 		}
 	}
 
-	/**
-	 * Modifies this paraxial bounding box so that it is the smallest paraxial
-	 * bounding box that contains the union of this and the given paraxial
-	 * bounding box.
-	 * 
-	 * @param i_paraxialBoundingBox the paraxial bounding box to unite with
-	 * @return <code>true</code> if this bounding box was modified by the union
-	 *         operation and <code>false</code> otherwise
-	 * @throws NullPointerException if the given paraxial bounding box is
-	 *             <code>null</code>
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.geometry.ParaxialBoundingBox#union(org.eclipse.draw3d.geometry.IParaxialBoundingBox)
 	 */
 	public boolean union(IParaxialBoundingBox i_paraxialBoundingBox) {
 
@@ -322,8 +291,8 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 		Vector3f theirPos = Math3DCache.getVector3f();
 		Vector3f theirEnd = Math3DCache.getVector3f();
 		try {
-			getPosition(myPos);
-			i_paraxialBoundingBox.getPosition(theirPos);
+			getLocation(myPos);
+			i_paraxialBoundingBox.getLocation(theirPos);
 
 			i_paraxialBoundingBox.getEnd(theirEnd);
 			getEnd(myEnd);
@@ -357,7 +326,7 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 		Vector3f start = Math3DCache.getVector3f();
 		Vector3f end = Math3DCache.getVector3f();
 		try {
-			getPosition(start);
+			getLocation(start);
 			getEnd(end);
 
 			return Math3D.in(start.getX(), end.getX(), i_point.getX())

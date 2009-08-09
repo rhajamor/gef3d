@@ -67,7 +67,7 @@ public class MultiEditorModelContainerEditPart extends
 		IFigure3D fig3D = ((IFigure3D) getFigure());
 		IBoundingBox box = fig3D.getBounds3D();
 		Vector3f vec = new Vector3fImpl();
-		box.getPosition(vec);
+		box.getLocation(vec);
 		vec.setZ(vec.getZ() + delta);
 		fig3D.getPosition3D().setLocation3D(vec);
 		refresh();

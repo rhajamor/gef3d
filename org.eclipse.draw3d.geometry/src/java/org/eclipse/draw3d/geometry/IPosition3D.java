@@ -140,9 +140,16 @@ public interface IPosition3D {
 	 * <p>
 	 * This method is used to transform a picking ray to model coordinates.
 	 * </p>
+	 * Be aware that it is not always possible to transform a ray. If the
+	 * transformation matrix of this position is not invertible, the ray cannot
+	 * be transformed in a meaningful way. This can happen if any component of
+	 * the size of this position is <code>0</code>. In that case, this method
+	 * returns <code>false</code>.
 	 * 
 	 * @param i_origin the origin of the ray to transform
 	 * @param i_direction the direction of the ray to transform
+	 * @return <code>true</code> if the ray could be transformed and
+	 *         <code>false</code> otherwise
 	 */
-	public void transformRay(Vector3f i_origin, Vector3f i_direction);
+	public boolean transformRay(Vector3f i_origin, Vector3f i_direction);
 }

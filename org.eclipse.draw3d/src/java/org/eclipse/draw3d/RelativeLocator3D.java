@@ -229,7 +229,7 @@ public class RelativeLocator3D extends RelativeLocator {
 				// super: += (int) (targetBounds.height * relativeY -
 				// ((targetSize.height + 1) / 2));
 
-				targetBox.getPosition(TMP_V1);
+				targetBox.getLocation(TMP_V1);
 				targetBox.getSize(TMP_V2);
 
 				TMP_V1.x += TMP_V2.x * m_relativeVec.x //

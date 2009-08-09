@@ -14,7 +14,6 @@ import java.util.List;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.geometry.IBoundingBox;
-import org.eclipse.draw3d.geometry.IParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometryext.SyncHost3D;
@@ -81,14 +80,6 @@ public interface IFigure3D extends IFigure, Pickable, IFigure2DHost3D,
 	 * @see Figure3DHelper#getDescendants3D()
 	 */
 	List<IFigure3D> getDescendants3D();
-
-	/**
-	 * Returns the smallest paraxial (to the world coordinate system) bounding
-	 * box that contains this figure and all its children.
-	 * 
-	 * @return the paraxial bounding box
-	 */
-	public IParaxialBoundingBox getParaxialBoundingBox();
 
 	/**
 	 * Returns preferred size of this figure. The preferred size is synchronized

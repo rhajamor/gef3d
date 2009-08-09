@@ -25,15 +25,19 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.geometry.Translatable;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IHost3D;
-import org.eclipse.draw3d.geometry.IParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Transformable;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.geometryext.SyncedVector3f;
 import org.eclipse.draw3d.geometryext.SynchronizedPosition3DImpl;
 import org.eclipse.draw3d.picking.Query;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Font;
 
 /**
@@ -86,7 +90,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	protected int m_alpha = 255;
 
-	private IParaxialBoundingBox m_paraxialBounds;
+	private ParaxialBoundingBox m_paraxialBounds;
 
 	SynchronizedPosition3DImpl position3D;
 
@@ -296,15 +300,39 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.IFigure3D#getParaxialBoundingBox()
+	 * @see org.eclipse.draw3d.IFigure3D#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
 	 */
 	@SuppressWarnings("unchecked")
-	public IParaxialBoundingBox getParaxialBoundingBox() {
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
 
-		if (m_paraxialBounds == null)
-			m_paraxialBounds = helper.getParaxialBoundingBox();
+		ParaxialBoundingBox result = o_result;
+		if (o_result == null)
+			result = new ParaxialBoundingBoxImpl();
 
-		return m_paraxialBounds;
+		Vector3f location = Draw3DCache.getVector3f();
+		Vector3f size = Draw3DCache.getVector3f();
+		try {
+			if (m_paraxialBounds == null) {
+				Math3D.getCuboidParaxialBoundingBox(getPosition3D(), location,
+					size);
+
+				m_paraxialBounds = new ParaxialBoundingBoxImpl();
+				m_paraxialBounds.setLocation(location);
+				m_paraxialBounds.setSize(size);
+				helper.unionWithChildParaxialBounds(m_paraxialBounds);
+			}
+
+			m_paraxialBounds.getLocation(location);
+			m_paraxialBounds.getSize(size);
+
+			result.setLocation(location);
+			result.setSize(size);
+
+			return result;
+		} finally {
+			Draw3DCache.returnVector3f(location, size);
+		}
 	}
 
 	/**

@@ -65,7 +65,7 @@ public class BoundingBoxImpl implements BoundingBox {
 		this.m_position = new Vector3fImpl();
 		this.m_size = new Vector3fImpl();
 
-		i_sourceBoundingBox.getPosition(this.m_position);
+		i_sourceBoundingBox.getLocation(this.m_position);
 		i_sourceBoundingBox.getSize(this.m_size);
 	}
 
@@ -128,9 +128,9 @@ public class BoundingBoxImpl implements BoundingBox {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.geometry.BoundingBox#getPosition(Vector3f)
+	 * @see org.eclipse.draw3d.geometry.BoundingBox#getLocation(Vector3f)
 	 */
-	public Vector3f getPosition(Vector3f o_resultVector3f) {
+	public Vector3f getLocation(Vector3f o_resultVector3f) {
 
 		Vector3f result =
 			o_resultVector3f != null ? o_resultVector3f : new Vector3fImpl();
@@ -191,7 +191,7 @@ public class BoundingBoxImpl implements BoundingBox {
 	 */
 	public void set(IBoundingBox i_sourceBoundingBox3f) {
 
-		i_sourceBoundingBox3f.getPosition(m_position);
+		i_sourceBoundingBox3f.getLocation(m_position);
 		i_sourceBoundingBox3f.getSize(m_size);
 	}
 

@@ -443,5 +443,4 @@ public class SphereShape extends PositionableShape {
 
 		ColorConverter.toFloatArray(i_color, i_alpha, m_outlineColor);
 	}
-
 }

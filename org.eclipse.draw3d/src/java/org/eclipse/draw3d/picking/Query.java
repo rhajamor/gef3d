@@ -20,8 +20,8 @@ import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
-import org.eclipse.draw3d.geometry.IParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
@@ -203,8 +203,16 @@ public class Query {
 
 	private float getBoundingBoxDistance(IFigure3D i_figure) {
 
-		IParaxialBoundingBox pBounds = i_figure.getParaxialBoundingBox();
-		return pBounds.intersectRay(m_rayOrigin, m_rayDirection);
+		ParaxialBoundingBox tmp = Draw3DCache.getParaxialBoundingBox();
+		try {
+			ParaxialBoundingBox pBounds = i_figure.getParaxialBoundingBox(tmp);
+			if (pBounds == null)
+				return Float.MAX_VALUE;
+
+			return pBounds.intersectRay(m_rayOrigin, m_rayDirection);
+		} finally {
+			Draw3DCache.returnParaxialBoundingBox(tmp);
+		}
 	}
 
 	/**

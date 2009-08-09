@@ -77,7 +77,7 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 
 			IFigure3D fig = (IFigure3D) i_fig;
 			IBoundingBox bb = fig.getBounds3D();
-			IVector3f pos = bb.getPosition(TMP_V2);
+			IVector3f pos = bb.getLocation(TMP_V2);
 			IVector3f size = bb.getSize(TMP_V3);
 
 			result.set(pos.getX() + size.getX() / 2, pos.getY() + size.getY(),

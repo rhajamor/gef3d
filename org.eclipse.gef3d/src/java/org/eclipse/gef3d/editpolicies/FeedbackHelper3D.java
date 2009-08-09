@@ -110,7 +110,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			}
 
 			bounds.expand(0.01f);
-			bounds.getPosition(wLocation);
+			bounds.getLocation(wLocation);
 			bounds.getSize(wSize);
 
 			i_feedback.getPosition3D().setLocation3D(wLocation);
@@ -155,7 +155,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 					i_surfaceSizeDelta.height, 0);
 			}
 
-			bounds.getPosition(wLocation);
+			bounds.getLocation(wLocation);
 			bounds.getSize(wSize);
 
 			i_feedback.getPosition3D().setLocation3D(wLocation);
@@ -206,7 +206,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 				feedbackBounds.set(hostBounds);
 				feedbackBounds.expand(0.01f);
 
-				feedbackBounds.getPosition(wLocation);
+				feedbackBounds.getLocation(wLocation);
 				feedbackBounds.getSize(wSize);
 
 				i_feedback.getPosition3D().setLocation3D(wLocation);

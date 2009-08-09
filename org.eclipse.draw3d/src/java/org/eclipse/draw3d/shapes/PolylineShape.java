@@ -16,6 +16,7 @@ import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Math3DCache;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Math3DBase.Side;
 import org.eclipse.draw3d.geometryext.Plane;
@@ -248,6 +249,20 @@ public class PolylineShape extends FigureShape {
 		}
 
 		return visibleBorder;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.FigureShape#doGetParaxialBoundingBox(org.eclipse.draw3d.IFigure3D,
+	 *      org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	@Override
+	protected ParaxialBoundingBox doGetParaxialBoundingBox(IFigure3D i_figure,
+		ParaxialBoundingBox o_result) {
+
+		// polylines do not have a paraxial bounding box
+		return null;
 	}
 
 	/**

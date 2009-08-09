@@ -111,10 +111,10 @@ public class SyncedBoundsTest extends TestCase {
 					+ b1.getCenter(null).toString());
 		}
 
-		if (!b0.getPosition(null).equals(b1.getPosition(null))) {
+		if (!b0.getLocation(null).equals(b1.getLocation(null))) {
 			fail("testGetBoundingBox - Position vectors are not equal:"
-					+ b0.getPosition(null).toString()
-					+ b1.getPosition(null).toString());
+					+ b0.getLocation(null).toString()
+					+ b1.getLocation(null).toString());
 		}
 
 		if (!b0.getSize(null).equals(b1.getSize(null))) {

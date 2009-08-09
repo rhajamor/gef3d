@@ -13,29 +13,39 @@ package org.eclipse.draw3d.shapes;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
-import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.geometry.Position3DUtil;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.Query;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
- * A figure shape that renders itself as a cuboid.
+ * Renders the paraxial bounding box of a figure.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 05.08.2009
+ * @since 08.08.2009
  */
-public class CuboidFigureShape extends FigureShape {
+public class ParaxialBoundsFigureShape extends FigureShape {
+
+	private Position3D m_position;
 
 	private CuboidShape m_shape;
 
 	/**
-	 * Creates a new cuboid figure shape.
+	 * Creates a new shape for the given figure.
 	 * 
-	 * @param i_figure the figure which this shape represents
+	 * @param i_figure the figure
 	 */
-	public CuboidFigureShape(IFigure3D i_figure) {
+	public ParaxialBoundsFigureShape(IFigure3D i_figure) {
 
 		super(i_figure);
-		m_shape = new CuboidShape(i_figure.getPosition3D());
+
+		m_position = Position3DUtil.createAbsolutePosition();
+		m_shape = new CuboidShape(m_position);
+
+		m_shape.setFill(false);
+		m_shape.setOutlineColor(1, 0, 0, 0.3f);
 	}
 
 	/**
@@ -47,7 +57,7 @@ public class CuboidFigureShape extends FigureShape {
 	@Override
 	protected float doGetDistance(IFigure3D i_figure, Query i_query) {
 
-		return m_shape.getDistance(i_query);
+		return Float.NaN;
 	}
 
 	/**
@@ -72,41 +82,25 @@ public class CuboidFigureShape extends FigureShape {
 	@Override
 	protected void doRender(IFigure3D i_figure, RenderContext i_renderContext) {
 
-		m_shape
-			.setFillColor(i_figure.getBackgroundColor(), i_figure.getAlpha());
+		Vector3f position = Draw3DCache.getVector3f();
+		Vector3f size = Draw3DCache.getVector3f();
+		ParaxialBoundingBox pBounds = Draw3DCache.getParaxialBoundingBox();
+		try {
+			ParaxialBoundingBox figureBounds =
+				i_figure.getParaxialBoundingBox(pBounds);
 
-		m_shape.setOutlineColor(i_figure.getForegroundColor(), i_figure
-			.getAlpha());
+			if (figureBounds != null) {
+				pBounds.getLocation(position);
+				pBounds.getSize(size);
 
-		Graphics3D g3d = i_renderContext.getGraphics3D();
-		if (g3d.hasGraphics2D(i_figure))
-			m_shape.setTextureId(g3d.getGraphics2DId(i_figure));
-		else
-			m_shape.setTextureId(null);
+				m_position.setLocation3D(position);
+				m_position.setSize3D(size);
 
-		m_shape.render(i_renderContext);
+				m_shape.render(i_renderContext);
+			}
+		} finally {
+			Draw3DCache.returnVector3f(position, size);
+			Draw3DCache.returnParaxialBoundingBox(pBounds);
+		}
 	}
-
-	/**
-	 * Specifies whether this cuboid should render its faces.
-	 * 
-	 * @param i_fill <code>true</code> if the cuboid should render its faces and
-	 *            <code>false</code> otherwise
-	 */
-	public void setFill(boolean i_fill) {
-
-		m_shape.setFill(i_fill);
-	}
-
-	/**
-	 * Specifies whether this cuboid should render its outline.
-	 * 
-	 * @param i_outline <code>true</code> if the cuboid should render its
-	 *            outline and <code>false</code> otherwise
-	 */
-	public void setOutline(boolean i_outline) {
-
-		m_shape.setOutline(i_outline);
-	}
-
 }

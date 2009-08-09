@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.picking;
 
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
+
 /**
  * Objects that implement this interface can be picked accurately.
  * 
@@ -39,4 +41,17 @@ public interface Pickable {
 	 *             length of zero
 	 */
 	public float getDistance(Query i_query);
+
+	/**
+	 * Returns a paraxial (to the world coordinate system) bounding box that
+	 * contains this object.
+	 * 
+	 * @param o_result the result bounding box, if <code>null</code>, a new
+	 *            bounding box will be returned
+	 * @return the paraxial bounding box or <code>null</code> if the concept of
+	 *         a bounding box does not apply to this object (e.g. the object is
+	 *         empty)
+	 */
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result);
 }

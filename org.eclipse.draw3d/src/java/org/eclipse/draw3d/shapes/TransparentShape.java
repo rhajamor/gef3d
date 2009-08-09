@@ -14,6 +14,7 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.TransparentObject;
 import org.eclipse.draw3d.camera.ICamera;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.Draw3DCache;
@@ -30,25 +31,6 @@ import org.eclipse.draw3d.util.Draw3DCache;
  * @since Aug 16, 2008
  */
 public class TransparentShape implements TransparentObject, Shape {
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-
-		StringBuilder b = new StringBuilder();
-
-		b.append("TransparentShape[figure=");
-		b.append(m_figure);
-		b.append(", shape=");
-		b.append(m_shape);
-		b.append("]\n");
-
-		return b.toString();
-	}
 
 	/**
 	 * The figure to which the shape belongs.
@@ -91,6 +73,17 @@ public class TransparentShape implements TransparentObject, Shape {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
+
+		return m_shape.getParaxialBoundingBox(o_result);
+	}
+
+	/**
 	 * Returns center of figure's bounds. This method calculates the center of
 	 * the container figures {@link IFigure3D#getBounds()}.
 	 * 
@@ -127,5 +120,24 @@ public class TransparentShape implements TransparentObject, Shape {
 	public void renderTransparent(RenderContext i_renderContext) {
 
 		render(i_renderContext);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+
+		StringBuilder b = new StringBuilder();
+
+		b.append("TransparentShape[figure=");
+		b.append(m_figure);
+		b.append(", shape=");
+		b.append(m_shape);
+		b.append("]\n");
+
+		return b.toString();
 	}
 }
