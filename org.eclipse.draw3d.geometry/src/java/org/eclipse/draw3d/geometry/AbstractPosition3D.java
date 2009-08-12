@@ -300,8 +300,13 @@ public abstract class AbstractPosition3D implements Position3D {
 
 			Position3D parentPosition = getParentPosition();
 			if (parentPosition != null) {
+				
+				IMatrix4f m = parentPosition.getRotationLocationMatrix();
+				IMatrix4f inv = Math3D.invert(m, null);
+				
+				location.transform(inv);
+				
 				parentPosition.getAbsolute(absParent);
-				Math3D.sub(location, absParent.getLocation3D(), location);
 				Math3D.sub(rotation, absParent.getRotation3D(), rotation);
 			}
 
