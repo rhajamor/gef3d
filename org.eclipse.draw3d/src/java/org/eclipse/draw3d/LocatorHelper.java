@@ -50,7 +50,7 @@ public class LocatorHelper {
 	 */
 	public Position3D getReferencePosition3D() {
 
-		IFigure3D host = Figure3DHelper.getAncestor3D(m_reference);
+		IFigure3D host = Figure3DHelper.getAncestor3D(m_reference.getParent());
 		Position3D result = Position3DUtil.createRelativePosition(host);
 
 		if (m_reference instanceof IFigure3D) {
