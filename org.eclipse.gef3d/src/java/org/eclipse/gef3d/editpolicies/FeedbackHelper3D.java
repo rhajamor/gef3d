@@ -28,7 +28,6 @@ import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.picking.Picker;
-import org.eclipse.draw3d.util.DebugPrimitives;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.editpolicies.FeedbackHelper;
 
@@ -152,7 +151,8 @@ public class FeedbackHelper3D extends FeedbackHelper {
 		Vector3f center = Draw3DCache.getVector3f();
 		Vector3f size = Draw3DCache.getVector3f();
 		try {
-			IFigure3D host = Figure3DHelper.getAncestor3D(m_hostFigure);
+			IFigure3D host =
+				Figure3DHelper.getAncestor3D(m_hostFigure.getParent());
 			Position3D dummy = Position3DUtil.createRelativePosition(host);
 			Position3D feedbackPosition = i_feedback.getPosition3D();
 
@@ -164,13 +164,8 @@ public class FeedbackHelper3D extends FeedbackHelper {
 				log.info(i_surfaceMoveDelta.toString());
 
 				center.set(dummy.getCenter3D());
-
-				DebugPrimitives.getInstance().clear();
-				DebugPrimitives.getInstance().addPoint(m_hostFigure, center);
-
 				center.translate(i_surfaceMoveDelta.x, i_surfaceMoveDelta.y, 0);
 				dummy.setCenter3D(center);
-
 			}
 
 			if (i_surfaceSizeDelta != null && !i_surfaceSizeDelta.isEmpty()) {
