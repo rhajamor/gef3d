@@ -44,8 +44,8 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 		host = i_syncHost;
 		bounds3D = new SyncedBounds3D();
 		bounds3D.setDepth(1);
-		rotationAngles = new Vector3fImpl(0, 0, 0);
-		updatingBounds = false;
+		m_rotationAngles = new Vector3fImpl(0, 0, 0);
+		m_updatingBounds = false;
 	}
 
 	/**

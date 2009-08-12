@@ -128,14 +128,31 @@ public class Math3DVector3f extends Math3DVector2f {
 	}
 
 	/**
+	 * Returns <code>true</code> if for each pair of elements a and b of the
+	 * given vectors <i>|a-b|<=epsilon</i> is <code>true</code>.
+	 * 
+	 * @param i_left
+	 * @param i_right
+	 * @param epsilon
+	 * @return
+	 */
+	public static boolean equals(IVector3f i_left, IVector3f i_right,
+		float epsilon) {
+
+		return equals(i_left.getX(), i_right.getX(), epsilon)
+			&& equals(i_left.getY(), i_right.getY(), epsilon)
+			&& equals(i_left.getZ(), i_right.getZ(), epsilon);
+	}
+
+	/**
 	 * Returns the Euler angles for a rotation that orients a given vector into
 	 * the direction specified by a given reference vector.<br />
 	 * The result vector contains the rotations about the x, y and z axes. The
 	 * rotations must be applied in the following order: Y first, then Z, and
 	 * finally X.
 	 * 
-	 * @param i_vector the vector that is to be oriented
-	 * @param i_reference the reference vector
+	 * @param i_vector the vector that is to be oriented, must be normalised
+	 * @param i_reference the reference vector, must be normalised
 	 * @param o_result the result vector, if <code>null</code>, a new vector
 	 *            will be created
 	 * @return the rotation angles
@@ -145,7 +162,7 @@ public class Math3DVector3f extends Math3DVector2f {
 	 * @see "http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm"
 	 * @see "http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/index.htm"
 	 */
-	public static Vector3f getEulerAngles(IVector3f i_vector,
+	public static Vector3f eulerAngles(IVector3f i_vector,
 		IVector3f i_reference, Vector3f o_result) {
 
 		if (i_vector == null)
@@ -158,64 +175,58 @@ public class Math3DVector3f extends Math3DVector2f {
 		if (result == null)
 			result = new Vector3fImpl();
 
-		Vector3f vecNorm = Math3DCache.getVector3f();
-		Vector3f refNorm = Math3DCache.getVector3f();
+		if (i_vector.equals(i_reference)) {
+			result.set(0, 0, 0);
+			return result;
+		}
+
 		Vector3f axis = Math3DCache.getVector3f();
 		try {
-
-			// calculate axis / angle representation of the rotation
-			Math3D.normalise(i_vector, vecNorm);
-			Math3D.normalise(i_reference, refNorm);
-
-			Math3D.cross(vecNorm, refNorm, axis);
-			float length = axis.length();
-			if (length == 0) { // vector is already oriented to reference
-				result.set(0, 0, 0);
-				return result;
-			}
-
-			axis.scale(1.0f / length);
-
-			double angle = Math.acos(Math3D.dot(vecNorm, refNorm));
-			double halfAngle = angle / 2;
-			double s = Math.sin(halfAngle);
-
 			// convert to quaternion representation
-			double qx = axis.getX() * s;
-			double qy = axis.getY() * s;
-			double qz = axis.getZ() * s;
-			double qw = Math.cos(halfAngle);
+			Math3D.cross(i_reference, i_vector, axis);
+
+			double qx = axis.getX();
+			double qy = axis.getY();
+			double qz = axis.getZ();
+			double qw = 1 + Math3D.dot(i_reference, i_vector);
 
 			// convert to euler axis representation
-			double t = qx * qy + qz * qw;
+			double qx2 = qx * qx;
+			double qy2 = qy * qy;
+			double qz2 = qz * qz;
+			double qw2 = qw * qw;
+
 			double h;
 			double a;
 			double b;
-			if (t > 0.499) {
+
+			double t = qx * qy + qz * qw;
+			double u = qx2 + qy2 + qz2 + qw2;
+
+			if (t > 0.4999999 * u) {
 				h = 2 * Math.atan2(qx, qw);
 				a = Math.PI / 2;
 				b = 0;
-			} else if (t < -0.499) {
+			} else if (t < -0.4999999 * u) {
 				h = -2 * Math.atan2(qx, qw);
 				a = -Math.PI / 2;
 				b = 0;
 			} else {
-				double sqx = qx * qx;
-				double sqy = qy * qy;
-				double sqz = qz * qz;
-				h =
-					Math
-						.atan2(2 * qy * qw - 2 * qx * qz, 1 - 2 * sqy - 2 * sqz);
-				a = Math.asin(2 * t);
-				b =
-					Math
-						.atan2(2 * qx * qw - 2 * qy * qz, 1 - 2 * sqx - 2 * sqz);
+				double xh = 2 * (qy * qw - qx * qz);
+				double yh = qx2 - qy2 - qz2 + qw2;
+
+				double xb = 2 * (qx * qw - qy * qz);
+				double yb = -qx2 + qy2 - qz2 + qw2;
+
+				h = Math.atan2(xh, yh);
+				a = Math.asin(2 * t / u);
+				b = Math.atan2(xb, yb);
 			}
 
 			result.set((float) b, (float) h, (float) a);
 			return result;
 		} finally {
-			Math3DCache.returnVector3f(vecNorm, refNorm, axis);
+			Math3DCache.returnVector3f(axis);
 		}
 	}
 
@@ -347,6 +358,30 @@ public class Math3DVector3f extends Math3DVector2f {
 				scale * i_source.getZ());
 			return o_result;
 		}
+	}
+
+	/**
+	 * Scales the components of the given source vector by the scaling factors
+	 * taken from the given vector. This is used for non-uniform scaling.
+	 * 
+	 * @param i_scale the scaling factors
+	 * @param i_source the vector to scale
+	 * @param o_result the result vector, if <code>null</code>, a new vector
+	 *            will be returned
+	 * @return the scaled source vector
+	 */
+	public static Vector3f scale(IVector3f i_scale, IVector3f i_source,
+		Vector3f o_result) {
+
+		Vector3f result = o_result;
+		if (result == null)
+			result = new Vector3fImpl();
+
+		result.setX(i_scale.getX() * i_source.getX());
+		result.setY(i_scale.getY() * i_source.getY());
+		result.setZ(i_scale.getZ() * i_source.getZ());
+
+		return result;
 	}
 
 	/**

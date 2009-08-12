@@ -97,6 +97,7 @@ public class ScenePreferenceDistributor extends Draw3DPreferenceDistributor
 	public void init(IPreferenceStore i_store) {
 
 		m_scene.setDrawAxes(i_store.getBoolean(LWS_DRAW_AXES));
+		m_scene.setDebug(i_store.getBoolean(LWS_DEBUG));
 		setSceneBackgroundColor(i_store.getString(LWS_BACKGROUND));
 		setSceneCamera(i_store.getString(LWS_CAMERA_TYPE));
 	}
@@ -120,6 +121,8 @@ public class ScenePreferenceDistributor extends Draw3DPreferenceDistributor
 
 		if (name.equals(LWS_DRAW_AXES))
 			m_scene.setDrawAxes(StringConverter.asBoolean(newValue));
+		else if (name.equals(LWS_DEBUG))
+			m_scene.setDebug(StringConverter.asBoolean(newValue));
 		else if (name.equals(LWS_BACKGROUND))
 			setSceneBackgroundColor(newValue);
 		else if (name.equals(LWS_CAMERA_TYPE))

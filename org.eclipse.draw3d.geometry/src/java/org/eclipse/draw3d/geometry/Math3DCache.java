@@ -38,6 +38,9 @@ public class Math3DCache {
 	private static final Queue<ParaxialBoundingBox> m_paraxialBoundingBox =
 		new LinkedList<ParaxialBoundingBox>();
 
+	private static final Queue<Position3D> m_position3D =
+		new LinkedList<Position3D>();
+
 	/**
 	 * Synchronize access to the cache queues.
 	 */
@@ -159,6 +162,28 @@ public class Math3DCache {
 				return new ParaxialBoundingBoxImpl();
 			else
 				return m_paraxialBoundingBox.remove();
+		}
+	}
+
+	/**
+	 * Returns a cached absolute {@link Position3D}.
+	 * 
+	 * @return a cached absolute position 3d
+	 */
+	public static Position3D getPosition3D() {
+
+		if (m_synchronized) {
+			synchronized (m_position3D) {
+				if (m_position3D.isEmpty())
+					return Position3DUtil.createAbsolutePosition();
+				else
+					return m_position3D.remove();
+			}
+		} else {
+			if (m_position3D.isEmpty())
+				return Position3DUtil.createAbsolutePosition();
+			else
+				return m_position3D.remove();
 		}
 	}
 
@@ -326,6 +351,26 @@ public class Math3DCache {
 			for (ParaxialBoundingBox p : i_ps)
 				if (p != null)
 					m_paraxialBoundingBox.offer(p);
+	}
+
+	/**
+	 * Returns the given positions to the cache. If any of the given positions
+	 * is <code>null</code>, it is ignored.
+	 * 
+	 * @param i_ps the positions to return
+	 */
+	public static void returnPosition3D(Position3D... i_ps) {
+
+		if (m_synchronized)
+			synchronized (m_position3D) {
+				for (Position3D p : i_ps)
+					if (p != null)
+						m_position3D.offer(p);
+			}
+		else
+			for (Position3D p : i_ps)
+				if (p != null)
+					m_position3D.offer(p);
 	}
 
 	/**

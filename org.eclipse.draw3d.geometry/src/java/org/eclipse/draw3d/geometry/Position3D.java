@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.geometry;
 
-
 /**
  * Mutable position, i.e. triple of location, size (scale), and rotation.
  * 
@@ -19,41 +18,55 @@ package org.eclipse.draw3d.geometry;
  * @since Jan 21, 2009
  */
 public interface Position3D extends IPosition3D {
-	
-	
-	/**
-	 * Sets the matrix state to {@link MatrixState#INVALID}. That is, a next
-	 * time a matrix is queried, all matrices are recalculated. The matrix
-	 * state is automatically invalidated when size, location, or rotation
-	 * have been changed.
-	 */
-	public void invalidate();
-	
-	/**
-	 * Sets the location of this IFigure.
-	 * 
-	 * @param point The new location, this is usually the lower left corner, must not be null
-	 */
-	public void setLocation3D(IVector3f point);
 
 	/**
-	 * Sets this position by copying location, scale, and rotation from
-	 * given source.
-	 * @param source
+	 * Invalidates some internal cached information and must be called whenever
+	 * this position becomes invalid. Called automatically when location, size
+	 * or rotation changes.
 	 */
-	public void setPosition(IPosition3D source);
+	public void invalidate();
+
+	/**
+	 * Modifies the location of this position so that its center is at the given
+	 * coordinates.
+	 * 
+	 * @param i_center the center of this position
+	 */
+	public void setCenter3D(IVector3f i_center);
+
+	/**
+	 * Sets the location of this position.
+	 * 
+	 * @param i_location the new location, must not be <code>null</code>
+	 */
+	public void setLocation3D(IVector3f i_location);
+
+	/**
+	 * Sets this position's location, size and rotation so that the given
+	 * position's absolute location, size and rotation is the same as this
+	 * position's absolute location, size and rotation. In other words, the two
+	 * positions will have the same spacial configuration regardless of whether
+	 * they are absolute or relative, respectively.
+	 * 
+	 * @param i_position3D the position to set
+	 */
+	public void setPosition(IPosition3D i_position3D);
 
 	/**
 	 * Sets rotation of figure, i.e. angles for X, Y and Z axis. Rotations are
 	 * applied in the following order: Y first, then Z and finally X.
 	 * 
-	 * @param rotation, must not be null
+	 * @param i_rotation must not be <code>null</code>
 	 */
-	public void setRotation3D(IVector3f rotation);
-	
+	public void setRotation3D(IVector3f i_rotation);
+
 	/**
-	 * @param size, must not be null
+	 * Sets the size of this position. Even though the size is applied to the
+	 * transformation matrix as a scaling, it is not applied to the any position
+	 * that is relative to this one, as opposed to location and rotation.
+	 * 
+	 * @param i_size must not be <code>null</code>
 	 */
-	public void setSize3D(IVector3f size);
+	public void setSize3D(IVector3f i_size);
 
 }

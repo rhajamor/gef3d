@@ -218,14 +218,16 @@ public class Math3DBase {
 		if (o_size == null)
 			throw new NullPointerException("o_size must not be null");
 
-		if (IVector3f.NULLVEC3f.equals(i_position.getRotation3D())) {
-			o_location.set(i_position.getLocation3D());
-			o_size.set(i_position.getSize3D());
-		} else {
-			Vector3f end = Math3DCache.getVector3f();
-			Vector3f p = Math3DCache.getVector3f();
-			try {
-				IMatrix4f matrix = i_position.getTransformationMatrix();
+		Position3D absolute = Math3DCache.getPosition3D();
+		Vector3f end = Math3DCache.getVector3f();
+		Vector3f p = Math3DCache.getVector3f();
+		try {
+			i_position.getAbsolute(absolute);
+			if (IVector3f.NULLVEC3f.equals(absolute.getRotation3D())) {
+				o_location.set(absolute.getLocation3D());
+				o_size.set(absolute.getSize3D());
+			} else {
+				IMatrix4f matrix = absolute.getTransformationMatrix();
 
 				p.set(0, 0, 0);
 				p.transform(matrix);
@@ -273,9 +275,10 @@ public class Math3DBase {
 				Math3D.max(end, p, end);
 
 				Math3D.sub(end, o_location, o_size);
-			} finally {
-				Math3DCache.returnVector3f(end, p);
 			}
+		} finally {
+			Math3DCache.returnPosition3D(absolute);
+			Math3DCache.returnVector3f(end, p);
 		}
 	}
 

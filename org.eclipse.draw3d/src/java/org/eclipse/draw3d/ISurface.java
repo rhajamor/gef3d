@@ -57,12 +57,12 @@ public interface ISurface {
 	 * @param i_wx the world X coordinate
 	 * @param i_wy the world Y coordinate
 	 * @param i_wz the world Z coordinate
-	 * @param io_result the result point, if <code>null</code>, a new point will
+	 * @param o_result the result point, if <code>null</code>, a new point will
 	 *            be created
 	 * @return the 2D surface coordinates of the given point
 	 */
 	public Point getSurfaceLocation2D(float i_wx, float i_wy, float i_wz,
-		Point io_result);
+		Point o_result);
 
 	/**
 	 * Returns the 2D surface coordinates of a point specified by the
@@ -70,25 +70,25 @@ public interface ISurface {
 	 * 
 	 * @param i_rayOrigin the origin of the ray
 	 * @param i_rayDirection the direction vector of the ray, must be normalised
-	 * @param io_result the result point, if <code>null</code>, a new point will
+	 * @param o_result the result point, if <code>null</code>, a new point will
 	 *            be returned
 	 * @return the 2D surface coordinates of the point of intersection or
 	 *         <code>null</code> if the given ray does not intersect with this
 	 *         surface
 	 */
 	public Point getSurfaceLocation2D(IVector3f i_rayOrigin,
-		IVector3f i_rayDirection, Point io_result);
+		IVector3f i_rayDirection, Point o_result);
 
 	/**
 	 * Returns the 2D surface coordinates of a point specified in world
 	 * coordinates.
 	 * 
 	 * @param i_world the world coordinates of the point
-	 * @param io_result the result point, if <code>null</code>, a new point will
+	 * @param o_result the result point, if <code>null</code>, a new point will
 	 *            be created
 	 * @return the 2D surface coordinates of the given point
 	 */
-	public Point getSurfaceLocation2D(IVector3f i_world, Point io_result);
+	public Point getSurfaceLocation2D(IVector3f i_world, Point o_result);
 
 	/**
 	 * Returns the 3D surface coordinates of a point specified in world
@@ -97,12 +97,12 @@ public interface ISurface {
 	 * @param i_wx the world X coordinate
 	 * @param i_wy the world Y coordinate
 	 * @param i_wz the world Z coordinate
-	 * @param io_result the result vector, if <code>null</code>, a new vector
+	 * @param o_result the result vector, if <code>null</code>, a new vector
 	 *            will be created
 	 * @return the 3D surface coordinates of the given point
 	 */
 	public Vector3f getSurfaceLocation3D(float i_wx, float i_wy, float i_wz,
-		Vector3f io_result);
+		Vector3f o_result);
 
 	/**
 	 * Returns the 3D surface coordinates of a point given in 3D surface
@@ -113,12 +113,12 @@ public interface ISurface {
 	 * @param i_reference the reference surface
 	 * @param i_surface the 3D surface coordinates relative to the given
 	 *            reference surface
-	 * @param io_result the result vector, if <code>null</code>, a new vector
+	 * @param o_result the result vector, if <code>null</code>, a new vector
 	 *            will be returned
 	 * @return the 3D surface coordinates relative to this surface
 	 */
 	public Vector3f getSurfaceLocation3D(ISurface i_reference,
-		Vector3f i_surface, Vector3f io_result);
+		Vector3f i_surface, Vector3f o_result);
 
 	/**
 	 * Returns the 3D surface coordinates of a point specified by the
@@ -126,37 +126,45 @@ public interface ISurface {
 	 * 
 	 * @param i_rayOrigin the origin of the ray
 	 * @param i_rayDirection the direction vector of the ray, must be normalised
-	 * @param io_result the result vector, if <code>null</code>, a new vector
+	 * @param o_result the result vector, if <code>null</code>, a new vector
 	 *            will be returned
 	 * @return the 3D surface coordinates of the point of intersection or
 	 *         <code>null</code> if the given ray does not intersect with this
 	 *         surface
 	 */
 	public Vector3f getSurfaceLocation3D(IVector3f i_rayOrigin,
-		IVector3f i_rayDirection, Vector3f io_result);
+		IVector3f i_rayDirection, Vector3f o_result);
 
 	/**
 	 * Returns the 3D surface coordinates of a point specified in world
 	 * coordinates.
 	 * 
 	 * @param i_world the world coordinates of the point
-	 * @param io_result the result vector, if <code>null</code>, a new vector
+	 * @param o_result the result vector, if <code>null</code>, a new vector
 	 *            will be created
 	 * @return the 3D surface coordinates of the given point
 	 */
-	public Vector3f getSurfaceLocation3D(IVector3f i_world, Vector3f io_result);
+	public Vector3f getSurfaceLocation3D(IVector3f i_world, Vector3f o_result);
 
-//	Seems needless
-//	/**
-//	 * Returns the world dimensions of the given dimension specified in 2D
-//	 * surface coordinates.
-//	 * 
-//	 * @param i_surface the 2D surface coordinates of the dimension
-//	 * @param io_result the result vector, if <code>null</code>, a new vector
-//	 *            will be created
-//	 * @return the result vector
-//	 */
-//	public Vector3f getWorldDimension(Dimension i_surface, Vector3f io_result);
+	/**
+	 * Returns the absolute rotation angles of this surface.
+	 * 
+	 * @param o_result the result vector, if <code>null</code>, a new vector
+	 *            will be returned
+	 * @return the absolute rotation angles
+	 */
+	public Vector3f getSurfaceRotation(Vector3f o_result);
+
+	/**
+	 * Returns the world dimensions of the given dimension specified in 2D
+	 * surface coordinates.
+	 * 
+	 * @param i_surface the 2D surface coordinates of the dimension
+	 * @param o_result the result vector, if <code>null</code>, a new vector
+	 *            will be created
+	 * @return the result vector
+	 */
+	public Vector3f getWorldDimension(Dimension i_surface, Vector3f o_result);
 
 	/**
 	 * Returns the world coordinates of the given point specified in 3D surface
@@ -165,32 +173,32 @@ public interface ISurface {
 	 * @param i_sx the surface X coordinate
 	 * @param i_sy the surface Y coordinate
 	 * @param i_sz the surface Z coordinate
-	 * @param io_result the result vector, if <code>null</code>, a new vector
+	 * @param o_result the result vector, if <code>null</code>, a new vector
 	 *            will be created
 	 * @return the result vector
 	 */
 	public Vector3f getWorldLocation(float i_sx, float i_sy, float i_sz,
-		Vector3f io_result);
+		Vector3f o_result);
 
 	/**
 	 * Returns the world coordinates of the given point specified in 3D surface
 	 * coordinates.
 	 * 
 	 * @param i_surface the 3D surface coordinates of the point
-	 * @param io_result the result vector, if <code>null</code>, a new one will
+	 * @param o_result the result vector, if <code>null</code>, a new one will
 	 *            be created
 	 * @return the result vector
 	 */
-	public Vector3f getWorldLocation(IVector3f i_surface, Vector3f io_result);
+	public Vector3f getWorldLocation(IVector3f i_surface, Vector3f o_result);
 
 	/**
 	 * Returns the world coordinates of the given point specified in 2D surface
 	 * coordinates.
 	 * 
 	 * @param i_surface the 2D surface coordinates of the point
-	 * @param io_result the result vector, if <code>null</code>, a new one will
+	 * @param o_result the result vector, if <code>null</code>, a new one will
 	 *            be created
 	 * @return the result vector
 	 */
-	public Vector3f getWorldLocation(Point i_surface, Vector3f io_result);
+	public Vector3f getWorldLocation(Point i_surface, Vector3f o_result);
 }

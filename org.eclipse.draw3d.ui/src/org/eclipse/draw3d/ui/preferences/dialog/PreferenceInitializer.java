@@ -55,6 +55,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		store.setDefault(LWS_BACKGROUND, StringConverter
 				.asString(backgroundColor.getRGB()));
 
+		store.setDefault(LWS_DEBUG, false);
 		store.setDefault(LWS_DRAW_AXES, true);
 		store.setDefault(MOUSE_SENSITIVITY, 10);
 

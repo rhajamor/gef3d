@@ -22,7 +22,7 @@ package org.eclipse.draw3d.geometry;
  * @version $Revision$
  * @since 12.10.2008
  */
-public interface BoundingBox extends IBoundingBox, Transformable {
+public interface BoundingBox extends IBoundingBox {
 
 	/**
 	 * Expands this bounding box by the given delta. The center of the bounding

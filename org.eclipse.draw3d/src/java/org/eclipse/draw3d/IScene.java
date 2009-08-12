@@ -55,6 +55,14 @@ public interface IScene {
 	public PickingUpdateManager3D getUpdateManager3D();
 
 	/**
+	 * Specifies whether this scene is in debug mode.
+	 * 
+	 * @return <code>true</code> if the scene is in debug mode and
+	 *         <code>false</code> otherwise
+	 */
+	public boolean isDebug();
+
+	/**
 	 * Removes the given listener from this scene. If the given listener is not
 	 * registered with this scene, it is ignored.
 	 * 
@@ -80,6 +88,14 @@ public interface IScene {
 	 * @param i_camera the camera to set
 	 */
 	public void setCamera(ICamera i_camera);
+
+	/**
+	 * Specifies whether this scene is in debug mode.
+	 * 
+	 * @param i_debug <code>true</code> if the scene is in debug mode and
+	 *            <code>false</code> otherwise
+	 */
+	public void setDebug(boolean i_debug);
 
 	/**
 	 * Specifies whether coordinate axes should be drawn.

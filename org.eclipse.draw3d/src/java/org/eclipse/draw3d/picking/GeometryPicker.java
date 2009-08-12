@@ -138,6 +138,7 @@ public class GeometryPicker implements Picker {
 
 		Query query =
 			new Query(i_rayOrigin, i_rayDirection, m_rootFigure, i_search);
+		query.setDebug(m_scene.isDebug());
 
 		return query.execute();
 	}
@@ -200,11 +201,8 @@ public class GeometryPicker implements Picker {
 		Hit hit = getHit(i_mx, i_my, m_surfaceSearch);
 		if (hit != null) {
 			ISurface surface = hit.getFigure3D().getSurface();
-			if (surface != null) {
-				if (!surface.equals(m_currentSurface))
-					log.info("new current surface is " + surface);
+			if (surface != null)
 				m_currentSurface = surface;
-			}
 		}
 	}
 }

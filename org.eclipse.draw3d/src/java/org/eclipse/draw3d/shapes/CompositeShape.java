@@ -18,9 +18,7 @@ import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
-import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.Draw3DCache;
@@ -229,58 +227,75 @@ public class CompositeShape extends PositionableShape {
 	public ParaxialBoundingBox getParaxialBoundingBox(
 		ParaxialBoundingBox o_result) {
 
-		ParaxialBoundingBox result = o_result;
-		if (result == null)
-			result = new ParaxialBoundingBoxImpl();
-
 		if (getPosition3D() != null)
-			super.getParaxialBoundingBox(result);
+			super.getParaxialBoundingBox(o_result);
 
-		if (m_opaqueShapes != null && !m_opaqueShapes.isEmpty()
-			&& m_transparentShapes != null && !m_transparentShapes.isEmpty()
-			&& m_superimposedShapes != null && !m_superimposedShapes.isEmpty()) {
+		if ((m_opaqueShapes == null || m_opaqueShapes.isEmpty())
+			&& (m_transparentShapes == null || m_transparentShapes.isEmpty())
+			&& (m_superimposedShapes == null || m_superimposedShapes.isEmpty()))
+			return null;
 
-			ParaxialBoundingBox tmp = Math3DCache.getParaxialBoundingBox();
-			try {
-				if (m_opaqueShapes != null)
-					for (Shape shape : m_opaqueShapes) {
-						ParaxialBoundingBox shapeBounds =
-							shape.getParaxialBoundingBox(tmp);
+		ParaxialBoundingBox result = null;
+		ParaxialBoundingBox tmp = Draw3DCache.getParaxialBoundingBox();
+		try {
+			if (m_opaqueShapes != null)
+				for (Shape shape : m_opaqueShapes) {
+					ParaxialBoundingBox shapeBounds =
+						shape.getParaxialBoundingBox(tmp);
 
-						if (shapeBounds != null) {
-							transformParaxialBoundingBox(tmp);
+					if (shapeBounds != null) {
+						transformParaxialBoundingBox(tmp);
+						if (result == null) {
+							result = Draw3DCache.getParaxialBoundingBox();
+							result.set(tmp);
+						} else
 							result.union(tmp);
-						}
 					}
+				}
 
-				if (m_transparentShapes != null)
-					for (Shape shape : m_transparentShapes) {
-						ParaxialBoundingBox shapeBounds =
-							shape.getParaxialBoundingBox(tmp);
+			if (m_transparentShapes != null)
+				for (Shape shape : m_transparentShapes) {
+					ParaxialBoundingBox shapeBounds =
+						shape.getParaxialBoundingBox(tmp);
 
-						if (shapeBounds != null) {
-							transformParaxialBoundingBox(tmp);
+					if (shapeBounds != null) {
+						transformParaxialBoundingBox(tmp);
+						if (result == null) {
+							result = Draw3DCache.getParaxialBoundingBox();
+							result.set(tmp);
+						} else
 							result.union(tmp);
-						}
 					}
+				}
 
-				if (m_superimposedShapes != null)
-					for (Shape shape : m_superimposedShapes) {
-						ParaxialBoundingBox shapeBounds =
-							shape.getParaxialBoundingBox(tmp);
+			if (m_superimposedShapes != null)
+				for (Shape shape : m_superimposedShapes) {
+					ParaxialBoundingBox shapeBounds =
+						shape.getParaxialBoundingBox(tmp);
 
-						if (shapeBounds != null) {
-							transformParaxialBoundingBox(tmp);
+					if (shapeBounds != null) {
+						transformParaxialBoundingBox(tmp);
+						if (result == null) {
+							result = Draw3DCache.getParaxialBoundingBox();
+							result.set(tmp);
+						} else
 							result.union(tmp);
-						}
 					}
-			} finally {
-				Math3DCache.returnParaxialBoundingBox(tmp);
-			}
+				}
+		} finally {
+			Draw3DCache.returnParaxialBoundingBox(tmp);
 		}
 
-		return result;
+		if (result == null)
+			return null;
 
+		if (o_result == null)
+			return result;
+
+		o_result.set(result);
+		Draw3DCache.returnParaxialBoundingBox(result);
+
+		return o_result;
 	}
 
 	/**

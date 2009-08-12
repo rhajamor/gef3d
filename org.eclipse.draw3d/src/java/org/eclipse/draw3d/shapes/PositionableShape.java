@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
+import java.util.logging.Logger;
+
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
@@ -90,6 +92,10 @@ public abstract class PositionableShape implements Shape {
 	 */
 	protected abstract void doRender(RenderContext i_renderContext);
 
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(PositionableShape.class.getName());
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -123,6 +129,10 @@ public abstract class PositionableShape implements Shape {
 			float distance = doGetDistance(i_query);
 
 			i_query.setRay(oldOrigin, oldDirection);
+
+			if (Float.isNaN(distance))
+				return Float.NaN;
+
 			return distance / newLength;
 		} finally {
 			Draw3DCache.returnVector3f(newOrigin, newDirection);
@@ -147,6 +157,9 @@ public abstract class PositionableShape implements Shape {
 	public void render(RenderContext i_renderContext) {
 
 		Graphics3D g3d = i_renderContext.getGraphics3D();
+
+		if (i_renderContext.getScene().isDebug())
+			doRender(i_renderContext);
 
 		if (m_position3D == null)
 			doRender(i_renderContext);

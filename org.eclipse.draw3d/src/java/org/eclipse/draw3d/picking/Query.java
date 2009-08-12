@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
@@ -32,6 +33,10 @@ import org.eclipse.draw3d.util.Draw3DCache;
  * @since 01.08.2009
  */
 public class Query {
+
+	private static final Logger log = Logger.getLogger(Query.class.getName());
+
+	private boolean m_debug = false;
 
 	/**
 	 * This is a simple map for storing client specific data.
@@ -72,24 +77,51 @@ public class Query {
 
 	private boolean accept(IFigure i_figure, TreeSearch i_search) {
 
-		if (!i_figure.isVisible())
+		if (!i_figure.isVisible()) {
+			if (m_debug)
+				log.info(i_figure + " rejected because it is not visible");
+
 			return false;
+		}
 
 		if (i_search == null)
 			return true;
 
-		return i_search.accept(i_figure);
+		boolean accept = i_search.accept(i_figure);
+		if (m_debug && !accept)
+			log.info(i_figure + " rejected by tree search");
+
+		return accept;
 	}
 
 	private HitImpl combineParentChildHits(IFigure i_parentFigure,
 		HitImpl i_childHit) {
 
-		if (!(i_parentFigure instanceof IFigure3D))
+		if (!(i_parentFigure instanceof IFigure3D)) {
+			if (m_debug)
+				if (i_childHit != null)
+					log.info(i_childHit.getFigure3D() + " wins over parent "
+						+ i_parentFigure + " because parent is 2D");
+				else
+					log.info("neither parent nor child was hit, parent is 2D");
+
 			return i_childHit;
+		}
 
 		IFigure3D parentFigure3D = (IFigure3D) i_parentFigure;
-		if (parentFigure3D.equals(m_rootFigure))
+		if (parentFigure3D.equals(m_rootFigure)) {
+			if (m_debug)
+				if (i_childHit != null)
+					log
+						.info(i_childHit.getFigure3D() + " wins over parent "
+							+ i_parentFigure
+							+ " because parent is the root figure");
+				else
+					log
+						.info("neither parent nor child was hit, parent is root");
+
 			return i_childHit;
+		}
 
 		IFigure searchResult = null;
 		ISurface parentSurface = parentFigure3D.getSurface();
@@ -106,6 +138,10 @@ public class Query {
 			}
 		}
 
+		if (m_debug && searchResult != null)
+			log.info("found 2D search result " + searchResult
+				+ " on parent surface " + parentSurface);
+
 		HitImpl hit = i_childHit;
 		if (accept(parentFigure3D, m_search) || searchResult != null) {
 			float realDistance = parentFigure3D.getDistance(this);
@@ -117,6 +153,24 @@ public class Query {
 				hit =
 					new HitImpl(parentFigure3D, searchResult, realDistance,
 						m_rayOrigin, m_rayDirection);
+
+				if (m_debug) {
+					if (i_childHit == null)
+						log.info(parentFigure3D
+							+ " wins because no child was hit");
+					else
+						log.info(parentFigure3D + " wins over child "
+							+ i_childHit.getFigure3D()
+							+ " because it is closer");
+				}
+			} else if (m_debug) {
+				if (Float.isNaN(realDistance) && i_childHit == null)
+					log.info("neither parent " + parentFigure3D
+						+ " nor any child was hit");
+				if (!Float.isNaN(realDistance) && i_childHit != null)
+					log.info("parent " + parentFigure3D
+						+ " was hit, but child " + i_childHit.getFigure3D()
+						+ " is closer");
 			}
 		}
 
@@ -131,8 +185,17 @@ public class Query {
 		if (i_hit2 == null)
 			return i_hit1;
 
-		if (i_hit1.isCloserThan(i_hit2))
+		if (i_hit1.isCloserThan(i_hit2)) {
+			if (m_debug)
+				log.info(i_hit1.getFigure3D() + " wins over sibling "
+					+ i_hit2.getFigure3D() + " because it is closer");
+
 			return i_hit1;
+		}
+
+		if (m_debug)
+			log.info(i_hit2.getFigure3D() + " wins over sibling "
+				+ i_hit1.getFigure3D() + " because it is closer");
 
 		return i_hit2;
 	}
@@ -140,8 +203,11 @@ public class Query {
 	@SuppressWarnings("unchecked")
 	private HitImpl doExecute(IFigure i_figure, float i_boundingBoxDistance) {
 
-		if (Float.isNaN(i_boundingBoxDistance))
+		if (Float.isNaN(i_boundingBoxDistance)) {
+			if (m_debug)
+				log.info(i_figure + " pruned because bounding box was missed");
 			return null;
+		}
 
 		HitImpl hit = null;
 		List children = i_figure.getChildren();
@@ -179,7 +245,20 @@ public class Query {
 		if (prune(m_rootFigure, m_search))
 			return null;
 
-		return doExecute(m_rootFigure, getBoundingBoxDistance(m_rootFigure));
+		if (m_debug) {
+			log.info("executing query " + this);
+
+			long start = System.currentTimeMillis();
+			Hit hit =
+				doExecute(m_rootFigure, getBoundingBoxDistance(m_rootFigure));
+
+			log.info("query executed in "
+				+ (System.currentTimeMillis() - start) + "ms and returned "
+				+ hit);
+
+			return hit;
+		} else
+			return doExecute(m_rootFigure, getBoundingBoxDistance(m_rootFigure));
 	}
 
 	/**
@@ -235,15 +314,33 @@ public class Query {
 		return m_rayOrigin;
 	}
 
+	/**
+	 * Indicates whether debug mode is enabled.
+	 * 
+	 * @return <code>true</code> if debug mode is enabled and <code>false</code>
+	 *         otherwise
+	 */
+	public boolean isDebug() {
+
+		return m_debug;
+	}
+
 	private boolean prune(IFigure i_figure, TreeSearch i_search) {
 
-		if (!i_figure.isVisible())
-			return false;
+		if (!i_figure.isVisible()) {
+			if (m_debug)
+				log.info(i_figure + " was pruned because it is not visible");
+			return true;
+		}
 
 		if (i_search == null)
 			return false;
 
-		return i_search.prune(i_figure);
+		boolean prune = i_search.prune(i_figure);
+		if (m_debug && prune)
+			log.info(i_figure + " pruned by tree search");
+
+		return prune;
 	}
 
 	/**
@@ -275,6 +372,17 @@ public class Query {
 			m_objects = new HashMap<Object, Object>();
 
 		m_objects.put(i_key, i_object);
+	}
+
+	/**
+	 * Specifies whether debug mode is enabled.
+	 * 
+	 * @param i_debug <code>true</code> if debug mode should be enabled and
+	 *            <code>false</code> otherwise
+	 */
+	public void setDebug(boolean i_debug) {
+
+		m_debug = i_debug;
 	}
 
 	/**

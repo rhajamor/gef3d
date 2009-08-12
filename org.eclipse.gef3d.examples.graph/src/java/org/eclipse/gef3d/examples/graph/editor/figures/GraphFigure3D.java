@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.graph.editor.figures;
 
+import java.util.Random;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.FreeformLayout;
@@ -22,8 +23,8 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
+import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.shapes.TransparentShape;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
@@ -42,10 +43,6 @@ public class GraphFigure3D extends FreeformLayer3D {
 	@SuppressWarnings("unused")
 	private static final Logger log =
 		Logger.getLogger(GraphFigure3D.class.getName());
-
-	private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
-
-	private TransparentShape m_adapter;
 
 	private Shape m_shape = new CuboidFigureShape(this);
 
@@ -73,20 +70,20 @@ public class GraphFigure3D extends FreeformLayer3D {
 		getPosition3D().setSize3D(size);
 		// was: bounds3D.setDepth(150);
 
-		float rotX = (float) Math.toRadians(30);
-		float rotY = (float) Math.toRadians(0);
-		float rotZ = (float) Math.toRadians(0);
+		Random gen = new Random(System.currentTimeMillis());
+		float rotX = (float) Math.toRadians(gen.nextInt(360));
+		float rotY = (float) Math.toRadians(gen.nextInt(360));
+		float rotZ = (float) Math.toRadians(gen.nextInt(360));
 
 		// Rotation is disabled, leads to an infinite loop in conjunction
 		// with handles.
-		// f.setRotation3D(new Vector3f(rotX, rotY, rotZ));
+		getPosition3D().setRotation3D(new Vector3fImpl(rotX, rotY, rotZ));
 
 		Color bgColor = new Color(Display.getCurrent(), 0xFF, 0xFF, 0xFF);
 		setBackgroundColor(bgColor);
 		setAlpha((byte) 0x44);
 
 		m_shape = new CuboidFigureShape(this);
-		m_adapter = new TransparentShape(this, m_shape);
 	}
 
 	/**
@@ -119,9 +116,12 @@ public class GraphFigure3D extends FreeformLayer3D {
 	@Override
 	public void render(RenderContext i_renderContext) {
 
-		if (getAlpha() == 255)
-			m_shape.render(i_renderContext);
-		else
-			i_renderContext.addTransparentObject(m_adapter);
+		m_shape.render(i_renderContext);
+
+		if (i_renderContext.getScene().isDebug()) {
+			ParaxialBoundsFigureShape pShape =
+				new ParaxialBoundsFigureShape(this);
+			pShape.render(i_renderContext);
+		}
 	}
 }

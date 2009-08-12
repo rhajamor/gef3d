@@ -17,15 +17,18 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.UpdateManager;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.XYZAnchor;
 import org.eclipse.draw3d.geometry.BoundingBox;
-import org.eclipse.draw3d.geometry.IBoundingBox;
+import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.picking.Picker;
+import org.eclipse.draw3d.util.DebugPrimitives;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.editpolicies.FeedbackHelper;
 
@@ -90,34 +93,39 @@ public class FeedbackHelper3D extends FeedbackHelper {
 		if (i_feedback == null)
 			throw new NullPointerException("i_feedback must not be null");
 
-		BoundingBox bounds = Draw3DCache.getBoundingBox();
-		Vector3f wLocation = Draw3DCache.getVector3f();
+		Vector3f wCenter = Draw3DCache.getVector3f();
 		Vector3f wSize = Draw3DCache.getVector3f();
+		Vector3f rotation = Draw3DCache.getVector3f();
+		Point sCenter = Draw3DCache.getPoint();
 		try {
+			Position3D feedbackPosition = i_feedback.getPosition3D();
 			ISurface surface = m_picker.getCurrentSurface();
 
+			surface.getSurfaceRotation(rotation);
+			feedbackPosition.setRotation3D(rotation);
+
+			if (i_sSize != null)
+				wSize.set(i_sSize.width, i_sSize.height, 1);
+			else
+				wSize.set(0, 0, 1);
+
+			feedbackPosition.setSize3D(wSize);
+
 			if (i_sLocation != null) {
-				surface.getWorldLocation(i_sLocation, wLocation);
-				bounds.setLocation(wLocation);
-			} else
-				bounds.setLocation(0, 0, 0);
+				if (i_sSize != null) {
+					sCenter.setLocation(i_sSize.width, i_sSize.height);
+					sCenter.scale(0.5);
+				} else
+					sCenter.setLocation(0, 0);
 
-			if (i_sSize != null) {
-				// surface.getWorldDimension(i_sSize, wSize);
-				bounds.setSize(i_sSize.width, i_sSize.height, 1);
-			} else {
-				bounds.setSize(0, 0, 1);
+				sCenter.translate(i_sLocation);
+				surface.getWorldLocation(sCenter, wCenter);
+
+				feedbackPosition.setCenter3D(wCenter);
 			}
-
-			bounds.expand(0.01f);
-			bounds.getLocation(wLocation);
-			bounds.getSize(wSize);
-
-			i_feedback.getPosition3D().setLocation3D(wLocation);
-			i_feedback.getPosition3D().setSize3D(wSize);
 		} finally {
-			Draw3DCache.returnBoundingBox(bounds);
-			Draw3DCache.returnVector3f(wLocation, wSize);
+			Draw3DCache.returnVector3f(wCenter, wSize, rotation);
+			Draw3DCache.returnPoint(sCenter);
 		}
 	}
 
@@ -130,39 +138,55 @@ public class FeedbackHelper3D extends FeedbackHelper {
 	 * @param i_surfaceMoveDelta the move delta
 	 * @param i_surfaceSizeDelta the size delta
 	 */
-	public void setDeltaFeedbackBounds(IFigure3D i_feedback,
+	public void updateFeedbackPosition(IFigure3D i_feedback,
 		Point i_surfaceMoveDelta, Dimension i_surfaceSizeDelta) {
 
 		if (i_feedback == null)
 			throw new NullPointerException("i_feedback must not be null");
 
-		BoundingBox bounds = Draw3DCache.getBoundingBox();
-		Vector3f wLocation = Draw3DCache.getVector3f();
-		Vector3f wSize = Draw3DCache.getVector3f();
+		if ((i_surfaceMoveDelta == null || i_surfaceMoveDelta.x == 0
+			&& i_surfaceMoveDelta.y == 0)
+			&& (i_surfaceSizeDelta == null || i_surfaceSizeDelta.isEmpty()))
+			return;
+
+		Vector3f center = Draw3DCache.getVector3f();
+		Vector3f size = Draw3DCache.getVector3f();
 		try {
-			bounds.set(i_feedback.getBounds3D());
+			IFigure3D host = Figure3DHelper.getAncestor3D(m_hostFigure);
+			Position3D dummy = Position3DUtil.createRelativePosition(host);
+			Position3D feedbackPosition = i_feedback.getPosition3D();
 
-			if (i_surfaceMoveDelta != null) {
-				// surface.getWorldLocation(i_surfaceMoveDelta, wLocation);
-				wLocation.set(i_surfaceMoveDelta.x, i_surfaceMoveDelta.y, 0);
-				bounds.translate(wLocation);
+			dummy.setPosition(feedbackPosition);
+
+			if (i_surfaceMoveDelta != null && i_surfaceMoveDelta.x != 0
+				&& i_surfaceMoveDelta.y != 0) {
+
+				log.info(i_surfaceMoveDelta.toString());
+
+				center.set(dummy.getCenter3D());
+
+				DebugPrimitives.getInstance().clear();
+				DebugPrimitives.getInstance().addPoint(m_hostFigure, center);
+
+				center.translate(i_surfaceMoveDelta.x, i_surfaceMoveDelta.y, 0);
+				dummy.setCenter3D(center);
+
 			}
 
-			if (i_surfaceSizeDelta != null) {
-				// surface.getWorldDimension(i_surfaceSizeDelta, wSize);
-				// bounds.resize(wSize);
-				bounds.resize(i_surfaceSizeDelta.width,
+			if (i_surfaceSizeDelta != null && !i_surfaceSizeDelta.isEmpty()) {
+
+				log.info(i_surfaceSizeDelta.toString());
+
+				size.set(dummy.getSize3D());
+				size.translate(i_surfaceSizeDelta.width,
 					i_surfaceSizeDelta.height, 0);
+
+				dummy.setSize3D(size);
 			}
 
-			bounds.getLocation(wLocation);
-			bounds.getSize(wSize);
-
-			i_feedback.getPosition3D().setLocation3D(wLocation);
-			i_feedback.getPosition3D().setSize3D(wSize);
+			feedbackPosition.setPosition(dummy);
 		} finally {
-			Draw3DCache.returnBoundingBox(bounds);
-			Draw3DCache.returnVector3f(wLocation, wSize);
+			Draw3DCache.returnVector3f(center, size);
 		}
 	}
 
@@ -193,7 +217,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 	 * 
 	 * @param i_feedback the feedback figure to modify
 	 */
-	public void setInitialFeedbackBounds(IFigure3D i_feedback) {
+	public void setInitialFeedbackPosition(IFigure3D i_feedback) {
 
 		if (m_hostFigure instanceof IFigure3D) {
 			BoundingBox feedbackBounds = Draw3DCache.getBoundingBox();
@@ -201,16 +225,10 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			Vector3f wSize = Draw3DCache.getVector3f();
 			try {
 				IFigure3D hostFigure3D = (IFigure3D) m_hostFigure;
-				IBoundingBox hostBounds = hostFigure3D.getBounds3D();
+				Position3D hostPosition = hostFigure3D.getPosition3D();
 
-				feedbackBounds.set(hostBounds);
-				feedbackBounds.expand(0.01f);
-
-				feedbackBounds.getLocation(wLocation);
-				feedbackBounds.getSize(wSize);
-
-				i_feedback.getPosition3D().setLocation3D(wLocation);
-				i_feedback.getPosition3D().setSize3D(wSize);
+				Position3D feedbackPosition = i_feedback.getPosition3D();
+				feedbackPosition.setPosition(hostPosition);
 			} finally {
 				Draw3DCache.returnBoundingBox(feedbackBounds);
 				Draw3DCache.returnVector3f(wLocation, wSize);

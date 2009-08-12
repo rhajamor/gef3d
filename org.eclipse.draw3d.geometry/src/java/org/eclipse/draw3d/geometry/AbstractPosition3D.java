@@ -22,6 +22,12 @@ import java.util.EnumSet;
  */
 public abstract class AbstractPosition3D implements Position3D {
 
+	private transient Matrix4fImpl m_absoluteRotationMatrix;
+
+	private Vector3f m_center = new Vector3fImpl();
+
+	private boolean m_invertible;
+
 	/**
 	 * The matrix with which to transform the direction of a ray.
 	 * 
@@ -36,38 +42,37 @@ public abstract class AbstractPosition3D implements Position3D {
 	 */
 	private transient Matrix4fImpl m_rayOriginMatrix;
 
-	private transient Matrix4fImpl m_rotationLocationMatrix;
-
-	private transient Matrix4fImpl m_transformationMatrix;
-
-	private boolean m_valid;
-
-	private boolean m_invertible;
-
 	/**
 	 * The rotation angles of this figure.
 	 */
-	protected Vector3f rotationAngles;
+	protected Vector3f m_rotationAngles;
+
+	private transient Matrix4fImpl m_rotationLocationMatrix;
+
+	private transient Matrix4fImpl m_transformationMatrix;
 
 	/**
 	 * Boolean semaphore used by {@link #syncSize()} and {@link #syncSize3D()}
 	 * to avoid infinite loop.
 	 */
-	protected boolean updatingBounds;
+	protected boolean m_updatingBounds;
+
+	private boolean m_valid;
 
 	/**
 	 * Creates and initializes a new instance.
 	 */
 	public AbstractPosition3D() {
 
-		rotationAngles = new Vector3fImpl(); // null vector
+		m_rotationAngles = new Vector3fImpl(); // null vector
 		m_transformationMatrix = new Matrix4fImpl(); // identity
 		m_rotationLocationMatrix = new Matrix4fImpl(); // identity
 		m_rayOriginMatrix = new Matrix4fImpl(); // identity
 		m_rayDirectionMatrix = new Matrix4fImpl(); // identiy
+		m_absoluteRotationMatrix = new Matrix4fImpl(); // identity
 		m_valid = false;
 		m_invertible = false;
-		updatingBounds = false;
+		m_updatingBounds = false;
 	}
 
 	/**
@@ -79,6 +84,79 @@ public abstract class AbstractPosition3D implements Position3D {
 	protected void firePositionChanged(PositionHint hint, IVector3f delta) {
 		if (getHost() != null)
 			getHost().positionChanged(EnumSet.of(hint), delta);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getAbsolute(org.eclipse.draw3d.geometry.Position3D)
+	 */
+	public Position3D getAbsolute(Position3D o_result) {
+
+		Position3D result = o_result;
+		if (result == null)
+			result = Position3DUtil.createAbsolutePosition();
+
+		Position3D parentPosition = getParentPosition();
+		if (parentPosition == null) {
+			result.setLocation3D(getLocation3D());
+			result.setSize3D(getSize3D());
+			result.setRotation3D(getRotation3D());
+		} else {
+			Vector3f location = Math3DCache.getVector3f();
+			Vector3f rotation = Math3DCache.getVector3f();
+			Vector3f halfSize = Math3DCache.getVector3f();
+			Vector3f center = Math3DCache.getVector3f();
+			try {
+				Math3D.scale(1 / 2f, getSize3D(), halfSize);
+				Math3D.add(getLocation3D(), halfSize, center);
+				IMatrix4f matrix = parentPosition.getRotationLocationMatrix();
+				center.transform(matrix);
+
+				Math3D.sub(center, halfSize, location);
+				result.setLocation3D(location);
+
+				rotation.set(getRotation3D());
+				IHost3D parent = getHost().getParentHost3D();
+				while (parent != null) {
+					Math3D.add(parent.getPosition3D().getRotation3D(),
+						rotation, rotation);
+					parent = parent.getParentHost3D();
+				}
+
+				result.setRotation3D(rotation);
+				result.setSize3D(getSize3D());
+
+				return result;
+			} finally {
+				Math3DCache
+					.returnVector3f(location, rotation, halfSize, center);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getAbsoluteRotationMatrix()
+	 */
+	public IMatrix4f getAbsoluteRotationMatrix() {
+
+		validate();
+		return m_absoluteRotationMatrix;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getCenter3D()
+	 */
+	public IVector3f getCenter3D() {
+
+		validate();
+		return m_center;
 	}
 
 	private Position3D getParentPosition() {
@@ -97,11 +175,42 @@ public abstract class AbstractPosition3D implements Position3D {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.geometry.IPosition3D#getRelative(org.eclipse.draw3d.geometry.IPosition3D,
+	 *      org.eclipse.draw3d.geometry.Position3D)
+	 */
+	public Position3D getRelative(IPosition3D i_position3D, Position3D o_result) {
+
+		Position3D result = o_result;
+		if (result == null)
+			result = Position3DUtil.createRelativePosition(getHost());
+
+		Position3D abs = Math3DCache.getPosition3D();
+		Vector3f tmp = Math3DCache.getVector3f();
+		try {
+			getAbsolute(abs);
+
+			Math3D.sub(i_position3D.getLocation3D(), abs.getLocation3D(), tmp);
+			result.setLocation3D(tmp);
+
+			Math3D.sub(i_position3D.getRotation3D(), abs.getRotation3D(), tmp);
+			result.setRotation3D(tmp);
+
+			result.setSize3D(i_position3D.getSize3D());
+			return result;
+		} finally {
+			Math3DCache.returnPosition3D(abs);
+			Math3DCache.returnVector3f(tmp);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.geometry.IPosition3D#getRotation3D()
 	 */
 	public IVector3f getRotation3D() {
 
-		return rotationAngles;
+		return m_rotationAngles;
 	}
 
 	/**
@@ -157,12 +266,52 @@ public abstract class AbstractPosition3D implements Position3D {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.geometry.Position3D#setCenter3D(org.eclipse.draw3d.geometry.IVector3f)
+	 */
+	public void setCenter3D(IVector3f i_center) {
+
+		Vector3f delta = Math3DCache.getVector3f();
+		Vector3f location = Math3DCache.getVector3f();
+		try {
+			Math3D.sub(getCenter3D(), i_center, delta);
+			Math3D.sub(getLocation3D(), delta, location);
+
+			setLocation3D(location);
+		} finally {
+			Math3DCache.returnVector3f(delta, location);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.geometry.Position3D#setPosition(org.eclipse.draw3d.geometry.IPosition3D)
 	 */
-	public void setPosition(IPosition3D i_source) {
-		setRotation3D(i_source.getRotation3D());
-		setSize3D(i_source.getSize3D());
-		setLocation3D(i_source.getLocation3D());
+	public void setPosition(IPosition3D i_position3D) {
+
+		Position3D absNew = Math3DCache.getPosition3D();
+		Position3D absParent = Math3DCache.getPosition3D();
+		Vector3f location = Math3DCache.getVector3f();
+		Vector3f rotation = Math3DCache.getVector3f();
+		try {
+			i_position3D.getAbsolute(absNew);
+			location.set(absNew.getLocation3D());
+			rotation.set(absNew.getRotation3D());
+
+			Position3D parentPosition = getParentPosition();
+			if (parentPosition != null) {
+				parentPosition.getAbsolute(absParent);
+				Math3D.sub(location, absParent.getLocation3D(), location);
+				Math3D.sub(rotation, absParent.getRotation3D(), rotation);
+			}
+
+			setLocation3D(location);
+			setRotation3D(rotation);
+			setSize3D(absNew.getSize3D());
+		} finally {
+			Math3DCache.returnPosition3D(absNew, absParent);
+			Math3DCache.returnVector3f(location, rotation);
+		}
 	}
 
 	/**
@@ -174,13 +323,13 @@ public abstract class AbstractPosition3D implements Position3D {
 		if (i_rotation == null) // parameter precondition
 			throw new NullPointerException("i_rotation must not be null");
 
-		if (rotationAngles.equals(i_rotation))
+		if (m_rotationAngles.equals(i_rotation))
 			return;
 
 		Vector3fImpl delta = new Vector3fImpl();
-		Math3D.sub(i_rotation, rotationAngles, delta);
+		Math3D.sub(i_rotation, m_rotationAngles, delta);
 
-		rotationAngles.set(i_rotation);
+		m_rotationAngles.set(i_rotation);
 		invalidate();
 
 		firePositionChanged(PositionHint.ROTATION, delta);
@@ -224,31 +373,40 @@ public abstract class AbstractPosition3D implements Position3D {
 		if (isValid())
 			return;
 
-		Vector3f center = Math3DCache.getVector3f();
-		Vector3f invRotation = Math3DCache.getVector3f();
-		Vector3f invScale = Math3DCache.getVector3f();
+		m_center.set(getSize3D());
+		m_center.scale(0.5f);
+		Math3D.add(getLocation3D(), m_center, m_center);
+
+		Vector3f halfSize = Math3DCache.getVector3f();
 		try {
 			// calculate the transformation and rotation / location matrices
 			// transformations are applied in reverse order
 			Position3D parent = getParentPosition();
-			if (parent != null)
+			if (parent != null) {
 				Math3D.translate(parent.getRotationLocationMatrix(),
 					getLocation3D(), m_rotationLocationMatrix);
-			else
+				m_absoluteRotationMatrix
+					.set(parent.getAbsoluteRotationMatrix());
+			} else {
 				Math3D.translate(IMatrix4f.IDENTITY, getLocation3D(),
 					m_rotationLocationMatrix);
+				m_absoluteRotationMatrix.setIdentity();
+			}
 
 			if (!IVector3f.NULLVEC3f.equals(getRotation3D())) {
-				Math3D.scale(0.5f, getSize3D(), center);
-				Math3D.translate(m_rotationLocationMatrix, center,
+				Math3D.scale(0.5f, getSize3D(), halfSize);
+				Math3D.translate(m_rotationLocationMatrix, halfSize,
 					m_rotationLocationMatrix);
 
 				Math3D.rotate(getRotation3D(), m_rotationLocationMatrix,
 					m_rotationLocationMatrix);
 
-				Math3D.scale(-0.5f, getSize3D(), center);
-				Math3D.translate(m_rotationLocationMatrix, center,
+				Math3D.scale(-0.5f, getSize3D(), halfSize);
+				Math3D.translate(m_rotationLocationMatrix, halfSize,
 					m_rotationLocationMatrix);
+
+				Math3D.rotate(getRotation3D(), m_absoluteRotationMatrix,
+					m_absoluteRotationMatrix);
 			}
 
 			m_transformationMatrix.set(m_rotationLocationMatrix);
@@ -256,33 +414,22 @@ public abstract class AbstractPosition3D implements Position3D {
 			Math3D.scale(getSize3D(), m_transformationMatrix,
 				m_transformationMatrix);
 
+			// calculate the inverse ray transformation matrices
 			if (getSize3D().getX() == 0 || getSize3D().getY() == 0
 				|| getSize3D().getZ() == 0) {
 				m_invertible = false;
 			} else {
 				m_invertible = true;
-
-				// now calculate the inverse ray transformation matrices
 				Math3D.invert(m_transformationMatrix, m_rayOriginMatrix);
 
-				m_rayDirectionMatrix.setIdentity();
-				if (!IVector3f.NULLVEC3f.equals(getRotation3D())) {
-					invRotation.set(getRotation3D());
-					invRotation.scale(-1);
-					Math3D.rotate(invRotation, m_rayDirectionMatrix,
-						m_rayDirectionMatrix);
-				}
-
-				invScale.setX(1 / getSize3D().getX());
-				invScale.setY(1 / getSize3D().getY());
-				invScale.setZ(1 / getSize3D().getZ());
-				Math3D.scale(invScale, m_rayDirectionMatrix,
+				Math3D.scale(getSize3D(), m_absoluteRotationMatrix,
 					m_rayDirectionMatrix);
+				Math3D.invert(m_rayDirectionMatrix, m_rayDirectionMatrix);
 			}
 
 			m_valid = true;
 		} finally {
-			Math3DCache.returnVector3f(center, invRotation, invScale);
+			Math3DCache.returnVector3f(halfSize);
 		}
 	}
 }

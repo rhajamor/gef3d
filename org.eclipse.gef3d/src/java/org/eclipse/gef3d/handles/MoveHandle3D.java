@@ -16,7 +16,6 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Cursors;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.Locator;
-import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.draw3d.shapes.TransparentShape;

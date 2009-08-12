@@ -15,6 +15,7 @@ package org.eclipse.gef3d.handles;
 import org.eclipse.draw2d.Cursors;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.PositionConstants3D;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.handles.RelativeHandleLocator;
@@ -79,12 +80,25 @@ public class ResizeHandle3D extends CubeHandle {
 	 */
 	public ResizeHandle3D(GraphicalEditPart owner, int direction,
 			PositionConstants3D i_zposition) {
+
 		setOwner(owner);
 		setLocator(new RelativeHandleLocator3D(owner.getFigure(), direction,
 			i_zposition));
 		setCursor(Cursors.getDirectionalCursor(direction, owner.getFigure()
 			.isMirrored()));
 		cursorDirection = direction;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ShapeFigure3D#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	@Override
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
+		// TODO implement method ResizeHandle3D.getParaxialBoundingBox
+		return super.getParaxialBoundingBox(o_result);
 	}
 
 	/**

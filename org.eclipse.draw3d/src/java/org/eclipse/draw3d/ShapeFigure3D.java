@@ -10,9 +10,14 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CompositeShape;
+import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * A figure that is represented visually by a {@link Shape}. Automatically
@@ -30,7 +35,7 @@ public abstract class ShapeFigure3D extends Figure3D {
 	protected Shape m_shape;
 
 	/**
-	 * Creates the shape(s) that represent this figure. This method must be 
+	 * Creates the shape(s) that represent this figure. This method must be
 	 * overridden by subclasses and must not return null.
 	 * 
 	 * @see CompositeShape
@@ -45,7 +50,45 @@ public abstract class ShapeFigure3D extends Figure3D {
 	 */
 	@Override
 	public float getDistance(Query i_query) {
+
 		return getShape().getDistance(i_query);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	@Override
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
+
+		ParaxialBoundingBox result = o_result;
+		if (o_result == null)
+			result = new ParaxialBoundingBoxImpl();
+
+		Vector3f location = Draw3DCache.getVector3f();
+		Vector3f size = Draw3DCache.getVector3f();
+		try {
+			if (m_paraxialBounds == null) {
+				m_paraxialBounds = getShape().getParaxialBoundingBox(null);
+
+				if (m_paraxialBounds == null)
+					return null;
+
+				helper.unionWithChildParaxialBounds(m_paraxialBounds);
+			}
+
+			m_paraxialBounds.getLocation(location);
+			m_paraxialBounds.getSize(size);
+
+			result.setLocation(location);
+			result.setSize(size);
+
+			return result;
+		} finally {
+			Draw3DCache.returnVector3f(location, size);
+		}
 	}
 
 	/**
@@ -56,10 +99,12 @@ public abstract class ShapeFigure3D extends Figure3D {
 	 * @return the shape
 	 */
 	protected Shape getShape() {
+
 		if (m_shape == null) {
 			m_shape = createShape();
-			if (m_shape==null) {
-				throw new NullPointerException("created shape mmust not be null");
+			if (m_shape == null) {
+				throw new NullPointerException(
+					"created shape mmust not be null");
 			}
 		}
 
@@ -73,6 +118,13 @@ public abstract class ShapeFigure3D extends Figure3D {
 	 */
 	@Override
 	public void render(RenderContext i_renderContext) {
+
 		getShape().render(i_renderContext);
+
+		if (i_renderContext.getScene().isDebug()) {
+			ParaxialBoundsFigureShape pShape =
+				new ParaxialBoundsFigureShape(this);
+			pShape.render(i_renderContext);
+		}
 	}
 }

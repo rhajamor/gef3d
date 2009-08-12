@@ -17,13 +17,11 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PositionConstants;
 import org.eclipse.draw2d.RelativeLocator;
-import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw3d.geometry.BoundingBox;
-import org.eclipse.draw3d.geometry.BoundingBoxImpl;
-import org.eclipse.draw3d.geometry.IBoundingBox;
-import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * RelativeLocator3D, 3D version of the 2D relative locator
@@ -40,20 +38,22 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
  * @since Mar 24, 2008
  */
 public class RelativeLocator3D extends RelativeLocator {
+
+	/**
+	 * The locator helper.
+	 */
+	protected LocatorHelper m_helper;
+
 	/**
 	 * Logger for this class
 	 */
 	private static final Logger log =
 		Logger.getLogger(RelativeLocator3D.class.getName());
 
-	private static final Vector3fImpl TMP_V2 = new Vector3fImpl();
-
-	private static final Vector3fImpl TMP_V1 = new Vector3fImpl();
-
 	/**
 	 * Contains the relative offset factors.
 	 */
-	protected Vector3fImpl m_relativeVec = new Vector3fImpl(0, 0, 0);
+	protected Vector3fImpl m_factors = new Vector3fImpl(0, 0, 0);
 
 	/**
 	 * Creates a new instance with no relative offset.
@@ -90,8 +90,9 @@ public class RelativeLocator3D extends RelativeLocator {
 			double i_relativeY, double i_relativeZ) {
 
 		super(i_reference, i_relativeX, i_relativeY);
-		m_relativeVec.set((float) i_relativeX, (float) i_relativeY,
+		m_factors.set((float) i_relativeX, (float) i_relativeY,
 			(float) i_relativeZ);
+		m_helper = new LocatorHelper(i_reference);
 	}
 
 	/**
@@ -123,132 +124,79 @@ public class RelativeLocator3D extends RelativeLocator {
 		super(i_reference, i_location);
 		switch (i_location & PositionConstants.NORTH_SOUTH) {
 		case PositionConstants.NORTH:
-			m_relativeVec.y = 0;
+			m_factors.y = 0;
 			break;
 		case PositionConstants.SOUTH:
-			m_relativeVec.y = 1.0f;
+			m_factors.y = 1.0f;
 			break;
 		default:
-			m_relativeVec.y = 0.5f;
+			m_factors.y = 0.5f;
 		}
 
 		switch (i_location & PositionConstants.EAST_WEST) {
 		case PositionConstants.WEST:
-			m_relativeVec.x = 0;
+			m_factors.x = 0;
 			break;
 		case PositionConstants.EAST:
-			m_relativeVec.x = 1.0f;
+			m_factors.x = 1.0f;
 			break;
 		default:
-			m_relativeVec.x = 0.5f;
+			m_factors.x = 0.5f;
 		}
 
 		switch (i_zlocation) {
 		case FRONT:
-			m_relativeVec.z = 1.0f;
+			m_factors.z = 1.0f;
 			break;
 		case BACK:
-			m_relativeVec.z = 0;
+			m_factors.z = 0;
 			break;
 		default: // ZMIDDLE
-			m_relativeVec.z = 0.5f;
+			m_factors.z = 0.5f;
 		}
 
+		m_helper = new LocatorHelper(i_reference);
 	}
 
 	/**
-	 * Returns the reference box in the reference figure's coordinate system.
-	 * 
-	 * @see #getReferenceBox()
-	 * @return the reference box
-	 */
-	public IBoundingBox getReferenceBox3D() {
-
-		IFigure ref = getReferenceFigure();
-		if (ref instanceof IFigure3D) {
-			IFigure3D ref3D = (IFigure3D) ref;
-			return ref3D.getBounds3D();
-		} else {
-			// do not call super method here, since this method may be
-			// overridden causing infinite calls or inconsistent behavior
-			// with 3D version
-			Rectangle rect = ref.getBounds();
-			return Figure3DHelper.convertBoundsToBounds3D(ref, rect);
-		}
-	}
-
-	/**
-	 * {@inheritDoc} This method is exactly implemented as its 2D version, using
-	 * 3D methods instead.
+	 * Delegates to 2D method if target and reference figure are 2D. Any other
+	 * cases are handled here, and if the target is 2D, a warning is logged.
 	 * 
 	 * @see org.eclipse.draw2d.RelativeLocator#relocate(org.eclipse.draw2d.IFigure)
 	 */
 	@Override
-	public void relocate(IFigure target) {
+	public void relocate(IFigure i_target) {
 
-		// if everything is 2D, behave like original 2D locator
-		if (!(getReferenceFigure() instanceof IFigure3D || target instanceof IFigure3D)) {
-			super.relocate(target);
-		} else { // use 3D locators
-			// super: IFigure reference = getReferenceFigure(); // get reference
-			// figure
-			IFigure reference = getReferenceFigure();
+		IFigure ref = getReferenceFigure();
+		if (!(ref instanceof IFigure3D) && !(i_target instanceof IFigure3D)) {
+			super.relocate(i_target);
+		} else {
+			if (i_target instanceof IFigure3D) {
+				Position3D targetPosition = Draw3DCache.getPosition3D();
+				Vector3f location = Draw3DCache.getVector3f();
+				Vector3f size = Draw3DCache.getVector3f();
+				try {
+					IFigure3D target3D = (IFigure3D) i_target;
+					Position3D refPosition = m_helper.getReferencePosition3D();
 
-			// super: Rectangle targetBounds = // get "frame" of reference
-			// new PrecisionRectangle(getReferenceBox().getResized(-1, -1));
-			BoundingBox targetBox = new BoundingBoxImpl(getReferenceBox3D());
-			targetBox.resize(-1, -1, -1);
+					Math3D.scale(m_factors, refPosition.getSize3D(), location);
+					Math3D.add(location, refPosition.getLocation3D(), location);
 
-			// super: reference.translateToAbsolute(targetBounds); //
-			// translate coordinates to absolute (from reference relative)
-			IFigure3D ref3D = Figure3DHelper.getAncestor3D(reference);
-			ref3D.transformToAbsolute(targetBox);
+					Math3D.scale(1 / 2f, target3D.getPreferredSize3D(), size);
+					Math3D.sub(location, size, location);
 
-			// now targetBox is resized bounds of reference, resized by -1 pixel
-			// in world (absolute) coordinates, proceed as in 2D version (which
-			// makes only sense here for a 3D target
-			if (target instanceof IFigure3D) {
-				IFigure3D target3D = (IFigure3D) target;
+					refPosition.setLocation3D(location);
+					refPosition.setSize3D(target3D.getPreferredSize3D());
 
-				// super: target.translateToRelative(targetBounds); // translate
-				// coordinates to relative (from absolute)
-				target3D.transformToRelative(targetBox);
-
-				// super: targetBounds.resize(1, 1); // and resize back to
-				// bounds or reference
-				targetBox.resize(1, 1, 1);
-
-				// super: Dimension targetSize = target.getPreferredSize(); //
-				// get preferred size of target
-				IVector3f targetSize = target3D.getPreferredSize3D();
-
-				// super: targetBounds.x // position target figure (x)
-				// super: += (int) (targetBounds.width * relativeX -
-				// ((targetSize.width + 1) / 2));
-				// super: targetBounds.y // position target figure (y)
-				// super: += (int) (targetBounds.height * relativeY -
-				// ((targetSize.height + 1) / 2));
-
-				targetBox.getLocation(TMP_V1);
-				targetBox.getSize(TMP_V2);
-
-				TMP_V1.x += TMP_V2.x * m_relativeVec.x //
-						- ((targetSize.getX() + 1) / 2);
-				TMP_V1.y += TMP_V2.y * m_relativeVec.y //
-						- ((targetSize.getY() + 1) / 2);
-				TMP_V1.z += TMP_V2.z * m_relativeVec.z //
-						- ((targetSize.getZ() + 1) / 2);
-
-				// super: targetBounds.setSize(targetSize); // target size is
-				// its preferred size
-				// super: target.setBounds(targetBounds); // set target position
-				Position3D position3d = target3D.getPosition3D();
-				position3d.setLocation3D(TMP_V1);
-				position3d.setSize3D(targetSize);
+					target3D.getPosition3D().setPosition(refPosition);
+				} finally {
+					Draw3DCache.returnPosition3D(targetPosition);
+					Draw3DCache.returnVector3f(location, size);
+				}
 			} else {
 				log.warning("Cannot position 2D Figure based "
-						+ "on 3D reference, reference: " + reference
-						+ ", target: " + target);
+					+ "on 3D reference, reference: " + ref + ", target: "
+					+ i_target);
 			}
 		}
 	}

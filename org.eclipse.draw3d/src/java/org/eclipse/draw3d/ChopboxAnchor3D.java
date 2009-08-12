@@ -12,6 +12,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
+import java.util.logging.Logger;
+
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -34,6 +36,10 @@ import org.eclipse.draw3d.util.Draw3DCache;
  */
 public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(ChopboxAnchor3D.class.getName());
+
 	/**
 	 * Constructs a new ChopboxAnchor.
 	 */
@@ -44,8 +50,7 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 	/**
 	 * Constructs a ChopboxAnchor with the given <i>owner</i> figure.
 	 * 
-	 * @param owner
-	 *            the owner figure
+	 * @param owner the owner figure
 	 * @since 2.0
 	 */
 	public ChopboxAnchor3D(IFigure owner) {
@@ -53,12 +58,52 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 	}
 
 	/**
+	 * @param reference
+	 * @param absoluteMode used in 2D mode to translate owner to absolute. In 3D
+	 *            mode this is done when converting the location to 3D. (have I
+	 *            heard someone whisper "this is a hack"?)
+	 * @return
+	 */
+	private Point doGetLocation(Point reference, boolean absoluteMode) {
+
+		// TODO: this is buggy
+		Rectangle r = Rectangle.SINGLETON;
+		r.setBounds(getBox());
+		r.translate(-1, -1);
+		r.resize(1, 1);
+
+		if (absoluteMode)
+			getOwner().translateToAbsolute(r);
+		float centerX = r.x + 0.5f * r.width;
+		float centerY = r.y + 0.5f * r.height;
+
+		if (r.isEmpty() || reference == null
+			|| (reference.x == (int) centerX && reference.y == (int) centerY)) {
+			return new Point((int) centerX, (int) centerY); // This avoids
+			// divide-by-zero
+		}
+
+		float dx = reference.x - centerX;
+		float dy = reference.y - centerY;
+
+		// r.width, r.height, dx, and dy are guaranteed to be non-zero.
+		float scale =
+			0.5f / Math.max(Math.abs(dx) / r.width, Math.abs(dy) / r.height);
+
+		dx *= scale;
+		dy *= scale;
+		centerX += dx;
+		centerY += dy;
+
+		return new Point(Math.round(centerX), Math.round(centerY));
+	}
+
+	/**
 	 * Returns the 3D bounding box of this ChopboxAnchor's owner. Subclasses can
 	 * override this method to adjust the box the anchor can be placed on.
 	 * 
 	 * @return the bounds of this ChopboxAnchor's owner
-	 * @throws IllegalStateException
-	 *             if no 3D bounding box can be determined
+	 * @throws IllegalStateException if no 3D bounding box can be determined
 	 */
 	protected IBoundingBox getBounds3D() {
 
@@ -117,55 +162,12 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 	 * {@link org.eclipse.draw2d.ChopboxAnchor#getLocation(Point)}.
 	 * </p>
 	 * 
-	 * @param reference
-	 *            The reference point
+	 * @param reference The reference point
 	 * @return The anchor location
 	 */
 	@Override
 	public Point getLocation(Point reference) {
 		return doGetLocation(reference, true);
-	}
-
-	/**
-	 * @param reference
-	 * @param absoluteMode
-	 *            used in 2D mode to translate owner to absolute. In 3D mode
-	 *            this is done when converting the location to 3D. (have I heard
-	 *            someone whisper "this is a hack"?)
-	 * @return
-	 */
-	private Point doGetLocation(Point reference, boolean absoluteMode) {
-
-		Rectangle r = Rectangle.SINGLETON;
-		r.setBounds(getBox());
-		r.translate(-1, -1);
-		r.resize(1, 1);
-
-		if (absoluteMode)
-			getOwner().translateToAbsolute(r);
-		float centerX = r.x + 0.5f * r.width;
-		float centerY = r.y + 0.5f * r.height;
-
-		if (r.isEmpty()
-				|| reference == null
-				|| (reference.x == (int) centerX && reference.y == (int) centerY)) {
-			return new Point((int) centerX, (int) centerY); // This avoids
-			// divide-by-zero
-		}
-
-		float dx = reference.x - centerX;
-		float dy = reference.y - centerY;
-
-		// r.width, r.height, dx, and dy are guaranteed to be non-zero.
-		float scale = 0.5f / Math.max(Math.abs(dx) / r.width, Math.abs(dy)
-				/ r.height);
-
-		dx *= scale;
-		dy *= scale;
-		centerX += dx;
-		centerY += dy;
-
-		return new Point(Math.round(centerX), Math.round(centerY));
 	}
 
 	/**
@@ -233,21 +235,11 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 				result.set(tmp);
 				return result;
 			} else { // 2D owner
-				IFigure3D host = Figure3DHelper.getAncestor3D(getOwner());
-				ISurface surface = host.getSurface();
-
-				Point result2D = null;
-				if (i_reference == null) {
-					result2D = doGetLocation(null, false);
-				} else {
-					surface.getSurfaceLocation2D(i_reference, surfaceRef);
-					result2D = doGetLocation(surfaceRef, false);
-				}
-
-				return surface.getWorldLocation(result2D, result);
+				result.set(i_reference);
+				return result;
 			}
 		} finally {
-		    Draw3DCache.returnPoint(surfaceRef);
+			Draw3DCache.returnPoint(surfaceRef);
 			Draw3DCache.returnVector3f(center, tmp);
 		}
 	}
@@ -282,24 +274,25 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 		if (result == null)
 			result = new Vector3fImpl();
 
-		Vector3f ref = Draw3DCache.getVector3f();
+		Vector3f ref3D = Draw3DCache.getVector3f();
 		try {
 			if (owner instanceof IFigure3D) {
-				getBounds3D().getCenter(ref);
+				getBounds3D().getCenter(ref3D);
 
 				IFigure3D owner3D = (IFigure3D) owner;
-				owner3D.transformToAbsolute(ref);
+				owner3D.transformToAbsolute(ref3D);
 
-				result.set(ref);
+				result.set(ref3D);
 				return result;
 			} else {
-				// Point ref = getReferencePoint();
-				// return CoordinateConverter.surfaceToWorld(ref.x, ref.y,
-				// Figure3DHelper.getAncestor3D(owner));
-				return null;
+				Point ref2D = getReferencePoint();
+				IFigure3D host = Figure3DHelper.getAncestor3D(owner);
+
+				ISurface surface = host.getSurface();
+				return surface.getWorldLocation(ref2D, result);
 			}
 		} finally {
-			Draw3DCache.returnVector3f(ref);
+			Draw3DCache.returnVector3f(ref3D);
 		}
 	}
 

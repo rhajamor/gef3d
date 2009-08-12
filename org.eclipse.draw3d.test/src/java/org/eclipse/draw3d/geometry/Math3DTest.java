@@ -14,17 +14,15 @@ package org.eclipse.draw3d.geometry;
 import junit.framework.TestCase;
 
 /**
- * Math3DTest Test case for org.eclipse.draw3d.geometryext.Math3D.
- * 
- * For creating expected results, see http://www.bluebit.gr/matrix-calculator/
+ * Math3DTest Test case for org.eclipse.draw3d.geometryext.Math3D. For creating
+ * expected results, see http://www.bluebit.gr/matrix-calculator/
  * 
  * @author Matthias Thiele
  * @version $Revision$
  * @since 23.10.2008
- * 
  */
 public class Math3DTest extends TestCase {
-	
+
 	public static float PREC = 0.0001f;
 
 	/**
@@ -60,20 +58,45 @@ public class Math3DTest extends TestCase {
 
 		if (!v1.equals(v2)) {
 			fail("testNegateIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.negate(v0, v2);
 		if (!v1.equals(v2)) {
 			fail("testNegateIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.negate(v0, v0);
 		if (!v1.equals(v2) || !v1.equals(v0)) {
 			fail("testNegateIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link Math3D#eulerAngles(IVector3f, IVector3f, Vector3f)}.
+	 */
+	public void testEulerAngles() {
+
+		Vector3f ref = GeometryTests.getRandomVector3f();
+		Math3D.normalise(ref, ref);
+
+		Vector3f v0 = new Vector3fImpl(ref);
+		Vector3f v1 = new Vector3fImpl(ref);
+
+		Vector3f a = GeometryTests.getRandomVector3f();
+		a.scale((float) Math.PI);
+
+		Matrix4f rot = Math3D.rotate(a, IMatrix4f.IDENTITY, null);
+		v0.transform(rot);
+
+		Vector3f e = Math3D.eulerAngles(v0, ref, null);
+		rot = Math3D.rotate(e, IMatrix4f.IDENTITY, rot);
+		v1.transform(rot);
+
+		assertTrue(Math3D.equals(v0, v1, 0.01f));
 	}
 
 	/**
@@ -88,21 +111,21 @@ public class Math3DTest extends TestCase {
 
 		Vector3f v2 = Math3D.normalise(v0, null);
 
-		if (!v1.equals(v2,PREC)) {
+		if (!v1.equals(v2, PREC)) {
 			fail("testNormaliseIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.normalise(v0, v2);
 		if (!v1.equals(v2, PREC)) {
 			fail("testNormaliseIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.normalise(v0, v0);
-		if (!v1.equals(v2,PREC) || !v1.equals(v0,PREC)) {
+		if (!v1.equals(v2, PREC) || !v1.equals(v0, PREC)) {
 			fail("testNormaliseIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 	}
 
@@ -118,8 +141,8 @@ public class Math3DTest extends TestCase {
 
 		if (expDot != Math3D.dot(v0, v1) || expDot != Math3D.dot(v1, v0)) {
 			fail("testDotIVector3fIVector3f - Expected dot " + expDot
-					+ " was not returned with vectors: " + v0.toString() + " "
-					+ v1.toString());
+				+ " was not returned with vectors: " + v0.toString() + " "
+				+ v1.toString());
 		}
 	}
 
@@ -131,14 +154,15 @@ public class Math3DTest extends TestCase {
 	public void testAngleIVector3fIVector3f() {
 		Vector3fImpl v0 = GeometryTests.getRandomVector3f();
 		Vector3fImpl v1 = GeometryTests.getRandomVector3f();
-		float expAngle = (float) Math
+		float expAngle =
+			(float) Math
 				.acos((Math3D.dot(v0, v1) / (v0.length() * v1.length())));
 
 		if (Math3D.angle(v0, v1) != expAngle
-				|| Math3D.angle(v1, v0) != expAngle) {
+			|| Math3D.angle(v1, v0) != expAngle) {
 			fail("testAngleIVector3fIVector3f - Expected angle " + expAngle
-					+ " was not returned with vectors: " + v0.toString() + " "
-					+ v1.toString());
+				+ " was not returned with vectors: " + v0.toString() + " "
+				+ v1.toString());
 		}
 	}
 
@@ -150,26 +174,26 @@ public class Math3DTest extends TestCase {
 	public void testScaleIVector3fFloatVector3f() {
 		Vector3fImpl v0 = GeometryTests.getRandomVector3f();
 		float scalar = GeometryTests.getRandomFloat();
-		IVector3f v1 = new Vector3fImpl(v0.x * scalar, v0.y * scalar, v0.z
-				* scalar);
+		IVector3f v1 =
+			new Vector3fImpl(v0.x * scalar, v0.y * scalar, v0.z * scalar);
 
 		Vector3f v2 = Math3D.scale(scalar, v0, null);
 
 		if (!v1.equals(v2)) {
 			fail("testScaleIVector3fFloatVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.scale(scalar, v0, v2);
 		if (!v1.equals(v2)) {
 			fail("testScaleIVector3fFloatVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.scale(scalar, v0, v0);
 		if (!v1.equals(v2) || !v1.equals(v0)) {
 			fail("testScaleIVector3fFloatVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 	}
@@ -190,19 +214,19 @@ public class Math3DTest extends TestCase {
 
 		if (!v1.equals(v2)) {
 			fail("testTranslateIVector3fFloatFloatFloatVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.translate(v0, dX, dY, dZ, v2);
 		if (!v1.equals(v2)) {
 			fail("testTranslateIVector3fFloatFloatFloatVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.translate(v0, dX, dY, dZ, v0);
 		if (!v1.equals(v2) || !v1.equals(v0)) {
 			fail("testTranslateIVector3fFloatFloatFloatVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 	}
 
@@ -214,26 +238,26 @@ public class Math3DTest extends TestCase {
 	public void testAddIVector3fIVector3fVector3f() {
 		Vector3fImpl v0a = GeometryTests.getRandomVector3f();
 		Vector3fImpl v0b = GeometryTests.getRandomVector3f();
-		IVector3f v1 = new Vector3fImpl(v0a.x + v0b.x, v0a.y + v0b.y, v0a.z
-				+ v0b.z);
+		IVector3f v1 =
+			new Vector3fImpl(v0a.x + v0b.x, v0a.y + v0b.y, v0a.z + v0b.z);
 
 		Vector3f v2 = Math3D.add(v0a, v0b, null);
 
 		if (!v1.equals(v2)) {
 			fail("testAddIVector3fIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.add(v0a, v0b, v2);
 		if (!v1.equals(v2)) {
 			fail("testAddIVector3fIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.add(v0a, v0b, v0b);
 		if (!v1.equals(v2) || !v1.equals(v0b)) {
 			fail("testAddIVector3fIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 	}
 
@@ -245,25 +269,25 @@ public class Math3DTest extends TestCase {
 	public void testSubIVector3fIVector3fVector3f() {
 		Vector3fImpl v0a = GeometryTests.getRandomVector3f();
 		Vector3fImpl v0b = GeometryTests.getRandomVector3f();
-		IVector3f v1 = new Vector3fImpl(v0a.x - v0b.x, v0a.y - v0b.y, v0a.z
-				- v0b.z);
+		IVector3f v1 =
+			new Vector3fImpl(v0a.x - v0b.x, v0a.y - v0b.y, v0a.z - v0b.z);
 		Vector3f v2 = Math3D.sub(v0a, v0b, null);
 
 		if (!v1.equals(v2)) {
 			fail("testSubIVector3fIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.sub(v0a, v0b, v2);
 		if (!v1.equals(v2)) {
 			fail("testSubIVector3fIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.sub(v0a, v0b, v0b);
 		if (!v1.equals(v2) || !v1.equals(v0b)) {
 			fail("testSubIVector3fIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 	}
@@ -287,19 +311,19 @@ public class Math3DTest extends TestCase {
 
 		if (!v1.equals(v2)) {
 			fail("testCross - Expected values do not match: " + v1.toString()
-					+ " " + v2.toString());
+				+ " " + v2.toString());
 		}
 
 		Math3D.cross(v0a, v0b, v2);
 		if (!v1.equals(v2)) {
 			fail("testCross - Expected values do not match: " + v1.toString()
-					+ " " + v2.toString());
+				+ " " + v2.toString());
 		}
 
 		v2 = Math3D.cross(v0a, v0b, v0b);
 		if (!v1.equals(v2) || !v1.equals(v0b)) {
 			fail("testCross - Expected values do not match: " + v1.toString()
-					+ " " + v2.toString());
+				+ " " + v2.toString());
 		}
 	}
 
@@ -314,26 +338,26 @@ public class Math3DTest extends TestCase {
 		float dY = GeometryTests.getRandomFloat();
 		float dZ = GeometryTests.getRandomFloat();
 		float dW = GeometryTests.getRandomFloat();
-		IVector4f v1 = new Vector4fImpl(v0.x + dX, v0.y + dY, v0.z + dZ, v0.w
-				+ dW);
+		IVector4f v1 =
+			new Vector4fImpl(v0.x + dX, v0.y + dY, v0.z + dZ, v0.w + dW);
 
 		Vector4f v2 = Math3D.translate(v0, dX, dY, dZ, dW, null);
 
 		if (!v1.equals(v2)) {
 			fail("testTranslateIVector4fFloatFloatFloatFloatVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.translate(v0, dX, dY, dZ, dW, v2);
 		if (!v1.equals(v2)) {
 			fail("testTranslateIVector4fFloatFloatFloatFloatVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.translate(v0, dX, dY, dZ, dW, v0);
 		if (!v1.equals(v2) || !v1.equals(v0)) {
 			fail("testTranslateIVector4fFloatFloatFloatFloatVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 	}
 
@@ -345,26 +369,27 @@ public class Math3DTest extends TestCase {
 	public void testAddIVector4fIVector4fVector4f() {
 		Vector4fImpl v0a = GeometryTests.getRandomVector4f();
 		Vector4fImpl v0b = GeometryTests.getRandomVector4f();
-		IVector4f v1 = new Vector4fImpl(v0a.x + v0b.x, v0a.y + v0b.y, v0a.z
-				+ v0b.z, v0a.w + v0b.w);
+		IVector4f v1 =
+			new Vector4fImpl(v0a.x + v0b.x, v0a.y + v0b.y, v0a.z + v0b.z, v0a.w
+				+ v0b.w);
 
 		Vector4f v2 = Math3D.add(v0a, v0b, null);
 
 		if (!v1.equals(v2)) {
 			fail("testAddIVector4fIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.add(v0a, v0b, v2);
 		if (!v1.equals(v2)) {
 			fail("testAddIVector4fIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.add(v0a, v0b, v0b);
 		if (!v1.equals(v2) || !v1.equals(v0b)) {
 			fail("testAddIVector4fIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 	}
 
@@ -376,26 +401,27 @@ public class Math3DTest extends TestCase {
 	public void testSubIVector4fIVector4fVector4f() {
 		Vector4fImpl v0a = GeometryTests.getRandomVector4f();
 		Vector4fImpl v0b = GeometryTests.getRandomVector4f();
-		IVector4f v1 = new Vector4fImpl(v0a.x - v0b.x, v0a.y - v0b.y, v0a.z
-				- v0b.z, v0a.w - v0b.w);
+		IVector4f v1 =
+			new Vector4fImpl(v0a.x - v0b.x, v0a.y - v0b.y, v0a.z - v0b.z, v0a.w
+				- v0b.w);
 
 		Vector4f v2 = Math3D.sub(v0a, v0b, null);
 
 		if (!v1.equals(v2)) {
 			fail("testAddIVector4fIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.sub(v0a, v0b, v2);
 		if (!v1.equals(v2)) {
 			fail("testAddIVector4fIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.sub(v0a, v0b, v0b);
 		if (!v1.equals(v2) || !v1.equals(v0b)) {
 			fail("testAddIVector4fIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 	}
 
@@ -412,19 +438,19 @@ public class Math3DTest extends TestCase {
 
 		if (!v1.equals(v2)) {
 			fail("testNegateIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.negate(v0, v2);
 		if (!v1.equals(v2)) {
 			fail("testNegateIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.negate(v0, v0);
 		if (!v1.equals(v2) || !v1.equals(v0)) {
 			fail("testNegateIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 	}
 
@@ -436,26 +462,26 @@ public class Math3DTest extends TestCase {
 	public void testNormaliseIVector4fVector4f() {
 		Vector4fImpl v0 = GeometryTests.getRandomVector4f();
 		float l = v0.length();
-		Vector4fImpl v1 = new Vector4fImpl(v0.x / l, v0.y / l, v0.z / l, v0.w
-				/ l);
+		Vector4fImpl v1 =
+			new Vector4fImpl(v0.x / l, v0.y / l, v0.z / l, v0.w / l);
 
 		Vector4f v2 = Math3D.normalise(v0, null);
 
-		if (!v1.equals(v2,PREC)) {
+		if (!v1.equals(v2, PREC)) {
 			fail("testNormaliseIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.normalise(v0, v2);
-		if (!v1.equals(v2,PREC)) {
+		if (!v1.equals(v2, PREC)) {
 			fail("testNormaliseIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.normalise(v0, v0);
-		if (!v1.equals(v2,PREC) || !v1.equals(v0,PREC)) {
+		if (!v1.equals(v2, PREC) || !v1.equals(v0, PREC)) {
 			fail("testNormaliseIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 	}
 
@@ -471,8 +497,8 @@ public class Math3DTest extends TestCase {
 
 		if (expDot != Math3D.dot(v0, v1) || expDot != Math3D.dot(v1, v0)) {
 			fail("testDotIVector4fIVector4f - Expected dot " + expDot
-					+ " was not returned with vectors: " + v0.toString() + " "
-					+ v1.toString());
+				+ " was not returned with vectors: " + v0.toString() + " "
+				+ v1.toString());
 		}
 	}
 
@@ -484,14 +510,15 @@ public class Math3DTest extends TestCase {
 	public void testAngleIVector4fIVector4f() {
 		Vector4fImpl v0 = GeometryTests.getRandomVector4f();
 		Vector4fImpl v1 = GeometryTests.getRandomVector4f();
-		float expAngle = (float) Math
+		float expAngle =
+			(float) Math
 				.acos((Math3D.dot(v0, v1) / (v0.length() * v1.length())));
 
 		if (Math3D.angle(v0, v1) != expAngle
-				|| Math3D.angle(v1, v0) != expAngle) {
+			|| Math3D.angle(v1, v0) != expAngle) {
 			fail("testAngleIVector4fIVector4f - Expected angle " + expAngle
-					+ " was not returned with vectors: " + v0.toString() + " "
-					+ v1.toString());
+				+ " was not returned with vectors: " + v0.toString() + " "
+				+ v1.toString());
 		}
 	}
 
@@ -503,26 +530,27 @@ public class Math3DTest extends TestCase {
 	public void testScaleIVector4fFloatVector4f() {
 		Vector4fImpl v0 = GeometryTests.getRandomVector4f();
 		float scalar = GeometryTests.getRandomFloat();
-		IVector4f v1 = new Vector4fImpl(v0.x * scalar, v0.y * scalar, v0.z
-				* scalar, v0.w * scalar);
+		IVector4f v1 =
+			new Vector4fImpl(v0.x * scalar, v0.y * scalar, v0.z * scalar, v0.w
+				* scalar);
 
 		Vector4f v2 = Math3D.scale(scalar, v0, null);
 
 		if (!v1.equals(v2)) {
 			fail("testScaleIVector4fFloatVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.scale(scalar, v0, v2);
 		if (!v1.equals(v2)) {
 			fail("testScaleIVector4fFloatVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.scale(scalar, v0, v0);
 		if (!v1.equals(v2) || !v1.equals(v0)) {
 			fail("testScaleIVector4fFloatVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 	}
 
@@ -550,19 +578,19 @@ public class Math3DTest extends TestCase {
 
 		if (!m1.equals(m2)) {
 			fail("testAddIMatrix3fIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		Math3D.add(m0a, m0b, m2);
 		if (!m1.equals(m2)) {
 			fail("testAddIMatrix3fIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.add(m0a, m0b, m0b);
 		if (!m1.equals(m2) || !m1.equals(m0b)) {
 			fail("testAddIMatrix3fIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -590,19 +618,19 @@ public class Math3DTest extends TestCase {
 
 		if (!m1.equals(m2)) {
 			fail("testAddIMatrix3fIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		Math3D.sub(m0a, m0b, m2);
 		if (!m1.equals(m2)) {
 			fail("testAddIMatrix3fIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.sub(m0a, m0b, m0b);
 		if (!m1.equals(m2) || !m1.equals(m0b)) {
 			fail("testAddIMatrix3fIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -630,19 +658,19 @@ public class Math3DTest extends TestCase {
 
 		if (!m1.equals(m2)) {
 			fail("testMulIMatrix3fIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		Math3D.mul(m0a, m0b, m2);
 		if (!m1.equals(m2)) {
 			fail("testMulIMatrix3fIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.mul(m0a, m0b, m0b);
 		if (!m1.equals(m2) || !m1.equals(m0b)) {
 			fail("testMulIMatrix3fIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -665,19 +693,19 @@ public class Math3DTest extends TestCase {
 
 		if (!v1.equals(v2)) {
 			fail("testTransformIMatrix3fIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.transform(v0, m0, v2);
 		if (!v1.equals(v2)) {
 			fail("testTransformIMatrix3fIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.transform(v0, m0, v0);
 		if (!v1.equals(v2) || !v1.equals(v0)) {
 			fail("testTransformIMatrix3fIVector3fVector3f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 	}
 
@@ -704,19 +732,19 @@ public class Math3DTest extends TestCase {
 
 		if (!m1.equals(m2)) {
 			fail("testTransposeIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		Math3D.transpose(m0, m2);
 		if (!m1.equals(m2)) {
 			fail("testTransposeIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.transpose(m0, m0);
 		if (!m1.equals(m2) || !m1.equals(m0)) {
 			fail("testTransposeIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -727,15 +755,15 @@ public class Math3DTest extends TestCase {
 	 */
 	public void testDeterminantIMatrix3f() {
 		Matrix3fImpl m0 = GeometryTests.getRandomMatrix3f();
-		float expDet = (m0.a11 * m0.a22 * m0.a33) + (m0.a12 * m0.a23 * m0.a31)
+		float expDet =
+			(m0.a11 * m0.a22 * m0.a33) + (m0.a12 * m0.a23 * m0.a31)
 				+ (m0.a13 * m0.a21 * m0.a32) - (m0.a11 * m0.a23 * m0.a32)
 				- (m0.a12 * m0.a21 * m0.a33) - (m0.a13 * m0.a22 * m0.a31);
 		float f = Math3D.determinant(m0);
 
 		if (!Math3D.equals(f, expDet, PREC)) {
 			fail("testAngleIVector4fIVector4f - Expected angle " + expDet
-					+ " was not returned (" + f + ") with matrix: "
-					+ m0.toString());
+				+ " was not returned (" + f + ") with matrix: " + m0.toString());
 		}
 	}
 
@@ -762,21 +790,21 @@ public class Math3DTest extends TestCase {
 
 		Matrix3f m2 = Math3D.invert(m0, null);
 
-		if (! Math3D.equals(m1, m2, PREC)) {
+		if (!Math3D.equals(m1, m2, PREC)) {
 			fail("testInvertIMatrix3fMatrix3f - Expected values do not match:\n"
-					+ m1.toString() + "\nvs.\n" + m2.toString());
+				+ m1.toString() + "\nvs.\n" + m2.toString());
 		}
 
 		Math3D.invert(m0, m2);
-		if (! Math3D.equals(m1, m2, PREC)) {
+		if (!Math3D.equals(m1, m2, PREC)) {
 			fail("testInvertIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.invert(m0, m0);
-		if (! Math3D.equals(m1, m2, PREC) || ! Math3D.equals(m1, m0, PREC)) {
+		if (!Math3D.equals(m1, m2, PREC) || !Math3D.equals(m1, m0, PREC)) {
 			fail("testInvertIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -803,19 +831,19 @@ public class Math3DTest extends TestCase {
 
 		if (!m1.equals(m2)) {
 			fail("testNegateIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		Math3D.negate(m0, m2);
 		if (!m1.equals(m2)) {
 			fail("testNegateIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.negate(m0, m0);
 		if (!m1.equals(m2) || !m1.equals(m0)) {
 			fail("testNegateIMatrix3fMatrix3f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -850,19 +878,19 @@ public class Math3DTest extends TestCase {
 
 		if (!m1.equals(m2)) {
 			fail("testAddIMatrix4fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		Math3D.add(m0a, m0b, m2);
 		if (!m1.equals(m2)) {
 			fail("testAddIMatrix4fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.add(m0a, m0b, m0b);
 		if (!m1.equals(m2) || !m1.equals(m0b)) {
 			fail("testAddIMatrix4fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -897,19 +925,19 @@ public class Math3DTest extends TestCase {
 
 		if (!m1.equals(m2)) {
 			fail("testSubIMatrix4fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		Math3D.sub(m0a, m0b, m2);
 		if (!m1.equals(m2)) {
 			fail("testSubIMatrix4fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.sub(m0a, m0b, m0b);
 		if (!m1.equals(m2) || !m1.equals(m0b)) {
 			fail("testSubIMatrix4fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -923,56 +951,72 @@ public class Math3DTest extends TestCase {
 		Matrix4fImpl m0b = GeometryTests.getRandomMatrix4f();
 		Matrix4fImpl m1 = new Matrix4fImpl();
 
-		m1.a11 = m0a.a11 * m0b.a11 + m0a.a21 * m0b.a12 + m0a.a31 * m0b.a13
-				+ m0a.a41 * m0b.a14;
-		m1.a12 = m0a.a12 * m0b.a11 + m0a.a22 * m0b.a12 + m0a.a32 * m0b.a13
-				+ m0a.a42 * m0b.a14;
-		m1.a13 = m0a.a13 * m0b.a11 + m0a.a23 * m0b.a12 + m0a.a33 * m0b.a13
-				+ m0a.a43 * m0b.a14;
-		m1.a14 = m0a.a14 * m0b.a11 + m0a.a24 * m0b.a12 + m0a.a34 * m0b.a13
-				+ m0a.a44 * m0b.a14;
-		m1.a21 = m0a.a11 * m0b.a21 + m0a.a21 * m0b.a22 + m0a.a31 * m0b.a23
-				+ m0a.a41 * m0b.a24;
-		m1.a22 = m0a.a12 * m0b.a21 + m0a.a22 * m0b.a22 + m0a.a32 * m0b.a23
-				+ m0a.a42 * m0b.a24;
-		m1.a23 = m0a.a13 * m0b.a21 + m0a.a23 * m0b.a22 + m0a.a33 * m0b.a23
-				+ m0a.a43 * m0b.a24;
-		m1.a24 = m0a.a14 * m0b.a21 + m0a.a24 * m0b.a22 + m0a.a34 * m0b.a23
-				+ m0a.a44 * m0b.a24;
-		m1.a31 = m0a.a11 * m0b.a31 + m0a.a21 * m0b.a32 + m0a.a31 * m0b.a33
-				+ m0a.a41 * m0b.a34;
-		m1.a32 = m0a.a12 * m0b.a31 + m0a.a22 * m0b.a32 + m0a.a32 * m0b.a33
-				+ m0a.a42 * m0b.a34;
-		m1.a33 = m0a.a13 * m0b.a31 + m0a.a23 * m0b.a32 + m0a.a33 * m0b.a33
-				+ m0a.a43 * m0b.a34;
-		m1.a34 = m0a.a14 * m0b.a31 + m0a.a24 * m0b.a32 + m0a.a34 * m0b.a33
-				+ m0a.a44 * m0b.a34;
-		m1.a41 = m0a.a11 * m0b.a41 + m0a.a21 * m0b.a42 + m0a.a31 * m0b.a43
-				+ m0a.a41 * m0b.a44;
-		m1.a42 = m0a.a12 * m0b.a41 + m0a.a22 * m0b.a42 + m0a.a32 * m0b.a43
-				+ m0a.a42 * m0b.a44;
-		m1.a43 = m0a.a13 * m0b.a41 + m0a.a23 * m0b.a42 + m0a.a33 * m0b.a43
-				+ m0a.a43 * m0b.a44;
-		m1.a44 = m0a.a14 * m0b.a41 + m0a.a24 * m0b.a42 + m0a.a34 * m0b.a43
-				+ m0a.a44 * m0b.a44;
+		m1.a11 =
+			m0a.a11 * m0b.a11 + m0a.a21 * m0b.a12 + m0a.a31 * m0b.a13 + m0a.a41
+				* m0b.a14;
+		m1.a12 =
+			m0a.a12 * m0b.a11 + m0a.a22 * m0b.a12 + m0a.a32 * m0b.a13 + m0a.a42
+				* m0b.a14;
+		m1.a13 =
+			m0a.a13 * m0b.a11 + m0a.a23 * m0b.a12 + m0a.a33 * m0b.a13 + m0a.a43
+				* m0b.a14;
+		m1.a14 =
+			m0a.a14 * m0b.a11 + m0a.a24 * m0b.a12 + m0a.a34 * m0b.a13 + m0a.a44
+				* m0b.a14;
+		m1.a21 =
+			m0a.a11 * m0b.a21 + m0a.a21 * m0b.a22 + m0a.a31 * m0b.a23 + m0a.a41
+				* m0b.a24;
+		m1.a22 =
+			m0a.a12 * m0b.a21 + m0a.a22 * m0b.a22 + m0a.a32 * m0b.a23 + m0a.a42
+				* m0b.a24;
+		m1.a23 =
+			m0a.a13 * m0b.a21 + m0a.a23 * m0b.a22 + m0a.a33 * m0b.a23 + m0a.a43
+				* m0b.a24;
+		m1.a24 =
+			m0a.a14 * m0b.a21 + m0a.a24 * m0b.a22 + m0a.a34 * m0b.a23 + m0a.a44
+				* m0b.a24;
+		m1.a31 =
+			m0a.a11 * m0b.a31 + m0a.a21 * m0b.a32 + m0a.a31 * m0b.a33 + m0a.a41
+				* m0b.a34;
+		m1.a32 =
+			m0a.a12 * m0b.a31 + m0a.a22 * m0b.a32 + m0a.a32 * m0b.a33 + m0a.a42
+				* m0b.a34;
+		m1.a33 =
+			m0a.a13 * m0b.a31 + m0a.a23 * m0b.a32 + m0a.a33 * m0b.a33 + m0a.a43
+				* m0b.a34;
+		m1.a34 =
+			m0a.a14 * m0b.a31 + m0a.a24 * m0b.a32 + m0a.a34 * m0b.a33 + m0a.a44
+				* m0b.a34;
+		m1.a41 =
+			m0a.a11 * m0b.a41 + m0a.a21 * m0b.a42 + m0a.a31 * m0b.a43 + m0a.a41
+				* m0b.a44;
+		m1.a42 =
+			m0a.a12 * m0b.a41 + m0a.a22 * m0b.a42 + m0a.a32 * m0b.a43 + m0a.a42
+				* m0b.a44;
+		m1.a43 =
+			m0a.a13 * m0b.a41 + m0a.a23 * m0b.a42 + m0a.a33 * m0b.a43 + m0a.a43
+				* m0b.a44;
+		m1.a44 =
+			m0a.a14 * m0b.a41 + m0a.a24 * m0b.a42 + m0a.a34 * m0b.a43 + m0a.a44
+				* m0b.a44;
 
 		Matrix4f m2 = Math3D.mul(m0a, m0b, null);
 
 		if (!m1.equals(m2)) {
 			fail("testMulIMatrix4fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		Math3D.mul(m0a, m0b, m2);
 		if (!m1.equals(m2)) {
 			fail("testMulIMatrix4fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.mul(m0a, m0b, m0b);
 		if (!m1.equals(m2) || !m1.equals(m0b)) {
 			fail("testMulIMatrix4fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -996,19 +1040,19 @@ public class Math3DTest extends TestCase {
 
 		if (!v1.equals(v2)) {
 			fail("testTransformIMatrix4fIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		Math3D.transform(m0, v0, v2);
 		if (!v1.equals(v2)) {
 			fail("testTransformIMatrix4fIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 
 		v2 = Math3D.transform(m0, v0, v0);
 		if (!v1.equals(v2) || !v1.equals(v0)) {
 			fail("testTransformIMatrix4fIVector4fVector4f - Expected values do not match: "
-					+ v1.toString() + " " + v2.toString());
+				+ v1.toString() + " " + v2.toString());
 		}
 	}
 
@@ -1042,19 +1086,19 @@ public class Math3DTest extends TestCase {
 
 		if (!m1.equals(m2)) {
 			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		Math3D.transpose(m0, m2);
 		if (!m1.equals(m2)) {
 			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.transpose(m0, m0);
 		if (!m1.equals(m2) || !m1.equals(m0)) {
 			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -1077,21 +1121,21 @@ public class Math3DTest extends TestCase {
 
 		if (!m1.equals(m2)) {
 			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2.set(m0);
 		Math3D.translate(m0, v1, m2);
 		if (!m1.equals(m2)) {
 			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2.set(m0);
 		m2 = Math3D.translate(m0, v1, m0);
 		if (!m1.equals(m2) || !m1.equals(m0)) {
 			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -1126,21 +1170,21 @@ public class Math3DTest extends TestCase {
 
 		Matrix4f m2 = Math3D.scale(v1, m0, null);
 
-		if (!Math3D.equals(m1 ,m2, PREC)) {
+		if (!Math3D.equals(m1, m2, PREC)) {
 			fail("testScaleIVector3fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		Math3D.scale(v1, m0, m2);
 		if (!Math3D.equals(m1, m2, PREC)) {
 			fail("testScaleIVector3fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.scale(v1, m0, m0);
 		if (!Math3D.equals(m1, m2, PREC) || !Math3D.equals(m1, m0, PREC)) {
 			fail("testScaleIVector3fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 
@@ -1159,19 +1203,19 @@ public class Math3DTest extends TestCase {
 
 		if (!Math3D.equals(m1, m0, PREC)) {
 			fail("testRotate - Rotation with 360 degree does not match source matrix: "
-					+ m0.toString() + " " + m1.toString());
+				+ m0.toString() + " " + m1.toString());
 		}
 
 		Math3D.rotate((float) (2 * Math.PI), v1, m0, m1);
 		if (!Math3D.equals(m1, m0, PREC)) {
 			fail("testScaleIVector3fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m0.toString() + " " + m1.toString());
+				+ m0.toString() + " " + m1.toString());
 		}
 
 		m1 = Math3D.rotate((float) (2 * Math.PI), v1, m0, m0);
 		if (!Math3D.equals(m1, m0, PREC)) {
 			fail("testScaleIVector3fIMatrix4fMatrix4f - Expected values do not match: "
-					+ m0.toString() + " " + m1.toString());
+				+ m0.toString() + " " + m1.toString());
 		}
 	}
 
@@ -1189,7 +1233,7 @@ public class Math3DTest extends TestCase {
 
 		if (!Math3D.equals(detA, detB, PREC)) {
 			fail("testDeterminantIMatrix4f - Test for multiplicative transformation failed: detA "
-					+ detA + ", detB " + detB + m0.toString() + m1.toString());
+				+ detA + ", detB " + detB + m0.toString() + m1.toString());
 		}
 
 		detA = Math3D.determinant(Math3D.invert(m0, null));
@@ -1197,7 +1241,7 @@ public class Math3DTest extends TestCase {
 
 		if (!Math3D.equals(detA, detB, PREC)) {
 			fail("testDeterminantIMatrix4f - Test with inverted matrix failed: detA "
-					+ detA + ", detB " + detB + m0.toString());
+				+ detA + ", detB " + detB + m0.toString());
 		}
 
 		detA = Math3D.determinant(m0);
@@ -1205,9 +1249,9 @@ public class Math3DTest extends TestCase {
 
 		if (!Math3D.equals(detA, detB, PREC)) {
 			fail("testDeterminantIMatrix4f - Test with transposed matrix failed: detA "
-					+ detA + ", detB " + detB + m0.toString());
+				+ detA + ", detB " + detB + m0.toString());
 		}
-		
+
 	}
 
 	/**
@@ -1224,7 +1268,7 @@ public class Math3DTest extends TestCase {
 
 		if (!Math3D.equals(m0, m1, 0.0001f)) {
 			fail("testInvertIMatrix4fMatrix4f - Did not get same matrix from inverted inverse: "
-					+ m0.toString() + " " + m1.toString());
+				+ m0.toString() + " " + m1.toString());
 		}
 	}
 
@@ -1258,19 +1302,19 @@ public class Math3DTest extends TestCase {
 
 		if (!m1.equals(m2)) {
 			fail("testNegateIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		Math3D.negate(m0, m2);
 		if (!m1.equals(m2)) {
 			fail("testNegateIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 
 		m2 = Math3D.negate(m0, m0);
 		if (!m1.equals(m2) || !m1.equals(m0)) {
 			fail("testNegateIMatrix4fMatrix4f - Expected values do not match: "
-					+ m1.toString() + " " + m2.toString());
+				+ m1.toString() + " " + m2.toString());
 		}
 	}
 }

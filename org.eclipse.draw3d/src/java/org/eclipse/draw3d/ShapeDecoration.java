@@ -16,7 +16,6 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.NullShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.draw3d.util.Draw3DCache;
@@ -85,7 +84,9 @@ public class ShapeDecoration extends ShapeFigure3D implements
 				tmp.set(getPosition3D().getLocation3D());
 
 				Math3D.sub(i_reference, tmp, tmp);
-				Math3D.getEulerAngles(IVector3f.Z_AXIS_NEG, tmp, tmp);
+				Math3D.normalise(tmp, tmp);
+
+				Math3D.eulerAngles(IVector3f.Z_AXIS_NEG, tmp, tmp);
 
 				getPosition3D().setRotation3D(tmp);
 				m_lastReference.set(tmp);

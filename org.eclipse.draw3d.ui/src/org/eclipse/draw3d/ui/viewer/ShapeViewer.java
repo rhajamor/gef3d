@@ -14,7 +14,7 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.shapes.CompositeShape;
-import org.eclipse.draw3d.shapes.CylinderShape;
+import org.eclipse.draw3d.shapes.CuboidShape;
 import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.draw3d.shapes.TransparentShape;
@@ -50,8 +50,11 @@ public class ShapeViewer extends Draw3DViewer {
 			protected Shape createShape() {
 
 				CompositeShape composite = new CompositeShape();
-				composite.addOpaque(new CylinderShape(this.getPosition3D(), 12,
-					0.3f));
+				// composite.addOpaque(new CylinderShape(this.getPosition3D(),
+				// 12,
+				// 0.3f));
+
+				composite.addOpaque(new CuboidShape(this.getPosition3D()));
 
 				ParaxialBoundsFigureShape pbShape =
 					new ParaxialBoundsFigureShape(this);
@@ -64,7 +67,7 @@ public class ShapeViewer extends Draw3DViewer {
 		};
 
 		figure.getPosition3D().setLocation3D(new Vector3fImpl(0, 0, 0));
-		figure.getPosition3D().setSize3D(new Vector3fImpl(100, 100, 100));
+		figure.getPosition3D().setSize3D(new Vector3fImpl(200, 300, 100));
 		figure.getPosition3D().setRotation3D(new Vector3fImpl(20, 0, 0));
 
 		Device dev = Display.getCurrent();

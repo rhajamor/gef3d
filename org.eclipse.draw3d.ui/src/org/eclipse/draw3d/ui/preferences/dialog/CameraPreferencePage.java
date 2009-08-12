@@ -47,12 +47,12 @@ public class CameraPreferencePage extends FieldEditorPreferencePage implements
 	}
 
 	private void addKeyEditor(String i_prefName, String i_label,
-			int i_keyStrokeLimit) {
+		int i_keyStrokeLimit) {
 
 		Composite parent = getFieldEditorParent();
 
-		KeyBindingFieldEditor keyEditor = new KeyBindingFieldEditor(i_prefName,
-				i_label, parent);
+		KeyBindingFieldEditor keyEditor =
+			new KeyBindingFieldEditor(i_prefName, i_label, parent);
 
 		keyEditor.setKeyStrokeLimit(i_keyStrokeLimit);
 		addField(keyEditor);
@@ -68,23 +68,26 @@ public class CameraPreferencePage extends FieldEditorPreferencePage implements
 
 		Composite parent = getFieldEditorParent();
 
-		String[][] cameraTypes = new String[][] {
+		String[][] cameraTypes =
+			new String[][] {
 				{ "Default first person camera",
-						FirstPersonCamera.class.getName() },
+					FirstPersonCamera.class.getName() },
 				{ "Restricted first person camera",
-						RestrictedFirstPersonCamera.class.getName() } };
+					RestrictedFirstPersonCamera.class.getName() } };
 
 		addField(new RadioGroupFieldEditor(PrefNames.LWS_CAMERA_TYPE,
-				"Camera type:", 1, cameraTypes, parent));
+			"Camera type:", 1, cameraTypes, parent));
 
 		addField(new ColorFieldEditor(PrefNames.LWS_BACKGROUND,
-				"Background color", parent));
+			"Background color", parent));
 
 		addField(new BooleanFieldEditor(PrefNames.LWS_DRAW_AXES, "Draw axes",
-				parent));
+			parent));
+
+		addField(new BooleanFieldEditor(PrefNames.LWS_DEBUG, "Debug", parent));
 
 		addField(new ScaleFieldEditor(PrefNames.MOUSE_SENSITIVITY,
-				"Mouse sensitivity:", parent, 1, 100, 1, 20));
+			"Mouse sensitivity:", parent, 1, 100, 1, 20));
 
 		addKeyEditor(KEY_FORWARD, "Move forward:", 1);
 		addKeyEditor(KEY_BACKWARD, "Move backward:", 1);
@@ -104,15 +107,15 @@ public class CameraPreferencePage extends FieldEditorPreferencePage implements
 		int[] modOrbitValues;
 		if (Platform.OS_MACOSX.equals(Platform.getOS())) {
 			modOrbitLabels = new String[] { "Shift", "Ctrl", "Alt", "Cmd" };
-			modOrbitValues = new int[] { SWT.SHIFT, SWT.CONTROL, SWT.ALT,
-					SWT.MOD1 };
+			modOrbitValues =
+				new int[] { SWT.SHIFT, SWT.CONTROL, SWT.ALT, SWT.MOD1 };
 		} else {
 			modOrbitLabels = new String[] { "Shift", "Ctrl", "Alt" };
 			modOrbitValues = new int[] { SWT.SHIFT, SWT.CONTROL, SWT.ALT };
 		}
 
 		addField(new BitFieldEditor(PrefNames.MOD_ORBIT, "Orbit key:",
-				modOrbitLabels.length, modOrbitLabels, modOrbitValues, parent));
+			modOrbitLabels.length, modOrbitLabels, modOrbitValues, parent));
 	}
 
 	public void init(IWorkbench workbench) {

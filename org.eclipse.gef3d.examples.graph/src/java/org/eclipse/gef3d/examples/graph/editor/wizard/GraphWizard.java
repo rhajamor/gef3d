@@ -13,15 +13,12 @@ package org.eclipse.gef3d.examples.graph.editor.wizard;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.gef3d.examples.graph.model.Edge;
 import org.eclipse.gef3d.examples.graph.model.Graph;
-import org.eclipse.gef3d.examples.graph.model.Vertex;
-import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -160,7 +157,8 @@ public class GraphWizard extends Wizard implements INewWizard {
 							}
 							
 							for (int p = 1; p < graphs.length; p++) {
-								for (int c = 0; c < graphWizardConfigurePage.numberOfPlanes; c+=20 ) {
+								for (int c = 0; c < graphWizardConfigurePage.numberOfVerticesPerPlane; c +=
+									12) {
 									int source = (int) (c);
 									int target = (int) (c);
 									Edge e = new Edge();

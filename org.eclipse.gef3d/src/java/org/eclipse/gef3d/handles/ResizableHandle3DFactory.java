@@ -12,7 +12,7 @@
  ******************************************************************************/
 package org.eclipse.gef3d.handles;
 
-import static org.eclipse.draw3d.PositionConstants3D.FRONT;
+import static org.eclipse.draw3d.PositionConstants3D.*;
 
 import java.util.List;
 
@@ -96,9 +96,8 @@ public class ResizableHandle3DFactory implements IHandleFactory {
 	 * @return
 	 */
 	protected Handle createHandle(GraphicalEditPart part, int direction, PositionConstants3D i_zdir) {
-		ResizeHandle3D handle = new ResizeHandle3D(part, direction, i_zdir);
-		// handle.setDragTracker(new ResizeTracker(direction));
-		return handle;
+
+		return new ResizeHandle3D(part, direction, i_zdir);
 	}
 
 }

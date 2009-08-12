@@ -10,11 +10,11 @@
  ******************************************************************************/
 package org.eclipse.gef3d.handles;
 
-import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Locator;
+import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
@@ -35,6 +35,17 @@ import org.eclipse.swt.graphics.Cursor;
  * @since Mar 25, 2008
  */
 public abstract class CubeHandle extends AbstractHandle3D {
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ShapeFigure3D#render(org.eclipse.draw3d.RenderContext)
+	 */
+	@Override
+	public void render(RenderContext i_renderContext) {
+		// TODO remove, only for debugging
+		super.render(i_renderContext);
+	}
 
 	/**
 	 * The default size for square handles. (copied from {@link SquareHandle}
@@ -88,6 +99,7 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	 */
 	@Override
 	protected Shape createShape() {
+
 		CompositeShape composite = new CompositeShape();
 		Shape alphaShape = new CuboidFigureShape(this);
 		composite.addTransparent(new TransparentShape(this, alphaShape));

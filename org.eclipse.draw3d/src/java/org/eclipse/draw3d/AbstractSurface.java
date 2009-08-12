@@ -135,7 +135,7 @@ public abstract class AbstractSurface implements ISurface {
 
 		Vector3f vector = Draw3DCache.getVector3f();
 		try {
-			updateWorldToSurface();
+			validateWorldToSurface();
 			vector.set(i_world);
 			vector.transform(m_worldToSurface);
 
@@ -230,7 +230,7 @@ public abstract class AbstractSurface implements ISurface {
 			return result;
 		}
 
-		updateWorldToSurface();
+		validateWorldToSurface();
 		result.set(i_world);
 		result.transform(m_worldToSurface);
 
@@ -238,25 +238,24 @@ public abstract class AbstractSurface implements ISurface {
 		return result;
 	}
 
-//	Does not work like this, origin must be transformed as well and difference
-//	must be calculated.
-//	/**
-//	 * {@inheritDoc}
-//	 * 
-//	 * @see org.eclipse.draw3d.ISurface#getWorldDimension(org.eclipse.draw2d.geometry.Dimension,
-//	 *      org.eclipse.draw3d.geometry.Vector3f)
-//	 */
-//	public Vector3f getWorldDimension(Dimension i_surface, Vector3f io_result) {
-//
-//		Point p = Draw3DCache.getPoint();
-//		try {
-//			p.x = i_surface.width;
-//			p.y = i_surface.height;
-//			return getWorldLocation(p, io_result);
-//		} finally {
-//			Draw3DCache.returnPoint(p);
-//		}
-//	}
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ISurface#getWorldDimension(org.eclipse.draw2d.geometry.Dimension,
+	 *      org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	public Vector3f getWorldDimension(Dimension i_surface, Vector3f o_result) {
+
+		Vector3f start = Draw3DCache.getVector3f();
+		Vector3f end = Draw3DCache.getVector3f();
+		try {
+			getWorldLocation(0, 0, 0, start);
+			getWorldLocation(i_surface.width, i_surface.height, 0, end);
+			return Math3D.sub(end, start, o_result);
+		} finally {
+			Draw3DCache.returnVector3f(start);
+		}
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -295,7 +294,7 @@ public abstract class AbstractSurface implements ISurface {
 		}
 
 		result.set(i_surface);
-		updateSurfaceToWorld();
+		validateSurfaceToWorld();
 		result.transform(m_surfaceToWorld);
 
 		setCachedProjection(result, i_surface);
@@ -355,7 +354,7 @@ public abstract class AbstractSurface implements ISurface {
 		}
 	}
 
-	private void updateSurfaceToWorld() {
+	private void validateSurfaceToWorld() {
 
 		if (m_surfaceToWorldValid)
 			return;
@@ -396,12 +395,12 @@ public abstract class AbstractSurface implements ISurface {
 		}
 	}
 
-	private void updateWorldToSurface() {
+	private void validateWorldToSurface() {
 
 		if (m_worldToSurfaceValid)
 			return;
 
-		updateSurfaceToWorld();
+		validateSurfaceToWorld();
 		Math3D.invert(m_surfaceToWorld, m_worldToSurface);
 
 		m_worldToSurfaceValid = true;

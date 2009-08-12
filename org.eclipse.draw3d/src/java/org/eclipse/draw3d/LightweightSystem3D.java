@@ -38,7 +38,6 @@ import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DImpl;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
@@ -99,21 +98,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 		RootFigure3D() {
 
 			universe = new Position3DImpl(this) {
-
-				private final IVector3f SIZE =
-					new Vector3fImpl(Float.MAX_VALUE, Float.MAX_VALUE,
-						Float.MAX_VALUE);
-
-				/**
-				 * {@inheritDoc}
-				 * 
-				 * @see org.eclipse.draw3d.geometry.Position3DImpl#getSize3D()
-				 */
-				@Override
-				public IVector3f getSize3D() {
-
-					return SIZE;
-				}
 
 				/**
 				 * {@inheritDoc}
@@ -549,7 +533,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 			if (m_drawAxes)
 				drawCoordinateAxes();
 
-			if (DebugPrimitives.hasInstance())
+			if (isDebug() && DebugPrimitives.hasInstance())
 				DebugPrimitives.getInstance().render(i_renderContext);
 		}
 
@@ -667,6 +651,8 @@ public class LightweightSystem3D extends LightweightSystem implements
 	protected GLCanvas m_canvas;
 
 	private final float[] m_clearColor = new float[] { 0.6f, 0.6f, 0.6f, 1 };
+
+	private boolean m_debug = false;
 
 	private boolean m_drawAxes;
 
@@ -812,6 +798,16 @@ public class LightweightSystem3D extends LightweightSystem implements
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.IScene#isDebug()
+	 */
+	public boolean isDebug() {
+
+		return m_debug;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.IScene#removeSceneListener(org.eclipse.draw3d.ISceneListener)
 	 */
 	public void removeSceneListener(ISceneListener i_listener) {
@@ -902,6 +898,16 @@ public class LightweightSystem3D extends LightweightSystem implements
 				return graphics;
 			}
 		});
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IScene#setDebug(boolean)
+	 */
+	public void setDebug(boolean i_debug) {
+
+		m_debug = i_debug;
 	}
 
 	/**

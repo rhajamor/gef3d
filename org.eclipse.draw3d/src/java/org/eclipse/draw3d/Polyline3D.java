@@ -18,6 +18,7 @@ import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometryext.PointList3D;
 import org.eclipse.draw3d.shapes.PolylineShape;
 import org.eclipse.draw3d.shapes.Shape;
@@ -57,8 +58,9 @@ public class Polyline3D extends ShapeFigure3D {
 		repaint();
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
@@ -94,6 +96,19 @@ public class Polyline3D extends ShapeFigure3D {
 	public float getLineWidth() {
 
 		return lineWidth;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	@Override
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
+
+		// polylines don't have paraxial bounds
+		return null;
 	}
 
 	/**

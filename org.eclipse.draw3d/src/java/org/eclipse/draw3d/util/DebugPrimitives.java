@@ -114,10 +114,10 @@ public class DebugPrimitives implements Renderable {
 		if (i_rayDirection == null)
 			throw new NullPointerException("i_rayDirection must not be null");
 
-		Vector3f[] ray = m_lines.get(i_key);
+		Vector3f[] ray = m_rays.get(i_key);
 		if (ray == null) {
 			ray = new Vector3f[] { new Vector3fImpl(), new Vector3fImpl() };
-			m_lines.put(i_key, ray);
+			m_rays.put(i_key, ray);
 		}
 
 		ray[0].set(i_rayOrigin);
@@ -135,10 +135,10 @@ public class DebugPrimitives implements Renderable {
 		if (i_p2 == null)
 			throw new NullPointerException("i_p2 must not be null");
 
-		Vector3f[] segment = m_lines.get(i_key);
+		Vector3f[] segment = m_segments.get(i_key);
 		if (segment == null) {
 			segment = new Vector3f[] { new Vector3fImpl(), new Vector3fImpl() };
-			m_lines.put(i_key, segment);
+			m_segments.put(i_key, segment);
 		}
 
 		segment[0].set(i_p1);

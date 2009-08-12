@@ -28,26 +28,26 @@ import org.eclipse.draw3d.geometry.Vector3f;
 public interface ConnectionAnchor3D extends ConnectionAnchor {
 
 	/**
-	 * Returns the location where the Connection should be anchored in absolute
-	 * coordinates with x, y, and z value. The anchor may use the given
-	 * reference Point to calculate this location.
+	 * Returns the location where the connection should be anchored in absolute
+	 * world coordinates. The anchor may use the given reference Point to
+	 * calculate this location.
 	 * 
-	 * @param reference the reference Point in absolute coordinates
-	 * @param io_result the result vector, if <code>null</code> a new vector
-	 *            will be created
+	 * @param i_reference the reference Point in absolute coordinates
+	 * @param o_result the result vector, if <code>null</code> a new vector will
+	 *            be created
 	 * @return The anchor's location
 	 */
-	public IVector3f getLocation3D(IVector3f reference, Vector3f io_result);
+	public IVector3f getLocation3D(IVector3f i_reference, Vector3f o_result);
 
 	/**
-	 * Returns the reference point for this anchor in absolute coordinates with
-	 * x, y, and z value. This might be used by another anchor to determine its
-	 * own location (i.e. {@link ChopboxAnchor}).
+	 * Returns the reference point for this anchor in absolute world
+	 * coordinates. This might be used by another anchor to determine its own
+	 * location (i.e. {@link ChopboxAnchor}).
 	 * 
-	 * @param io_result the result vector, if <code>null</code> a new vector
-	 *            will be created
+	 * @param o_result the result vector, if <code>null</code> a new vector will
+	 *            be created
 	 * @return The reference Point
 	 */
-	public IVector3f getReferencePoint3D(Vector3f io_result);
+	public IVector3f getReferencePoint3D(Vector3f o_result);
 
 }

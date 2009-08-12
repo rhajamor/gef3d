@@ -351,20 +351,23 @@ public class CameraInputHandler {
 
 		m_currentModifiers = getModifiers(i_event.stateMask);
 
+		float speed = m_keySpeed;
+		int modifiers = getModifiers(i_event.stateMask);
+		if ((modifiers & m_slowKey) != 0) {
+			speed /= 10;
+			i_event.stateMask &= ~m_slowKey;
+		}
+
+		if ((modifiers & m_fastKey) != 0) {
+			speed *= 10;
+			i_event.stateMask &= ~m_fastKey;
+		}
+
 		KeyStroke[] keyStrokes = getKeyStrokes(i_event);
 		if (keyStrokes == null)
 			return;
 
 		if (m_currentKey != i_event.keyCode) {
-
-			float speed = m_keySpeed;
-			int modifiers = getModifiers(i_event.stateMask);
-
-			if ((modifiers & m_slowKey) != 0)
-				speed /= 10;
-
-			if ((modifiers & m_fastKey) != 0)
-				speed *= 10;
 
 			if (isKeySequence(m_moveLeftKey, keyStrokes)) {
 				getCamera().moveBy(0, -speed, 0);
@@ -444,6 +447,12 @@ public class CameraInputHandler {
 	public void mouseWheelScrolled(int i_count) {
 
 		float speed = i_count * m_wheelSpeed;
+		if ((m_currentModifiers & m_slowKey) != 0)
+			speed /= 10;
+
+		if ((m_currentModifiers & m_fastKey) != 0)
+			speed *= 10;
+
 		getCamera().moveBy(speed, 0, 0);
 	}
 

@@ -58,6 +58,33 @@ public interface IPosition3D {
 	}
 
 	/**
+	 * Returns an absolute position that has the same absolute location, size
+	 * and rotation as this position. If this position is already absolute, this
+	 * function will return this.
+	 * <p>
+	 * <b>If the given result position has a parent position, the result of this
+	 * is undefined.</b>
+	 * </p>
+	 * 
+	 * @param o_result the result position, if <code>null</code>, a new absolute
+	 *            position will be returned
+	 * @return an absolute position
+	 */
+	public Position3D getAbsolute(Position3D o_result);
+
+	/**
+	 * Returns the absolute rotation matrix of this position.
+	 * <p>
+	 * M<sub>rot</sub> = M<sub>0</sub> * M<sub>1</sub> * ... * M<sub>n</sub>
+	 * </p>
+	 * in which M<sub>0</sub> is the rotation matrix of the root position and
+	 * M<sub>n</sub> is the rotation matrix of this position.
+	 * 
+	 * @return the absolute rotation matrix of this position
+	 */
+	public IMatrix4f getAbsoluteRotationMatrix();
+
+	/**
 	 * Returns the smallest box completely enclosing the IFigure. This method is
 	 * the 3D equivalent of {@link IFigure#getBounds()}. While GEF's version
 	 * returns a mutable class (Rectangle) and forbids to change the returned
@@ -78,6 +105,13 @@ public interface IPosition3D {
 	public IBoundingBox getBounds3D();
 
 	/**
+	 * Returns the center of this position.
+	 * 
+	 * @return the center of this position
+	 */
+	public IVector3f getCenter3D();
+
+	/**
 	 * Returns the host (or context) of this position
 	 * 
 	 * @return returns the host, must not be null
@@ -90,6 +124,21 @@ public interface IPosition3D {
 	 * @return the location
 	 */
 	public IVector3f getLocation3D();
+
+	/**
+	 * Returns a position that is relative to this position and that has the
+	 * same absolute location, size and rotation as the given position.
+	 * <p>
+	 * <b>If the given position does not have this as its parent position, the
+	 * result is undefined.</b>
+	 * </p>
+	 * 
+	 * @param i_position3D the position to make relative to this
+	 * @param o_result the result position, if <code>null</code>, a new position
+	 *            will be returned
+	 * @return a relative position
+	 */
+	public Position3D getRelative(IPosition3D i_position3D, Position3D o_result);
 
 	/**
 	 * Returns the rotation angles of the figure.

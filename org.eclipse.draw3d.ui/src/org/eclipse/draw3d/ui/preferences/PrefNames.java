@@ -75,18 +75,23 @@ public interface PrefNames {
 	public static final String LWS_CAMERA_TYPE = "lwsCameraType";
 
 	/**
+	 * Preference name for the lightweight system debug flag.
+	 */
+	public static final String LWS_DEBUG = "lwsDebug";
+
+	/**
 	 * Preference name for whether the lightweight system should display
 	 * coordinate axes.
 	 */
 	public static final String LWS_DRAW_AXES = "lwsDrawCoordinateAxes";
 
 	/**
-	 * Preference name for the mouse sensitivity value.
-	 */
-	public static final String MOUSE_SENSITIVITY = "mouseSensitivity";
-
-	/**
 	 * Preference name for the modifier key for camera orbit mode.
 	 */
 	public static final String MOD_ORBIT = "cameraOrbitMode";
+
+	/**
+	 * Preference name for the mouse sensitivity value.
+	 */
+	public static final String MOUSE_SENSITIVITY = "mouseSensitivity";
 }

@@ -90,7 +90,10 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	protected int m_alpha = 255;
 
-	private ParaxialBoundingBox m_paraxialBounds;
+	/**
+	 * The paraxial bounding box.
+	 */
+	protected ParaxialBoundingBox m_paraxialBounds;
 
 	SynchronizedPosition3DImpl position3D;
 

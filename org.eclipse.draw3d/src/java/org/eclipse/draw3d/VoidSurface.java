@@ -14,8 +14,10 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.camera.ICameraListener;
+import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * The void surface is used by the root figure. The void surface is always
@@ -86,6 +88,8 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	 */
 	public IFigure findFigureAt(int i_sx, int i_sy, TreeSearch i_search) {
 
+		// TODO: this is not correct. We need to convert the surface coordinates
+		// to world coordinates and perform picking.
 		if (i_search == null
 			|| (!i_search.prune(m_host) && i_search.accept(m_host)))
 			return m_host;
@@ -212,5 +216,21 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 		b.append(" and depth " + m_depth);
 
 		return b.toString();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ISurface#getSurfaceRotation(org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	public Vector3f getSurfaceRotation(Vector3f o_result) {
+
+		Vector3f zAxis = Draw3DCache.getVector3f();
+		try {
+			getZAxis(zAxis);
+			return Math3D.eulerAngles(zAxis, IVector3f.Z_AXIS, o_result);
+		} finally {
+			Draw3DCache.returnVector3f(zAxis);
+		}
 	}
 }

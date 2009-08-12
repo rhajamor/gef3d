@@ -220,7 +220,7 @@ public class FirstPersonCamera extends AbstractCamera {
 	/**
 	 * Distance of the near clipping plane.
 	 */
-	protected int m_near = 100;
+	protected int m_near = 1;
 
 	/**
 	 * The current camera position.
