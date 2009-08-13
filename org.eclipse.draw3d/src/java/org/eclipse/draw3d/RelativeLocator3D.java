@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PositionConstants;
 import org.eclipse.draw2d.RelativeLocator;
+import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
@@ -178,17 +179,14 @@ public class RelativeLocator3D extends RelativeLocator {
 					IFigure3D target3D = (IFigure3D) i_target;
 					Position3D refPosition = m_helper.getReferencePosition3D();
 
-					// Math3D.scale(m_factors, refPosition.getSize3D(),
-					// location);
-					// Math3D.add(location, refPosition.getLocation3D(),
-					// location);
-					//
-					// Math3D.scale(1 / 2f, target3D.getPreferredSize3D(),
-					// size);
-					// Math3D.sub(location, size, location);
-					//
-					// refPosition.setLocation3D(location);
-					// refPosition.setSize3D(target3D.getPreferredSize3D());
+					Math3D.scale(m_factors, refPosition.getSize3D(), location);
+					Math3D.add(location, refPosition.getLocation3D(), location);
+
+					Math3D.scale(1 / 2f, target3D.getPreferredSize3D(), size);
+					Math3D.sub(location, size, location);
+
+					refPosition.setLocation3D(location);
+					refPosition.setSize3D(target3D.getPreferredSize3D());
 
 					target3D.getPosition3D().setPosition(refPosition);
 				} finally {

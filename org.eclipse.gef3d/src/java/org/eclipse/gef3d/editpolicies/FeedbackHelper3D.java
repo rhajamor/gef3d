@@ -143,11 +143,6 @@ public class FeedbackHelper3D extends FeedbackHelper {
 		if (i_feedback == null)
 			throw new NullPointerException("i_feedback must not be null");
 
-		if ((i_surfaceMoveDelta == null || i_surfaceMoveDelta.x == 0
-			&& i_surfaceMoveDelta.y == 0)
-			&& (i_surfaceSizeDelta == null || i_surfaceSizeDelta.isEmpty()))
-			return;
-
 		Vector3f center = Draw3DCache.getVector3f();
 		Vector3f size = Draw3DCache.getVector3f();
 		try {
@@ -158,20 +153,13 @@ public class FeedbackHelper3D extends FeedbackHelper {
 
 			dummy.setPosition(feedbackPosition);
 
-			if (i_surfaceMoveDelta != null && i_surfaceMoveDelta.x != 0
-				&& i_surfaceMoveDelta.y != 0) {
-
-				log.info(i_surfaceMoveDelta.toString());
-
+			if (i_surfaceMoveDelta != null) {
 				center.set(dummy.getCenter3D());
 				center.translate(i_surfaceMoveDelta.x, i_surfaceMoveDelta.y, 0);
 				dummy.setCenter3D(center);
 			}
 
-			if (i_surfaceSizeDelta != null && !i_surfaceSizeDelta.isEmpty()) {
-
-				log.info(i_surfaceSizeDelta.toString());
-
+			if (i_surfaceSizeDelta != null) {
 				size.set(dummy.getSize3D());
 				size.translate(i_surfaceSizeDelta.width,
 					i_surfaceSizeDelta.height, 0);
@@ -180,6 +168,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			}
 
 			feedbackPosition.setPosition(dummy);
+			log.info(feedbackPosition.toString());
 		} finally {
 			Draw3DCache.returnVector3f(center, size);
 		}
@@ -224,6 +213,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 
 				Position3D feedbackPosition = i_feedback.getPosition3D();
 				feedbackPosition.setPosition(hostPosition);
+				feedbackPosition.expand(1);
 			} finally {
 				Draw3DCache.returnBoundingBox(feedbackBounds);
 				Draw3DCache.returnVector3f(wLocation, wSize);

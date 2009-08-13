@@ -20,6 +20,13 @@ package org.eclipse.draw3d.geometry;
 public interface Position3D extends IPosition3D {
 
 	/**
+	 * Expands this position by the given value in every direction.
+	 * 
+	 * @param i_delta the value by which to expand this position
+	 */
+	public void expand(float i_delta);
+
+	/**
 	 * Invalidates some internal cached information and must be called whenever
 	 * this position becomes invalid. Called automatically when location, size
 	 * or rotation changes.
@@ -54,8 +61,8 @@ public interface Position3D extends IPosition3D {
 
 	/**
 	 * Sets rotation of figure, i.e. angles for X, Y and Z axis. Rotations are
-	 * applied in the following order: Y first, then Z and finally X. 
-	 * Rotation is clockwise.
+	 * applied in the following order: Y first, then Z and finally X. Rotation
+	 * is clockwise.
 	 * 
 	 * @param i_rotation must not be <code>null</code>
 	 */

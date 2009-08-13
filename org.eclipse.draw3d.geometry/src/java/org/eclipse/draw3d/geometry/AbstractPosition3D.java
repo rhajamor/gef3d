@@ -76,6 +76,30 @@ public abstract class AbstractPosition3D implements Position3D {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.Position3D#expand(float)
+	 */
+	public void expand(float i_delta) {
+
+		Vector3f location = Math3DCache.getVector3f();
+		Vector3f size = Math3DCache.getVector3f();
+		try {
+			float d = 1 / 2f * i_delta;
+
+			location.set(getLocation3D());
+			location.translate(-d, -d, -d);
+			setLocation3D(location);
+
+			size.set(getSize3D());
+			size.translate(d, d, d);
+			setSize3D(size);
+		} finally {
+			Math3DCache.returnVector3f(location, size);
+		}
+	}
+
+	/**
 	 * Notifies host if present.
 	 * 
 	 * @param hint
@@ -270,9 +294,10 @@ public abstract class AbstractPosition3D implements Position3D {
 		Vector3f location = Math3DCache.getVector3f();
 		try {
 			Math3D.sub(getCenter3D(), i_center, delta);
-			Math3D.sub(getLocation3D(), delta, location);
-
-			setLocation3D(location);
+			if (!IVector3f.NULLVEC3f.equals(delta)) {
+				Math3D.sub(getLocation3D(), delta, location);
+				setLocation3D(location);
+			}
 		} finally {
 			Math3DCache.returnVector3f(delta, location);
 		}
@@ -395,16 +420,16 @@ public abstract class AbstractPosition3D implements Position3D {
 			}
 
 			if (!IVector3f.NULLVEC3f.equals(getRotation3D())) {
-//				Math3D.scale(0.5f, getSize3D(), halfSize);
-//				Math3D.translate(m_rotationLocationMatrix, halfSize,
-//					m_rotationLocationMatrix);
+				// Math3D.scale(0.5f, getSize3D(), halfSize);
+				// Math3D.translate(m_rotationLocationMatrix, halfSize,
+				// m_rotationLocationMatrix);
 
 				Math3D.rotate(getRotation3D(), m_rotationLocationMatrix,
 					m_rotationLocationMatrix);
-				
-//				Math3D.scale(-0.5f, getSize3D(), halfSize);
-//				Math3D.translate(m_rotationLocationMatrix, halfSize,
-//					m_rotationLocationMatrix);
+
+				// Math3D.scale(-0.5f, getSize3D(), halfSize);
+				// Math3D.translate(m_rotationLocationMatrix, halfSize,
+				// m_rotationLocationMatrix);
 
 				Math3D.rotate(getRotation3D(), m_absoluteRotationMatrix,
 					m_absoluteRotationMatrix);
