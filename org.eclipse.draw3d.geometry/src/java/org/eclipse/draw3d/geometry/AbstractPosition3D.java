@@ -130,7 +130,7 @@ public abstract class AbstractPosition3D implements Position3D {
 			Vector3f location = Math3DCache.getVector3f();
 			Vector3f rotation = Math3DCache.getVector3f();
 			Vector3f halfSize = Math3DCache.getVector3f();
-			Vector3f center = Math3DCache.getVector3f();
+//			Vector3f center = Math3DCache.getVector3f();
 			try {
 				Math3D.transform(IVector3f.NULLVEC3f,
 					getRotationLocationMatrix(), location);
@@ -149,8 +149,8 @@ public abstract class AbstractPosition3D implements Position3D {
 
 				return result;
 			} finally {
-				Math3DCache
-					.returnVector3f(location, rotation, halfSize, center);
+//				Math3DCache
+//					.returnVector3f(location, rotation, halfSize, center);
 			}
 		}
 
