@@ -59,7 +59,7 @@ public class ShapeViewer extends Draw3DViewer {
 				ParaxialBoundsFigureShape pbShape =
 					new ParaxialBoundsFigureShape(this);
 
-				composite.addTransparent(new TransparentShape(this, pbShape));
+				composite.addTransparent(pbShape);
 
 				return composite;
 				// return new SphereShape(this.getPosition3D(), 4);
