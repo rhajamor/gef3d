@@ -58,8 +58,7 @@ public class ConnectedElementFigure extends ShapeFigure3D {
 	 */
 	@Override
 	protected Shape createShape() {
-		Shape shape = new CuboidFigureShape(this);
-		return new TransparentShape(this, shape);
+		return new CuboidFigureShape(this);
 	}
 
 	public void setTag(String strTag) {
