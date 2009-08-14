@@ -56,15 +56,15 @@ public class LocatorHelper {
 	 * @return the reference position
 	 */
 	public Position3D getReferencePosition3D() {
-		return getReferencePosition3D(m_reference, m_reference.getParent());
+		return getReferencePosition3D(m_reference.getParent());
 	}
 
-	public static Position3D getReferencePosition3D(IFigure figure, IFigure host) {
+	public Position3D getReferencePosition3D(IFigure host) {
 		IFigure3D host3D = Figure3DHelper.getAncestor3D(host);
 		Position3D result = Position3DUtil.createRelativePosition(host3D);
 
-		if (figure instanceof IFigure3D) {
-			IFigure3D ref3D = (IFigure3D) figure;
+		if (m_reference instanceof IFigure3D) {
+			IFigure3D ref3D = (IFigure3D) m_reference;
 			result.setPosition(ref3D.getPosition3D());
 
 			return result;
@@ -73,7 +73,7 @@ public class LocatorHelper {
 			Vector3f size = Draw3DCache.getVector3f();
 			try {
 
-				Rectangle refBounds = figure.getBounds();
+				Rectangle refBounds = m_reference.getBounds();
 				// m_reference.getParent().translateToAbsolute(refBounds);
 
 				location.set(refBounds.x, refBounds.y, 0);
