@@ -125,8 +125,8 @@ public class VertexFigure3D extends ShapeFigure3D {
 	 */
 	@Override
 	protected Shape createShape() {
-		Shape shape = new CuboidFigureShape(this);
-		return new TransparentShape(this, shape);
+		return new CuboidFigureShape(this);
+		// return new TransparentShape(this, shape);
 	}
 
 	/**
