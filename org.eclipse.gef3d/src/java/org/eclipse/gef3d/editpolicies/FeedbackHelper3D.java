@@ -160,23 +160,19 @@ public class FeedbackHelper3D extends FeedbackHelper {
 				Figure3DHelper.getAncestor3D(m_helper.getReference())
 					.getSurface();
 
-			Position3D dummy = m_helper.getReferencePosition3D();
-			
-			if (surface != initialSurface && ! (m_helper.getReference() instanceof IFigure3D)) {
+			Position3D dummy; // = m_helper.getReferencePosition3D();
+
+			if (surface != initialSurface
+				&& !(m_helper.getReference() instanceof IFigure3D)) {
 				if (log.isLoggable(Level.INFO)) {
 					log.info("surface changed"); //$NON-NLS-1$
 				}
-				Position3D result =
-					Position3DUtil.createRelativePosition(surface.getHost());
-				result.setSize3D(dummy.getSize3D());
-				dummy = result;
-				
-				
-
-			} 
-			// else 
+				dummy = m_helper.getReferencePosition3D(surface.getHost());
+			} else {
+				dummy = m_helper.getReferencePosition3D();
+			}
+			// else
 			{
-				
 
 				// IFigure3D host =
 				// Figure3DHelper.getAncestor3D(m_hostFigure.getParent());
@@ -201,10 +197,9 @@ public class FeedbackHelper3D extends FeedbackHelper {
 					dummy.setSize3D(size);
 				}
 
-				
 				// log.info(feedbackPosition.toString());
 			}
-			
+
 			i_feedback.getPosition3D().setPosition(dummy);
 		} finally {
 			Draw3DCache.returnVector3f(surfaceRelativeLocation, size);
