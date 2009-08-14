@@ -235,7 +235,18 @@ public class ChopboxAnchor3D extends AbstractConnectionAnchor3D {
 				result.set(tmp);
 				return result;
 			} else { // 2D owner
-				result.set(i_reference);
+				IFigure3D host = Figure3DHelper.getAncestor3D(getOwner());
+				if (host == null)
+					throw new IllegalStateException("no 3D host found");
+
+				ISurface surface = host.getSurface();
+
+				Rectangle bounds = getOwner().getBounds();
+				Point sCenter = bounds.getCenter();
+
+				surface.getWorldLocation(sCenter, center);
+
+				result.set(center);
 				return result;
 			}
 		} finally {

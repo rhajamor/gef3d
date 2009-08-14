@@ -10,10 +10,11 @@
  ******************************************************************************/
 package org.eclipse.gef3d.editpolicies;
 
+import java.util.logging.Logger;
+
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.PolylineConnection3D;
-import org.eclipse.draw3d.RenderContext;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.editpolicies.FeedbackHelper;
 import org.eclipse.gef.editpolicies.GraphicalNodeEditPolicy;
@@ -29,6 +30,10 @@ import org.eclipse.gef.requests.CreateConnectionRequest;
  */
 public abstract class GraphicalNodeEditPolicy3D extends GraphicalNodeEditPolicy {
 
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(GraphicalNodeEditPolicy3D.class.getName());
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -36,20 +41,8 @@ public abstract class GraphicalNodeEditPolicy3D extends GraphicalNodeEditPolicy 
 	 */
 	@Override
 	protected Connection createDummyConnection(Request req) {
-		return new PolylineConnection3D() {
 
-			/**
-			 * {@inheritDoc}
-			 * 
-			 * @see org.eclipse.draw3d.Polyline3D#render(org.eclipse.draw3d.RenderContext)
-			 */
-			@Override
-			public void render(RenderContext i_renderContext) {
-				// TODO remove this method, only for testing
-				super.render(i_renderContext);
-			}
-
-		};
+		return new PolylineConnection3D();
 	}
 
 	/**
@@ -59,6 +52,7 @@ public abstract class GraphicalNodeEditPolicy3D extends GraphicalNodeEditPolicy 
 	 */
 	@Override
 	protected FeedbackHelper getFeedbackHelper(CreateConnectionRequest request) {
+
 		if (feedbackHelper == null) {
 			feedbackHelper = new FeedbackHelper3D();
 			((FeedbackHelper3D) feedbackHelper).setHostFigure(getHostFigure());
@@ -70,11 +64,12 @@ public abstract class GraphicalNodeEditPolicy3D extends GraphicalNodeEditPolicy 
 				.setSourceAnchor(getSourceConnectionAnchor(request));
 			feedbackHelper.setConnection(connectionFeedback);
 			addFeedback(connectionFeedback);
-			
+
 			feedbackHelper.update(null, p);
 		} else {
 			if (feedbackHelper instanceof FeedbackHelper3D)
-				((FeedbackHelper3D) feedbackHelper).setHostFigure(getHostFigure());
+				((FeedbackHelper3D) feedbackHelper)
+					.setHostFigure(getHostFigure());
 		}
 
 		return feedbackHelper;

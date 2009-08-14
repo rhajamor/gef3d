@@ -47,12 +47,12 @@ public class XYZAnchor extends XYAnchor implements ConnectionAnchor3D {
      */
     public IVector3f getLocation3D(IVector3f i_reference, Vector3f io_result) {
 
-        if (io_result != null) {
-            io_result.set(m_location3D);
-            return io_result;
-        } else {
-            return m_location3D;
-        }
+		Vector3f result = io_result;
+		if (result == null)
+			result = new Vector3fImpl();
+
+		result.set(m_location3D);
+		return result;
     }
 
     /**

@@ -11,7 +11,6 @@
 package org.eclipse.gef3d.editpolicies;
 
 import java.util.logging.Level;
-
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ConnectionAnchor;
@@ -301,13 +300,12 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			Vector3f w = Draw3DCache.getVector3f();
 			try {
 				surface.getWorldLocation(p, w);
+				log.info(w.toString());
 				m_dummyAnchor.setLocation3D(w);
 				setAnchor(m_dummyAnchor);
-
 			} finally {
 				Draw3DCache.returnVector3f(w);
 			}
 		}
 	}
-
 }
