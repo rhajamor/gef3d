@@ -13,10 +13,12 @@ package org.eclipse.draw3d.shapes;
 
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.TransparentObject;
+import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.ColorConverter;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Color;
 
 /**
@@ -26,9 +28,7 @@ import org.eclipse.swt.graphics.Color;
  * @version $Revision$
  * @since 27.02.2008
  */
-public abstract class FigureShape implements Shape {
-
-	private TransparentObject m_adapter;
+public abstract class FigureShape implements TransparentShape {
 
 	private IFigure3D m_figure;
 
@@ -128,26 +128,55 @@ public abstract class FigureShape implements Shape {
 	}
 
 	/**
-	 * Returns a transparency adapter for this shape.
-	 * 
-	 * @return the transparency adapter for this shape
-	 */
-	public TransparentObject getTransparencyAdapter() {
-
-		if (m_adapter == null)
-			m_adapter = new TransparentShape(m_figure, this);
-
-		return m_adapter;
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see Shape#render(RenderContext)
 	 */
 	public final void render(RenderContext i_renderContext) {
+		if (isTransparent()) {
+			i_renderContext.addTransparentObject(this);
+		} else {
+			doRender(m_figure, i_renderContext);
+		}
+	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.TransparentObject#renderTransparent(org.eclipse.draw3d.RenderContext)
+	 */
+	public void renderTransparent(RenderContext i_renderContext) {
 		doRender(m_figure, i_renderContext);
+	}
+
+	/**
+	 * Returns true if this figure shape is to be rendered transparently, i.e.
+	 * if it has to be rendered after all opaque objects have been rendered. The
+	 * default implementation examines the alpha value of the figure.
+	 * 
+	 * @return
+	 */
+	public boolean isTransparent() {
+		int alpha = m_figure.getAlpha();
+		return alpha < 255; // true; // m_figure.getAlpha()<255;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth(org.eclipse.draw3d.RenderContext)
+	 */
+	public float getTransparencyDepth(RenderContext i_renderContext) {
+		ICamera camera = i_renderContext.getScene().getCamera();
+
+		Vector3f center = Draw3DCache.getVector3f();
+		try {
+			m_figure.getBounds3D().getCenter(center);
+			float dist = camera.getDistance(center);
+			return dist;
+		} finally {
+			Draw3DCache.returnVector3f(center);
+		}
 	}
 
 	/**

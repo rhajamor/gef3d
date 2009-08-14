@@ -26,6 +26,27 @@ import org.eclipse.swt.opengl.GLCanvas;
 /**
  * The render state encapsulates information about the current render pass and
  * also collects transparent objects that need to be rendered last.
+ * <p>
+ * Note on transparent and superimposed object: An object becomes transparent by
+ * firstly setting its color alpha to a value less 255 and by secondly adding it
+ * to the list of transparent objects via
+ * {@link #addTransparentObject(TransparentObject)}. The overall strategy is to
+ * firstly render all opaque objects, correctly sorted and drawn by OpenGL.
+ * Secondly, all transparent objects are drawn (ordered by their distance to the
+ * camera) in order to enable real transparency which OpenGL does not support
+ * directly. A problem may occure when objects are registered as transparent
+ * objects while the transparent objects are already rendered here. This may
+ * occur if an transparent object is composed of other transparent objects, and
+ * recursively calls their render method (which only then adds the nested
+ * objecdt to the list of transparent objects here). If this case the newly
+ * added transparent (nested) object is rendered directly after the object was
+ * rendered in which this object is nested. The problem is that the order may be
+ * corrupt, that is the nested object should have been rendered before its
+ * container. This case cannot be corrected here. To prevent this, try to make
+ * rendering of objects as flat as possible. Especially shapes tend to be
+ * nested. In this case, simply try to prevent calling a nested shapes render
+ * method from within a container shapes doRender method.
+ * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -72,9 +93,11 @@ public class RenderContext {
 
 	private IScene m_scene;
 
-	private final List<TransparentObject> m_superimposedObjects;
+	private List<TransparentObject> m_superimposedObjects;
 
-	private final List<TransparentObject> m_transparentObjects;
+	private List<TransparentObject> m_transparentObjects;
+
+	private boolean isRendering = false;
 
 	/**
 	 * Creates a new render context. The context is created by the
@@ -109,14 +132,17 @@ public class RenderContext {
 			throw new NullPointerException(
 				"i_transparentObject must not be null");
 
-		int index =
-			Collections.binarySearch(m_superimposedObjects,
-				i_transparentObject, m_depthComparator);
+		synchronized (m_superimposedObjects) {
 
-		if (index < 0)
-			index = -index - 1;
+			int index =
+				Collections.binarySearch(m_superimposedObjects,
+					i_transparentObject, m_depthComparator);
 
-		m_superimposedObjects.add(index, i_transparentObject);
+			if (index < 0)
+				index = -index - 1;
+
+			m_superimposedObjects.add(index, i_transparentObject);
+		}
 	}
 
 	/**
@@ -131,14 +157,16 @@ public class RenderContext {
 			throw new NullPointerException(
 				"i_transparentObject must not be null");
 
-		int index =
-			Collections.binarySearch(m_transparentObjects, i_transparentObject,
-				m_depthComparator);
+		synchronized (m_transparentObjects) {
+			int index =
+				Collections.binarySearch(m_transparentObjects,
+					i_transparentObject, m_depthComparator);
 
-		if (index < 0)
-			index = -index - 1;
+			if (index < 0)
+				index = -index - 1;
 
-		m_transparentObjects.add(index, i_transparentObject);
+			m_transparentObjects.add(index, i_transparentObject);
+		}
 	}
 
 	/**
@@ -235,25 +263,69 @@ public class RenderContext {
 	/**
 	 * Renders all transparent objects.
 	 */
-	public void renderTransparency() {
-
-		for (TransparentObject transparentObject : m_transparentObjects)
-			transparentObject.renderTransparent(this);
-
-		Graphics3D g3d = getGraphics3D();
-		// disable depth test
-		g3d.glDisable(Graphics3DDraw.GL_DEPTH_TEST);
-		// maybe disable face culling
-		// GL11.glDisable(GL11.GL_CULL_FACE);
-
+	public synchronized void renderTransparency() {
+		isRendering = true;
 		try {
-			for (TransparentObject transparentObject : m_superimposedObjects)
-				transparentObject.renderTransparent(this);
+			doRenderTransparentObjects();
+
+			Graphics3D g3d = getGraphics3D();
+			// disable depth test
+			g3d.glDisable(Graphics3DDraw.GL_DEPTH_TEST);
+			// maybe disable face culling
+			// GL11.glDisable(GL11.GL_CULL_FACE);
+
+			try {
+				doRenderSuperImposedObjects();
+				
+			} finally {
+				g3d.glEnable(Graphics3DDraw.GL_DEPTH_TEST);
+			}
 		} finally {
-			g3d.glEnable(Graphics3DDraw.GL_DEPTH_TEST);
+			isRendering = false;
 		}
 
 	}
+
+
+	/**
+	 * Renders transparent objects. These objects are rendered by
+	 * iterating over a copy of the transparency list. The original
+	 * list is cleared. When a transparent object is rendered, it may add new
+	 * transparent objects, that is the children of a transparent container may
+	 * be transparent themselves. Adding transparent nested objects causes the
+	 * original list, which was cleared here at the beginning, to be non empty
+	 * again. If this happens, the new non empty list is rendered before we 
+	 * continue with the nest sibling.
+	 * 
+	 */
+	private void doRenderTransparentObjects() {
+		List<TransparentObject> renderList = m_transparentObjects;
+		m_transparentObjects = new ArrayList<TransparentObject>();
+
+		for (TransparentObject transparentObject : renderList) {
+			transparentObject.renderTransparent(this);
+			if (!m_transparentObjects.isEmpty()) {
+				doRenderTransparentObjects();
+			}
+		}
+	}
+	
+	/**
+	 * Renders superimposed objects.
+	 * @see #doRenderTransparentObjects() 
+	 */
+	private void doRenderSuperImposedObjects() {
+		List<TransparentObject> renderList = m_superimposedObjects;
+		m_superimposedObjects = new ArrayList<TransparentObject>();
+
+		for (TransparentObject transparentObject : renderList) {
+			transparentObject.renderTransparent(this);
+			if (!m_superimposedObjects.isEmpty()) {
+				doRenderTransparentObjects();
+			}
+		}
+	}
+
 
 	/**
 	 * @param i_canvas

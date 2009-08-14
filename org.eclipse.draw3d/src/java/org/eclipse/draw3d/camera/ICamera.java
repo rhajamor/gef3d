@@ -66,7 +66,7 @@ public interface ICamera {
 	 * @return the distance from this camera to the given point
 	 * @throws NullPointerException if the given point is <code>null</code>
 	 */
-	public float getDistance(Vector3f i_point);
+	public float getDistance(IVector3f i_point);
 
 	/**
 	 * Distance of the viewing plane from the camera.

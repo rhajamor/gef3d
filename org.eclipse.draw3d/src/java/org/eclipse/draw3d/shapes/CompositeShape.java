@@ -176,6 +176,20 @@ public class CompositeShape extends PositionableShape {
 	}
 
 	/**
+	 * Return false as contained shapes are rendered transparently or opaque
+	 * anyway. This method must not be changed because we need
+	 * {@link #render(RenderContext)} to call {@link #doRender(RenderContext)}
+	 * directly. In {@link #doRender(RenderContext)}, the contained shapes are
+	 * rendered or registered as transparent objects.
+	 * 
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#isTransparent()
+	 */
+	@Override
+	public final boolean isTransparent() {
+		return false;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.shapes.PositionableShape#doRender(org.eclipse.draw3d.RenderContext)

@@ -13,6 +13,7 @@ package org.eclipse.draw3d.shapes;
 import java.util.logging.Logger;
 
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector3f;
@@ -33,7 +34,7 @@ import org.eclipse.draw3d.util.Draw3DCache;
  * @version $Revision$
  * @since 05.08.2009
  */
-public abstract class PositionableShape implements Shape {
+public abstract class PositionableShape implements TransparentShape {
 
 	private IPosition3D m_position3D;
 
@@ -156,32 +157,72 @@ public abstract class PositionableShape implements Shape {
 	 */
 	public void render(RenderContext i_renderContext) {
 
-		Graphics3D g3d = i_renderContext.getGraphics3D();
-
 		if (i_renderContext.getScene().isDebug())
 			doRender(i_renderContext);
-
+		
 		if (m_position3D == null)
 			doRender(i_renderContext);
 		else {
-
-			IMatrix4f modelMatrix = m_position3D.getTransformationMatrix();
-
-			boolean useModelMatrix = !IMatrix4f.IDENTITY.equals(modelMatrix);
-			g3d.glMatrixMode(Graphics3DDraw.GL_MODELVIEW);
-
-			if (useModelMatrix)
-				g3d.glPushMatrix();
-
-			try {
-				if (useModelMatrix)
-					g3d.setPosition(m_position3D);
-
-				doRender(i_renderContext);
-			} finally {
-				if (useModelMatrix)
-					g3d.glPopMatrix();
+			if (isTransparent()) {
+				i_renderContext.addTransparentObject(this);
+			} else {
+				renderAtPosition(i_renderContext);
 			}
 		}
+	}
+	
+
+	/**
+	 * @param i_renderContext
+	 */
+	private void renderAtPosition(RenderContext i_renderContext) {
+		Graphics3D g3d = i_renderContext.getGraphics3D();
+		IMatrix4f modelMatrix = m_position3D.getTransformationMatrix();
+
+		boolean useModelMatrix = !IMatrix4f.IDENTITY.equals(modelMatrix);
+		g3d.glMatrixMode(Graphics3DDraw.GL_MODELVIEW);
+
+		if (useModelMatrix)
+			g3d.glPushMatrix();
+
+		try {
+			if (useModelMatrix)
+				g3d.setPosition(m_position3D);
+
+			doRender(i_renderContext);
+		} finally {
+			if (useModelMatrix)
+				g3d.glPopMatrix();
+		}
+	}
+	
+	/**
+	 * Returns false by default, override to adjust transparency rendering.
+	 * @return
+	 */
+	public boolean isTransparent() {
+		return true;
+	}
+	
+	
+
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.TransparentObject#renderTransparent(org.eclipse.draw3d.RenderContext)
+	 */
+	public void renderTransparent(RenderContext i_renderContext) {
+		renderAtPosition(i_renderContext);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth(org.eclipse.draw3d.RenderContext)
+	 */
+	public float getTransparencyDepth(RenderContext i_renderContext) {
+		ICamera camera = i_renderContext.getScene().getCamera();
+
+		float dist = camera.getDistance(m_position3D.getCenter3D());
+		return dist;
 	}
 }

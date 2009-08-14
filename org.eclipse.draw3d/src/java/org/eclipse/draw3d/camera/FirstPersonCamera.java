@@ -311,7 +311,7 @@ public class FirstPersonCamera extends AbstractCamera {
 	 * 
 	 * @see org.eclipse.draw3d.camera.ICamera#getDistance(org.eclipse.draw3d.geometry.Vector3f)
 	 */
-	public float getDistance(Vector3f i_point) {
+	public float getDistance(IVector3f i_point) {
 
 		if (i_point == null)
 			throw new NullPointerException("i_point must not be null");
