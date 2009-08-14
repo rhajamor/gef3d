@@ -266,15 +266,13 @@ public class RenderContext {
 	public synchronized void renderTransparency() {
 		isRendering = true;
 		try {
-			doRenderTransparentObjects();
 
 			Graphics3D g3d = getGraphics3D();
 			// disable depth test
 			g3d.glDisable(Graphics3DDraw.GL_DEPTH_TEST);
-			// maybe disable face culling
-			// GL11.glDisable(GL11.GL_CULL_FACE);
 
 			try {
+				doRenderTransparentObjects();
 				doRenderSuperImposedObjects();
 				
 			} finally {

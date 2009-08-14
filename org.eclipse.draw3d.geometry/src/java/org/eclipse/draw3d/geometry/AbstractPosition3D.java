@@ -130,7 +130,7 @@ public abstract class AbstractPosition3D implements Position3D {
 			Vector3f location = Math3DCache.getVector3f();
 			Vector3f rotation = Math3DCache.getVector3f();
 			Vector3f halfSize = Math3DCache.getVector3f();
-//			Vector3f center = Math3DCache.getVector3f();
+			// Vector3f center = Math3DCache.getVector3f();
 			try {
 				Math3D.transform(IVector3f.NULLVEC3f,
 					getRotationLocationMatrix(), location);
@@ -149,8 +149,8 @@ public abstract class AbstractPosition3D implements Position3D {
 
 				return result;
 			} finally {
-//				Math3DCache
-//					.returnVector3f(location, rotation, halfSize, center);
+				// Math3DCache
+				// .returnVector3f(location, rotation, halfSize, center);
 			}
 		}
 
@@ -399,11 +399,8 @@ public abstract class AbstractPosition3D implements Position3D {
 		if (isValid())
 			return;
 
-		m_center.set(getSize3D());
-		m_center.scale(0.5f);
-		Math3D.add(getLocation3D(), m_center, m_center);
-
 		Vector3f halfSize = Math3DCache.getVector3f();
+		Vector3f location = Math3DCache.getVector3f();
 		try {
 			// calculate the transformation and rotation / location matrices
 			// transformations are applied in reverse order
@@ -453,9 +450,12 @@ public abstract class AbstractPosition3D implements Position3D {
 				Math3D.invert(m_rayDirectionMatrix, m_rayDirectionMatrix);
 			}
 
+			m_center.set(0.5f, 0.5f, 0.5f);
+			m_center.transform(m_transformationMatrix);
+
 			m_valid = true;
 		} finally {
-			Math3DCache.returnVector3f(halfSize);
+			Math3DCache.returnVector3f(halfSize, location);
 		}
 	}
 }

@@ -55,6 +55,10 @@ public interface Graphics3DDraw {
 
 	public static final float PI = (float) Math.PI;
 
+	public static final int GL_ONE = 0x1;
+
+	public static final int GL_ZERO = 0x0;
+
 	public static final int GL_FILL = 0x1b02; // org.lwjgl.opengl.GL11.GL_FILL;
 
 	public static final int GL_LINE = 0x1b01;

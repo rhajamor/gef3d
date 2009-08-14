@@ -36,33 +36,11 @@ import org.eclipse.draw3d.util.Draw3DCache;
  */
 public abstract class PositionableShape implements TransparentShape {
 
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(PositionableShape.class.getName());
+
 	private IPosition3D m_position3D;
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.picking.Pickable#getParaxialBoundingBox(ParaxialBoundingBox)
-	 */
-	public ParaxialBoundingBox getParaxialBoundingBox(
-		ParaxialBoundingBox o_result) {
-
-		ParaxialBoundingBox result = o_result;
-		if (result == null)
-			result = new ParaxialBoundingBoxImpl();
-
-		Vector3f location = Math3DCache.getVector3f();
-		Vector3f size = Math3DCache.getVector3f();
-		try {
-			Math3D.getCuboidParaxialBoundingBox(m_position3D, location, size);
-
-			result.setLocation(location);
-			result.setSize(size);
-
-			return result;
-		} finally {
-			Math3DCache.returnVector3f(location, size);
-		}
-	}
 
 	/**
 	 * Creates a new positionable shape with the given position.
@@ -92,10 +70,6 @@ public abstract class PositionableShape implements TransparentShape {
 	 * @param i_renderContext the current render context
 	 */
 	protected abstract void doRender(RenderContext i_renderContext);
-
-	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(PositionableShape.class.getName());
 
 	/**
 	 * {@inheritDoc}
@@ -141,6 +115,32 @@ public abstract class PositionableShape implements TransparentShape {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getParaxialBoundingBox(ParaxialBoundingBox)
+	 */
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
+
+		ParaxialBoundingBox result = o_result;
+		if (result == null)
+			result = new ParaxialBoundingBoxImpl();
+
+		Vector3f location = Math3DCache.getVector3f();
+		Vector3f size = Math3DCache.getVector3f();
+		try {
+			Math3D.getCuboidParaxialBoundingBox(m_position3D, location, size);
+
+			result.setLocation(location);
+			result.setSize(size);
+
+			return result;
+		} finally {
+			Math3DCache.returnVector3f(location, size);
+		}
+	}
+
+	/**
 	 * Returns the position of this shape.
 	 * 
 	 * @return the position of this shape
@@ -153,13 +153,33 @@ public abstract class PositionableShape implements TransparentShape {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth(org.eclipse.draw3d.RenderContext)
+	 */
+	public float getTransparencyDepth(RenderContext i_renderContext) {
+		ICamera camera = i_renderContext.getScene().getCamera();
+
+		return camera.getDistance(m_position3D.getCenter3D());
+	}
+
+	/**
+	 * Returns false by default, override to adjust transparency rendering.
+	 * 
+	 * @return
+	 */
+	public boolean isTransparent() {
+		return true;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.shapes.Shape#render(org.eclipse.draw3d.RenderContext)
 	 */
 	public void render(RenderContext i_renderContext) {
 
 		if (i_renderContext.getScene().isDebug())
 			doRender(i_renderContext);
-		
+
 		if (m_position3D == null)
 			doRender(i_renderContext);
 		else {
@@ -170,12 +190,12 @@ public abstract class PositionableShape implements TransparentShape {
 			}
 		}
 	}
-	
 
 	/**
 	 * @param i_renderContext
 	 */
 	private void renderAtPosition(RenderContext i_renderContext) {
+
 		Graphics3D g3d = i_renderContext.getGraphics3D();
 		IMatrix4f modelMatrix = m_position3D.getTransformationMatrix();
 
@@ -195,34 +215,13 @@ public abstract class PositionableShape implements TransparentShape {
 				g3d.glPopMatrix();
 		}
 	}
-	
-	/**
-	 * Returns false by default, override to adjust transparency rendering.
-	 * @return
-	 */
-	public boolean isTransparent() {
-		return true;
-	}
-	
-	
-
-	/** 
-	 * {@inheritDoc}
-	 * @see org.eclipse.draw3d.TransparentObject#renderTransparent(org.eclipse.draw3d.RenderContext)
-	 */
-	public void renderTransparent(RenderContext i_renderContext) {
-		renderAtPosition(i_renderContext);
-	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.TransparentObject#getTransparencyDepth(org.eclipse.draw3d.RenderContext)
+	 * @see org.eclipse.draw3d.TransparentObject#renderTransparent(org.eclipse.draw3d.RenderContext)
 	 */
-	public float getTransparencyDepth(RenderContext i_renderContext) {
-		ICamera camera = i_renderContext.getScene().getCamera();
-
-		float dist = camera.getDistance(m_position3D.getCenter3D());
-		return dist;
+	public void renderTransparent(RenderContext i_renderContext) {
+		renderAtPosition(i_renderContext);
 	}
 }
