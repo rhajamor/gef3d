@@ -57,21 +57,6 @@ public class DeferredUpdateManager3D extends DeferredUpdateManager {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.DeferredUpdateManager#performUpdate()
-	 */
-	@Override
-	public synchronized void performUpdate() {
-
-		if (canvas.isDisposed())
-			return;
-
-		super.performUpdate();
-		canvas.redraw();
-	}
-
-	/**
 	 * {@inheritDoc} Draw regions are ignored here. If |{@link #isSwapBuffers()}
 	 * is true, buffers are swapped.
 	 * 

@@ -16,9 +16,9 @@ import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.ConnectionRouter;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.geometry.Vector4fImpl;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometryext.PointList3D;
+import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * ConnectionRouter3D is the 3D version of {@link ConnectionRouter}.
@@ -39,10 +39,6 @@ public interface ConnectionRouter3D extends ConnectionRouter {
 	 */
 	class NullConnectionRouter3D extends  AbstractRouter3D {
 
-		private static final Vector3fImpl TMP_V3 = new Vector3fImpl();
-
-		private static final Vector4fImpl TMP_V4 = new Vector4fImpl();
-
 		/**
 		 * Constructs a new NullConnectionRouter.
 		 */
@@ -61,21 +57,24 @@ public interface ConnectionRouter3D extends ConnectionRouter {
 
 			if (connection instanceof Connection3D ) {
 
-				Connection3D c3D = (Connection3D) connection;
-				PointList3D points = c3D.getPoints3D();
-				points.removeAllPoints();
-				
-				getStartPoint3D(c3D, TMP_V3);
-				TMP_V4.set(TMP_V3.x, TMP_V3.y, TMP_V3.z, 1);
-				c3D.transformToAbsolute(TMP_V4);
-				points.add(new Vector3fImpl(TMP_V4.x, TMP_V4.y, TMP_V4.z));
+				Vector3f tmp = Draw3DCache.getVector3f();
+				try {
+					Connection3D c3D = (Connection3D) connection;
+					PointList3D points = c3D.getPoints3D();
+					points.removeAllPoints();
 
-				getEndPoint3D(c3D, TMP_V3);
-				TMP_V4.set(TMP_V3.x, TMP_V3.y, TMP_V3.z, 1);
-				c3D.transformToAbsolute(TMP_V4);
-				points.add(new Vector3fImpl(TMP_V4.x, TMP_V4.y, TMP_V4.z));
+					getStartPoint3D(c3D, tmp);
+					c3D.transformToAbsolute(tmp);
+					points.add(tmp);
 
-				c3D.setPoints3D(points);
+					getEndPoint3D(c3D, tmp);
+					c3D.transformToAbsolute(tmp);
+					points.add(tmp);
+
+					c3D.setPoints3D(points);
+				} finally {
+					Draw3DCache.returnVector3f(tmp);
+				}
 			} else {
 				PointList points = connection.getPoints();
 				points.removeAllPoints();

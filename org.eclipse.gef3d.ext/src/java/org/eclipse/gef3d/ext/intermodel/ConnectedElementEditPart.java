@@ -26,8 +26,10 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.NodeEditPart;
@@ -51,20 +53,15 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger
-			.getLogger(ConnectedElementEditPart.class.getName());
-
-	private static final Vector3f TMP_V2 = new Vector3fImpl();
-	private static final Vector3f TMP_V3 = new Vector3fImpl();
+	private static final Logger log =
+		Logger.getLogger(ConnectedElementEditPart.class.getName());
 
 	/**
 	 * Returns the center point of a figure (2D or 3D).
 	 * 
-	 * @param i_fig
-	 *            the figure
-	 * @param io_result
-	 *            the result vector, if <code>null</code>, a new vector will be
-	 *            returned
+	 * @param i_fig the figure
+	 * @param io_result the result vector, if <code>null</code>, a new vector
+	 *            will be returned
 	 * @return the center point
 	 */
 	public static IVector3f getTopCenter3D(IFigure i_fig, Vector3f io_result) {
@@ -75,14 +72,22 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 			if (result == null)
 				result = new Vector3fImpl();
 
-			IFigure3D fig = (IFigure3D) i_fig;
-			IBoundingBox bb = fig.getBounds3D();
-			IVector3f pos = bb.getLocation(TMP_V2);
-			IVector3f size = bb.getSize(TMP_V3);
+			Vector3f location = Draw3DCache.getVector3f();
+			Vector3f size = Draw3DCache.getVector3f();
+			try {
+				IFigure3D fig = (IFigure3D) i_fig;
+				IBoundingBox bb = fig.getBounds3D();
+				bb.getLocation(location);
+				bb.getSize(size);
 
-			result.set(pos.getX() + size.getX() / 2, pos.getY() + size.getY(),
-					pos.getZ() + size.getZ() / 2);
-			return result;
+				result.setX(location.getX() + size.getX() / 2f);
+				result.setY(location.getY() + size.getY());
+				result.setZ(location.getZ() + size.getZ() / 2f);
+
+				return result;
+			} finally {
+				Draw3DCache.returnVector3f(location, size);
+			}
 		} else {
 			if (i_fig instanceof Connection) {
 				if (!(i_fig instanceof IFigure3D)) {
@@ -91,11 +96,11 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 
 					IFigure3D host = Figure3DHelper.getAncestor3D(i_fig);
 					ISurface surface = host.getSurface();
-					
+
 					return surface.getWorldLocation(midpoint, io_result);
 				} else {
 					throw new UnsupportedOperationException(
-							"getCenter3D not implemented for 3D connections yet");
+						"getCenter3D not implemented for 3D connections yet");
 				}
 			} else {
 				Rectangle rect = i_fig.getBounds();
@@ -103,7 +108,7 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 
 				IFigure3D host = Figure3DHelper.getAncestor3D(i_fig);
 				ISurface surface = host.getSurface();
-				
+
 				return surface.getWorldLocation(point, io_result);
 			}
 		}
@@ -175,8 +180,8 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 	protected IFigure createFigure() {
 
 		IFigure3D fig = new ConnectedElementFigure();
-		m_anchorFactory = new SingletonConnectionAnchorFactory(
-				new ChopboxAnchor3D(fig));
+		m_anchorFactory =
+			new SingletonConnectionAnchorFactory(new ChopboxAnchor3D(fig));
 
 		relocateFigure(fig);
 
@@ -191,7 +196,7 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 	@Override
 	public void deactivate() {
 		getConnectedElementAdapter().removeElementAdapterListener(
-				adapterListener);
+			adapterListener);
 		super.deactivate();
 	}
 
@@ -241,7 +246,7 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 	 * @see org.eclipse.gef3d.ext.IConnectionAnchorFactory#getSourceConnectionAnchor(org.eclipse.gef.ConnectionEditPart)
 	 */
 	public ConnectionAnchor getSourceConnectionAnchor(
-			ConnectionEditPart i_connection) {
+		ConnectionEditPart i_connection) {
 		return m_anchorFactory.getSourceConnectionAnchor(i_connection);
 	}
 
@@ -264,7 +269,7 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 	 * @see org.eclipse.gef3d.ext.IConnectionAnchorFactory#getTargetConnectionAnchor(org.eclipse.gef.ConnectionEditPart)
 	 */
 	public ConnectionAnchor getTargetConnectionAnchor(
-			ConnectionEditPart i_connection) {
+		ConnectionEditPart i_connection) {
 		return m_anchorFactory.getTargetConnectionAnchor(i_connection);
 	}
 
@@ -293,14 +298,23 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 	 * @param fig
 	 */
 	private void relocateFigure(IFigure3D fig) {
-		float size = 7;
-		fig.getPosition3D().setSize3D(new Vector3fImpl(size, size, size));
 
-		IFigure connectedFig = getModelEditPart().getFigure();
-		IVector3f v = getTopCenter3D(connectedFig, TMP_V3);
-		fig.getPosition3D().setLocation3D(
-			new Vector3fImpl(v.getX() - size / 2, v.getY() - size
-				+ size / 2, v.getZ() - size / 2));
+		Vector3f size = Draw3DCache.getVector3f();
+		Vector3f topCenter = Draw3DCache.getVector3f();
+		try {
+			size.set(7, 7, 7);
+			fig.getPosition3D().setSize3D(size);
+
+			IFigure connectedFig = getModelEditPart().getFigure();
+			getTopCenter3D(connectedFig, topCenter);
+
+			size.scale(1 / 2f);
+			Math3D.sub(topCenter, size, topCenter);
+
+			fig.getPosition3D().setLocation3D(topCenter);
+		} finally {
+			Draw3DCache.returnVector3f(size, topCenter);
+		}
 	}
 
 }
