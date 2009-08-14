@@ -101,11 +101,11 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	protected Shape createShape() {
 
 		CompositeShape composite = new CompositeShape();
-		Shape alphaShape = new CuboidFigureShape(this);
-		composite.addTransparent(new TransparentShape(this, alphaShape));
+		TransparentShape alphaShape = new CuboidFigureShape(this);
+		composite.addTransparent(alphaShape);
 
-		Shape superShape = new CuboidFigureShape(this);
-		composite.addSuperimposed(new TransparentShape(this, superShape));
+		TransparentShape superShape = new CuboidFigureShape(this);
+		composite.addSuperimposed(superShape);
 		return composite;
 				
 	}

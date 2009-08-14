@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.gef3d.editpolicies;
 
+import java.util.logging.Level;
+
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ConnectionAnchor;
@@ -20,9 +22,9 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
+import org.eclipse.draw3d.LocatorHelper;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.XYZAnchor;
-import org.eclipse.draw3d.geometry.BoundingBox;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -49,10 +51,15 @@ public class FeedbackHelper3D extends FeedbackHelper {
 	 */
 	protected XYZAnchor m_dummyAnchor;
 
+	// /**
+	// * The 3D host figure.
+	// */
+	// protected IFigure m_hostFigure;
+
 	/**
-	 * The 3D host figure.
+	 * The locator helper.
 	 */
-	protected IFigure m_hostFigure;
+	protected LocatorHelper m_helper;
 
 	/**
 	 * The picker, which can be <code>null</code>.
@@ -92,10 +99,10 @@ public class FeedbackHelper3D extends FeedbackHelper {
 		if (i_feedback == null)
 			throw new NullPointerException("i_feedback must not be null");
 
-		Vector3f wCenter = Draw3DCache.getVector3f();
+		Vector3f surfaceRelativeLocation = Draw3DCache.getVector3f();
 		Vector3f wSize = Draw3DCache.getVector3f();
 		Vector3f rotation = Draw3DCache.getVector3f();
-		Point sCenter = Draw3DCache.getPoint();
+		// Point sCenter = Draw3DCache.getPoint();
 		try {
 			Position3D feedbackPosition = i_feedback.getPosition3D();
 			ISurface surface = m_picker.getCurrentSurface();
@@ -111,20 +118,21 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			feedbackPosition.setSize3D(wSize);
 
 			if (i_sLocation != null) {
-				if (i_sSize != null) {
-					sCenter.setLocation(i_sSize.width, i_sSize.height);
-					sCenter.scale(0.5);
-				} else
-					sCenter.setLocation(0, 0);
+				// if (i_sSize != null) {
+				// sCenter.setLocation(i_sSize.width, i_sSize.height);
+				// sCenter.scale(0.5);
+				// } else
+				// sCenter.setLocation(0, 0);
+				//
+				// sCenter.translate(i_sLocation);
+				surface.getWorldLocation(i_sLocation, surfaceRelativeLocation);
 
-				sCenter.translate(i_sLocation);
-				surface.getWorldLocation(sCenter, wCenter);
-
-				feedbackPosition.setCenter3D(wCenter);
+				feedbackPosition.setCenter3D(surfaceRelativeLocation);
 			}
 		} finally {
-			Draw3DCache.returnVector3f(wCenter, wSize, rotation);
-			Draw3DCache.returnPoint(sCenter);
+			Draw3DCache
+				.returnVector3f(surfaceRelativeLocation, wSize, rotation);
+			// Draw3DCache.returnPoint(sCenter);
 		}
 	}
 
@@ -143,34 +151,63 @@ public class FeedbackHelper3D extends FeedbackHelper {
 		if (i_feedback == null)
 			throw new NullPointerException("i_feedback must not be null");
 
-		Vector3f center = Draw3DCache.getVector3f();
+		Vector3f surfaceRelativeLocation = Draw3DCache.getVector3f();
 		Vector3f size = Draw3DCache.getVector3f();
 		try {
-			IFigure3D host =
-				Figure3DHelper.getAncestor3D(m_hostFigure.getParent());
-			Position3D dummy = Position3DUtil.createRelativePosition(host);
-			Position3D feedbackPosition = i_feedback.getPosition3D();
 
-			dummy.setPosition(feedbackPosition);
+			ISurface surface = m_picker.getCurrentSurface();
+			ISurface initialSurface =
+				Figure3DHelper.getAncestor3D(m_helper.getReference())
+					.getSurface();
 
-			if (i_surfaceMoveDelta != null) {
-				center.set(dummy.getCenter3D());
-				center.translate(i_surfaceMoveDelta.x, i_surfaceMoveDelta.y, 0);
-				dummy.setCenter3D(center);
+			Position3D dummy = m_helper.getReferencePosition3D();
+			
+			if (surface != initialSurface) {
+				if (log.isLoggable(Level.INFO)) {
+					log.info("surface changed"); //$NON-NLS-1$
+				}
+				Position3D result =
+					Position3DUtil.createRelativePosition(surface.getHost());
+				result.setSize3D(dummy.getSize3D());
+				dummy = result;
+				
+				
+
+			} 
+			// else 
+			{
+				
+
+				// IFigure3D host =
+				// Figure3DHelper.getAncestor3D(m_hostFigure.getParent());
+				// Position3D dummy =
+				// Position3DUtil.createRelativePosition(host);
+				// Position3D feedbackPosition = i_feedback.getPosition3D();
+				//
+				// dummy.setPosition(feedbackPosition);
+				//
+				if (i_surfaceMoveDelta != null) {
+					surfaceRelativeLocation.set(dummy.getLocation3D());
+					surfaceRelativeLocation.translate(i_surfaceMoveDelta.x,
+						i_surfaceMoveDelta.y, 0);
+					dummy.setLocation3D(surfaceRelativeLocation);
+				}
+
+				if (i_surfaceSizeDelta != null) {
+					size.set(dummy.getSize3D());
+					size.translate(i_surfaceSizeDelta.width,
+						i_surfaceSizeDelta.height, 0);
+
+					dummy.setSize3D(size);
+				}
+
+				
+				// log.info(feedbackPosition.toString());
 			}
-
-			if (i_surfaceSizeDelta != null) {
-				size.set(dummy.getSize3D());
-				size.translate(i_surfaceSizeDelta.width,
-					i_surfaceSizeDelta.height, 0);
-
-				dummy.setSize3D(size);
-			}
-
-			feedbackPosition.setPosition(dummy);
-			log.info(feedbackPosition.toString());
+			
+			i_feedback.getPosition3D().setPosition(dummy);
 		} finally {
-			Draw3DCache.returnVector3f(center, size);
+			Draw3DCache.returnVector3f(surfaceRelativeLocation, size);
 		}
 	}
 
@@ -183,9 +220,11 @@ public class FeedbackHelper3D extends FeedbackHelper {
 		if (i_hostFigure == null) // parameter precondition
 			throw new NullPointerException("i_hostFigure must not be null");
 
-		m_hostFigure = i_hostFigure;
+		m_helper = new LocatorHelper(i_hostFigure);
 
-		UpdateManager updateManager = m_hostFigure.getUpdateManager();
+		// m_hostFigure = i_hostFigure;
+
+		UpdateManager updateManager = i_hostFigure.getUpdateManager();
 		if (updateManager instanceof PickingUpdateManager3D)
 			m_picker = ((PickingUpdateManager3D) updateManager).getPicker();
 		else {
@@ -203,28 +242,48 @@ public class FeedbackHelper3D extends FeedbackHelper {
 	 */
 	public void setInitialFeedbackPosition(IFigure3D i_feedback) {
 
-		if (m_hostFigure instanceof IFigure3D) {
-			BoundingBox feedbackBounds = Draw3DCache.getBoundingBox();
-			Vector3f wLocation = Draw3DCache.getVector3f();
-			Vector3f wSize = Draw3DCache.getVector3f();
-			try {
-				IFigure3D hostFigure3D = (IFigure3D) m_hostFigure;
-				Position3D hostPosition = hostFigure3D.getPosition3D();
+		ISurface surface = m_picker.getCurrentSurface();
+		ISurface initialSurface =
+			Figure3DHelper.getAncestor3D(m_helper.getReference()).getSurface();
 
-				Position3D feedbackPosition = i_feedback.getPosition3D();
-				feedbackPosition.setPosition(hostPosition);
-				feedbackPosition.expand(1);
-			} finally {
-				Draw3DCache.returnBoundingBox(feedbackBounds);
-				Draw3DCache.returnVector3f(wLocation, wSize);
+		Position3D refPosition = m_helper.getReferencePosition3D();
+
+		if (surface != initialSurface) {
+			if (log.isLoggable(Level.INFO)) {
+				log.info("surface changed"); //$NON-NLS-1$
 			}
-		} else {
-			Point sLocation = m_hostFigure.getBounds().getLocation();
-			m_hostFigure.getParent().translateToAbsolute(sLocation);
-			Dimension sSize = m_hostFigure.getBounds().getSize();
+			Position3D result =
+				Position3DUtil.createRelativePosition(surface.getHost());
+			result.setSize3D(refPosition.getSize3D());
+			refPosition = result;
 
-			setAbsoluteFeedbackBounds(i_feedback, sLocation, sSize);
 		}
+
+		i_feedback.getPosition3D().setPosition(refPosition);
+
+		// else
+
+		// if (m_hostFigure instanceof IFigure3D) {
+		// BoundingBox feedbackBounds = Draw3DCache.getBoundingBox();
+		// Vector3f wLocation = Draw3DCache.getVector3f();
+		// Vector3f wSize = Draw3DCache.getVector3f();
+		// try {
+		// IFigure3D hostFigure3D = (IFigure3D) m_hostFigure;
+		// Position3D hostPosition = hostFigure3D.getPosition3D();
+		//
+		// Position3D feedbackPosition = i_feedback.getPosition3D();
+		// feedbackPosition.setPosition(hostPosition);
+		// } finally {
+		// Draw3DCache.returnBoundingBox(feedbackBounds);
+		// Draw3DCache.returnVector3f(wLocation, wSize);
+		// }
+		// } else {
+		// Point sLocation = m_hostFigure.getBounds().getLocation();
+		// m_hostFigure.getParent().translateToAbsolute(sLocation);
+		// Dimension sSize = m_hostFigure.getBounds().getSize();
+		//
+		// setAbsoluteFeedbackBounds(i_feedback, sLocation, sSize);
+		// }
 	}
 
 	/**
@@ -249,6 +308,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 				surface.getWorldLocation(p, w);
 				m_dummyAnchor.setLocation3D(w);
 				setAnchor(m_dummyAnchor);
+
 			} finally {
 				Draw3DCache.returnVector3f(w);
 			}

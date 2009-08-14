@@ -103,7 +103,7 @@ public class MoveHandle3D extends AbstractHandle3D {
 		CuboidFigureShape shape = new CuboidFigureShape(this);
 		shape.setFill(false);
 
-		return new TransparentShape(this, shape);
+		return shape;
 	}
 
 	/**
