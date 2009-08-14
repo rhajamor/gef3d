@@ -162,7 +162,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 
 			Position3D dummy = m_helper.getReferencePosition3D();
 			
-			if (surface != initialSurface) {
+			if (surface != initialSurface && ! (m_helper.getReference() instanceof IFigure3D)) {
 				if (log.isLoggable(Level.INFO)) {
 					log.info("surface changed"); //$NON-NLS-1$
 				}
