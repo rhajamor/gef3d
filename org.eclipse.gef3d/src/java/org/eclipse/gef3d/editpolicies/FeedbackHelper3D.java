@@ -126,7 +126,8 @@ public class FeedbackHelper3D extends FeedbackHelper {
 				// sCenter.translate(i_sLocation);
 				surface.getWorldLocation(i_sLocation, surfaceRelativeLocation);
 
-				feedbackPosition.setCenter3D(surfaceRelativeLocation);
+				// feedbackPosition.setCenter3D(surfaceRelativeLocation);
+				feedbackPosition.setLocation3D(surfaceRelativeLocation);
 			}
 		} finally {
 			Draw3DCache
