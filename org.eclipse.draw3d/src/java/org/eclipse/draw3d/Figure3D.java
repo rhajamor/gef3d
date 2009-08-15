@@ -95,7 +95,13 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	protected ParaxialBoundingBox m_paraxialBounds;
 
-	SynchronizedPosition3DImpl position3D;
+	/**
+	 * The position of this figure. This field is declared final, it must not be
+	 * changed. Instead, its values can be changed by using the position setter
+	 * methods {e.g., @link
+	 * Position3D#setPosition(org.eclipse.draw3d.geometry.IPosition3D)}.
+	 */
+	final SynchronizedPosition3DImpl position3D;
 
 	/**
 	 * The preferred 3D size of this figure. The preferred 3D size is
