@@ -167,7 +167,7 @@ public abstract class PositionableShape implements TransparentShape {
 	 * @return
 	 */
 	public boolean isTransparent() {
-		return true;
+		return false;
 	}
 
 	/**

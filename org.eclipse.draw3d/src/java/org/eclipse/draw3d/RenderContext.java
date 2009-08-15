@@ -315,10 +315,14 @@ public class RenderContext {
 	private void doRenderSuperImposedObjects() {
 		List<TransparentObject> renderList = m_superimposedObjects;
 		m_superimposedObjects = new ArrayList<TransparentObject>();
-
+		m_transparentObjects.clear();
+		
 		for (TransparentObject transparentObject : renderList) {
 			transparentObject.renderTransparent(this);
 			if (!m_superimposedObjects.isEmpty()) {
+				doRenderSuperImposedObjects();
+			}
+			if (!m_transparentObjects.isEmpty()) {
 				doRenderTransparentObjects();
 			}
 		}

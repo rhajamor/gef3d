@@ -195,33 +195,59 @@ public class CuboidShape extends PositionableShape {
 		Graphics3D g3d = i_renderContext.getGraphics3D();
 		initDisplayLists(displayListManager, g3d);
 
-		if (m_fill) {
-			g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
-				Graphics3DDraw.GL_FILL);
-
-			if (m_textureId != null) {
-				g3d.glColor4f(0, 0, 0, 0);
-
-				g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, m_textureId);
-				g3d.glTexEnvi(Graphics3DDraw.GL_TEXTURE_ENV,
-					Graphics3DDraw.GL_TEXTURE_ENV_MODE,
-					Graphics3DDraw.GL_REPLACE);
-				displayListManager.executeDisplayList(DL_TEXTURE);
-				g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, 0);
-
-				g3d.glColor4f(m_fillColor);
-			} else {
-				g3d.glColor4f(m_fillColor);
-				displayListManager.executeDisplayList(DL_FILL_FRONT);
+		if (!isTransparent()) {
+			if (m_fill) {
+				renderFill(displayListManager, g3d);
+			}
+			if (m_outline) {
+				renderOutline(displayListManager, g3d);
+			}
+		} else {
+			if (m_outline) {
+				renderOutline(displayListManager, g3d);
+			}
+			if (m_fill) {
+				renderFill(displayListManager, g3d);
 			}
 
-			displayListManager.executeDisplayList(DL_FILL_REST);
+		}
+	}
+
+	/**
+	 * @param displayListManager
+	 * @param g3d
+	 */
+	private void renderOutline(DisplayListManager displayListManager,
+		Graphics3D g3d) {
+		g3d.glColor4f(m_outlineColor);
+		displayListManager.executeDisplayList(DL_OUTLINE);
+	}
+
+	/**
+	 * @param displayListManager
+	 * @param g3d
+	 */
+	private void renderFill(DisplayListManager displayListManager,
+		Graphics3D g3d) {
+		g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
+			Graphics3DDraw.GL_FILL);
+
+		if (m_textureId != null) {
+			g3d.glColor4f(0, 0, 0, 0);
+
+			g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, m_textureId);
+			g3d.glTexEnvi(Graphics3DDraw.GL_TEXTURE_ENV,
+				Graphics3DDraw.GL_TEXTURE_ENV_MODE, Graphics3DDraw.GL_REPLACE);
+			displayListManager.executeDisplayList(DL_TEXTURE);
+			g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, 0);
+
+			g3d.glColor4f(m_fillColor);
+		} else {
+			g3d.glColor4f(m_fillColor);
+			displayListManager.executeDisplayList(DL_FILL_FRONT);
 		}
 
-		if (m_outline) {
-			g3d.glColor4f(m_outlineColor);
-			displayListManager.executeDisplayList(DL_OUTLINE);
-		}
+		displayListManager.executeDisplayList(DL_FILL_REST);
 	}
 
 	private void initDisplayLists(DisplayListManager i_displayListManager,
@@ -395,4 +421,16 @@ public class CuboidShape extends PositionableShape {
 
 		m_textureId = i_textureId;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#isTransparent()
+	 */
+	@Override
+	public boolean isTransparent() {
+		return (m_fill && m_fillColor[3] < 255)
+			|| (m_outline && m_outlineColor[3] < 255);
+	}
+
 }
