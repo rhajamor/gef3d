@@ -12,57 +12,32 @@
 
 /**
  * This package provide basic (3D) shapes. The can be used by figures to render
- * themselves.
+ * themselves. In order to be rendered, a shape needs a location. There are two
+ * strategies for providing a location to a shape: by attaching a shape to a 
+ * figure and then use the figure's location or by directly setting a position.
+ * In the first case, the shape should extend the abstract super class 
+ * {@link FigureShape}, which does not only provide the figure's position, but
+ *  which can use to retrieve other information such as color from the figure.
+ * In the second case, the shape should extend the abstract super class
+ * {@link PositionableShape}. Note that often a figure shape nests an 
+ * positionable shape and copies some attributes from figure to the shape, 
+ * e.g., position or color. 
  * <p>
- * Usually, a figure defines the shapes, e.g. as members:
- * <pre><code>
- * private Shape m_shape = new CuboidFigureShape(this);
- * </code></pre>
- * The shape is then rendered in the figures prerender or (usually) 
- * render method:
- * <pre><code>
- * public void render() {
- * 		m_shape.render();
- * }
- * </code></pre>
- * The key for rendering GEF3D conform shapes is to use the 
- * {@link org.eclipse.draw3d.RenderContext}. The following lines (taken from
- * {@link CuboidFigureShape#render()} illustrate its usage:
- * 
- * <pre><code>
- * public void render() {
- * </code></pre>
- * Retrieve render context:
- * <pre><code>
- *   RenderContext renderContext = RenderContext.getContext();
- * </code></pre>
- * Retrieve fgure specific settings (the figure is passed in the constructor and
- * then stored as a member):
- * <pre><code>
- * 		int alpha = m_figure.getAlpha();
- * 		Matrix4f modelMatrix = m_figure.getModelMatrix();
- * 		...
- * </code></pre>
- * GEF3D uses color picking. That is, nearly every figure is rendered two times:
- * The first time the actual figure is rendered, in the second pass, a single
- * colored version of the figure is rendered into the off screen color buffer.
- * For that reason, shapes must be rendered depending from the current mode:
- * <pre><code>
- * 		if (renderContext.getMode().isPaint()) {
- * 			Color color = m_figure.getForegroundColor();
- * 			...
- * 		} else if (renderContext.getMode().isColor()) {
- * 			int color = renderContext.getColor(m_figure);
- * 			if (color != ColorProvider.IGNORE) {
- * 				...
- * 			}
- * 		}
- * </code></pre>
+ * GEF3D uses real picking of objects in a 3D scene. For that reason, every 
+ * figure or shape has to implement interface {@link org.eclipse.draw3d.picking.Pickable}. See this interface for more information.
+ * <small>In an earlier version, GEF3D used color picking, but this technique was
+ * replaced due to conceptional problems with GEF.</small>
+ * </p>
+ * <p><em>Note: The concept of shape may be changed in future version. As it is
+ * not possible to not use shapes, you may have to change your code in that case.
+ * We apologize for any inconvenience, and we will inform you via the GEF3D 
+ * newsgroup in case of an API change.</em></p>
+ * @see FigureShape
+ * @see PositionableShape 
  *  
  * @author 	Jens von Pilgrim
  * @version	$Revision$
  * @since 	Jul 15, 2008
  */
 package org.eclipse.draw3d.shapes;
-
 
