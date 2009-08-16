@@ -520,15 +520,6 @@ public class Figure3DHelper {
 
 					// paint the connections
 					if (connectionLayer != null) {
-						IVector3f location3D =
-							figure.getPosition3D().getLocation3D();
-
-						// 2D connections have surface relative coordinates, no
-						// translation necessary:
-						// int dx = -Math.round(location3D.getX());
-						// int dy = -Math.round(location3D.getY());
-						// graphics.translate(dx, dy);
-
 						connectionLayer.paint(graphics);
 						graphics.restoreState();
 					}
@@ -568,13 +559,13 @@ public class Figure3DHelper {
 	 */
 	public void paintFigure(Graphics i_graphics) {
 
-		RenderContext renderContext = m_figuresFriend.figure.getRenderContext();
+		IFigure3D figure = m_figuresFriend.figure;
+		RenderContext renderContext = figure.getRenderContext();
+
 		Graphics3D g3d = renderContext.getGraphics3D();
 		g3d.deactivateGraphics2D();
 
-		IFigure3D figure = m_figuresFriend.figure;
-		figure.prerender(renderContext);
-		figure.render(renderContext);
+		figure.collectRenderFragments(renderContext);
 	}
 
 	/**

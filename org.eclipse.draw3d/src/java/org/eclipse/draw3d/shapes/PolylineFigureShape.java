@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
-import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.Polyline3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IVector3f;
@@ -32,7 +31,7 @@ import org.eclipse.draw3d.picking.Query;
  * @version $Revision$
  * @since 03.04.2008
  */
-public class PolylineShape extends FigureShape {
+public class PolylineFigureShape implements Shape {
 
 	private static final float ACCURACY = 10f;
 
@@ -42,28 +41,31 @@ public class PolylineShape extends FigureShape {
 
 	private static final String KEY_VISIBLE_BORDER = "visible border";
 
+	private Polyline3D m_figure;
+
 	/**
 	 * Creates a new shape for the given polyline figure.
 	 * 
 	 * @param i_figure the figure to which this shape belongs
 	 */
-	public PolylineShape(Polyline3D i_figure) {
-		super(i_figure);
+	public PolylineFigureShape(Polyline3D i_figure) {
+
+		if (i_figure == null)
+			throw new NullPointerException("i_figure must not be null");
+
+		m_figure = i_figure;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.FigureShape#doGetDistance(org.eclipse.draw3d.IFigure3D,
-	 *      org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
 	 */
-	@Override
-	protected float doGetDistance(IFigure3D i_figure, Query i_query) {
+	public float getDistance(Query i_query) {
 
 		// TODO handle line width!
 
-		Polyline3D polyline = (Polyline3D) i_figure;
-		PointList3D points = polyline.getPoints3D();
+		PointList3D points = m_figure.getPoints3D();
 
 		if (points.size() < 2)
 			return Float.NaN;
@@ -186,6 +188,17 @@ public class PolylineShape extends FigureShape {
 		return Float.NaN;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.RenderFragment#getDistanceMeasure(org.eclipse.draw3d.RenderContext)
+	 */
+	public float getDistanceMeasure(RenderContext i_renderContext) {
+
+		// if transparent, polylines are always drawn last
+		return 0;
+	}
+
 	private Plane getHorizontalBorder(Query i_query) {
 
 		Plane horizontalBorder = (Plane) i_query.get(KEY_HORIZONTAL_BORDER);
@@ -208,6 +221,27 @@ public class PolylineShape extends FigureShape {
 		}
 
 		return horizontalBorder;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
+
+		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
+	 */
+	public RenderType getRenderType() {
+
+		return RenderType.getRenderType(m_figure.getAlpha(), false);
 	}
 
 	private Plane getVerticalBorder(Query i_query) {
@@ -254,41 +288,23 @@ public class PolylineShape extends FigureShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.FigureShape#doGetParaxialBoundingBox(org.eclipse.draw3d.IFigure3D,
-	 *      org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 * @see org.eclipse.draw3d.RenderFragment#render(org.eclipse.draw3d.RenderContext)
 	 */
-	@Override
-	protected ParaxialBoundingBox doGetParaxialBoundingBox(IFigure3D i_figure,
-		ParaxialBoundingBox o_result) {
+	public void render(RenderContext i_renderContext) {
 
-		// polylines do not have a paraxial bounding box
-		return null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.shapes.FigureShape#doRender(org.eclipse.draw3d.IFigure3D,
-	 *      org.eclipse.draw3d.RenderContext)
-	 */
-	@Override
-	protected void doRender(IFigure3D i_figure, RenderContext i_renderContext) {
-
-		Polyline3D polyline = (Polyline3D) i_figure;
-		PointList3D points = polyline.getPoints3D();
+		PointList3D points = m_figure.getPoints3D();
 
 		if (points.size() < 2)
 			return;
 
 		Graphics3D g3d = i_renderContext.getGraphics3D();
-		g3d.glColor4f(getForegroundColor());
+		g3d.glColor(m_figure.getForegroundColor(), m_figure.getAlpha());
 
-		g3d.glLineWidth(polyline.getLineWidth());
+		g3d.glLineWidth(m_figure.getLineWidth());
 
 		g3d.glBegin(Graphics3DDraw.GL_LINE_STRIP);
 		for (IVector3f point : points)
 			g3d.glVertex3f(point);
 		g3d.glEnd();
 	}
-
 }

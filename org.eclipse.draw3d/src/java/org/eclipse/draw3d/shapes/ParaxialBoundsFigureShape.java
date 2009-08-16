@@ -12,12 +12,15 @@ package org.eclipse.draw3d.shapes;
 
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.Draw3DCache;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * Renders the paraxial bounding box of a figure.
@@ -26,7 +29,9 @@ import org.eclipse.draw3d.util.Draw3DCache;
  * @version $Revision$
  * @since 08.08.2009
  */
-public class ParaxialBoundsFigureShape extends FigureShape {
+public class ParaxialBoundsFigureShape implements Shape {
+
+	private IFigure3D m_figure;
 
 	private Position3D m_position;
 
@@ -39,23 +44,22 @@ public class ParaxialBoundsFigureShape extends FigureShape {
 	 */
 	public ParaxialBoundsFigureShape(IFigure3D i_figure) {
 
-		super(i_figure);
-
+		m_figure = i_figure;
 		m_position = Position3DUtil.createAbsolutePosition();
-		m_shape = new CuboidShape(m_position);
+		m_shape = new CuboidShape(m_position, false);
 
 		m_shape.setFill(false);
-		m_shape.setOutlineColor(1, 0, 0, 0.3f);
+		m_shape.setOutlineColor(Display.getCurrent().getSystemColor(
+			SWT.COLOR_RED));
+		m_shape.setAlpha(100);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.FigureShape#doGetDistance(org.eclipse.draw3d.IFigure3D,
-	 *      org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
 	 */
-	@Override
-	protected float doGetDistance(IFigure3D i_figure, Query i_query) {
+	public float getDistance(Query i_query) {
 
 		return Float.NaN;
 	}
@@ -63,11 +67,39 @@ public class ParaxialBoundsFigureShape extends FigureShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.FigureShape#doGetParaxialBoundingBox(org.eclipse.draw3d.IFigure3D,
-	 *      org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 * @see org.eclipse.draw3d.TransparentRenderFragment#getDistanceMeasure(org.eclipse.draw3d.RenderContext)
 	 */
-	@Override
-	protected ParaxialBoundingBox doGetParaxialBoundingBox(IFigure3D i_figure,
+	public float getDistanceMeasure(RenderContext i_renderContext) {
+
+		Vector3f viewPoint = Draw3DCache.getVector3f();
+		Vector3f center = Draw3DCache.getVector3f();
+		Vector3f diff = Draw3DCache.getVector3f();
+		ParaxialBoundingBox pBounds = Draw3DCache.getParaxialBoundingBox();
+		try {
+			ParaxialBoundingBox figureBounds =
+				m_figure.getParaxialBoundingBox(pBounds);
+
+			if (figureBounds != null) {
+				i_renderContext.getScene().getCamera().getPosition(viewPoint);
+				figureBounds.getCenter(center);
+
+				Math3D.sub(center, viewPoint, diff);
+				return diff.lengthSquared();
+			}
+
+			// this figure is not rendered anyway
+			return 0;
+		} finally {
+			Draw3DCache.returnVector3f(viewPoint, center, diff);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	public ParaxialBoundingBox getParaxialBoundingBox(
 		ParaxialBoundingBox o_result) {
 
 		return m_shape.getParaxialBoundingBox(o_result);
@@ -76,22 +108,30 @@ public class ParaxialBoundsFigureShape extends FigureShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.FigureShape#doRender(org.eclipse.draw3d.IFigure3D,
-	 *      org.eclipse.draw3d.RenderContext)
+	 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
 	 */
-	@Override
-	protected void doRender(IFigure3D i_figure, RenderContext i_renderContext) {
+	public RenderType getRenderType() {
+
+		return RenderType.TRANSPARENT;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.RenderFragment#render(org.eclipse.draw3d.RenderContext)
+	 */
+	public void render(RenderContext i_renderContext) {
 
 		Vector3f position = Draw3DCache.getVector3f();
 		Vector3f size = Draw3DCache.getVector3f();
 		ParaxialBoundingBox pBounds = Draw3DCache.getParaxialBoundingBox();
 		try {
 			ParaxialBoundingBox figureBounds =
-				i_figure.getParaxialBoundingBox(pBounds);
+				m_figure.getParaxialBoundingBox(pBounds);
 
 			if (figureBounds != null) {
-				pBounds.getLocation(position);
-				pBounds.getSize(size);
+				figureBounds.getLocation(position);
+				figureBounds.getSize(size);
 
 				m_position.setLocation3D(position);
 				m_position.setSize3D(size);

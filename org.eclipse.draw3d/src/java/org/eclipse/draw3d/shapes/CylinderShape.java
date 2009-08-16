@@ -23,9 +23,10 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Query;
-import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.draw3d.util.Draw3DCache;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * A shape that renders a cylinder or a (truncated) right circular cone. To
@@ -266,12 +267,13 @@ public class CylinderShape extends PositionableShape {
 	 * 
 	 * @param i_position3D the position of the cone
 	 * @param i_segments the number of segments
+	 * @param i_superimposed whether the new cone is superimposed
 	 * @return the cone
 	 */
 	public static CylinderShape createCone(IPosition3D i_position3D,
-		int i_segments) {
+		int i_segments, boolean i_superimposed) {
 
-		return new CylinderShape(i_position3D, i_segments, 0);
+		return new CylinderShape(i_position3D, i_segments, 0, i_superimposed);
 	}
 
 	/**
@@ -279,27 +281,34 @@ public class CylinderShape extends PositionableShape {
 	 * 
 	 * @param i_position3D the position of the cylinder
 	 * @param i_segments the number of segments
+	 * @param i_superimposed whether the new cone is superimposed
 	 * @return the cylinder
 	 */
 	public static CylinderShape createCylinder(IPosition3D i_position3D,
-		int i_segments) {
+		int i_segments, boolean i_superimposed) {
 
-		return new CylinderShape(i_position3D, i_segments, 1);
+		return new CylinderShape(i_position3D, i_segments, 1, i_superimposed);
 	}
+
+	private int m_alpha = 0xFF;
 
 	private CylinderConfig m_config;
 
 	private boolean m_fill = true;
 
-	private float[] m_fillColor = new float[] { 1, 1, 1, 1 };
+	private Color m_fillColor =
+		Display.getCurrent().getSystemColor(SWT.COLOR_WHITE);
 
 	private CylinderKey m_fillKey;
 
 	private boolean m_outline = true;
 
-	private float[] m_outlineColor = new float[] { 0, 0, 0, 1 };
+	private Color m_outlineColor =
+		Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
 
 	private CylinderKey m_outlineKey;
+
+	private boolean m_superimposed;
 
 	/**
 	 * Creates a new cylinder with the given position, number of segments and
@@ -308,11 +317,14 @@ public class CylinderShape extends PositionableShape {
 	 * @param i_position3D the position of this shape
 	 * @param i_segments the number of segments
 	 * @param i_radiusProportions the radius proportions
+	 * @param i_superimposed whether this shape is superimposed
 	 */
 	public CylinderShape(IPosition3D i_position3D, int i_segments,
-			float i_radiusProportions) {
+			float i_radiusProportions, boolean i_superimposed) {
 
 		super(i_position3D);
+
+		m_superimposed = i_superimposed;
 
 		if (i_segments < 3)
 			throw new IllegalArgumentException(
@@ -450,14 +462,12 @@ public class CylinderShape extends PositionableShape {
 		initDisplayLists(displayListManager, g3d);
 
 		if (m_fill) {
-			g3d.glColor4f(m_fillColor[0], m_fillColor[1], m_fillColor[2],
-				m_fillColor[3]);
+			g3d.glColor(m_fillColor, m_alpha);
 			displayListManager.executeDisplayList(m_fillKey);
 		}
 
 		if (m_outline) {
-			g3d.glColor4f(m_outlineColor[0], m_outlineColor[1],
-				m_outlineColor[2], m_outlineColor[3]);
+			g3d.glColor(m_outlineColor, m_alpha);
 			displayListManager.executeDisplayList(m_outlineKey);
 		}
 	}
@@ -534,6 +544,16 @@ public class CylinderShape extends PositionableShape {
 		} finally {
 			Draw3DCache.returnVector3f(rayOrigin);
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
+	 */
+	public RenderType getRenderType() {
+
+		return RenderType.getRenderType(m_alpha, m_superimposed);
 	}
 
 	private float getTruncatedConeDistance(Query i_query) {
@@ -661,6 +681,16 @@ public class CylinderShape extends PositionableShape {
 	}
 
 	/**
+	 * Sets the alpha value of this shape.
+	 * 
+	 * @param i_alpha the alpha value, should be between 0 and 255, inclusive
+	 */
+	public void setAlpha(int i_alpha) {
+
+		m_alpha = i_alpha;
+	}
+
+	/**
 	 * Specifies whether the polygons should be filled.
 	 * 
 	 * @param i_fill <code>true</code> if the polygons should be filled and
@@ -677,9 +707,9 @@ public class CylinderShape extends PositionableShape {
 	 * @param i_color the fill color
 	 * @param i_alpha the alpha value
 	 */
-	public void setFillColor(Color i_color, int i_alpha) {
+	public void setFillColor(Color i_color) {
 
-		ColorConverter.toFloatArray(i_color, i_alpha, m_fillColor);
+		m_fillColor = i_color;
 	}
 
 	/**
@@ -699,8 +729,8 @@ public class CylinderShape extends PositionableShape {
 	 * @param i_color the outline color
 	 * @param i_alpha the alpha value
 	 */
-	public void setOutlineColor(Color i_color, int i_alpha) {
+	public void setOutlineColor(Color i_color) {
 
-		ColorConverter.toFloatArray(i_color, i_alpha, m_outlineColor);
+		m_outlineColor = i_color;
 	}
 }

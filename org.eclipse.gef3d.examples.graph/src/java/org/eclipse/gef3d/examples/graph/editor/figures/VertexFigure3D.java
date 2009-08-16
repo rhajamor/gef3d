@@ -20,7 +20,6 @@ import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.shapes.TransparentShape;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
@@ -125,8 +124,8 @@ public class VertexFigure3D extends ShapeFigure3D {
 	 */
 	@Override
 	protected Shape createShape() {
-		return new CuboidFigureShape(this);
-		// return new TransparentShape(this, shape);
+
+		return new CuboidFigureShape(this, false);
 	}
 
 	/**

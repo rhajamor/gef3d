@@ -11,7 +11,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
-import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.RenderFragment;
 import org.eclipse.draw3d.picking.Pickable;
 
 /**
@@ -22,12 +22,7 @@ import org.eclipse.draw3d.picking.Pickable;
  * @version $Revision$
  * @since 27.02.2008
  */
-public interface Shape extends Pickable {
+public interface Shape extends Pickable, RenderFragment {
 
-	/**
-	 * Render the shape.
-	 * 
-	 * @param i_renderContext the current render context
-	 */
-	public void render(RenderContext i_renderContext);
+	// empty interface
 }

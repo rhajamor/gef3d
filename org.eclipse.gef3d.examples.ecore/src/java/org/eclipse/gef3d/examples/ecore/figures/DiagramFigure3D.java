@@ -16,7 +16,6 @@ import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.shapes.TransparentShape;
 
 /**
  * A 3D figure that represents a diagram. The diagram elements are drawn on the
@@ -48,7 +47,7 @@ public class DiagramFigure3D extends ShapeFigure3D {
 	 */
 	@Override
 	protected Shape createShape() {
-		return new CuboidFigureShape(this);
+		return new CuboidFigureShape(this, false);
 	}
 
 	/**

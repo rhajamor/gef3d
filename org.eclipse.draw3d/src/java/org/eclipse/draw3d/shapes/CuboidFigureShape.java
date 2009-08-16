@@ -23,7 +23,9 @@ import org.eclipse.draw3d.picking.Query;
  * @version $Revision$
  * @since 05.08.2009
  */
-public class CuboidFigureShape extends FigureShape {
+public class CuboidFigureShape implements Shape {
+
+	private IFigure3D m_figure;
 
 	private CuboidShape m_shape;
 
@@ -31,21 +33,23 @@ public class CuboidFigureShape extends FigureShape {
 	 * Creates a new cuboid figure shape.
 	 * 
 	 * @param i_figure the figure which this shape represents
+	 * @param i_superimposed whether this shape is superimposed
 	 */
-	public CuboidFigureShape(IFigure3D i_figure) {
+	public CuboidFigureShape(IFigure3D i_figure, boolean i_superimposed) {
 
-		super(i_figure);
-		m_shape = new CuboidShape(i_figure.getPosition3D());
+		if (i_figure == null)
+			throw new NullPointerException("i_figure must not be null");
+
+		m_figure = i_figure;
+		m_shape = new CuboidShape(m_figure.getPosition3D(), i_superimposed);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.FigureShape#doGetDistance(org.eclipse.draw3d.IFigure3D,
-	 *      org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
 	 */
-	@Override
-	protected float doGetDistance(IFigure3D i_figure, Query i_query) {
+	public float getDistance(Query i_query) {
 
 		return m_shape.getDistance(i_query);
 	}
@@ -53,11 +57,19 @@ public class CuboidFigureShape extends FigureShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.FigureShape#doGetParaxialBoundingBox(org.eclipse.draw3d.IFigure3D,
-	 *      org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 * @see org.eclipse.draw3d.RenderFragment#getDistanceMeasure(org.eclipse.draw3d.RenderContext)
 	 */
-	@Override
-	protected ParaxialBoundingBox doGetParaxialBoundingBox(IFigure3D i_figure,
+	public float getDistanceMeasure(RenderContext i_renderContext) {
+
+		return m_shape.getDistanceMeasure(i_renderContext);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.picking.Pickable#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	public ParaxialBoundingBox getParaxialBoundingBox(
 		ParaxialBoundingBox o_result) {
 
 		return m_shape.getParaxialBoundingBox(o_result);
@@ -66,21 +78,27 @@ public class CuboidFigureShape extends FigureShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.FigureShape#doRender(org.eclipse.draw3d.IFigure3D,
-	 *      org.eclipse.draw3d.RenderContext)
+	 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
 	 */
-	@Override
-	protected void doRender(IFigure3D i_figure, RenderContext i_renderContext) {
+	public RenderType getRenderType() {
 
-		m_shape
-			.setFillColor(i_figure.getBackgroundColor(), i_figure.getAlpha());
+		return m_shape.getRenderType();
+	}
 
-		m_shape.setOutlineColor(i_figure.getForegroundColor(), i_figure
-			.getAlpha());
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.RenderFragment#render(org.eclipse.draw3d.RenderContext)
+	 */
+	public void render(RenderContext i_renderContext) {
+
+		m_shape.setAlpha(m_figure.getAlpha());
+		m_shape.setFillColor(m_figure.getBackgroundColor());
+		m_shape.setOutlineColor(m_figure.getForegroundColor());
 
 		Graphics3D g3d = i_renderContext.getGraphics3D();
-		if (g3d.hasGraphics2D(i_figure))
-			m_shape.setTextureId(g3d.getGraphics2DId(i_figure));
+		if (g3d.hasGraphics2D(m_figure))
+			m_shape.setTextureId(g3d.getGraphics2DId(m_figure));
 		else
 			m_shape.setTextureId(null);
 
@@ -109,4 +127,13 @@ public class CuboidFigureShape extends FigureShape {
 		m_shape.setOutline(i_outline);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "CuboidFigureShape [m_figure=" + m_figure + "]";
+	}
 }

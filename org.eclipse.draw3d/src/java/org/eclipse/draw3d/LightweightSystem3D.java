@@ -161,6 +161,16 @@ public class LightweightSystem3D extends LightweightSystem implements
 			});
 		}
 
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.Renderable#collectRenderFragments(org.eclipse.draw3d.RenderContext)
+		 */
+		public void collectRenderFragments(RenderContext i_renderContext) {
+			// TODO implement method Renderable.collectRenderFragments
+
+		}
+
 		private void drawCoordinateAxes() {
 
 			final RenderContext renderContext = getRenderContext();
@@ -446,10 +456,13 @@ public class LightweightSystem3D extends LightweightSystem implements
 					listener.renderPassStarted(getRenderContext());
 
 				// the root figure needs to paint itself first
-				prerender(renderContext);
+				prepareRender(renderContext);
 				paintBorder(graphics);
 				paintClientArea(graphics);
-				render(renderContext);
+
+				renderContext.renderFragments();
+
+				// renderContext.getGraphics3D().glFlush();
 			} finally {
 				for (ISceneListener listener : m_listeners)
 					listener.renderPassFinished(getRenderContext());
@@ -508,11 +521,11 @@ public class LightweightSystem3D extends LightweightSystem implements
 		}
 
 		/**
-		 * {@inheritDoc}
+		 * Prepares the render pass.
 		 * 
-		 * @see org.eclipse.draw3d.Figure3D#render()
+		 * @param i_renderContext the current render context
 		 */
-		public void prerender(RenderContext i_renderContext) {
+		protected void prepareRender(RenderContext i_renderContext) {
 
 			// if (log.isLoggable(Level.INFO)) {
 			// log.info("render "+ this); //$NON-NLS-1$
@@ -535,19 +548,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 
 			if (isDebug() && DebugPrimitives.hasInstance())
 				DebugPrimitives.getInstance().render(i_renderContext);
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.eclipse.draw3d.IFigure3D#render()
-		 */
-		public void render(RenderContext i_renderContext) {
-
-			i_renderContext.renderTransparency();
-
-			Graphics3D g3d = i_renderContext.getGraphics3D();
-			g3d.glFlush();
 		}
 
 		/**

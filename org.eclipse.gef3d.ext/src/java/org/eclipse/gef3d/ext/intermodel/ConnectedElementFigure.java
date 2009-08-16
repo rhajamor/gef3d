@@ -17,10 +17,8 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw3d.ShapeFigure3D;
-import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.shapes.TransparentShape;
 import org.eclipse.swt.graphics.Color;
 
 /**
@@ -51,14 +49,14 @@ public class ConnectedElementFigure extends ShapeFigure3D {
 	}
 
 	/**
-	 * Returns a transparent cuboid figure shape (i.e. a {@link CuboidFigureShape}
-	 * nested into a {@link TransparentShape}.
+	 * Returns a transparent cuboid figure shape (i.e. a
+	 * {@link CuboidFigureShape} nested into a {@link TransparentShape}.
 	 * 
 	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
 	 */
 	@Override
 	protected Shape createShape() {
-		return new CuboidFigureShape(this);
+		return new CuboidFigureShape(this, false);
 	}
 
 	public void setTag(String strTag) {

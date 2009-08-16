@@ -16,9 +16,8 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Cursors;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.Locator;
+import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
-import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.shapes.TransparentShape;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.handles.MoveHandle;
@@ -41,6 +40,8 @@ import org.eclipse.gef3d.editpolicies.ResizableEditPolicy3D;
  * @since Apr 15, 2008
  */
 public class MoveHandle3D extends AbstractHandle3D {
+
+	private CuboidFigureShape m_shape = new CuboidFigureShape(this, false);
 
 	/**
 	 * Creates a MoveHandle for the given <code>GraphicalEditPart</code> using a
@@ -76,6 +77,17 @@ public class MoveHandle3D extends AbstractHandle3D {
 
 	/**
 	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#collectRenderFragments(org.eclipse.draw3d.RenderContext)
+	 */
+	@Override
+	public void collectRenderFragments(RenderContext i_renderContext) {
+		// TODO implement method MoveHandle3D.collectRenderFragments
+		super.collectRenderFragments(i_renderContext);
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * <p>
 	 * Copied from {@link MoveHandle#MoveHandle(GraphicalEditPart, Locator)}.
 	 * </p>
@@ -89,21 +101,6 @@ public class MoveHandle3D extends AbstractHandle3D {
 		tracker.setDefaultCursor(getCursor());
 
 		return tracker;
-	}
-
-	
-	
-
-	/** 
-	 * {@inheritDoc}
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
-	 */
-	@Override
-	protected Shape createShape() {
-		CuboidFigureShape shape = new CuboidFigureShape(this);
-		shape.setFill(false);
-
-		return shape;
 	}
 
 	/**
@@ -123,5 +120,7 @@ public class MoveHandle3D extends AbstractHandle3D {
 		setAlpha(100);
 		setBackgroundColor(ColorConstants.green);
 		setForegroundColor(ColorConstants.green);
+
+		m_shape.setFill(false);
 	}
 }

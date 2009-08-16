@@ -19,7 +19,6 @@ import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.shapes.TransparentShape;
 
 public class DiagramFigure3D extends ShapeFigure3D {
 
@@ -43,7 +42,7 @@ public class DiagramFigure3D extends ShapeFigure3D {
 	 */
 	@Override
 	protected Shape createShape() {
-		return  new CuboidFigureShape(this);
+		return new CuboidFigureShape(this, false);
 	}
 
 	/**

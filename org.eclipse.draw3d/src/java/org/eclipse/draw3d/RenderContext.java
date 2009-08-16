@@ -12,13 +12,12 @@
 package org.eclipse.draw3d;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.eclipse.draw3d.RenderFragment.RenderType;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.swt.opengl.GLCanvas;
@@ -54,27 +53,6 @@ import org.eclipse.swt.opengl.GLCanvas;
  */
 public class RenderContext {
 
-	class DepthComparator implements Comparator<TransparentObject> {
-
-		RenderContext renderContext;
-
-		/**
-		 * @param i_renderContext
-		 */
-		public DepthComparator(RenderContext i_renderContext) {
-			super();
-			renderContext = i_renderContext;
-		}
-
-		public int compare(TransparentObject i_o1, TransparentObject i_o2) {
-
-			float depth1 = i_o1.getTransparencyDepth(renderContext);
-			float depth2 = i_o2.getTransparencyDepth(renderContext);
-			// return -1 * Float.compare(depth1, depth2);
-			return Float.compare(depth2, depth1);
-		}
-	}
-
 	/**
 	 * Logger for this class
 	 */
@@ -82,31 +60,22 @@ public class RenderContext {
 	private static final Logger log =
 		Logger.getLogger(RenderContext.class.getName());
 
-	private final Comparator<TransparentObject> m_depthComparator =
-		new DepthComparator(this);
-
 	private GLCanvas m_Canvas;
 
 	private final Map<Graphics3D, DisplayListManager> m_displayListManagers;
 
 	private Graphics3D m_g3d = null;
 
+	private Map<RenderType, List<RenderFragment>> m_renderFragments =
+		new HashMap<RenderType, List<RenderFragment>>();
+
 	private IScene m_scene;
-
-	private List<TransparentObject> m_superimposedObjects;
-
-	private List<TransparentObject> m_transparentObjects;
-
-	private boolean isRendering = false;
 
 	/**
 	 * Creates a new render context. The context is created by the
 	 * {@link LightweightSystem3D}.
 	 */
 	public RenderContext() {
-
-		m_transparentObjects = new ArrayList<TransparentObject>();
-		m_superimposedObjects = new ArrayList<TransparentObject>();
 
 		m_displayListManagers = new HashMap<Graphics3D, DisplayListManager>();
 	}
@@ -119,63 +88,35 @@ public class RenderContext {
 	}
 
 	/**
-	 * Adds the given transparent object to be superimposed. These objects are
-	 * rendered <b>after</b> all other objects have been rendered and
-	 * <b>after</b> the depth buffer has been cleared.
+	 * Adds the given render fragment to be rendered later.
 	 * 
-	 * @param i_transparentObject the transparent object to add
-	 * @throws NullPointerException if the given object is <code>null</code>
+	 * @param i_fragment the fragment to add
+	 * @throws NullPointerException if the given fragment is <code>null</code>
 	 */
-	public void addSuperimposedObject(TransparentObject i_transparentObject) {
+	public void addRenderFragment(RenderFragment i_fragment) {
 
-		if (i_transparentObject == null)
-			throw new NullPointerException(
-				"i_transparentObject must not be null");
+		if (i_fragment == null)
+			throw new NullPointerException("i_fragment must not be null");
 
-		synchronized (m_superimposedObjects) {
+		RenderType renderType = i_fragment.getRenderType();
+		if (renderType == RenderType.IGNORE)
+			return;
 
-			int index =
-				Collections.binarySearch(m_superimposedObjects,
-					i_transparentObject, m_depthComparator);
-
-			if (index < 0)
-				index = -index - 1;
-
-			m_superimposedObjects.add(index, i_transparentObject);
+		List<RenderFragment> list = m_renderFragments.get(renderType);
+		if (list == null) {
+			list = new ArrayList<RenderFragment>();
+			m_renderFragments.put(renderType, list);
 		}
+
+		list.add(i_fragment);
 	}
 
 	/**
-	 * Adds the given transparent object to be rendered later.
-	 * 
-	 * @param i_transparentObject the transparent object to add
-	 * @throws NullPointerException if the given object is <code>null</code>
-	 */
-	public void addTransparentObject(TransparentObject i_transparentObject) {
-
-		if (i_transparentObject == null)
-			throw new NullPointerException(
-				"i_transparentObject must not be null");
-
-		synchronized (m_transparentObjects) {
-			int index =
-				Collections.binarySearch(m_transparentObjects,
-					i_transparentObject, m_depthComparator);
-
-			if (index < 0)
-				index = -index - 1;
-
-			m_transparentObjects.add(index, i_transparentObject);
-		}
-	}
-
-	/**
-	 * Clears the transparent objects.
+	 * Clears the render fragments and sets the scene to <code>null</code>.
 	 */
 	public void clear() {
 
-		m_transparentObjects.clear();
-		m_superimposedObjects.clear();
+		m_renderFragments.clear();
 		// m_displayListManagers.clear();
 		m_scene = null;
 	}
@@ -261,73 +202,31 @@ public class RenderContext {
 	}
 
 	/**
-	 * Renders all transparent objects.
+	 * Renders all render fragments.
 	 */
-	public synchronized void renderTransparency() {
-		isRendering = true;
+	public void renderFragments() {
+
+		renderFragments(RenderType.OPAQUE);
+		renderFragments(RenderType.TRANSPARENT);
+
+		Graphics3D g3d = getGraphics3D();
+		g3d.glDisable(Graphics3DDraw.GL_DEPTH_TEST);
 		try {
-
-			Graphics3D g3d = getGraphics3D();
-			// disable depth test
-			g3d.glDisable(Graphics3DDraw.GL_DEPTH_TEST);
-
-			try {
-				doRenderTransparentObjects();
-				doRenderSuperImposedObjects();
-				
-			} finally {
-				g3d.glEnable(Graphics3DDraw.GL_DEPTH_TEST);
-			}
+			renderFragments(RenderType.SUPERIMPOSED);
 		} finally {
-			isRendering = false;
-		}
-
-	}
-
-
-	/**
-	 * Renders transparent objects. These objects are rendered by
-	 * iterating over a copy of the transparency list. The original
-	 * list is cleared. When a transparent object is rendered, it may add new
-	 * transparent objects, that is the children of a transparent container may
-	 * be transparent themselves. Adding transparent nested objects causes the
-	 * original list, which was cleared here at the beginning, to be non empty
-	 * again. If this happens, the new non empty list is rendered before we 
-	 * continue with the nest sibling.
-	 * 
-	 */
-	private void doRenderTransparentObjects() {
-		List<TransparentObject> renderList = m_transparentObjects;
-		m_transparentObjects = new ArrayList<TransparentObject>();
-
-		for (TransparentObject transparentObject : renderList) {
-			transparentObject.renderTransparent(this);
-			if (!m_transparentObjects.isEmpty()) {
-				doRenderTransparentObjects();
-			}
-		}
-	}
-	
-	/**
-	 * Renders superimposed objects.
-	 * @see #doRenderTransparentObjects() 
-	 */
-	private void doRenderSuperImposedObjects() {
-		List<TransparentObject> renderList = m_superimposedObjects;
-		m_superimposedObjects = new ArrayList<TransparentObject>();
-		m_transparentObjects.clear();
-		
-		for (TransparentObject transparentObject : renderList) {
-			transparentObject.renderTransparent(this);
-			if (!m_superimposedObjects.isEmpty()) {
-				doRenderSuperImposedObjects();
-			}
-			if (!m_transparentObjects.isEmpty()) {
-				doRenderTransparentObjects();
-			}
+			g3d.glEnable(Graphics3DDraw.GL_DEPTH_TEST);
 		}
 	}
 
+	private void renderFragments(RenderType i_type) {
+
+		List<RenderFragment> fragments = m_renderFragments.get(i_type);
+		if (fragments != null) {
+			i_type.orderFragments(this, fragments);
+			for (RenderFragment fragment : fragments)
+				fragment.render(this);
+		}
+	}
 
 	/**
 	 * @param i_canvas
@@ -368,8 +267,8 @@ public class RenderContext {
 
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("RenderContext[transparent objects: ");
-		builder.append(m_transparentObjects.size());
+		builder.append("RenderContext[render fragments: ");
+		builder.append(m_renderFragments.size());
 		builder.append("]");
 
 		return builder.toString();

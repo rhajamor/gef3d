@@ -20,7 +20,7 @@ import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometryext.PointList3D;
-import org.eclipse.draw3d.shapes.PolylineShape;
+import org.eclipse.draw3d.shapes.PolylineFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 
 /**
@@ -65,7 +65,7 @@ public class Polyline3D extends ShapeFigure3D {
 	 */
 	@Override
 	protected Shape createShape() {
-		return new PolylineShape(this);
+		return new PolylineFigureShape(this);
 	}
 
 	/**

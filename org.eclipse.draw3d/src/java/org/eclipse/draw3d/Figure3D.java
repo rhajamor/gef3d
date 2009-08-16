@@ -163,6 +163,16 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.Renderable#collectRenderFragments(org.eclipse.draw3d.RenderContext)
+	 */
+	public void collectRenderFragments(RenderContext i_renderContext) {
+
+		// nothing to do
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw2d.Figure#findFigureAt(int, int,
 	 *      org.eclipse.draw2d.TreeSearch)
 	 * @see Figure3DHelper#findFigureAt(int, int, TreeSearch)
@@ -191,19 +201,6 @@ public class Figure3D extends Figure implements IFigure3D {
 		invalidateParaxialBoundsTree();
 
 		super.fireFigureMoved();
-	}
-
-	/**
-	 * 
-	 */
-	private void invalidateAncestorParaxialBounds() {
-		IFigure parent = getParent();
-		while (parent != null) {
-			if (parent instanceof IFigure3D)
-				((IFigure3D) parent).invalidateParaxialBounds();
-
-			parent = parent.getParent();
-		}
 	}
 
 	/**
@@ -450,6 +447,19 @@ public class Figure3D extends Figure implements IFigure3D {
 	}
 
 	/**
+	 * 
+	 */
+	private void invalidateAncestorParaxialBounds() {
+		IFigure parent = getParent();
+		while (parent != null) {
+			if (parent instanceof IFigure3D)
+				((IFigure3D) parent).invalidateParaxialBounds();
+
+			parent = parent.getParent();
+		}
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.IFigure3D#invalidateParaxialBounds()
@@ -573,32 +583,12 @@ public class Figure3D extends Figure implements IFigure3D {
 
 	}
 
-	/**
-	 * The default implementation renders nothing.
-	 * 
-	 * @see org.eclipse.draw3d.Renderable#prerender(org.eclipse.draw3d.RenderContext)
-	 */
-	public void prerender(RenderContext renderContext) {
-
-		// nothing to do
-	}
-
 	@Override
 	public void remove(IFigure i_figure) {
 
 		super.remove(i_figure);
 		if (!(i_figure instanceof IFigure3D))
 			i_figure.removeFigureListener(childMovedListener);
-	}
-
-	/**
-	 * The default implementation renders nothing.
-	 * 
-	 * @see org.eclipse.draw3d.Renderable#render(org.eclipse.draw3d.RenderContext)
-	 */
-	public void render(RenderContext renderContext) {
-
-		// nothing to do
 	}
 
 	/**

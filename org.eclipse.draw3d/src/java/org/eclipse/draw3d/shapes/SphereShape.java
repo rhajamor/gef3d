@@ -24,9 +24,10 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Query;
-import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.draw3d.util.Draw3DCache;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * A shape that renders a sphere.
@@ -129,15 +130,19 @@ public class SphereShape extends PositionableShape {
 		ROTATE_Z90 = pos;
 	}
 
+	private int m_alpha = 0xFF;
+
 	private boolean m_fill = true;
 
-	private float[] m_fillColor = new float[] { 1, 1, 1, 1 };
+	private Color m_fillColor =
+		Display.getCurrent().getSystemColor(SWT.COLOR_WHITE);
 
 	private SphereKey m_fillKey;
 
 	private boolean m_outline = true;
 
-	private float[] m_outlineColor = new float[] { 0, 0, 0, 1 };
+	private Color m_outlineColor =
+		Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
 
 	private SphereKey m_outlineKey;
 
@@ -145,16 +150,21 @@ public class SphereShape extends PositionableShape {
 
 	private SphereTriangle[][] m_stripes;
 
+	private boolean m_superimposed;
+
 	/**
 	 * Creates a new sphere with the given precision.
 	 * 
 	 * @param i_position3D the position of the sphere
 	 * @param i_precision the precision of the sphere
+	 * @param i_superimposed whether this shape is superimposed
 	 */
-	public SphereShape(IPosition3D i_position3D, int i_precision) {
+	public SphereShape(IPosition3D i_position3D, int i_precision,
+			boolean i_superimposed) {
 
 		super(i_position3D);
 
+		m_superimposed = i_superimposed;
 		m_stripes = STRIPE_CACHE.get(i_precision);
 
 		if (m_stripes == null) {
@@ -288,16 +298,24 @@ public class SphereShape extends PositionableShape {
 		initDisplayLists(displayListManager, g3d);
 
 		if (m_fill) {
-			g3d.glColor4f(m_fillColor[0], m_fillColor[1], m_fillColor[2],
-				m_fillColor[3]);
+			g3d.glColor(m_fillColor, m_alpha);
 			displayListManager.executeDisplayList(m_fillKey);
 		}
 
 		if (m_outline) {
-			g3d.glColor4f(m_outlineColor[0], m_outlineColor[1],
-				m_outlineColor[2], m_outlineColor[3]);
+			g3d.glColor(m_outlineColor, m_alpha);
 			displayListManager.executeDisplayList(m_outlineKey);
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
+	 */
+	public RenderType getRenderType() {
+
+		return RenderType.getRenderType(m_alpha, m_superimposed);
 	}
 
 	private void initDisplayLists(DisplayListManager i_manager,
@@ -401,6 +419,16 @@ public class SphereShape extends PositionableShape {
 	}
 
 	/**
+	 * Sets the alpha value of this shape.
+	 * 
+	 * @param i_alpha the alpha value, should be between 0 and 255, inclusive
+	 */
+	public void setAlpha(int i_alpha) {
+
+		m_alpha = i_alpha;
+	}
+
+	/**
 	 * Specifies whether the polygons should be filled.
 	 * 
 	 * @param i_fill <code>true</code> if the polygons should be filled and
@@ -412,14 +440,14 @@ public class SphereShape extends PositionableShape {
 	}
 
 	/**
-	 * Sets the fill color of this cylinder.
+	 * Sets the fill color of this sphere.
 	 * 
 	 * @param i_color the fill color
 	 * @param i_alpha the alpha value
 	 */
-	public void setFillColor(Color i_color, int i_alpha) {
+	public void setFillColor(Color i_color) {
 
-		ColorConverter.toFloatArray(i_color, i_alpha, m_fillColor);
+		m_fillColor = i_color;
 	}
 
 	/**
@@ -434,13 +462,13 @@ public class SphereShape extends PositionableShape {
 	}
 
 	/**
-	 * Sets the outline color of this cylinder.
+	 * Sets the outline color of this sphere.
 	 * 
 	 * @param i_color the outline color
 	 * @param i_alpha the alpha value
 	 */
-	public void setOutlineColor(Color i_color, int i_alpha) {
+	public void setOutlineColor(Color i_color) {
 
-		ColorConverter.toFloatArray(i_color, i_alpha, m_outlineColor);
+		m_outlineColor = i_color;
 	}
 }

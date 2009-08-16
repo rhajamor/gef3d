@@ -15,11 +15,13 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.shapes.CompositeShape;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
-import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.shapes.TransparentShape;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
@@ -37,17 +39,6 @@ import org.eclipse.swt.graphics.Cursor;
 public abstract class CubeHandle extends AbstractHandle3D {
 
 	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.ShapeFigure3D#render(org.eclipse.draw3d.RenderContext)
-	 */
-	@Override
-	public void render(RenderContext i_renderContext) {
-		// TODO remove, only for debugging
-		super.render(i_renderContext);
-	}
-
-	/**
 	 * The default size for square handles. (copied from {@link SquareHandle}
 	 * and made public)
 	 */
@@ -59,6 +50,10 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	@SuppressWarnings("unused")
 	private static final Logger log =
 		Logger.getLogger(CubeHandle.class.getName());
+
+	private CuboidFigureShape m_alphaCube = new CuboidFigureShape(this, false);
+
+	private CuboidFigureShape m_superCube = new CuboidFigureShape(this, true);
 
 	/**
 	 * Null constructor
@@ -93,25 +88,21 @@ public abstract class CubeHandle extends AbstractHandle3D {
 		init();
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#collectRenderFragments(org.eclipse.draw3d.RenderContext)
 	 */
 	@Override
-	protected Shape createShape() {
+	public void collectRenderFragments(RenderContext i_renderContext) {
 
-		CompositeShape composite = new CompositeShape();
-		TransparentShape alphaShape = new CuboidFigureShape(this);
-		composite.addTransparent(alphaShape);
-
-		TransparentShape superShape = new CuboidFigureShape(this);
-		composite.addSuperimposed(superShape);
-		return composite;
-				
+		i_renderContext.addRenderFragment(m_alphaCube);
+		i_renderContext.addRenderFragment(m_superCube);
 	}
-	
-	/** 
+
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.gef3d.handles.AbstractHandle3D#createDragTracker()
 	 */
 	@Override
@@ -119,8 +110,6 @@ public abstract class CubeHandle extends AbstractHandle3D {
 		// TODO implement method CubeHandle.createDragTracker
 		return null;
 	}
-
-	
 
 	/**
 	 * {@inheritDoc}
@@ -138,6 +127,17 @@ public abstract class CubeHandle extends AbstractHandle3D {
 
 	/**
 	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		return m_alphaCube.getDistance(i_query);
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * <p>
 	 * Returns the color for the outside of the handle, GEF uses
 	 * {@link SquareHandle#getBorderColor()} instead.
@@ -147,6 +147,43 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	@Override
 	public Color getForegroundColor() {
 		return (isPrimary()) ? ColorConstants.black : ColorConstants.black;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	@Override
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
+
+		ParaxialBoundingBox result = o_result;
+		if (o_result == null)
+			result = new ParaxialBoundingBoxImpl();
+
+		Vector3f location = Draw3DCache.getVector3f();
+		Vector3f size = Draw3DCache.getVector3f();
+		try {
+			if (m_paraxialBounds == null) {
+				m_paraxialBounds = m_alphaCube.getParaxialBoundingBox(null);
+
+				if (m_paraxialBounds == null)
+					return null;
+
+				helper.unionWithChildParaxialBounds(m_paraxialBounds);
+			}
+
+			m_paraxialBounds.getLocation(location);
+			m_paraxialBounds.getSize(size);
+
+			result.setLocation(location);
+			result.setSize(size);
+
+			return result;
+		} finally {
+			Draw3DCache.returnVector3f(location, size);
+		}
 	}
 
 	/**

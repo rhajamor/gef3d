@@ -316,4 +316,14 @@ public class DebugPrimitives implements Renderable {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Renderable#collectRenderFragments(org.eclipse.draw3d.RenderContext)
+	 */
+	public void collectRenderFragments(RenderContext i_renderContext) {
+		// TODO implement method Renderable.collectRenderFragments
+
+	}
+
 }

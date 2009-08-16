@@ -11,15 +11,12 @@
 package org.eclipse.draw3d;
 
 /**
- * General interface for objects to be rendered. Rendering is performed three
- * pass:
- * <ul>
- * <li>Firstly prerender is called</li>
- * <li>Secondly render is called, this is usually done after possible
- * children have been rendered, i.e. after textures were updated</li>
- * <li>Transparent parts of the object are stored in renderState and are
- * rendered after everything else has been rendered</li>
- * </ul>
+ * General interface for objects to be rendered. A renderable object creates one
+ * or more instances of {@link RenderFragment}.
+ * <p>
+ * <b>Important note:</b> An instance of {@link Renderable} must not add itself
+ * to the given render context! This would lead to infinite recursion.
+ * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -28,21 +25,10 @@ package org.eclipse.draw3d;
 public interface Renderable {
 
 	/**
-	 * This method is responsible of rendering to the screen. It is called
-	 * <strong>before</strong> children are rendered, i.e. textures created by
-	 * children may not be created yet.
+	 * Collects the render fragments from this renderable and adds them to the
+	 * given render collection.
 	 * 
-	 * @see #render()
+	 * @param i_renderContext the render context in which to add the fragments
 	 */
-	public void prerender(RenderContext renderContext);
-
-	/**
-	 * This method is responsible of rendering to the screen. It is called (via
-	 * the figure hierarchy) by {@link DeferredUpdateManager3D}. It is called
-	 * <strong>after</strong> children were rendered, i.e. textures created by
-	 * children are created.
-	 * 
-	 * @see #prerender()
-	 */
-	public void render(RenderContext renderContext);
+	public void collectRenderFragments(RenderContext i_renderContext);
 }

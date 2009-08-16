@@ -43,7 +43,7 @@ public class GraphFigure3D extends FreeformLayer3D {
 	private static final Logger log =
 		Logger.getLogger(GraphFigure3D.class.getName());
 
-	private Shape m_shape = new CuboidFigureShape(this);
+	private Shape m_shape = new CuboidFigureShape(this, false);
 
 	/**
 	 * The surface of this figure. This is where 2D children are placed.
@@ -85,8 +85,21 @@ public class GraphFigure3D extends FreeformLayer3D {
 		Color bgColor = new Color(Display.getCurrent(), 0xFF, 0xFF, 0xFF);
 		setBackgroundColor(bgColor);
 		setAlpha((byte) 0x44);
+	}
 
-		m_shape = new CuboidFigureShape(this);
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#collectRenderFragments(org.eclipse.draw3d.RenderContext)
+	 */
+	@Override
+	public void collectRenderFragments(RenderContext i_renderContext) {
+
+		i_renderContext.addRenderFragment(m_shape);
+
+		if (i_renderContext.getScene().isDebug())
+			i_renderContext.addRenderFragment(new ParaxialBoundsFigureShape(
+				this));
 	}
 
 	/**
@@ -109,22 +122,5 @@ public class GraphFigure3D extends FreeformLayer3D {
 	public ISurface getSurface() {
 
 		return m_surface;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.Figure3D#render(org.eclipse.draw3d.RenderContext)
-	 */
-	@Override
-	public void render(RenderContext i_renderContext) {
-
-		m_shape.render(i_renderContext);
-
-		if (i_renderContext.getScene().isDebug()) {
-			ParaxialBoundsFigureShape pShape =
-				new ParaxialBoundsFigureShape(this);
-			pShape.render(i_renderContext);
-		}
 	}
 }

@@ -18,6 +18,7 @@ import java.nio.IntBuffer;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.swt.graphics.Color;
 
 /**
  * The Graphics3DDraw interface defines common 3D draw operations in OpenGL
@@ -378,6 +379,10 @@ public interface Graphics3DDraw {
 
 	public abstract void glColor4f(float red, float green, float blue,
 		float alpha);
+
+	public abstract void glColor(Color i_color, int i_alpha);
+
+	public abstract void glColor(Color i_color);
 
 	public abstract void glColor4f(float[] rgba);
 

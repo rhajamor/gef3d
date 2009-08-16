@@ -13,11 +13,8 @@ package org.eclipse.draw3d.ui.viewer;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.shapes.CompositeShape;
 import org.eclipse.draw3d.shapes.CuboidShape;
-import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
-import org.eclipse.draw3d.shapes.TransparentShape;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.widgets.Display;
@@ -49,20 +46,7 @@ public class ShapeViewer extends Draw3DViewer {
 			@Override
 			protected Shape createShape() {
 
-				CompositeShape composite = new CompositeShape();
-				// composite.addOpaque(new CylinderShape(this.getPosition3D(),
-				// 12,
-				// 0.3f));
-
-				composite.addOpaque(new CuboidShape(this.getPosition3D()));
-
-				ParaxialBoundsFigureShape pbShape =
-					new ParaxialBoundsFigureShape(this);
-
-				composite.addTransparent(pbShape);
-
-				return composite;
-				// return new SphereShape(this.getPosition3D(), 4);
+				return new CuboidShape(this.getPosition3D(), false);
 			}
 		};
 

@@ -37,6 +37,16 @@ public class NullShape implements Shape {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.RenderFragment#getDistanceMeasure(org.eclipse.draw3d.RenderContext)
+	 */
+	public float getDistanceMeasure(RenderContext i_renderContext) {
+
+		return 0;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.picking.Pickable#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
 	 */
 	public ParaxialBoundingBox getParaxialBoundingBox(
@@ -48,9 +58,19 @@ public class NullShape implements Shape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.Shape#render(org.eclipse.draw3d.RenderContext)
+	 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
 	 */
-	public void render(RenderContext iRenderContext) {
+	public RenderType getRenderType() {
+
+		return RenderType.IGNORE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.RenderFragment#render(org.eclipse.draw3d.RenderContext)
+	 */
+	public void render(RenderContext i_renderContext) {
 
 		// nothing to do
 	}

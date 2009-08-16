@@ -12,6 +12,7 @@ package org.eclipse.draw3d.graphics3d;
 
 import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.swt.graphics.Color;
 
 /**
  * AbstractGraphics3DDraw There should really be more documentation here.
@@ -21,6 +22,36 @@ import org.eclipse.draw3d.geometry.IVector3f;
  * @since 04.08.2009
  */
 public abstract class AbstractGraphics3DDraw implements Graphics3DDraw {
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glColor(org.eclipse.swt.graphics.Color)
+	 */
+	public void glColor(Color i_color) {
+
+		float red = i_color.getRed() / 255f;
+		float green = i_color.getGreen() / 255f;
+		float blue = i_color.getBlue() / 255f;
+
+		glColor3f(red, green, blue);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glColor(org.eclipse.swt.graphics.Color,
+	 *      int)
+	 */
+	public void glColor(Color i_color, int i_alpha) {
+
+		float red = i_color.getRed() / 255f;
+		float green = i_color.getGreen() / 255f;
+		float blue = i_color.getBlue() / 255f;
+		float alpha = i_alpha / 255f;
+
+		glColor4f(red, green, blue, alpha);
+	}
 
 	/**
 	 * {@inheritDoc}

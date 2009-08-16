@@ -19,7 +19,7 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw3d.ShapeFigure3D;
+import org.eclipse.draw3d.Figure3D;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.Handle;
@@ -40,7 +40,7 @@ import org.eclipse.swt.graphics.Cursor;
  * @since Mar 25, 2008
  * @see AbstracHandle
  */
-public abstract class AbstractHandle3D extends ShapeFigure3D implements Handle,
+public abstract class AbstractHandle3D extends Figure3D implements Handle,
 		AncestorListener {
 	/**
 	 * Logger for this class

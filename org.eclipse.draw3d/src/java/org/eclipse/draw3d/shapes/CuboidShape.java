@@ -25,8 +25,9 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Query;
-import org.eclipse.draw3d.util.ColorConverter;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * A cube with a color and an optional texture on its front face.
@@ -132,13 +133,19 @@ public class CuboidShape extends PositionableShape {
 		TEX_COORDS[3] = new Vector2fImpl(0, 1);
 	}
 
+	private int m_alpha = 0xFF;
+
 	private boolean m_fill = true;
 
-	private float[] m_fillColor = new float[] { 1, 1, 1, 1 };
+	private Color m_fillColor =
+		Display.getCurrent().getSystemColor(SWT.COLOR_WHITE);
 
 	private boolean m_outline = true;
 
-	private float[] m_outlineColor = new float[] { 0, 0, 0, 1 };
+	private Color m_outlineColor =
+		Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
+
+	private boolean m_superimposed;
 
 	private Integer m_textureId;
 
@@ -146,11 +153,13 @@ public class CuboidShape extends PositionableShape {
 	 * Creates a new cuboid shape with the given position.
 	 * 
 	 * @param i_position3D the position of this cuboid shape
+	 * @param i_superimposed whether this shape is superimposed
 	 * @throws NullPointerException if the given position is <code>null</code>
 	 */
-	public CuboidShape(IPosition3D i_position3D) {
+	public CuboidShape(IPosition3D i_position3D, boolean i_superimposed) {
 
 		super(i_position3D);
+		m_superimposed = i_superimposed;
 	}
 
 	/**
@@ -195,59 +204,29 @@ public class CuboidShape extends PositionableShape {
 		Graphics3D g3d = i_renderContext.getGraphics3D();
 		initDisplayLists(displayListManager, g3d);
 
-		if (!isTransparent()) {
-			if (m_fill) {
+		if (getRenderType() != RenderType.TRANSPARENT) {
+			if (m_fill)
 				renderFill(displayListManager, g3d);
-			}
-			if (m_outline) {
-				renderOutline(displayListManager, g3d);
-			}
-		} else {
-			if (m_outline) {
-				renderOutline(displayListManager, g3d);
-			}
-			if (m_fill) {
-				renderFill(displayListManager, g3d);
-			}
 
+			if (m_outline)
+				renderOutline(displayListManager, g3d);
+		} else {
+			if (m_outline)
+				renderOutline(displayListManager, g3d);
+
+			if (m_fill)
+				renderFill(displayListManager, g3d);
 		}
 	}
 
 	/**
-	 * @param displayListManager
-	 * @param g3d
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
 	 */
-	private void renderOutline(DisplayListManager displayListManager,
-		Graphics3D g3d) {
-		g3d.glColor4f(m_outlineColor);
-		displayListManager.executeDisplayList(DL_OUTLINE);
-	}
+	public RenderType getRenderType() {
 
-	/**
-	 * @param displayListManager
-	 * @param g3d
-	 */
-	private void renderFill(DisplayListManager displayListManager,
-		Graphics3D g3d) {
-		g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
-			Graphics3DDraw.GL_FILL);
-
-		if (m_textureId != null) {
-			g3d.glColor4f(0, 0, 0, 0);
-
-			g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, m_textureId);
-			g3d.glTexEnvi(Graphics3DDraw.GL_TEXTURE_ENV,
-				Graphics3DDraw.GL_TEXTURE_ENV_MODE, Graphics3DDraw.GL_REPLACE);
-			displayListManager.executeDisplayList(DL_TEXTURE);
-			g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, 0);
-
-			g3d.glColor4f(m_fillColor);
-		} else {
-			g3d.glColor4f(m_fillColor);
-			displayListManager.executeDisplayList(DL_FILL_FRONT);
-		}
-
-		displayListManager.executeDisplayList(DL_FILL_REST);
+		return RenderType.getRenderType(m_alpha, m_superimposed);
 	}
 
 	private void initDisplayLists(DisplayListManager i_displayListManager,
@@ -333,6 +312,45 @@ public class CuboidShape extends PositionableShape {
 		i_displayListManager.createDisplayList(DL_FILL_REST, rest);
 	}
 
+	private void renderFill(DisplayListManager displayListManager,
+		Graphics3D g3d) {
+		g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
+			Graphics3DDraw.GL_FILL);
+
+		if (m_textureId != null) {
+			g3d.glColor4f(0, 0, 0, 0);
+
+			g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, m_textureId);
+			g3d.glTexEnvi(Graphics3DDraw.GL_TEXTURE_ENV,
+				Graphics3DDraw.GL_TEXTURE_ENV_MODE, Graphics3DDraw.GL_REPLACE);
+			displayListManager.executeDisplayList(DL_TEXTURE);
+			g3d.glBindTexture(Graphics3DDraw.GL_TEXTURE_2D, 0);
+
+			g3d.glColor(m_fillColor, m_alpha);
+		} else {
+			g3d.glColor(m_fillColor, m_alpha);
+			displayListManager.executeDisplayList(DL_FILL_FRONT);
+		}
+
+		displayListManager.executeDisplayList(DL_FILL_REST);
+	}
+
+	private void renderOutline(DisplayListManager displayListManager,
+		Graphics3D g3d) {
+		g3d.glColor(m_outlineColor, m_alpha);
+		displayListManager.executeDisplayList(DL_OUTLINE);
+	}
+
+	/**
+	 * Sets the alpha value of this shape.
+	 * 
+	 * @param i_alpha the alpha value, should be between 0 and 255, inclusive
+	 */
+	public void setAlpha(int i_alpha) {
+
+		m_alpha = i_alpha;
+	}
+
 	/**
 	 * Specifies whether this cuboid should render its faces.
 	 * 
@@ -350,26 +368,9 @@ public class CuboidShape extends PositionableShape {
 	 * @param i_color the fill color
 	 * @param i_alpha the alpha value
 	 */
-	public void setFillColor(Color i_color, int i_alpha) {
+	public void setFillColor(Color i_color) {
 
-		ColorConverter.toFloatArray(i_color, i_alpha, m_fillColor);
-	}
-
-	/**
-	 * Sets the fill color.
-	 * 
-	 * @param i_red the red component
-	 * @param i_green the green component
-	 * @param i_blue the blue component
-	 * @param i_alpha the alpha value
-	 */
-	public void setFillColor(float i_red, float i_green, float i_blue,
-		float i_alpha) {
-
-		m_fillColor[0] = i_red;
-		m_fillColor[1] = i_green;
-		m_fillColor[2] = i_blue;
-		m_fillColor[3] = i_alpha;
+		m_fillColor = i_color;
 	}
 
 	/**
@@ -389,26 +390,9 @@ public class CuboidShape extends PositionableShape {
 	 * @param i_color the outline color
 	 * @param i_alpha the alpha value
 	 */
-	public void setOutlineColor(Color i_color, int i_alpha) {
+	public void setOutlineColor(Color i_color) {
 
-		ColorConverter.toFloatArray(i_color, i_alpha, m_outlineColor);
-	}
-
-	/**
-	 * Sets the outline color.
-	 * 
-	 * @param i_red the red component
-	 * @param i_green the green component
-	 * @param i_blue the blue component
-	 * @param i_alpha the alpha value
-	 */
-	public void setOutlineColor(float i_red, float i_green, float i_blue,
-		float i_alpha) {
-
-		m_outlineColor[0] = i_red;
-		m_outlineColor[1] = i_green;
-		m_outlineColor[2] = i_blue;
-		m_outlineColor[3] = i_alpha;
+		m_outlineColor = i_color;
 	}
 
 	/**
@@ -421,16 +405,4 @@ public class CuboidShape extends PositionableShape {
 
 		m_textureId = i_textureId;
 	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.shapes.PositionableShape#isTransparent()
-	 */
-	@Override
-	public boolean isTransparent() {
-		return (m_fill && m_fillColor[3] < 255)
-			|| (m_outline && m_outlineColor[3] < 255);
-	}
-
 }

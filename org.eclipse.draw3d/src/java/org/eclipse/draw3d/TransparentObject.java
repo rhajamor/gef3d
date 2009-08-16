@@ -21,7 +21,9 @@ package org.eclipse.draw3d;
 public interface TransparentObject {
 
 	/**
-	 * Returns the distance between the camera and the object.
+	 * Returns a measure for distance between the camera and the object. This
+	 * does not have to be the actual distance, but the returned number must be
+	 * equivalent.
 	 * 
 	 * @param i_renderContext the current render context
 	 * @return the distance
