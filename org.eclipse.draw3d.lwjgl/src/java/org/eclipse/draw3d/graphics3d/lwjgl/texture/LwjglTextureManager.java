@@ -47,7 +47,7 @@ public class LwjglTextureManager {
 	/**
 	 * Initialized in constructor {@link #LwjglTextureManager(GLCanvas)}
 	 */
-	private Map<Object, LwjglTexture> m_lwjglTextures;
+	private Map<Object, LwjglTexture> m_textures;
 
 	/**
 	 * Lazily created in {@link #getFontManager()}
@@ -66,14 +66,14 @@ public class LwjglTextureManager {
 			throw new NullPointerException("i_context must not be null");
 
 		m_context = i_context;
-		m_lwjglTextures = new HashMap<Object, LwjglTexture>();
+		m_textures = new HashMap<Object, LwjglTexture>();
 	}
 
 	/**
 	 * This method should not be called from outside, it is only defined public
 	 * here for tests.
 	 * 
-	 * @return
+	 * @return the font manager
 	 */
 	public LwjglFontManager getFontManager() {
 		if (m_fontManager == null) { // lazy initialization
@@ -142,7 +142,32 @@ public class LwjglTextureManager {
 		if (i_key == null)
 			throw new NullPointerException("i_key must not be null");
 
-		return m_lwjglTextures.containsKey(i_key);
+		return m_textures.containsKey(i_key);
+	}
+
+	private enum TextureSupport {
+		UNKNOWN, FBO, PBUFFER, SWT;
+	}
+
+	private TextureSupport m_textureSupport = TextureSupport.UNKNOWN;
+
+	private TextureSupport getTextureSupport() {
+
+		if (m_textureSupport == TextureSupport.UNKNOWN) {
+			if (LwjglTextureFbo.isSuppported()) {
+				log.fine("FBO texture support detected");
+				m_textureSupport = TextureSupport.FBO;
+			} else if (LwjglTexturePbuffer.isSupported(m_context)) {
+				log.fine("Pbuffer texture support detected");
+				m_textureSupport = TextureSupport.PBUFFER;
+			} else {
+				log
+					.fine("No hardware support for accelerated texture drawing detected, using SWT images");
+				m_textureSupport = TextureSupport.SWT;
+			}
+		}
+
+		return m_textureSupport;
 	}
 
 	/**
@@ -168,26 +193,28 @@ public class LwjglTextureManager {
 		if (i_key == null)
 			throw new NullPointerException("i_key must not be null");
 
-		LwjglTexture lwjglTexture = m_lwjglTextures.get(i_key);
-		if (lwjglTexture != null)
-			lwjglTexture.dispose();
+		LwjglTexture texture = m_textures.get(i_key);
+		if (texture != null)
+			texture.dispose();
 
-		if (LwjglTextureFbo.isSuppported()) {
-			log.fine("FBO texture support detected");
-			lwjglTexture =
-				new LwjglTextureFbo(i_width, i_height, getFontManager());
-		} else if (LwjglTexturePbuffer.isSupported(m_context)) {
-			log.fine("Pbuffer texture support detected");
-			lwjglTexture =
+		switch (getTextureSupport()) {
+		case FBO:
+			texture = new LwjglTextureFbo(i_width, i_height, getFontManager());
+			break;
+		case PBUFFER:
+			texture =
 				new LwjglTexturePbuffer(m_context, i_width, i_height,
 					getFontManager());
-		} else {
-			log
-				.fine("No hardware support for accelerated texture drawing detected, using SWT images");
-			lwjglTexture = new LwjglTextureSwt(i_width, i_height);
+			break;
+		case SWT:
+			texture = new LwjglTextureSwt(i_width, i_height);
+			break;
+		default:
+			throw new IllegalStateException(
+				"could not determine texture support");
 		}
 
-		m_lwjglTextures.put(i_key, lwjglTexture);
+		m_textures.put(i_key, texture);
 	}
 
 	/**
@@ -223,7 +250,7 @@ public class LwjglTextureManager {
 
 		LwjglTexture lwjglTexture = getTexture(i_key);
 		lwjglTexture.dispose();
-		m_lwjglTextures.remove(i_key);
+		m_textures.remove(i_key);
 	}
 
 	/**
@@ -236,10 +263,10 @@ public class LwjglTextureManager {
 			return;
 
 		deactivateTexture();
-		for (LwjglTexture lwjglTexture : m_lwjglTextures.values())
+		for (LwjglTexture lwjglTexture : m_textures.values())
 			lwjglTexture.dispose();
 
-		m_lwjglTextures = null;
+		m_textures = null;
 
 		if (m_fontManager != null) {
 			m_fontManager.dispose();
@@ -273,7 +300,7 @@ public class LwjglTextureManager {
 		if (i_key == null)
 			throw new NullPointerException("i_key must not be null");
 
-		LwjglTexture lwjglTexture = m_lwjglTextures.get(i_key);
+		LwjglTexture lwjglTexture = m_textures.get(i_key);
 		if (lwjglTexture == null)
 			throw new IllegalArgumentException("unknown texture: " + i_key);
 
@@ -320,7 +347,10 @@ public class LwjglTextureManager {
 	}
 
 	/**
-	 * @return
+	 * Indicates whether this texture manager is disposed.
+	 * 
+	 * @return <code>true</code> if this texture manager is disposed or
+	 *         <code>false</code> otherwise
 	 */
 	public boolean isDisposed() {
 		return m_disposed;
