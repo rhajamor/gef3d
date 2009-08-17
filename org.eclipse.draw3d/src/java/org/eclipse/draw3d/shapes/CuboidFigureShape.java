@@ -30,6 +30,17 @@ public class CuboidFigureShape implements Shape {
 	private CuboidShape m_shape;
 
 	/**
+	 * Creates a new cuboid figure shape. The figure is not superimposed, this
+	 * is a convenient method, it's equal to {@link CuboidFigureShape(i_figure,
+	 * false)}.
+	 * 
+	 * @param i_figure
+	 */
+	public CuboidFigureShape(IFigure3D i_figure) {
+		this(i_figure, false);
+	}
+
+	/**
 	 * Creates a new cuboid figure shape.
 	 * 
 	 * @param i_figure the figure which this shape represents

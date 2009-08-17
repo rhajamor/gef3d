@@ -153,6 +153,17 @@ public class SphereShape extends PositionableShape {
 	private boolean m_superimposed;
 
 	/**
+	 * Creates a new sphere with the given precision. This is a convenient
+	 * method creating a non-superimposed shape.
+	 * 
+	 * @param i_position3D the position of the sphere
+	 * @param i_precision the precision of the sphere
+	 */
+	public SphereShape(IPosition3D i_position3D, int i_precision) {
+		this(i_position3D, i_precision, false);
+	}
+
+	/**
 	 * Creates a new sphere with the given precision.
 	 * 
 	 * @param i_position3D the position of the sphere

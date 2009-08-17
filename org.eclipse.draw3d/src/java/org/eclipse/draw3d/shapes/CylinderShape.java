@@ -312,6 +312,20 @@ public class CylinderShape extends PositionableShape {
 
 	/**
 	 * Creates a new cylinder with the given position, number of segments and
+	 * radius proportions. This is a convenient method, creating a
+	 * non-superimposed shape.
+	 * 
+	 * @param i_position3D the position of this shape
+	 * @param i_segments the number of segments
+	 * @param i_radiusProportions the radius proportions
+	 */
+	public CylinderShape(IPosition3D i_position3D, int i_segments,
+			float i_radiusProportions) {
+		this(i_position3D, i_segments, i_radiusProportions, false);
+	}
+
+	/**
+	 * Creates a new cylinder with the given position, number of segments and
 	 * radius proportions.
 	 * 
 	 * @param i_position3D the position of this shape
