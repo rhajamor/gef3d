@@ -31,17 +31,17 @@ public class LwjglTextureManager {
 	/**
 	 * The logger object.
 	 */
-	private static final Logger log = Logger
-			.getLogger(LwjglTextureManager.class.getName());
+	private static final Logger log =
+		Logger.getLogger(LwjglTextureManager.class.getName());
 
 	private LwjglTexture m_activeTexture;
 
 	/**
-	 * Set in constructor from parameter ({@link #LwjglTextureManager(GLCanvas)}).
+	 * Set in constructor from parameter ({@link #LwjglTextureManager(GLCanvas)}
+	 * ).
 	 */
 	private final GLCanvas m_context;
 
-	
 	private boolean m_disposed = false;
 
 	/**
@@ -68,19 +68,19 @@ public class LwjglTextureManager {
 		m_context = i_context;
 		m_lwjglTextures = new HashMap<Object, LwjglTexture>();
 	}
-	
+
 	/**
-	 * This method should not be called from outside, it is only defined
-	 * public here for tests.
+	 * This method should not be called from outside, it is only defined public
+	 * here for tests.
+	 * 
 	 * @return
 	 */
 	public LwjglFontManager getFontManager() {
-		if (m_fontManager==null) { // lazy initialization
+		if (m_fontManager == null) { // lazy initialization
 			m_fontManager = new LwjglFontManager();
 		}
 		return m_fontManager;
 	}
-	
 
 	/**
 	 * Activates the texture with the given key for rendering.
@@ -169,18 +169,21 @@ public class LwjglTextureManager {
 			throw new NullPointerException("i_key must not be null");
 
 		LwjglTexture lwjglTexture = m_lwjglTextures.get(i_key);
-		if (lwjglTexture != null) 
+		if (lwjglTexture != null)
 			lwjglTexture.dispose();
 
 		if (LwjglTextureFbo.isSuppported()) {
-//			log.info("FBO texture support detected");
-			lwjglTexture = new LwjglTextureFbo(i_width, i_height, getFontManager());
+			log.fine("FBO texture support detected");
+			lwjglTexture =
+				new LwjglTextureFbo(i_width, i_height, getFontManager());
 		} else if (LwjglTexturePbuffer.isSupported(m_context)) {
-//			log.info("Pbuffer texture support detected");
-			lwjglTexture = new LwjglTexturePbuffer(m_context, i_width, i_height, getFontManager());
+			log.fine("Pbuffer texture support detected");
+			lwjglTexture =
+				new LwjglTexturePbuffer(m_context, i_width, i_height,
+					getFontManager());
 		} else {
-//			log
-//					.info("No hardware support for accelerated texture drawing detected, using SWT images");
+			log
+				.fine("No hardware support for accelerated texture drawing detected, using SWT images");
 			lwjglTexture = new LwjglTextureSwt(i_width, i_height);
 		}
 
@@ -237,12 +240,12 @@ public class LwjglTextureManager {
 			lwjglTexture.dispose();
 
 		m_lwjglTextures = null;
-		
-		if (m_fontManager!=null) {
+
+		if (m_fontManager != null) {
 			m_fontManager.dispose();
 			m_fontManager = null;
 		}
-		
+
 		m_disposed = true;
 	}
 
