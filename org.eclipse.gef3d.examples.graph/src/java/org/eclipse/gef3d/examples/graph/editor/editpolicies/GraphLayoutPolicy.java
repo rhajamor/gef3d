@@ -15,21 +15,23 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.editpolicies.XYLayoutEditPolicy;
 import org.eclipse.gef.requests.CreateRequest;
-import org.eclipse.gef3d.editpolicies.XY3DLayoutPolicy;
+import org.eclipse.gef3d.examples.graph.editor.GraphEditor2D_3Dfied.GraphPart3Dfied;
 import org.eclipse.gef3d.examples.graph.editor.commands.VertexCreateCommand;
 import org.eclipse.gef3d.examples.graph.editor.commands.VertexResizeCommand;
 import org.eclipse.gef3d.examples.graph.model.Graph;
 import org.eclipse.gef3d.examples.graph.model.Vertex;
 
 /**
- * GraphLayoutPolicy There should really be more documentation here.
+ * 2D edit policy, used for demonstration purposes only, see
+ * {@link GraphPart3Dfied} for details.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Mar 28, 2008
  */
-public class GraphLayoutPolicy extends XY3DLayoutPolicy {
+public class GraphLayoutPolicy extends XYLayoutEditPolicy {
 
 	/**
 	 * Logger for this class

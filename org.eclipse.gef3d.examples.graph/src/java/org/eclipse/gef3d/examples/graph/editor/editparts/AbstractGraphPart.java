@@ -26,16 +26,15 @@ import org.eclipse.gef3d.examples.graph.model.Vertex;
 import org.eclipse.gef3d.factories.IFigureFactory;
 
 /**
- * GraphPart for managing graphs. Graphs are the root elements, i.e. the diagram
- * plane. This part can be using in 2D, 2.5D, and 3D mode, since it uses a
- * {@link IFigureFactory} to create the figure. This is a little bit different
- * from normal GEF based editors, which usually create the figure themselves.
+ * Abstract base class for 2D and generic edit parts. All these different 
+ * graph edit parts only exists for demonstration purposes, read
+ * package documenation for details.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since 21.11.2007
  */
-public class GraphPart extends AbstractGraphicalEditPartEx implements
+public abstract class AbstractGraphPart extends AbstractGraphicalEditPartEx implements
         PropertyChangeListener {
 
     /**
@@ -92,18 +91,6 @@ public class GraphPart extends AbstractGraphicalEditPartEx implements
         return ((Graph) getModel()).getVertices();
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see AbstractEditPart#createEditPolicies()
-     */
-    @Override
-    protected void createEditPolicies() {
-
-        installEditPolicy(ShowLayoutFeedbackEditPolicy3D.ROLE,
-            new ShowLayoutFeedbackEditPolicy3D());
-        installEditPolicy(EditPolicy.LAYOUT_ROLE, new Graph3DLayoutPolicy());
-    }
 
     /**
      * {@inheritDoc}

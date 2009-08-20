@@ -70,6 +70,19 @@ Contributors:
    <extension
          point="org.eclipse.ui.editors">
       <editor
+            class="org.eclipse.gef3d.examples.graph.editor.GraphEditor2D_3Dfied"
+            extensions="%_UI_GraphEditorFilenameExtensions"
+            id="org.eclipse.gef3d.samples.graph.editor.GraphEditor3Dfied"
+            icon="icons/graph2d_3dfied.gif"
+            name="%_UI_GraphEditor2D_3Dfied_label"
+            contributorClass="org.eclipse.gef3d.examples.graph.editor.actions.GraphEditorActionBarContributor"
+            >
+      </editor>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
             class="org.eclipse.gef3d.examples.graph.editor.GraphEditor2D"
             extensions="%_UI_GraphEditorFilenameExtensions"
             id="org.eclipse.gef3d.samples.graph.editor.GraphEditor2D"

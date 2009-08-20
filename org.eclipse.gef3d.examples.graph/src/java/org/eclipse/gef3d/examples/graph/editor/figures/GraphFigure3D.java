@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.graph.editor.figures;
 
+import java.util.Random;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.FreeformLayout;
@@ -69,14 +70,14 @@ public class GraphFigure3D extends FreeformLayer3D {
 		getPosition3D().setSize3D(size);
 		// was: bounds3D.setDepth(150);
 
-		// Random gen = new Random(System.currentTimeMillis());
-		// float rotX = (float) Math.toRadians(gen.nextInt(360));
-		// float rotY = (float) Math.toRadians(gen.nextInt(360));
-		// float rotZ = (float) Math.toRadians(gen.nextInt(360));
+		 Random gen = new Random(System.currentTimeMillis());
+		 float rotX = (float) Math.toRadians(gen.nextInt(360));
+		 float rotY = (float) Math.toRadians(gen.nextInt(360));
+		 float rotZ = (float) Math.toRadians(gen.nextInt(360));
 
-		float rotX = (float) Math.toRadians(37);
-		float rotY = 0;
-		float rotZ = 0;
+//		float rotX = (float) Math.toRadians(37);
+//		float rotY = 0;
+//		float rotZ = 0;
 
 		// Rotation is disabled, leads to an infinite loop in conjunction
 		// with handles.

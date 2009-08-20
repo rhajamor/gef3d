@@ -46,7 +46,7 @@ public class GraphEditPartFactory implements EditPartFactory {
 	public EditPart createEditPart(EditPart i_context, Object i_model) {
 		EditPart part = null;
 		if (i_model instanceof Graph) {
-			part = new GraphPart();
+			part = new GraphPartGeneric();
 		} else if (i_model instanceof Vertex) {
 			part = new VertexPart();
 		} else if (i_model instanceof Edge) {

@@ -39,6 +39,7 @@ import org.eclipse.gef3d.examples.graph.model.Graph;
 import org.eclipse.gef3d.examples.graph.model.Vertex;
 import org.eclipse.gef3d.factories.DisplayMode;
 import org.eclipse.gef3d.factories.IFigureFactory;
+import org.eclipse.gef3d.factories.IFigureFactoryProvider;
 import org.eclipse.gef3d.ui.parts.ScrollingGraphicalViewerEx;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IFileEditorInput;
@@ -207,12 +208,19 @@ public class GraphEditor2D extends GraphicalEditorWithPalette {
 	protected void configureGraphicalViewer() {
 		super.configureGraphicalViewer();
 
-		getGraphicalViewer().setEditPartFactory(new GraphEditPartFactory());
-		((ScrollingGraphicalViewerEx) getGraphicalViewer())
+		getGraphicalViewer().setEditPartFactory(createEditPartFactory());
+		((IFigureFactoryProvider.Mutable) getGraphicalViewer())
 			.setFigureFactory(new GraphFigureFactory(DisplayMode.TwoDimensional));
-
+		
 		ScalableFreeformRootEditPart root = new ScalableFreeformRootEditPart();
 		getGraphicalViewer().setRootEditPart(root);
+	}
+
+	/**
+	 * @return
+	 */
+	protected GraphEditPartFactory createEditPartFactory() {
+		return new GraphEditPartFactory();
 	}
 
 	/**

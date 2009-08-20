@@ -17,7 +17,7 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.ScrollPane;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef3d.examples.graph.editor.editparts.EdgePart;
-import org.eclipse.gef3d.examples.graph.editor.editparts.GraphPart;
+import org.eclipse.gef3d.examples.graph.editor.editparts.GraphPartGeneric;
 import org.eclipse.gef3d.examples.graph.editor.editparts.VertexPart;
 import org.eclipse.gef3d.factories.DisplayMode;
 import org.eclipse.gef3d.factories.MappedFigureFactory;
@@ -50,11 +50,11 @@ public class GraphFigureFactory extends MappedFigureFactory {
 		// Diagram figure
 		switch (getMode()) {
 		case TwoDimensional:
-			map.put(GraphPart.class, GraphFigure2D.class);
+			map.put(GraphPartGeneric.class, GraphFigure2D.class);
 			break;
 		case Projected:
 		case ThreeDimensional:
-			map.put(GraphPart.class, GraphFigure3D.class);
+			map.put(GraphPartGeneric.class, GraphFigure3D.class);
 		}
 		
 		// Content figures
