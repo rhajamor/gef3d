@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Control;
  * @since 16.11.2007
  */
 public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
-		GraphicalViewer3D, IFigureFactoryProvider {
+		GraphicalViewer3D, IFigureFactoryProvider.Mutable {
 
 	@SuppressWarnings("unused")
 	private static final Logger log =

@@ -31,7 +31,20 @@ import org.eclipse.gef.GraphicalEditPart;
  * @since 	Apr 22, 2008
  */
 public interface IFigureFactoryProvider {
-
+	
+	/**
+	 * Mutable version of the {@link IFigureFactoryProvider} interface, 
+	 * usefull if figure factory has to be set. Usually, editors implement
+	 * this interface, but clients only rely on the immutable version.
+	 *
+	 * @author 	Jens von Pilgrim
+	 * @version	$Revision$
+	 * @since 	Aug 20, 2009
+	 */
+	public interface Mutable extends IFigureFactoryProvider {
+		void setFigureFactory(IFigureFactory i_FigureFactory);
+	}
+	
 	IFigureFactory getFigureFactory();
 	
 }

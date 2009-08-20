@@ -24,7 +24,7 @@ import org.eclipse.gef3d.factories.IFigureFactoryProvider;
  * @since Apr 22, 2008
  */
 public class ScrollingGraphicalViewerEx extends ScrollingGraphicalViewer
-		implements IFigureFactoryProvider {
+		implements IFigureFactoryProvider.Mutable {
 	
 	protected IFigureFactory m_FigureFactory = null;
 	

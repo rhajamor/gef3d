@@ -45,7 +45,7 @@ public abstract class AbstractGraphicalEditPartEx extends
 		}
 
 		throw new IllegalStateException(
-				"No figure factory available (viewer is no IFigureFactoryProvider)");
+				"No figure factory available, viewer is no IFigureFactoryProvider, viewer=" + getViewer());
 	}
 	
 	
