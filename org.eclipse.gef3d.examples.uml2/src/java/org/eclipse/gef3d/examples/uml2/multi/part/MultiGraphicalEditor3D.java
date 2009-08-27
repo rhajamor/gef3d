@@ -12,10 +12,16 @@ package org.eclipse.gef3d.examples.uml2.multi.part;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.RootEditPart;
@@ -37,9 +43,15 @@ import org.eclipse.gef3d.ui.parts.GraphicalViewer3D;
 import org.eclipse.gmf.runtime.draw2d.ui.mapmode.MapModeTypes;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
+import org.osgi.framework.Bundle;
 
 /**
- * MultiGraphicalEditor3D There should really be more documentation here.
+ * Multi 3D editor, content is displayed (and edited) using nested editors.
+ * This editor actually is independent from UML2, as nested editors are searched
+ * via the extension registry. That is, all content can be displayed with this
+ * editor if an {@link INestableEditor} is registered for that type of content.
+ * However, the multi editor itself has to be registered to some extensions,
+ * and this editor here is registered to the uml-diagram extensions.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -56,22 +68,19 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 	private MultiEditorPartFactory m_multiFactory;
 
 	private MultiEditorModelContainer m_container;
-	
+
 	private Map<String, PaletteDrawer> m_nestedPaletteDrawers;
-	
-	
 
 	/**
 	 * 
 	 */
 	public MultiGraphicalEditor3D() {
 		m_nestedPaletteDrawers = new HashMap<String, PaletteDrawer>();
-		
-		
+
 		// GMF specific:
 		MapModeTypes.DEFAULT_MM = MapModeTypes.IDENTITY_MM;
 		setEditDomain(new DefaultEditDomain(this));
-		
+
 	}
 
 	/**
@@ -90,7 +99,7 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 		});
 		drawer.setInitialState(PaletteDrawer.INITIAL_STATE_PINNED_OPEN);
 		root.add(0, drawer);
-		
+
 		m_nestedPaletteDrawers.put(drawer.getLabel(), drawer);
 
 		return root;
@@ -116,7 +125,7 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 	protected void configureGraphicalViewer() {
 
 		super.configureGraphicalViewer();
-		
+
 		// we need a special 3D root edit part for connections and feedback
 		RootEditPart root = new DiagramRootEditPart3D();
 		getGraphicalViewer().setRootEditPart(root);
@@ -144,9 +153,10 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 		// .getEditPartFactory();
 		viewer.setContents(m_container);
 
-		viewer.getContents().installEditPolicy(EditorInputDropPolicy.EDITOR_INPUT_ROLE,
+		viewer.getContents().installEditPolicy(
+			EditorInputDropPolicy.EDITOR_INPUT_ROLE,
 			new EditorInputDropPolicy());
-		
+
 		addEditor(getEditorInput());
 	}
 
@@ -167,24 +177,13 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 	 */
 	public void addEditor(IEditorInput i_editorInput) {
 		// find appropriate editor
-
-		String strName = i_editorInput.getName();
-		INestableEditor nestedEditor = null;
-		if (strName.endsWith(".umlclass")) {
-			nestedEditor =
-				new org.eclipse.gef3d.examples.uml2.clazz.part.UMLClassDiagramEditor3D();
-		} else if (strName.endsWith(".umlact")) {
-			nestedEditor =
-				new org.eclipse.gef3d.examples.uml2.activity.part.UMLActivityDiagramEditor3D();
-		} else if (strName.endsWith(".umlusc")) {
-			nestedEditor =
-				new org.eclipse.gef3d.examples.uml2.usecase.part.UMLUseCaseDiagramEditor3D();
-		}
+		INestableEditor nestedEditor = findEditor(i_editorInput);
 		if (nestedEditor == null) {
 			if (log.isLoggable(Level.INFO)) {
 				log
 					.info("IEditorInput - No nestable editor found - i_editorInput=" + i_editorInput); //$NON-NLS-1$
 			}
+
 			return;
 		}
 
@@ -193,17 +192,12 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 
 			nestedEditor.initializeAsNested(getGraphicalViewer(),
 				m_multiFactory, m_container);
-			
+
 			addNestedPalette(nestedEditor.createPaletteDrawer());
-			
-			
-			
-			
 
 		} catch (PartInitException ex) {
 			log.warning("IEditorInput - exception: " + ex); //$NON-NLS-1$
 
-			
 		}
 		getGraphicalViewer().getRootEditPart().refresh();
 
@@ -213,13 +207,77 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 	 * @param i_createPaletteDrawer
 	 */
 	private void addNestedPalette(PaletteDrawer drawer) {
-		PaletteRoot root=getEditDomain().getPaletteViewer().getPaletteRoot();
-		
-		if (m_nestedPaletteDrawers.containsKey(drawer.getLabel())) return;
+		PaletteRoot root = getEditDomain().getPaletteViewer().getPaletteRoot();
+
+		if (m_nestedPaletteDrawers.containsKey(drawer.getLabel()))
+			return;
 		root.add(drawer);
 		m_nestedPaletteDrawers.put(drawer.getLabel(), drawer);
 		getEditDomain().getPaletteViewer();
-		
+
 	}
 
+	/**
+	 * Searches matching editor for given input (in extension registry) and
+	 * returns an instance of that editor.
+	 * @param i_editorInput
+	 * @return the nestable editor, or null if no matching editor was found
+	 */
+	private INestableEditor findEditor(IEditorInput i_editorInput) {
+		String strName = i_editorInput.getName();
+		IExtensionRegistry registry = Platform.getExtensionRegistry();
+		IExtensionPoint point =
+			registry.getExtensionPoint("org.eclipse.ui.editors");
+		if (point == null)
+			return null;
+		IExtension[] extensions = point.getExtensions();
+
+		for (IExtension extension : extensions) {
+			String strContributorName = extension.getContributor().getName();
+			// if (log.isLoggable(Level.INFO)) {
+			// log.info("Extension found: " + extension
+			//					+ ", Contributor: " + strContributorName); //$NON-NLS-1$
+			// }
+
+			IConfigurationElement[] ices = extension.getConfigurationElements();
+			String ext, token;
+			StringTokenizer strt;
+			for (IConfigurationElement element : ices) {
+				if (element.getName().equals("editor")) {
+					ext = element.getAttribute("extensions");
+					if (ext != null) {
+						strt = new StringTokenizer(ext, ",");
+						while (strt.hasMoreTokens()) {
+							token = strt.nextToken();
+							if (strName.endsWith(token)) {
+								Bundle bundle =
+									Platform.getBundle(strContributorName);
+								String strClassname =
+									element.getAttribute("class");
+								try {
+									Class clazz =
+										bundle.loadClass(strClassname);
+									if (INestableEditor.class
+										.isAssignableFrom(clazz)) {
+										Object obj = clazz.newInstance();
+										return (INestableEditor) obj;
+									}
+								} catch (ClassNotFoundException ex) {
+									log.warning("Cannot create nested editor " //$NON-NLS-1$
+										+ strClassname + ", ex=" + ex);  //$NON-NLS-1$
+								} catch (InstantiationException ex) {
+									log.warning("Cannot create nested editor " //$NON-NLS-1$
+										+ strClassname + ", ex=" + ex);  //$NON-NLS-1$
+								} catch (IllegalAccessException ex) {
+									log.warning("Cannot create nested editor " //$NON-NLS-1$
+										+ strClassname + ", ex=" + ex);  //$NON-NLS-1$
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
 }
