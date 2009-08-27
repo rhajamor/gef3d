@@ -11,6 +11,8 @@
 
 package org.eclipse.gef3d.ext.multieditor;
 
+import java.util.logging.Level;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
 
@@ -29,27 +32,26 @@ import org.eclipse.gef.EditPartFactory;
  * with {@link MultiEditPart}, i.e. the parent edit part of added root contexts
  * must be an instance of MultiEditPart.
  * <p>
- * "Normal" factories are identified by the context or root context, which
- * is the normal behavior in most cases. When initializing an editor, the
- * root context itself, usually the top level container, is also created by
- * a factory. For this case, factories can be prepared using the model element
- * as a key. When the edit part for this root model element was created, the
+ * "Normal" factories are identified by the context or root context, which is
+ * the normal behavior in most cases. When initializing an editor, the root
+ * context itself, usually the top level container, is also created by a
+ * factory. For this case, factories can be prepared using the model element as
+ * a key. When the edit part for this root model element was created, the
  * factory is remapped, i.e. it is identified in future calls by the edit part
  * (which is simply the normal behavior).
  * <p>
- * For enabling multiple editors to be combined even if they are displaying
- * the same model or elements within the same edit parts as other editors
- * (which is true for marker model editors or, more important, intermodel 
- * editors), several factories can be mapped to a single root model or 
- * context edit part. The factories mapped to the same key element are weighted.
- * The factory set is then called in the descending order of its weights, and
- * the first part which is created is used. Usually, factories creating 
- * edit parts for 2D editors (which figures are projected on planes) are added
- * using a low weight, e.g. by simply adding them via 
- * {@link #add(EditPart, EditPartFactory)}
- * or {@link #prepare(Object, EditPartFactory)}. Intermodel factories are then
- * added using a high weight via {@link #add(EditPart, EditPartFactory, int)} 
- * with {@link #HIGHEST_PRIORITY}. 
+ * For enabling multiple editors to be combined even if they are displaying the
+ * same model or elements within the same edit parts as other editors (which is
+ * true for marker model editors or, more important, intermodel editors),
+ * several factories can be mapped to a single root model or context edit part.
+ * The factories mapped to the same key element are weighted. The factory set is
+ * then called in the descending order of its weights, and the first part which
+ * is created is used. Usually, factories creating edit parts for 2D editors
+ * (which figures are projected on planes) are added using a low weight, e.g. by
+ * simply adding them via {@link #add(EditPart, EditPartFactory)} or
+ * {@link #prepare(Object, EditPartFactory)}. Intermodel factories are then
+ * added using a high weight via {@link #add(EditPart, EditPartFactory, int)}
+ * with {@link #HIGHEST_PRIORITY}.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -57,9 +59,32 @@ import org.eclipse.gef.EditPartFactory;
  */
 public class MultiEditorPartFactory implements EditPartFactory {
 
+	/**
+	 * The factory indicator strategy defines how the factory to be used for
+	 * creating an edit part is retrieved. {@link #FIND_BY_PARENT} let the
+	 * factory be retrieved by recursively searching the parents of a given
+	 * (context) edit part. Unfortunately this does not always work, especially
+	 * in case of connections, since a connection has the root as its parent.
+	 * For that case, {@value #POLICY_AT_CONNECTIONS} can be used in order to
+	 * install an {@link FactoryIndicationEditPolicy} at connection edit parts
+	 * (automatically done by the {@link MultiEditorPartFactory}, which returns
+	 * the factory used to create the edit part. This strategy can be used in
+	 * all cases by using the {@link #POLICY} strategy. The default strategy
+	 * used is {@link #POLICY_AT_CONNECTIONS}.
+	 * 
+	 * @author Jens von Pilgrim
+	 * @version $Revision$
+	 * @since Aug 27, 2009
+	 */
+	public static enum FactoryIndicatorStrategy {
+		FIND_BY_PARENT, POLICY_AT_CONNECTIONS, POLICY
+	}
+
 	public final static int LOWEST_PRIORITY = Integer.MIN_VALUE;
 
 	public final static int HIGHEST_PRIORITY = Integer.MAX_VALUE;
+
+	// protected EditPartFactory lastUsedFactory;
 
 	private class WeightedFactory implements Comparable<WeightedFactory> {
 		int weight;
@@ -90,16 +115,16 @@ public class MultiEditorPartFactory implements EditPartFactory {
 			return (i_o.weight < weight) ? -1 : 1;
 		}
 
-		/** 
+		/**
 		 * {@inheritDoc}
+		 * 
 		 * @see java.lang.Object#toString()
 		 */
 		@Override
 		public String toString() {
-			return weight + ": " +factory;
+			return weight + ": " + factory;
 		}
-		
-		
+
 	}
 
 	private class FactorySet extends TreeSet<WeightedFactory> {
@@ -113,39 +138,52 @@ public class MultiEditorPartFactory implements EditPartFactory {
 			EditPart part = null;
 			for (WeightedFactory wf : this) {
 				part = wf.factory.createEditPart(i_context, i_model);
-				if (part != null)
+				if (part != null) {
+					installFactoryIndicator(part, wf.factory);
 					break;
+				}
 			}
 			return part;
 		}
 
-		
-		
 	}
 
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger
-			.getLogger(MultiEditorPartFactory.class.getName());
+	private static final Logger log =
+		Logger.getLogger(MultiEditorPartFactory.class.getName());
 
 	Map<EditPart, FactorySet> m_delegatedFactories;
 
 	Map<Object, FactorySet> m_preparedFactories;
 
+	FactoryIndicatorStrategy m_factoryIndicatorStrategy;
+
 	// EditPartFactory defaultFactory = null;
 
 	/**
-	 * 
+	 * Creates a factory using the
+	 * {@link FactoryIndicatorStrategy#POLICY_AT_CONNECTIONS} strategy.
 	 */
-	public MultiEditorPartFactory() { // EditPartFactory i_defaultFactory) {
+	public MultiEditorPartFactory() {
+		this(FactoryIndicatorStrategy.POLICY_AT_CONNECTIONS);
+	}
+
+	/**
+	 * Creates a factory with the given strategy.
+	 */
+	public MultiEditorPartFactory(
+			FactoryIndicatorStrategy factoryIndicatorStrategy) {
+		m_factoryIndicatorStrategy = factoryIndicatorStrategy;
+		// EditPartFactory i_defaultFactory) {
 		m_delegatedFactories = new HashMap<EditPart, FactorySet>();
 		m_preparedFactories = new HashMap<Object, FactorySet>();
 		// defaultFactory = i_defaultFactory;
 	}
 
 	/**
-	 * Calls {@link #add(EditPart, EditPartFactory, int)} with 
+	 * Calls {@link #add(EditPart, EditPartFactory, int)} with
 	 * {@link #LOWEST_PRIORITY}. .
 	 * 
 	 * @param i_rootContext
@@ -172,15 +210,15 @@ public class MultiEditorPartFactory implements EditPartFactory {
 	 * @param i_weight priority
 	 */
 	public void add(EditPart i_rootContext, EditPartFactory i_factory,
-			int i_weight) {
+		int i_weight) {
 
 		if (i_factory == null) {
 			throw new NullPointerException(
-					"(Edit Part) Factory must not be null");
+				"(Edit Part) Factory must not be null");
 		}
 		if (i_rootContext == null) {
 			throw new NullPointerException(
-					"Root context edit part must not be null");
+				"Root context edit part must not be null");
 		}
 
 		FactorySet fs = m_delegatedFactories.get(i_rootContext);
@@ -191,10 +229,11 @@ public class MultiEditorPartFactory implements EditPartFactory {
 		fs.add(new WeightedFactory(i_weight, i_factory));
 
 	}
-	
+
 	/**
-	 * Calls {@link #prepare(Object, EditPartFactory, int)} with 
+	 * Calls {@link #prepare(Object, EditPartFactory, int)} with
 	 * {@link #LOWEST_PRIORITY}
+	 * 
 	 * @param model
 	 * @param i_factory
 	 */
@@ -277,20 +316,48 @@ public class MultiEditorPartFactory implements EditPartFactory {
 
 		FactorySet fs = null;
 		EditPart part = null;
+		FactoryIndicationEditPolicy factoryIndicationEditPolicy = null;
+
 		if (i_context != null) { // the usual way, find by context
 
-			fs = findFactoriesByContext(i_context);
+			// do we have a factory indicator installed, this is usually
+			// the case for edges:
+			factoryIndicationEditPolicy =
+				(FactoryIndicationEditPolicy) i_context
+					.getEditPolicy(FactoryIndicationEditPolicy.ROLE);
+			if (factoryIndicationEditPolicy != null) {
+				part =
+					factoryIndicationEditPolicy.getFactory().createEditPart(
+						i_context, i_model);
+				if (part != null) {
+					installFactoryIndicator(part, factoryIndicationEditPolicy
+						.getFactory());
+				}
 
-			if (fs != null) {
-				part = fs.createEditPart(i_context, i_model);
-				// if (log.isLoggable(Level.INFO)) {
-				// log.info("create part by context"); //$NON-NLS-1$
-				// }
+				if (log.isLoggable(Level.INFO)) {
+					log.info("created part via indicated factory"); //$NON-NLS-1$
+				}
+			} else {
+				// no factory indicator, so we have to find the factory set:
+				fs = findFactoriesByContext(i_context);
+
+				if (fs != null) {
+					part = fs.createEditPart(i_context, i_model);
+					// if (log.isLoggable(Level.INFO)) {
+					// log.info("create part by context"); //$NON-NLS-1$
+					// }
+				}
 			}
 
 		}
+		// else {
+		// if (log.isLoggable(Level.INFO)) {
+		//				log.info("no context given for the creation of  - i_model=" + i_model); //$NON-NLS-1$
+		// }
+		// }
 
-		if (part == null) { // no context or no factory was able to create
+		if (part == null && factoryIndicationEditPolicy == null) {
+			// no context or no factory was able to create
 			// a part? maybe a factory is prepared
 			// for that:
 			// this is usually the case with modelContainer, i.e. the real root
@@ -322,10 +389,10 @@ public class MultiEditorPartFactory implements EditPartFactory {
 			}
 		}
 
-		if (fs == null) {
+		if (fs == null && factoryIndicationEditPolicy == null) {
 			throw new IllegalStateException("No root context or "
-					+ "factory found for model " + i_model + "; context "
-					+ i_context);
+				+ "factory found for model " + i_model + "; context "
+				+ i_context);
 		}
 
 		// if (part == null) {
@@ -336,6 +403,28 @@ public class MultiEditorPartFactory implements EditPartFactory {
 
 		return part;
 
+	}
+
+	/**
+	 * Installs a {@link FactoryIndicationEditPolicy} if the given part is a
+	 * {@link ConnectionEditPart}, since a connection edit part has the root as
+	 * parent, which cannot be used to determine the context and the registered
+	 * factory.
+	 * 
+	 * @param part
+	 * @param factory
+	 */
+	protected void installFactoryIndicator(EditPart part,
+		EditPartFactory factory) {
+		// lastUsedFactory = factory;
+
+		if (m_factoryIndicatorStrategy == FactoryIndicatorStrategy.POLICY
+			|| (m_factoryIndicatorStrategy == FactoryIndicatorStrategy.POLICY_AT_CONNECTIONS && part instanceof ConnectionEditPart)) {
+			FactoryIndicationEditPolicy factoryIndicationEditPolicy =
+				new FactoryIndicationEditPolicy(factory);
+			part.installEditPolicy(FactoryIndicationEditPolicy.ROLE,
+				factoryIndicationEditPolicy);
+		}
 	}
 
 	/**
