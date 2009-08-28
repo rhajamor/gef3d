@@ -82,7 +82,7 @@ public class FreeformLayer3D extends Figure3D implements FreeformFigure {
 	 * {@link FreeformLayer#addFreeformListener(FreeformListener)}
 	 * </p>
 	 * 
-	 * @see FreeformFigure#addFreeformListener(FreeformListener)
+	 * @see FreeformFigure#addFreeformListener(FreeformListener)f
 	 */
 	public void addFreeformListener(FreeformListener listener) {
 		addListener(FreeformListener.class, listener);

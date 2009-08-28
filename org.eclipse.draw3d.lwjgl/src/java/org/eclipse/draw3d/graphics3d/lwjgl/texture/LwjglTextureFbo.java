@@ -50,6 +50,28 @@ import org.lwjgl.util.glu.GLU;
 public class LwjglTextureFbo extends AbstractLwjglTexture {
 
 	/**
+	 * Enumerates FBO support states.
+	 * 
+	 * @author Kristian Duske
+	 * @version $Revision$
+	 * @since 27.08.2009
+	 */
+	private static enum FboSupport {
+		/**
+		 * FBOs are supported by the hardware.
+		 */
+		SUPPORTED,
+		/**
+		 * FBO support is not yet determined.
+		 */
+		UNKNOWN,
+		/**
+		 * FBOs are not supported by the hardware.
+		 */
+		UNSUPPORTED;
+	}
+
+	/**
 	 * Indicates which attribute groups must be saved prior to using this.
 	 */
 	private static final int ATTRIB_MASK =
@@ -60,10 +82,10 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 			| GL11.GL_ENABLE_BIT;
 
 	/**
-	 * Cached flag indicating whether Fbo is supported (1) or not (0). If the
-	 * flag is -1, we have to resolve its value in {@link #isSuppported()}.
+	 * Note that this is static, so the FBO support level is determined only
+	 * once.
 	 */
-	private static int iFboIsSupported = -1;
+	private static FboSupport fboSupport = FboSupport.UNKNOWN;
 
 	@SuppressWarnings("unused")
 	private static final Logger log =
@@ -151,15 +173,15 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 	 */
 	public static boolean isSuppported() {
 
-		if (iFboIsSupported == -1) {
-			iFboIsSupported = 0;
+		if (fboSupport == FboSupport.UNKNOWN) {
+			fboSupport = FboSupport.UNSUPPORTED;
+
 			ContextCapabilities contextCapabilities =
 				GLContext.getCapabilities();
 
 			if (contextCapabilities == null
-				|| !contextCapabilities.GL_EXT_framebuffer_object) {
+				|| !contextCapabilities.GL_EXT_framebuffer_object)
 				return false;
-			}
 
 			// create an FBO with a texture attachment and check the status
 			int glFrameBuffer = 0;
@@ -178,10 +200,11 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 				deleteFbo(glFrameBuffer);
 			}
 
-			iFboIsSupported = 1;
+			fboSupport = FboSupport.SUPPORTED;
 			return true;
 		}
-		return iFboIsSupported == 1;
+
+		return fboSupport == FboSupport.SUPPORTED;
 
 	}
 
@@ -191,7 +214,7 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 
 	private int m_glTexture = 0;
 
-	protected LwjglGraphics m_graphics;
+	private LwjglGraphics m_graphics;
 
 	private int m_height = -1;
 
@@ -202,12 +225,14 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 	 * 
 	 * @param i_width the width of the texture
 	 * @param i_height the height of the texture
+	 * @param i_fontManager the font manager to use
 	 * @throws IllegalArgumentException if the given width or height is not
 	 *             positive
 	 */
 	public LwjglTextureFbo(int i_width, int i_height,
-			LwjglFontManager fontManager) {
-		m_fontManager = fontManager;
+			LwjglFontManager i_fontManager) {
+
+		m_fontManager = i_fontManager;
 		setDimensions(i_width, i_height);
 		m_glFrameBuffer = createFbo();
 	}
@@ -219,9 +244,8 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 	 */
 	public void activate() {
 
-		if (m_disposed) {
+		if (m_disposed)
 			throw new IllegalStateException("texture is disposed");
-		}
 
 		GL11.glFlush();
 		EXTFramebufferObject.glBindFramebufferEXT(
@@ -283,9 +307,8 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 	 */
 	public void clear(Color i_color, int i_alpha) {
 
-		if (i_color == null) {
+		if (i_color == null)
 			throw new NullPointerException("i_color must not be null");
-		}
 
 		float[] color = ColorConverter.toFloatArray(i_color, i_alpha, null);
 		GL11.glClearColor(color[0], color[1], color[2], color[3]);
@@ -299,9 +322,8 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 	 */
 	public void deactivate() {
 
-		if (m_disposed) {
+		if (m_disposed)
 			throw new IllegalStateException("texture is disposed");
-		}
 
 		GL11.glFlush();
 
@@ -325,9 +347,8 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 	 */
 	public void dispose() {
 
-		if (m_disposed) {
+		if (m_disposed)
 			return;
-		}
 
 		deleteTexture(m_glTexture);
 		m_glTexture = 0;
@@ -369,17 +390,14 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 	 */
 	public Graphics getGraphics() {
 
-		if (m_disposed) {
+		if (m_disposed)
 			throw new IllegalStateException("texture is disposed");
-		}
 
-		if (!m_valid) {
+		if (!m_valid)
 			throw new IllegalStateException("texture not valid");
-		}
 
-		if (m_graphics == null) {
+		if (m_graphics == null)
 			throw new IllegalStateException("texture not initialized");
-		}
 
 		return m_graphics;
 	}
@@ -411,9 +429,8 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 	 */
 	public int getTextureId() {
 
-		if (m_disposed) {
+		if (m_disposed)
 			throw new IllegalStateException("texture is disposed");
-		}
 
 		return m_glTexture;
 	}
@@ -426,14 +443,13 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 	 */
 	public void setDimensions(int i_width, int i_height) {
 
-		if (m_disposed) {
+		if (m_disposed)
 			throw new IllegalStateException("texture is disposed");
-		}
 
-		if (i_width <= 0 || i_height <= 0) {
+		if (i_width <= 0 || i_height <= 0)
 			throw new IllegalArgumentException(
-				"texture dimensions must not be negative");
-		}
+				"texture dimensions must be positive (" + i_width + " * "
+					+ i_height + ")");
 
 		m_valid = m_valid && m_width == i_width && m_height == i_height;
 

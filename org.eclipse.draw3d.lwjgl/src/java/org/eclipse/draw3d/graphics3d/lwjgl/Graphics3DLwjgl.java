@@ -94,30 +94,25 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#activateGraphics2D(Object,
-	 *      int, int, int, Color))
+	 *      int, int, int, Color)
 	 */
 	public Graphics activateGraphics2D(Object i_key, int i_width, int i_height,
 		int i_alpha, Color i_color) {
 
-		if (m_textureManager == null) {
-			m_textureManager = new LwjglTextureManager(m_context);
-		} else if (m_textureManager.isDisposed()) {
-			throw new IllegalStateException("TextureManager is disposed");
-		}
+		LwjglTextureManager textureManager = getTextureManager();
 
-		if (!m_textureManager.contains(i_key)) {
-			m_textureManager.createTexture(i_key, i_width, i_height);
-		} else {
-			m_textureManager.resizeTexture(i_key, i_width, i_height);
-		}
+		if (!textureManager.contains(i_key))
+			textureManager.createTexture(i_key, i_width, i_height);
+		else
+			textureManager.resizeTexture(i_key, i_width, i_height);
 
-		m_textureManager.activateTexture(i_key);
-		m_textureManager.clearTexture(i_key, i_color, i_alpha);
+		textureManager.activateTexture(i_key);
+		textureManager.clearTexture(i_key, i_color, i_alpha);
 
 		if (m_log2D)
-			return new LogGraphics(m_textureManager.getGraphics());
+			return new LogGraphics(textureManager.getGraphics());
 		else
-			return m_textureManager.getGraphics();
+			return textureManager.getGraphics();
 	}
 
 	/**
@@ -126,6 +121,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#deactivateGraphics2D()
 	 */
 	public void deactivateGraphics2D() {
+
 		if (m_textureManager != null)
 			m_textureManager.deactivateTexture();
 	}
@@ -159,7 +155,9 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getGraphics3DId()
 	 */
 	public int getGraphics2DId(Object i_key) {
-		return m_textureManager.getTextureId(i_key);
+
+		LwjglTextureManager textureManager = getTextureManager();
+		return textureManager.getTextureId(i_key);
 	}
 
 	/**
@@ -216,6 +214,16 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 */
 	public String getProperty(String i_key) {
 		return properties.getProperty(i_key);
+	}
+
+	private LwjglTextureManager getTextureManager() {
+
+		if (m_textureManager == null)
+			m_textureManager = new LwjglTextureManager(m_context);
+		else if (m_textureManager.isDisposed())
+			throw new IllegalStateException("TextureManager is disposed");
+
+		return m_textureManager;
 	}
 
 	/**
@@ -443,15 +451,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glPointSize(float)
-	 */
-	public void glPointSize(float size) {
-		org.lwjgl.opengl.GL11.glPointSize(size);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glLoadIdentity()
 	 */
 	public void glLoadIdentity() {
@@ -503,6 +502,15 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 */
 	public void glPixelStorei(int pname, int param) {
 		org.lwjgl.opengl.GL11.glPixelStorei(pname, param);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glPointSize(float)
+	 */
+	public void glPointSize(float size) {
+		org.lwjgl.opengl.GL11.glPointSize(size);
 	}
 
 	/**
@@ -653,7 +661,9 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#hasGraphics2D(java.lang.Object)
 	 */
 	public boolean hasGraphics2D(Object i_key) {
-		return m_textureManager.contains(i_key);
+
+		LwjglTextureManager textureManager = getTextureManager();
+		return textureManager.contains(i_key);
 	}
 
 	/**
@@ -664,16 +674,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	@Override
 	public int hashCode() {
 		return hashCode;
-	}
-
-	/**
-	 * Returns true if the object is an instance of FloatBuffer. The size of the
-	 * buffer is not checked.
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#isPositionRawCompatible(java.lang.Object)
-	 */
-	public boolean isPositionRawCompatible(Object i_theRawPosition) {
-		return (i_theRawPosition instanceof FloatBuffer);
 	}
 
 	/**
@@ -691,6 +691,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#setGLCanvas(org.eclipse.swt.opengl.GLCanvas)
 	 */
 	public void setGLCanvas(GLCanvas i_canvas) {
+
 		if (m_textureManager != null) {
 			throw new IllegalStateException(
 				"Texture manager already initialized, cannot set new canvas");

@@ -466,12 +466,14 @@ public class Figure3DHelper {
 		Collection<IFigure> children2D = getChildren2D();
 		if (!children2D.isEmpty()) {
 
-			RenderContext renderContext =
-				m_figuresFriend.figure.getRenderContext();
-
-			boolean repaint2D = m_figuresFriend.is2DContentDirty();
-
 			IFigure3D figure = m_figuresFriend.figure;
+
+			RenderContext renderContext = figure.getRenderContext();
+
+			boolean repaint2D =
+				m_figuresFriend.is2DContentDirty()
+					&& !figure.getBounds().isEmpty();
+
 			Graphics graphics = i_graphics;
 			if (repaint2D) {
 

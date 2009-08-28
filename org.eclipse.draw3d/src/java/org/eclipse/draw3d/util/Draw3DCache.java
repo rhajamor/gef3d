@@ -70,6 +70,17 @@ public class Draw3DCache extends Math3DCache {
 
 			return m_capacity;
 		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+
+			return "BufferHolder [capacity=" + m_capacity + "]";
+		}
 	}
 
 	private static final Comparator<BufferHolder> m_bufferComparator =
@@ -87,13 +98,13 @@ public class Draw3DCache extends Math3DCache {
 	private static final Queue<Dimension> m_dimension =
 		new LinkedList<Dimension>();
 
+	private static final List<BufferHolder> m_doubleBuffer =
+		new ArrayList<BufferHolder>();
+
 	private static final List<BufferHolder> m_floatBuffer =
 		new ArrayList<BufferHolder>();
 
 	private static final List<BufferHolder> m_intBuffer =
-		new ArrayList<BufferHolder>();
-
-	private static final List<BufferHolder> m_doubleBuffer =
 		new ArrayList<BufferHolder>();
 
 	private static final Queue<Point> m_point = new LinkedList<Point>();
@@ -182,32 +193,6 @@ public class Draw3DCache extends Math3DCache {
 	 * @param i_capacity the desired minimum capacity
 	 * @return a buffer with the desired minimum capacity
 	 */
-	public static FloatBuffer getFloatBuffer(int i_capacity) {
-
-		BufferHolder holder = new BufferHolder(i_capacity);
-		FloatBuffer buffer;
-		if (m_synchronized)
-			synchronized (m_floatBuffer) {
-				buffer = (FloatBuffer) doGetBuffer(m_floatBuffer, holder);
-			}
-		else
-			buffer = (FloatBuffer) doGetBuffer(m_floatBuffer, holder);
-
-		if (buffer == null)
-			buffer = BufferUtils.createFloatBuffer(i_capacity);
-		else
-			buffer.limit(i_capacity);
-
-		return buffer;
-	}
-
-	/**
-	 * Returns a buffer with at least the given capacity. The returned buffer
-	 * will be limited to the given capacity, but it will not be rewound.
-	 * 
-	 * @param i_capacity the desired minimum capacity
-	 * @return a buffer with the desired minimum capacity
-	 */
 	public static DoubleBuffer getDoubleBuffer(int i_capacity) {
 
 		BufferHolder holder = new BufferHolder(i_capacity);
@@ -221,6 +206,32 @@ public class Draw3DCache extends Math3DCache {
 
 		if (buffer == null)
 			buffer = BufferUtils.createDoubleBuffer(i_capacity);
+		else
+			buffer.limit(i_capacity);
+
+		return buffer;
+	}
+
+	/**
+	 * Returns a buffer with at least the given capacity. The returned buffer
+	 * will be limited to the given capacity, but it will not be rewound.
+	 * 
+	 * @param i_capacity the desired minimum capacity
+	 * @return a buffer with the desired minimum capacity
+	 */
+	public static FloatBuffer getFloatBuffer(int i_capacity) {
+
+		BufferHolder holder = new BufferHolder(i_capacity);
+		FloatBuffer buffer;
+		if (m_synchronized)
+			synchronized (m_floatBuffer) {
+				buffer = (FloatBuffer) doGetBuffer(m_floatBuffer, holder);
+			}
+		else
+			buffer = (FloatBuffer) doGetBuffer(m_floatBuffer, holder);
+
+		if (buffer == null)
+			buffer = BufferUtils.createFloatBuffer(i_capacity);
 		else
 			buffer.limit(i_capacity);
 
@@ -317,27 +328,6 @@ public class Draw3DCache extends Math3DCache {
 	}
 
 	/**
-	 * Returns the given float buffers to the cache. If any of the given buffers
-	 * is <code>null</code>, it is ignored.
-	 * 
-	 * @param i_bs the buffers to return
-	 */
-	public static void returnFloatBuffer(FloatBuffer... i_bs) {
-
-		if (m_synchronized) {
-			synchronized (m_floatBuffer) {
-				for (FloatBuffer b : i_bs)
-					if (b != null)
-						doReturnBuffer(m_floatBuffer, b);
-			}
-		} else {
-			for (FloatBuffer b : i_bs)
-				if (b != null)
-					doReturnBuffer(m_floatBuffer, b);
-		}
-	}
-
-	/**
 	 * Returns the given double buffers to the cache. If any of the given
 	 * buffers is <code>null</code>, it is ignored.
 	 * 
@@ -355,6 +345,27 @@ public class Draw3DCache extends Math3DCache {
 			for (DoubleBuffer b : i_bs)
 				if (b != null)
 					doReturnBuffer(m_doubleBuffer, b);
+		}
+	}
+
+	/**
+	 * Returns the given float buffers to the cache. If any of the given buffers
+	 * is <code>null</code>, it is ignored.
+	 * 
+	 * @param i_bs the buffers to return
+	 */
+	public static void returnFloatBuffer(FloatBuffer... i_bs) {
+
+		if (m_synchronized) {
+			synchronized (m_floatBuffer) {
+				for (FloatBuffer b : i_bs)
+					if (b != null)
+						doReturnBuffer(m_floatBuffer, b);
+			}
+		} else {
+			for (FloatBuffer b : i_bs)
+				if (b != null)
+					doReturnBuffer(m_floatBuffer, b);
 		}
 	}
 

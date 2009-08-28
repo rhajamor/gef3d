@@ -23,3 +23,4 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.gef3d.ext;bundle-version="0.8.1",
  org.eclipse.draw3d.ui;bundle-version="0.8.1"
 Bundle-ActivationPolicy: lazy
+Export-Package: org.eclipse.gef3d.examples.ecore.diagram.part
