@@ -280,4 +280,15 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 		}
 		return null;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditor#acceptsInput(org.eclipse.ui.IEditorInput)
+	 */
+	public boolean acceptsInput(IEditorInput i_editorInput) {
+
+		// TODO implement method IMultiEditor.acceptsInput
+		return true;
+	}
 }

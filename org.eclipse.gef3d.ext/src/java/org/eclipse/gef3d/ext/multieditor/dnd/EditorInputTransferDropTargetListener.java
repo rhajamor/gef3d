@@ -92,6 +92,21 @@ public class EditorInputTransferDropTargetListener extends
 		return request;
 	}
 
+	private boolean editorAccepts(DropTargetEvent i_event) {
+
+		if (i_event.data instanceof EditorInputTransfer.EditorInputData[]) {
+			EditorInputTransfer.EditorInputData[] editorInputsData =
+				(EditorInputData[]) i_event.data;
+
+			for (EditorInputTransfer.EditorInputData data : editorInputsData)
+				if (!graphicalEditor.acceptsInput(data.input))
+					return false;
+		} else
+			return false;
+
+		return true;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -102,7 +117,10 @@ public class EditorInputTransferDropTargetListener extends
 		// if (log.isLoggable(Level.INFO)) {
 		//			log.info("handleDragOver"); //$NON-NLS-1$
 		// }
-		getCurrentEvent().detail = DND.DROP_COPY;
+
+		DropTargetEvent event = getCurrentEvent();
+		event.detail = DND.DROP_COPY;
+
 		super.handleDragOver();
 	}
 
@@ -118,7 +136,12 @@ public class EditorInputTransferDropTargetListener extends
 		}
 
 		DropTargetEvent event = getCurrentEvent();
-		event.detail = DND.DROP_COPY;
+
+		boolean accept = editorAccepts(event);
+		event.detail = accept ? DND.DROP_COPY : DND.DROP_NONE;
+
+		if (!accept)
+			return;
 
 		EditorInputDropRequest request =
 			(EditorInputDropRequest) getTargetRequest();
