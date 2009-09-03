@@ -97,10 +97,6 @@ public class GraphFigure3D extends FreeformLayer3D {
 	public void collectRenderFragments(RenderContext i_renderContext) {
 
 		i_renderContext.addRenderFragment(m_shape);
-
-		if (i_renderContext.getScene().isDebug())
-			i_renderContext.addRenderFragment(new ParaxialBoundsFigureShape(
-				this));
 	}
 
 	/**
