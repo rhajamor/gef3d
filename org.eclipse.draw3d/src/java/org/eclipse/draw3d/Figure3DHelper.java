@@ -35,6 +35,7 @@ import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.Picker;
+import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -568,6 +569,12 @@ public class Figure3DHelper {
 		g3d.deactivateGraphics2D();
 
 		figure.collectRenderFragments(renderContext);
+		
+		if (renderContext.getScene().isDebug())
+			renderContext.addRenderFragment(new ParaxialBoundsFigureShape(
+				figure));
+		
+		
 	}
 
 	/**

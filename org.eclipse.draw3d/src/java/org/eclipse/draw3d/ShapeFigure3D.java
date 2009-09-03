@@ -118,9 +118,5 @@ public abstract class ShapeFigure3D extends Figure3D {
 	public void collectRenderFragments(RenderContext i_renderContext) {
 
 		i_renderContext.addRenderFragment(getShape());
-
-		if (i_renderContext.getScene().isDebug())
-			i_renderContext.addRenderFragment(new ParaxialBoundsFigureShape(
-				this));
 	}
 }
