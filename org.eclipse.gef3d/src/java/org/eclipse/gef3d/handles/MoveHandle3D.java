@@ -17,6 +17,8 @@ import org.eclipse.draw2d.Cursors;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
+import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.GraphicalEditPart;
@@ -41,7 +43,7 @@ import org.eclipse.gef3d.editpolicies.ResizableEditPolicy3D;
  */
 public class MoveHandle3D extends AbstractHandle3D {
 
-	private CuboidFigureShape m_shape = new CuboidFigureShape(this, false);
+	private CuboidFigureShape m_shape = new CuboidFigureShape(this, true);
 
 	/**
 	 * Creates a MoveHandle for the given <code>GraphicalEditPart</code> using a
@@ -82,8 +84,7 @@ public class MoveHandle3D extends AbstractHandle3D {
 	 */
 	@Override
 	public void collectRenderFragments(RenderContext i_renderContext) {
-		// TODO implement method MoveHandle3D.collectRenderFragments
-		super.collectRenderFragments(i_renderContext);
+		i_renderContext.addRenderFragment(m_shape);
 	}
 
 	/**
@@ -101,6 +102,28 @@ public class MoveHandle3D extends AbstractHandle3D {
 		tracker.setDefaultCursor(getCursor());
 
 		return tracker;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+		return m_shape.getDistance(i_query);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	@Override
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
+
+		return m_shape.getParaxialBoundingBox(o_result);
 	}
 
 	/**

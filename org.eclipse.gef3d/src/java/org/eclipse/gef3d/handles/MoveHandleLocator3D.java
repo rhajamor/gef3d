@@ -18,7 +18,6 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.LocatorHelper;
 import org.eclipse.draw3d.geometry.Position3D;
-import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.handles.MoveHandleLocator;
 
@@ -67,8 +66,6 @@ public class MoveHandleLocator3D extends MoveHandleLocator {
 		} else {
 			if (i_target instanceof IFigure3D) {
 				Position3D targetPosition = Draw3DCache.getPosition3D();
-				Vector3f location = Draw3DCache.getVector3f();
-				Vector3f size = Draw3DCache.getVector3f();
 				try {
 					IFigure3D target3D = (IFigure3D) i_target;
 					Position3D refPosition = m_helper.getReferencePosition3D();
@@ -76,7 +73,6 @@ public class MoveHandleLocator3D extends MoveHandleLocator {
 					target3D.getPosition3D().setPosition(refPosition);
 				} finally {
 					Draw3DCache.returnPosition3D(targetPosition);
-					Draw3DCache.returnVector3f(location, size);
 				}
 			} else {
 				log.warning("Cannot position 2D Figure based "
