@@ -139,9 +139,11 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 		}
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
-	 * @see org.eclipse.draw3d.geometry.ParaxialBoundingBox#update(org.eclipse.draw3d.geometry.IBoundingBox, org.eclipse.draw3d.geometry.IMatrix4f)
+	 * 
+	 * @see org.eclipse.draw3d.geometry.ParaxialBoundingBox#update(org.eclipse.draw3d.geometry.IBoundingBox,
+	 *      org.eclipse.draw3d.geometry.IMatrix4f)
 	 */
 	public void update(IBoundingBox i_bounds3D, IMatrix4f i_matrix) {
 
@@ -226,24 +228,43 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 	 */
 	public float intersectRay(IVector3f i_rayOrigin, IVector3f i_rayDirection) {
 
+		Vector3f start = Math3DCache.getVector3f();
+		Vector3f end = Math3DCache.getVector3f();
 		Vector3f planePoint = Math3DCache.getVector3f();
 		Vector3f intersection = Math3DCache.getVector3f();
 		try {
+			getLocation(start);
+			getEnd(end);
+
+			boolean inside =
+				Math3D.in(start.getX(), end.getX(), i_rayOrigin.getX())
+					&& Math3D.in(start.getY(), end.getY(), i_rayOrigin.getY())
+					&& Math3D.in(start.getZ(), end.getZ(), i_rayOrigin.getZ());
+
 			// select possible candidates
 			List<Side> candidates = new LinkedList<Side>();
 			float cos = Math3D.dot(Side.FRONT.getNormal(), i_rayDirection);
+			if (inside)
+				cos *= -1;
+
 			if (cos < 0)
 				candidates.add(Side.FRONT);
 			else if (cos > 0)
 				candidates.add(Side.BACK);
 
 			cos = Math3D.dot(Side.LEFT.getNormal(), i_rayDirection);
+			if (inside)
+				cos *= -1;
+
 			if (cos < 0)
 				candidates.add(Side.LEFT);
 			else if (cos > 0)
 				candidates.add(Side.RIGHT);
 
 			cos = Math3D.dot(Side.TOP.getNormal(), i_rayDirection);
+			if (inside)
+				cos *= -1;
+
 			if (cos < 0)
 				candidates.add(Side.TOP);
 			else if (cos > 0)
@@ -271,12 +292,13 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 
 			return Float.NaN;
 		} finally {
-			Math3DCache.returnVector3f(planePoint, intersection);
+			Math3DCache.returnVector3f(start, end, planePoint, intersection);
 		}
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.geometry.ParaxialBoundingBox#union(org.eclipse.draw3d.geometry.IParaxialBoundingBox)
 	 */
 	public boolean union(IParaxialBoundingBox i_paraxialBoundingBox) {
