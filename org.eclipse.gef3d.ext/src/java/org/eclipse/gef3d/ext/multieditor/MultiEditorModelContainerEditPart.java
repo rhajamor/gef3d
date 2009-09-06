@@ -18,12 +18,8 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.draw3d.geometry.IBoundingBox;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.StackLayout3D;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
-
 
 /**
  * MultiEditorModelContainerEditPart There should really be more documentation
@@ -39,14 +35,9 @@ public class MultiEditorModelContainerEditPart extends
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger
-			.getLogger(MultiEditorModelContainerEditPart.class.getName());
-
-	/**
-	 * 
-	 */
-	public MultiEditorModelContainerEditPart() {
-	}
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(MultiEditorModelContainerEditPart.class.getName());
 
 	/**
 	 * {@inheritDoc}
@@ -55,22 +46,11 @@ public class MultiEditorModelContainerEditPart extends
 	 */
 	@Override
 	protected IFigure createFigure() {
-		// TODO create MultiEditorFigure with layout?
 
 		Figure fig = new MultiEditorModelContainerFigure();
+		fig.setLayoutManager(new StackLayout3D());
 
-		
 		return fig;
-	}
-
-	public void movePlanes(float delta) {
-		IFigure3D fig3D = ((IFigure3D) getFigure());
-		IBoundingBox box = fig3D.getBounds3D();
-		Vector3f vec = new Vector3fImpl();
-		box.getLocation(vec);
-		vec.setZ(vec.getZ() + delta);
-		fig3D.getPosition3D().setLocation3D(vec);
-		refresh();
 	}
 
 	/**
@@ -81,6 +61,8 @@ public class MultiEditorModelContainerEditPart extends
 	@Override
 	protected void createEditPolicies() {
 
+		// TODO implement method
+		// MultiEditorModelContainerEditPart.createEditPolicies
 	}
 
 	/**
@@ -88,8 +70,10 @@ public class MultiEditorModelContainerEditPart extends
 	 * 
 	 * @see org.eclipse.gef.editparts.AbstractEditPart#getModelChildren()
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	protected List getModelChildren() {
+
 		MultiEditorModelContainer base = (MultiEditorModelContainer) getModel();
 		return base.getModelContainers();
 	}
@@ -103,7 +87,7 @@ public class MultiEditorModelContainerEditPart extends
 	public void activate() {
 		if (!isActive()) {
 			((MultiEditorModelContainer) getModel())
-					.addPropertyChangeListener(this);
+				.addPropertyChangeListener(this);
 		}
 		super.activate();
 	}
@@ -116,7 +100,7 @@ public class MultiEditorModelContainerEditPart extends
 	@Override
 	public void deactivate() {
 		((MultiEditorModelContainer) getModel())
-				.removePropertyChangeListener(this);
+			.removePropertyChangeListener(this);
 		super.deactivate();
 	}
 
@@ -128,7 +112,5 @@ public class MultiEditorModelContainerEditPart extends
 	public void propertyChange(PropertyChangeEvent i_Event) {
 		refreshChildren();
 		refreshVisuals(); // this does nothing?!
-
 	}
-
 }
