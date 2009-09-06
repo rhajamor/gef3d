@@ -12,7 +12,14 @@ package org.eclipse.gef3d.handles;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Locator;
+import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
+import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.picking.Query;
+import org.eclipse.draw3d.shapes.CylindricFigureShape;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.handles.SquareHandle;
@@ -33,14 +40,18 @@ public abstract class DiscHandle extends AbstractHandle3D {
 	 */
 	protected static final float DEFAULT_HANDLE_SIZE = 7;
 
+	private CylindricFigureShape m_alphaDisc =
+		new CylindricFigureShape(this, 12, 1, false);
+
+	private CylindricFigureShape m_superDisc =
+		new CylindricFigureShape(this, 12, 1, true);
+
 	/**
 	 * Creates a disc handle for the given <code>GraphicalEditPart</code> with
 	 * the given <code>Locator</code>.
 	 * 
-	 * @param owner
-	 *            the edit part which created this handle
-	 * @param loc
-	 *            the locator to position this handle
+	 * @param owner the edit part which created this handle
+	 * @param loc the locator to position this handle
 	 */
 	public DiscHandle(GraphicalEditPart owner, Locator loc) {
 		super(owner, loc);
@@ -51,16 +62,25 @@ public abstract class DiscHandle extends AbstractHandle3D {
 	 * Creates a disc handle for the given <code>GraphicalEditPart</code> with
 	 * the given <code>Cursor</code> using the given <code>Locator</code>.
 	 * 
-	 * @param owner
-	 *            the edit part which created this handle
-	 * @param loc
-	 *            the locator to position this handle
-	 * @param c
-	 *            the cursor to display when the mouse hovers over this handle
+	 * @param owner the edit part which created this handle
+	 * @param loc the locator to position this handle
+	 * @param c the cursor to display when the mouse hovers over this handle
 	 */
 	public DiscHandle(GraphicalEditPart owner, Locator loc, Cursor c) {
 		super(owner, loc, c);
 		init();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#collectRenderFragments(org.eclipse.draw3d.RenderContext)
+	 */
+	@Override
+	public void collectRenderFragments(RenderContext i_renderContext) {
+
+		i_renderContext.addRenderFragment(m_alphaDisc);
+		i_renderContext.addRenderFragment(m_superDisc);
 	}
 
 	/**
@@ -80,6 +100,17 @@ public abstract class DiscHandle extends AbstractHandle3D {
 
 	/**
 	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 */
+	@Override
+	public float getDistance(Query i_query) {
+
+		return m_alphaDisc.getDistance(i_query);
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * <p>
 	 * Returns the color for the outside of the handle, GEF uses
 	 * {@link SquareHandle#getBorderColor()} instead.
@@ -93,12 +124,49 @@ public abstract class DiscHandle extends AbstractHandle3D {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
+	 */
+	@Override
+	public ParaxialBoundingBox getParaxialBoundingBox(
+		ParaxialBoundingBox o_result) {
+
+		ParaxialBoundingBox result = o_result;
+		if (o_result == null)
+			result = new ParaxialBoundingBoxImpl();
+
+		Vector3f location = Draw3DCache.getVector3f();
+		Vector3f size = Draw3DCache.getVector3f();
+		try {
+			if (m_paraxialBounds == null) {
+				m_paraxialBounds = m_alphaDisc.getParaxialBoundingBox(null);
+
+				if (m_paraxialBounds == null)
+					return null;
+
+				helper.unionWithChildParaxialBounds(m_paraxialBounds);
+			}
+
+			m_paraxialBounds.getLocation(location);
+			m_paraxialBounds.getSize(size);
+
+			result.setLocation(location);
+			result.setSize(size);
+
+			return result;
+		} finally {
+			Draw3DCache.returnVector3f(location, size);
+		}
+	}
+
+	/**
 	 * Initializes this handle.
 	 */
 	protected void init() {
 
 		setPreferredSize3D(new Vector3fImpl(DEFAULT_HANDLE_SIZE,
-				DEFAULT_HANDLE_SIZE, DEFAULT_HANDLE_SIZE));
+			DEFAULT_HANDLE_SIZE, DEFAULT_HANDLE_SIZE));
 		setAlpha(40);
 	}
 
