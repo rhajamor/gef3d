@@ -207,6 +207,10 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 	 * @param i_createPaletteDrawer
 	 */
 	private void addNestedPalette(PaletteDrawer drawer) {
+
+		if (drawer == null)
+			return;
+
 		PaletteRoot root = getEditDomain().getPaletteViewer().getPaletteRoot();
 
 		if (m_nestedPaletteDrawers.containsKey(drawer.getLabel()))
