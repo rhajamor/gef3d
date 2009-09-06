@@ -10,50 +10,45 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
-import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.Query;
 
 /**
- * A figure shape that renders itself as a cuboid.
+ * CylindricFigureShape There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 05.08.2009
+ * @since 31.08.2009
  */
-public class CuboidFigureShape implements Shape {
+public class CylindricFigureShape implements Shape {
 
 	private IFigure3D m_figure;
 
-	private CuboidShape m_shape;
+	private CylinderShape m_shape;
 
 	/**
-	 * Creates a new cuboid figure shape. The figure is not superimposed, this
-	 * is a convenient method, it's equal to
-	 * {@link #CuboidFigureShape(IFigure3D, boolean)}.
+	 * Creates a new cylindric shape that represents the given figure.
 	 * 
 	 * @param i_figure the figure which this shape represents
-	 */
-	public CuboidFigureShape(IFigure3D i_figure) {
-
-		this(i_figure, false);
-	}
-
-	/**
-	 * Creates a new cuboid figure shape.
-	 * 
-	 * @param i_figure the figure which this shape represents
+	 * @param i_segments the number of segments of the cylinder
+	 * @param i_radiusProportions the radius proportions of the cylinder
 	 * @param i_superimposed whether this shape is superimposed
+	 * @see CylinderShape#CylinderShape(org.eclipse.draw3d.geometry.IPosition3D,
+	 *      int, float, boolean)
+	 * @throws NullPointerException if the given figure is <code>null</code>
 	 */
-	public CuboidFigureShape(IFigure3D i_figure, boolean i_superimposed) {
+	public CylindricFigureShape(IFigure i_figure, int i_segments,
+			float i_radiusProportions, boolean i_superimposed) {
 
 		if (i_figure == null)
 			throw new NullPointerException("i_figure must not be null");
 
-		m_figure = i_figure;
-		m_shape = new CuboidShape(m_figure.getPosition3D(), i_superimposed);
+		m_shape =
+			new CylinderShape(m_figure.getPosition3D(), i_segments,
+				i_radiusProportions, i_superimposed);
 	}
 
 	/**
@@ -108,20 +103,14 @@ public class CuboidFigureShape implements Shape {
 		m_shape.setFillColor(m_figure.getBackgroundColor());
 		m_shape.setOutlineColor(m_figure.getForegroundColor());
 
-		Graphics3D g3d = i_renderContext.getGraphics3D();
-		if (g3d.hasGraphics2D(m_figure))
-			m_shape.setTextureId(g3d.getGraphics2DId(m_figure));
-		else
-			m_shape.setTextureId(null);
-
 		m_shape.render(i_renderContext);
 	}
 
 	/**
-	 * Specifies whether this cuboid should render its faces.
+	 * Specifies whether this cylinder should render its faces.
 	 * 
-	 * @param i_fill <code>true</code> if the cuboid should render its faces and
-	 *            <code>false</code> otherwise
+	 * @param i_fill <code>true</code> if the cylinder should render its faces
+	 *            and <code>false</code> otherwise
 	 */
 	public void setFill(boolean i_fill) {
 
@@ -129,9 +118,9 @@ public class CuboidFigureShape implements Shape {
 	}
 
 	/**
-	 * Specifies whether this cuboid should render its outline.
+	 * Specifies whether this cylinder should render its outline.
 	 * 
-	 * @param i_outline <code>true</code> if the cuboid should render its
+	 * @param i_outline <code>true</code> if the cylinder should render its
 	 *            outline and <code>false</code> otherwise
 	 */
 	public void setOutline(boolean i_outline) {
@@ -146,6 +135,6 @@ public class CuboidFigureShape implements Shape {
 	 */
 	@Override
 	public String toString() {
-		return "CuboidFigureShape [m_figure=" + m_figure + "]";
+		return "CylindricFigureShape [m_figure=" + m_figure + "]";
 	}
 }

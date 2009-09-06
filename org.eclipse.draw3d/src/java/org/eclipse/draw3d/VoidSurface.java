@@ -12,11 +12,14 @@ package org.eclipse.draw3d;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.camera.ICameraListener;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.picking.Hit;
+import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
@@ -88,33 +91,28 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	 */
 	public IFigure findFigureAt(int i_sx, int i_sy, TreeSearch i_search) {
 
-		// TODO: this is not correct. We need to convert the surface coordinates
-		// to world coordinates and perform picking.
-		if (i_search == null
-			|| (!i_search.prune(m_host) && i_search.accept(m_host)))
-			return m_host;
+		Point sLocation = Draw3DCache.getPoint();
+		Vector3f rayPoint = Draw3DCache.getVector3f();
+		try {
+			Picker picker = m_scene.getPicker();
+			ISurface currentSurface = picker.getCurrentSurface();
 
-		return null;
+			sLocation.setLocation(i_sx, i_sy);
+			currentSurface.getWorldLocation(sLocation, rayPoint);
 
-		/*
-		 * Vector3f eye = Draw3DCache.getVector3f(); Vector3f wLocation =
-		 * Draw3DCache.getVector3f(); Vector3f direction =
-		 * Draw3DCache.getVector3f(); Point mLocation = Draw3DCache.getPoint();
-		 * Point sLocation = Draw3DCache.getPoint(); try { // input coordinates
-		 * are surface coordinates, convert them into // mouse coordinates
-		 * getWorldLocation(i_sx, i_sy, 0, wLocation); ICamera camera =
-		 * m_scene.getCamera(); camera.project(wLocation, mLocation); Picker
-		 * picker = m_scene.getPicker(); Hit hit = picker.getHit(mLocation.x,
-		 * mLocation.y, i_search); if (hit == null) return null; IFigure3D
-		 * figure = hit.getFigure(); ISurface surface = figure.getSurface();
-		 * camera.getPosition(eye); Math3D.getRayDirection(eye, wLocation,
-		 * direction); surface.getSurfaceLocation2D(eye, direction, sLocation);
-		 * return figure.findFigureAt(sLocation.x, sLocation.y, i_search); }
-		 * finally { Draw3DCache.returnVector3f(wLocation);
-		 * Draw3DCache.returnVector3f(eye);
-		 * Draw3DCache.returnVector3f(direction);
-		 * Draw3DCache.returnPoint(sLocation); }
-		 */
+			Hit hit = picker.getHit(rayPoint, i_search);
+			if (hit != null)
+				return hit.getSearchResult();
+
+			if (i_search == null
+				|| (!i_search.prune(m_host) && i_search.accept(m_host)))
+				return m_host;
+
+			return null;
+		} finally {
+			Draw3DCache.returnPoint(sLocation);
+			Draw3DCache.returnVector3f(rayPoint);
+		}
 	}
 
 	/**

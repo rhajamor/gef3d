@@ -573,8 +573,6 @@ public class Figure3DHelper {
 		if (renderContext.getScene().isDebug())
 			renderContext.addRenderFragment(new ParaxialBoundsFigureShape(
 				figure));
-		
-		
 	}
 
 	/**

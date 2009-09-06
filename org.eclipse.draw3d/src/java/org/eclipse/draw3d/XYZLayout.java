@@ -10,19 +10,13 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
-import java.util.Iterator;
-
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LayoutManager;
 import org.eclipse.draw2d.XYLayout;
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.geometry.IPosition3D;
-import org.eclipse.draw3d.geometry.Position3D;
-import org.eclipse.draw3d.geometry.Position3DImpl;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.geometry.IVector3f;
 
 /**
  * 3D version of the {@link XYLayout}. This lays out the components using
@@ -48,10 +42,6 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
  */
 public class XYZLayout extends XYLayout {
 	
-	Position3DImpl TEMP_POS = new Position3DImpl();
-	Vector3f TEMP_VEC = new Vector3fImpl();
-	Rectangle TEMP_RECT = new Rectangle();
-
 	/**
 	 * Implements the algorithm to layout the components of the given container
 	 * figure. Each component is laid out using its own layout constraint

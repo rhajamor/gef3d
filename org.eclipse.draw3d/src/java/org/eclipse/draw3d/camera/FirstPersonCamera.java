@@ -434,10 +434,8 @@ public class FirstPersonCamera extends AbstractCamera {
 
 		// p+v=t => v = t-p
 		Math3D.cross(m_up, m_viewDir, m_right);
-		Math3D.normalise(m_right, m_right);
 
 		fireCameraChanged();
-
 	}
 
 	/**
@@ -479,6 +477,19 @@ public class FirstPersonCamera extends AbstractCamera {
 		m_position.set(i_x, i_y, i_z);
 
 		fireCameraChanged();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.camera.ICamera#moveTo(org.eclipse.draw3d.geometry.IVector3f)
+	 */
+	public void moveTo(IVector3f i_viewPoint) {
+
+		if (i_viewPoint == null)
+			throw new NullPointerException("i_viewPoint must not be null");
+
+		moveTo(i_viewPoint.getX(), i_viewPoint.getY(), i_viewPoint.getZ());
 	}
 
 	/**

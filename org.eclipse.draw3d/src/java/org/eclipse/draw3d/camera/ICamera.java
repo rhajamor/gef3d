@@ -157,6 +157,14 @@ public interface ICamera {
 	public void moveTo(float i_x, float i_y, float i_z);
 
 	/**
+	 * Moves the camera to the given position.
+	 * 
+	 * @param i_viewPoint the new view point
+	 * @throws NullPointerException if the given vector is <code>null</code>
+	 */
+	public void moveTo(IVector3f i_viewPoint);
+
+	/**
 	 * Moves the camera around a location (called orbit center) by a given
 	 * angle.
 	 * 

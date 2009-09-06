@@ -72,9 +72,8 @@ public class DeferredUpdateManager3D extends DeferredUpdateManager {
 			// log.info(strb.toString()); //$NON-NLS-1$
 			// }
 
-			super.repairDamage();
-			// doRepairDamage(root3D);
-
+			// in 3D, we render everything anyway
+			root3D.paint(null);
 			repairDamageFinish();
 
 		} else {

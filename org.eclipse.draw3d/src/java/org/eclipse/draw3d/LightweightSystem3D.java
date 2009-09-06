@@ -823,8 +823,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 	 */
 	public void render() {
 
-		// the root figure needs to paint itself first
-		getUpdateManager().addDirtyRegion(getRootFigure(), 0, 0, 10000, 10000);
+		getUpdateManager().performUpdate();
 	}
 
 	/**
