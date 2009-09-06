@@ -29,24 +29,21 @@ import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramRootEditPart;
  * @since Apr 7, 2009
  */
 public class DiagramRootEditPart3D extends DiagramRootEditPart {
+
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getFigure()
+	 * @see org.eclipse.gef.editparts.ScalableFreeformRootEditPart#createLayers(org.eclipse.draw2d.LayeredPane)
 	 */
 	@Override
-	public IFigure getFigure() {
-		// TODO implement method .getFigure
-		return super.getFigure();
-	}
+	protected void createLayers(LayeredPane i_layeredPane) {
 
-	@Override
-	protected void createLayers(LayeredPane layeredPane) {
-		super.createLayers(layeredPane);
+		super.createLayers(i_layeredPane);
+
 		// replace 2D version with 3D one:
-		IFigure oldLayer = layeredPane.getLayer(FEEDBACK_LAYER);
-		layeredPane.remove(oldLayer);
-		layeredPane.add(new FeedbackLayer3D(), FEEDBACK_LAYER);
+		IFigure oldLayer = i_layeredPane.getLayer(FEEDBACK_LAYER);
+		i_layeredPane.remove(oldLayer);
+		i_layeredPane.add(new FeedbackLayer3D(), FEEDBACK_LAYER);
 	}
 
 	/**
@@ -56,22 +53,24 @@ public class DiagramRootEditPart3D extends DiagramRootEditPart {
 	 */
 	@Override
 	protected LayeredPane createPrintableLayers() {
+
 		FreeformLayeredPane layeredPane = new FreeformLayeredPane() {
 			@Override
 			public void paint(Graphics graphics) {
 				for (Object child : getChildren()) {
 					if (child instanceof DispatchingConnectionLayer) {
 						((DispatchingConnectionLayer) child)
-								.dispatchPendingConnections();
+							.dispatchPendingConnections();
 					}
 				}
 				super.paint(graphics);
 			}
 		};
+
 		layeredPane.add(new FreeformLayer(), PRIMARY_LAYER);
 		layeredPane.add(new DispatchingConnectionLayerEx(), CONNECTION_LAYER);
 		layeredPane.add(new FreeformLayer(),
-				DiagramRootEditPart.DECORATION_PRINTABLE_LAYER);
+			DiagramRootEditPart.DECORATION_PRINTABLE_LAYER);
 
 		return layeredPane;
 	}
