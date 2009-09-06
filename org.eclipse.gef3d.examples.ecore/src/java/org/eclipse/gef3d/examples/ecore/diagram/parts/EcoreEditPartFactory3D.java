@@ -10,22 +10,9 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.ecore.diagram.parts;
 
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw3d.Figure3D;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.emf.ecoretools.diagram.edit.parts.EcoreEditPartFactory;
-import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.EditPart;
-import org.eclipse.gef.Request;
-import org.eclipse.gef.requests.SelectionRequest;
-import org.eclipse.gef.tools.DeselectAllTracker;
-import org.eclipse.gef3d.examples.ecore.figures.DiagramFigure3D;
-import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart;
-import org.eclipse.gmf.runtime.diagram.ui.tools.DragEditPartsTrackerEx;
 import org.eclipse.gmf.runtime.notation.Diagram;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Display;
-
 
 /**
  * EcoreEditPartFactory3D There should really be more documentation here.
@@ -47,41 +34,7 @@ public class EcoreEditPartFactory3D extends EcoreEditPartFactory {
 
 		if (i_model instanceof Diagram) {
 			Diagram diagram = (Diagram) i_model;
-			return new DiagramEditPart(diagram) {
-				/**
-				 * {@inheritDoc}
-				 * 
-				 * @see org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart#createFigure()
-				 */
-				@Override
-				protected IFigure createFigure() {
-					Figure3D f = new DiagramFigure3D();
-					// Figure3D f = new ClassDiagramFigure3DEmbedded();
-
-					f.getPosition3D()
-						.setLocation3D(new Vector3fImpl(0, 300, 0));
-					f.getPosition3D().setSize3D(
-						new Vector3fImpl(1400, 1400, 60));
-
-					f.setBackgroundColor(new Color(Display.getCurrent(), 255,
-							255, 255));
-					f.setAlpha((byte) (255 / 2));
-
-					return f;
-				}
-				
-				/** 
-				 * {@inheritDoc}
-				 * @see org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart#getDragTracker(org.eclipse.gef.Request)
-				 */
-				@Override
-				public DragTracker getDragTracker(Request req) {
-					if (req instanceof SelectionRequest
-						&& ((SelectionRequest) req).getLastButtonPressed() == 3)
-						return new DeselectAllTracker(this);
-					return new DragEditPartsTrackerEx(this);
-				}
-			};
+			return new DiagramEditPart3D(diagram);
 		}
 
 		return super.createEditPart(i_context, i_model);

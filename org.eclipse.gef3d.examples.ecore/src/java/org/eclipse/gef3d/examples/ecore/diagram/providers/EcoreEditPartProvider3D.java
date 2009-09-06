@@ -24,9 +24,10 @@ import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gef3d.gmf.runtime.draw2d.ui.internal.figures.ConnectionLayerEx.DispatchingConnectionLayerEx;
 import org.eclipse.gmf.runtime.common.core.service.IOperation;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramRootEditPart;
+import org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.services.editpart.CreateGraphicEditPartOperation;
-import org.eclipse.gmf.runtime.diagram.ui.services.editpart.CreateRootEditPartOperation;
 import org.eclipse.gmf.runtime.notation.Diagram;
+import org.eclipse.gmf.runtime.notation.View;
 
 /**
  * EcoreEditPartProvider3D There should really be more documentation here.
@@ -38,6 +39,27 @@ import org.eclipse.gmf.runtime.notation.Diagram;
  */
 public class EcoreEditPartProvider3D extends EcoreEditPartProvider {
 
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.emf.ecoretools.diagram.providers.EcoreEditPartProvider#createEditPart(org.eclipse.gmf.runtime.notation.View)
+	 */
+	@Override
+	protected IGraphicalEditPart createEditPart(View i_view) {
+		// TODO implement method EcoreEditPartProvider3D.createEditPart
+		return super.createEditPart(i_view);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.emf.ecoretools.diagram.providers.EcoreEditPartProvider#createGraphicEditPart(org.eclipse.gmf.runtime.notation.View)
+	 */
+	@Override
+	public synchronized IGraphicalEditPart createGraphicEditPart(View i_view) {
+		// TODO implement method EcoreEditPartProvider3D.createGraphicEditPart
+		return super.createGraphicEditPart(i_view);
+	}
+	
 	/**
 	 * Creates a new edit part provider for the 3D Ecore editor.
 	 */
