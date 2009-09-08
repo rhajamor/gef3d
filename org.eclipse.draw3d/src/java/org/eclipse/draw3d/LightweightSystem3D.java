@@ -32,6 +32,7 @@ import org.eclipse.draw3d.camera.ICameraListener;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IHost3D;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.NullPosition3D;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
 import org.eclipse.draw3d.geometry.Position3D;
@@ -90,60 +91,12 @@ public class LightweightSystem3D extends LightweightSystem implements
 			new VoidSurface(this, LightweightSystem3D.this, 0.1f);
 
 		// the position of the root is the universe.. the root is the universe
-		private Position3DImpl universe;
+		private Position3DImpl universe = new NullPosition3D(this);
 
 		/**
 		 * Creates and initializes a 3D new root figure.
 		 */
 		RootFigure3D() {
-
-			universe = new Position3DImpl(this) {
-
-				/**
-				 * {@inheritDoc}
-				 * 
-				 * @see org.eclipse.draw3d.geometry.AbstractPosition3D#invalidate()
-				 */
-				@Override
-				public void invalidate() {
-
-					// this is not possible!
-				}
-
-				/**
-				 * {@inheritDoc}
-				 * 
-				 * @see org.eclipse.draw3d.geometry.Position3DImpl#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
-				 */
-				@Override
-				public void setLocation3D(IVector3f i_point) {
-
-					// nothing to do
-				}
-
-				/**
-				 * {@inheritDoc}
-				 * 
-				 * @see org.eclipse.draw3d.geometry.AbstractPosition3D#setRotation3D(org.eclipse.draw3d.geometry.IVector3f)
-				 */
-				@Override
-				public void setRotation3D(IVector3f i_rotation) {
-
-					// nothing to do
-				}
-
-				/**
-				 * {@inheritDoc}
-				 * 
-				 * @see org.eclipse.draw3d.geometry.Position3DImpl#setSize3D(org.eclipse.draw3d.geometry.IVector3f)
-				 */
-				@Override
-				public void setSize3D(IVector3f i_size) {
-
-					// nothing to do
-				}
-
-			};
 
 			helper = new Figure3DHelper(new Figure3DFriend(this) {
 
@@ -410,6 +363,18 @@ public class LightweightSystem3D extends LightweightSystem implements
 		public ISurface getSurface() {
 
 			return m_surface;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw2d.Figure#invalidate()
+		 */
+		@Override
+		public void invalidate() {
+
+			invalidateParaxialBoundsTree();
+			super.invalidate();
 		}
 
 		/**

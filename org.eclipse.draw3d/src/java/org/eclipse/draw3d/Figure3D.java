@@ -101,7 +101,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * methods {e.g., @link
 	 * Position3D#setPosition(org.eclipse.draw3d.geometry.IPosition3D)}.
 	 */
-	final SynchronizedPosition3DImpl position3D;
+	final Position3D position3D;
 
 	/**
 	 * The preferred 3D size of this figure. The preferred 3D size is
@@ -130,7 +130,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	public Figure3D() {
 
-		position3D = new SynchronizedPosition3DImpl(this);
+		position3D = createPosition3D();
 		friend = new Figure3DFriend(this) {
 
 			@Override
@@ -147,6 +147,17 @@ public class Figure3D extends Figure implements IFigure3D {
 		};
 
 		helper = new Figure3DHelper(friend);
+	}
+
+	/**
+	 * Creates the position instance of this figure. By default, an instance of
+	 * {@link SynchronizedPosition3DImpl} is created.
+	 * 
+	 * @return the position instance
+	 */
+	protected Position3D createPosition3D() {
+
+		return new SynchronizedPosition3DImpl(this);
 	}
 
 	@Override
@@ -570,8 +581,7 @@ public class Figure3D extends Figure implements IFigure3D {
 		}
 
 		if (i_hint.contains(PositionHint.LOCATION)) { // from old setLocation3D
-			if (!(delta.getX() == 0 && delta.getY() == 0)
-				&& (delta.getZ() != 0)) {
+			if (delta.getX() != 0 || delta.getY() != 0 || delta.getZ() != 0) {
 				bFigureMoved = true;
 			}
 		}
