@@ -11,12 +11,7 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.graph.editor.figures;
 
-import org.eclipse.draw2d.ConnectionLayer;
-import org.eclipse.draw3d.ConnectionLayerFactory;
-import org.eclipse.draw3d.DispatchingConnectionLayer;
-import org.eclipse.draw3d.Figure3D;
-import org.eclipse.gef3d.ext.intermodel.IInterModelDiagram;
-
+import org.eclipse.gef3d.ext.intermodel.InterModelDiagramFigure;
 
 /**
  * This figure is only used for creating the tree structure and is not visible
@@ -26,30 +21,7 @@ import org.eclipse.gef3d.ext.intermodel.IInterModelDiagram;
  * @version $Revision$
  * @since 22.01.2008
  */
-public class IntermodelContainerFigure extends Figure3D implements
-		IInterModelDiagram {
+public class IntermodelContainerFigure extends InterModelDiagramFigure {
 
-	/**
-	 * 
-	 */
-	public IntermodelContainerFigure() {
-		connectionLayer = new DispatchingConnectionLayer();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.IFigure2DHost3D#getConnectionLayer(org.eclipse.draw3d.ConnectionLayerFactory)
-	 */
-	@Override
-	public ConnectionLayer getConnectionLayer(ConnectionLayerFactory i_clfactory) {
-
-		if (connectionLayer == null && i_clfactory != null)
-			connectionLayer = i_clfactory.createConnectionLayer(this);
-
-		return connectionLayer;
-	}
-
-	
-
+	// nothing to do
 }
