@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.graph.editor.figures;
 
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -21,9 +22,7 @@ import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.SurfaceLayout;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
-import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
@@ -70,14 +69,14 @@ public class GraphFigure3D extends FreeformLayer3D {
 		getPosition3D().setSize3D(size);
 		// was: bounds3D.setDepth(150);
 
-		 Random gen = new Random(System.currentTimeMillis());
-		 float rotX = (float) Math.toRadians(gen.nextInt(360));
-		 float rotY = (float) Math.toRadians(gen.nextInt(360));
-		 float rotZ = (float) Math.toRadians(gen.nextInt(360));
+		Random gen = new Random(System.currentTimeMillis());
+		float rotX = (float) Math.toRadians(gen.nextInt(360));
+		float rotY = (float) Math.toRadians(gen.nextInt(360));
+		float rotZ = (float) Math.toRadians(gen.nextInt(360));
 
-//		float rotX = (float) Math.toRadians(37);
-//		float rotY = 0;
-//		float rotZ = 0;
+		// float rotX = (float) Math.toRadians(37);
+		// float rotY = 0;
+		// float rotZ = 0;
 
 		// Rotation is disabled, leads to an infinite loop in conjunction
 		// with handles.
@@ -102,12 +101,14 @@ public class GraphFigure3D extends FreeformLayer3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.geometry.IVector3f,
+	 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
 	 */
 	@Override
-	public float getDistance(Query i_query) {
+	public float getDistance(IVector3f i_rayOrigin, IVector3f i_rayDirection,
+		Map<Object, Object> i_context) {
 
-		return m_shape.getDistance(i_query);
+		return m_shape.getDistance(i_rayOrigin, i_rayDirection, i_context);
 	}
 
 	/**
