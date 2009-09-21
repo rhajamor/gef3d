@@ -17,37 +17,43 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.gef3d.ext.reverselookup.IModelPathFinder;
 
 /**
- * EObjectPathFinder
- * There should really be more documentation here.
- *
- * @author 	Jens von Pilgrim
- * @version	$Revision$
- * @since 	May 23, 2009
+ * EObjectPathFinder There should really be more documentation here.
+ * 
+ * @author Jens von Pilgrim
+ * @version $Revision$
+ * @since May 23, 2009
  */
 public class EObjectPathFinder implements IModelPathFinder {
-	
+
 	/**
 	 * The singleton instance, object has no state
 	 */
 	public final static EObjectPathFinder INSTANCE = new EObjectPathFinder();
 	
 
-	/** 
+
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.gef3d.ext.reverselookup.IModelPathFinder#findPath(java.lang.Object)
 	 */
 	public List findPath(Object i_modelElement) {
 		EObject eobj = (EObject) i_modelElement;
+
 		List<EObject> path = new ArrayList<EObject>();
+		EObject container;
+
 		while (eobj != null) {
-			path.add(eobj);
-			eobj = eobj.eContainer();
+			container = eobj.eContainer(); // resolves eobj;
+			path.add(eobj); // do not insert proxies
+			eobj = container;
 		}
 		return path;
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupHelper#handlesElement(java.lang.Object)
 	 */
 	public int handlesElement(Object i_modelElement) {
