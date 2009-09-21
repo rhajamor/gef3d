@@ -10,14 +10,16 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
+import java.util.Map;
+
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -57,9 +59,11 @@ public class ParaxialBoundsFigureShape implements Shape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.geometry.IVector3f,
+	 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
 	 */
-	public float getDistance(Query i_query) {
+	public float getDistance(IVector3f i_rayOrigin, IVector3f i_rayDirection,
+		Map<Object, Object> i_context) {
 
 		return Float.NaN;
 	}

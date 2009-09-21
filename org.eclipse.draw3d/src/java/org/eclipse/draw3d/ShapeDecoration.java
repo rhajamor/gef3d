@@ -16,8 +16,6 @@ import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.shapes.NullShape;
-import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
@@ -27,30 +25,10 @@ import org.eclipse.draw3d.util.Draw3DCache;
  * @version $Revision$
  * @since 18.05.2008
  */
-/**
- * ShapeDecoration
- * There should really be more documentation here.
- *
- * @author 	Jens von Pilgrim
- * @version	$Revision$
- * @since 	Aug 7, 2009
- */	
-public class ShapeDecoration extends ShapeFigure3D implements
+public abstract class ShapeDecoration extends ShapeFigure3D implements
 		RotatableDecoration3D {
 
 	private Vector3fImpl m_lastReference = new Vector3fImpl(0, 0, 0);
-
-	
-	/** 
-	 * {@inheritDoc}
-	 * @see org.eclipse.draw3d.ShapeFigure3D#createShape()
-	 */
-	@Override
-	protected Shape createShape() {
-		return new NullShape();
-	}
-	
-	
 
 	/**
 	 * {@inheritDoc}
@@ -95,6 +73,4 @@ public class ShapeDecoration extends ShapeFigure3D implements
 			}
 		}
 	}
-
-	
 }

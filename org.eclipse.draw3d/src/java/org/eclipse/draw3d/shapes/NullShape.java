@@ -10,9 +10,11 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
+import java.util.Map;
+
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
-import org.eclipse.draw3d.picking.Query;
 
 /**
  * An invisible shape which cannot be picked. This shape is used mainly during
@@ -27,9 +29,11 @@ public class NullShape implements Shape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.geometry.IVector3f,
+	 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
 	 */
-	public float getDistance(Query iQuery) {
+	public float getDistance(IVector3f i_rayOrigin, IVector3f i_rayDirection,
+		Map<Object, Object> i_context) {
 
 		return Float.NaN;
 	}

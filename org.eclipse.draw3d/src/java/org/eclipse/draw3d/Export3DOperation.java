@@ -75,7 +75,7 @@ public class Export3DOperation {
 			rootFigure.paint(dummy);
 		} finally {
 			renderContext.setGraphics3D(g3dSave);
-			renderContext.clearDisplayManager(); // was in try block only?!
+			renderContext.clearDisplayListManager(); // was in try block only?!
 		}
 	}
 

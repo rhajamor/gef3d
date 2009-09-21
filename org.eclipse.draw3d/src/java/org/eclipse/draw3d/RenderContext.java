@@ -23,29 +23,12 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.swt.opengl.GLCanvas;
 
 /**
- * The render state encapsulates information about the current render pass and
- * also collects transparent objects that need to be rendered last.
- * <p>
- * Note on transparent and superimposed object: An object becomes transparent by
- * firstly setting its color alpha to a value less 255 and by secondly adding it
- * to the list of transparent objects via
- * {@link #addTransparentObject(TransparentObject)}. The overall strategy is to
- * firstly render all opaque objects, correctly sorted and drawn by OpenGL.
- * Secondly, all transparent objects are drawn (ordered by their distance to the
- * camera) in order to enable real transparency which OpenGL does not support
- * directly. A problem may occure when objects are registered as transparent
- * objects while the transparent objects are already rendered here. This may
- * occur if an transparent object is composed of other transparent objects, and
- * recursively calls their render method (which only then adds the nested
- * objecdt to the list of transparent objects here). If this case the newly
- * added transparent (nested) object is rendered directly after the object was
- * rendered in which this object is nested. The problem is that the order may be
- * corrupt, that is the nested object should have been rendered before its
- * container. This case cannot be corrected here. To prevent this, try to make
- * rendering of objects as flat as possible. Especially shapes tend to be
- * nested. In this case, simply try to prevent calling a nested shapes render
- * method from within a container shapes doRender method.
- * </p>
+ * The render context collects fragments to be rendered during a render pass,
+ * sorts them appropriately (by render type and distance from the camera) and
+ * renders them after the actual painting of the figures is finished. It also
+ * functions as a container for some objects that figures may need when they
+ * render themselves, for example the {@link Graphics3D} instance, the
+ * {@link DisplayListManager} and the {@link IScene}.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -124,7 +107,7 @@ public class RenderContext {
 	/**
 	 * Clears the display manager for the current g3d instance.
 	 */
-	public void clearDisplayManager() {
+	public void clearDisplayListManager() {
 		if (getGraphics3D() == null) {
 			throw new IllegalStateException("no graphics3D intance set yet");
 		}
@@ -138,23 +121,14 @@ public class RenderContext {
 	 */
 	public synchronized void dispose() {
 
-		for (DisplayListManager displayListManager : m_displayListManagers
-			.values()) {
-			try {
-				displayListManager.dispose();
-			} catch (Exception ex) {
-				log.warning("Error disposing dipslay list manager: " + ex);
-			}
-		}
 		try {
+			for (DisplayListManager manager : m_displayListManagers.values())
+				manager.dispose();
+
 			m_displayListManagers.clear();
-		} catch (Exception ex) {
-			log.warning("Error clearing dispy list manager map: " + ex);
-		}
-		try {
 			m_g3d.dispose();
 		} catch (Exception ex) {
-			log.warning("Error disposing current graphics 3D instance: " + ex);
+			log.warning("Error disposing render context: " + ex);
 		}
 	}
 

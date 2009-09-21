@@ -12,6 +12,7 @@ package org.eclipse.draw3d;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ConnectionLayer;
@@ -36,7 +37,6 @@ import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.geometryext.SyncedVector3f;
 import org.eclipse.draw3d.geometryext.SynchronizedPosition3DImpl;
-import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Font;
 
@@ -307,9 +307,11 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.geometry.IVector3f,
+	 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
 	 */
-	public float getDistance(Query i_query) {
+	public float getDistance(IVector3f i_rayOrigin, IVector3f i_rayDirection,
+		Map<Object, Object> i_context) {
 
 		return Float.NaN;
 	}
@@ -408,7 +410,11 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	public IScene getScene() {
 
-		return Figure3DHelper.getAncestor3D(getParent()).getScene();
+		IFigure p = getParent();
+		if (p == null)
+			return null;
+
+		return Figure3DHelper.getAncestor3D(p).getScene();
 	}
 
 	/**

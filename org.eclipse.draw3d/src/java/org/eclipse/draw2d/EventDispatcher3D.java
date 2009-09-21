@@ -276,8 +276,7 @@ public class EventDispatcher3D extends EventDispatcher {
 				m_getAccessibilityDispatcherMethod.setAccessible(true);
 			}
 
-			return (AccessibilityDispatcher) m_getAccessibilityDispatcherMethod
-				.invoke(m_dispatcher);
+			return (AccessibilityDispatcher) m_getAccessibilityDispatcherMethod.invoke(m_dispatcher);
 		} catch (Exception e) {
 			// very unlikely to happen, so
 			throw new RuntimeException("could not reflectively invoke method "

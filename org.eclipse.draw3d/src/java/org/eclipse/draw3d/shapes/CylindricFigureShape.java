@@ -10,11 +10,12 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
-import org.eclipse.draw2d.IFigure;
+import java.util.Map;
+
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
-import org.eclipse.draw3d.picking.Query;
 
 /**
  * CylindricFigureShape There should really be more documentation here.
@@ -40,12 +41,13 @@ public class CylindricFigureShape implements Shape {
 	 *      int, float, boolean)
 	 * @throws NullPointerException if the given figure is <code>null</code>
 	 */
-	public CylindricFigureShape(IFigure i_figure, int i_segments,
+	public CylindricFigureShape(IFigure3D i_figure, int i_segments,
 			float i_radiusProportions, boolean i_superimposed) {
 
 		if (i_figure == null)
 			throw new NullPointerException("i_figure must not be null");
 
+		m_figure = i_figure;
 		m_shape =
 			new CylinderShape(m_figure.getPosition3D(), i_segments,
 				i_radiusProportions, i_superimposed);
@@ -54,11 +56,13 @@ public class CylindricFigureShape implements Shape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.geometry.IVector3f,
+	 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
 	 */
-	public float getDistance(Query i_query) {
+	public float getDistance(IVector3f i_rayOrigin, IVector3f i_rayDirection,
+		Map<Object, Object> i_context) {
 
-		return m_shape.getDistance(i_query);
+		return m_shape.getDistance(i_rayOrigin, i_rayDirection, i_context);
 	}
 
 	/**

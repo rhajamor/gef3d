@@ -12,11 +12,10 @@ package org.eclipse.draw3d.camera;
 
 import java.util.logging.Logger;
 
-import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.Matrix4f;
-import org.eclipse.draw3d.geometry.Vector3f;
 
 /**
  * A camera that implements a first person strategy and that restricts movement
@@ -31,8 +30,8 @@ public class RestrictedFirstPersonCamera extends FirstPersonCamera {
 	private static final float HALF_PI = (float) Math.PI / 2;
 
 	@SuppressWarnings("unused")
-	private static Logger log = Logger
-			.getLogger(RestrictedFirstPersonCamera.class.getName());
+	private static Logger log =
+		Logger.getLogger(RestrictedFirstPersonCamera.class.getName());
 
 	/**
 	 * {@inheritDoc}
@@ -66,25 +65,31 @@ public class RestrictedFirstPersonCamera extends FirstPersonCamera {
 		boolean allowPitch = Math.abs(currentPitch + i_vAngle) < HALF_PI;
 
 		Matrix4f rot = Math3DCache.getMatrix4f();
-		Vector3f tmp = Math3DCache.getVector3f();
 		try {
 			rot.setIdentity();
 			if (i_hAngle != 0)
-				Math3D.rotate(i_hAngle, m_up, rot, rot);
+				Math3D.rotate(i_hAngle, UP_REF, rot, rot);
 
 			if (i_vAngle != 0 && allowPitch)
 				Math3D.rotate(i_vAngle, m_right, rot, rot);
 
 			// camera position
-			Math3D.sub(m_position, i_center, tmp);
-			tmp.transform(rot);
-			Math3D.add(tmp, i_center, m_position);
+			Math3D.sub(m_position, i_center, m_position);
+			m_position.transform(rot);
+			Math3D.add(m_position, i_center, m_position);
 
-			rotate(0, i_vAngle, i_hAngle);
+			// view direction and reference vectors
+			m_viewDir.transform(rot);
+
+			Math3D.cross(m_viewDir, UP_REF, m_right);
+			Math3D.normalise(m_right, m_right);
+
+			Math3D.cross(m_right, m_viewDir, m_up);
+			Math3D.normalise(m_up, m_up);
+
 			fireCameraChanged();
 		} finally {
 			Math3DCache.returnMatrix4f(rot);
-			Math3DCache.returnVector3f(tmp);
 		}
 	}
 

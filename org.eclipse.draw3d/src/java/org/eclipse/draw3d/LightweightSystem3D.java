@@ -13,6 +13,7 @@ package org.eclipse.draw3d;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,7 +44,6 @@ import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Picker;
-import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.draw3d.util.DebugPrimitives;
 import org.eclipse.draw3d.util.Draw3DCache;
@@ -266,9 +266,11 @@ public class LightweightSystem3D extends LightweightSystem implements
 		/**
 		 * {@inheritDoc}
 		 * 
-		 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
+		 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.geometry.IVector3f,
+		 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
 		 */
-		public float getDistance(Query i_query) {
+		public float getDistance(IVector3f i_rayOrigin,
+			IVector3f i_rayDirection, Map<Object, Object> i_context) {
 
 			return Float.NaN;
 		}
@@ -479,8 +481,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 			IVector3f i_delta) {
 
 			if (log.isLoggable(Level.WARNING)) {
-				log
-					.warning("positionChanged on root figure, this must not happen"); //$NON-NLS-1$
+				log.warning("positionChanged on root figure, this must not happen"); //$NON-NLS-1$
 			}
 
 		}

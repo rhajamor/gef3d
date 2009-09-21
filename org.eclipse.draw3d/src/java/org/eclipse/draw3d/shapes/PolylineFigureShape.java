@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
+import java.util.Map;
+
 import org.eclipse.draw3d.Polyline3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IVector3f;
@@ -22,7 +24,6 @@ import org.eclipse.draw3d.geometryext.Plane;
 import org.eclipse.draw3d.geometryext.PointList3D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
-import org.eclipse.draw3d.picking.Query;
 
 /**
  * A polyline shape can be used to render polylines.
@@ -59,9 +60,11 @@ public class PolylineFigureShape implements Shape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.geometry.IVector3f,
+	 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
 	 */
-	public float getDistance(Query i_query) {
+	public float getDistance(IVector3f i_rayOrigin, IVector3f i_rayDirection,
+		Map<Object, Object> i_context) {
 
 		// TODO handle line width!
 
@@ -97,9 +100,12 @@ public class PolylineFigureShape implements Shape {
 		 * calculate the point of intersection between the segment and the ray.
 		 */
 
-		Plane visBorder = getVisibleBorder(i_query);
-		Plane hBorder = getHorizontalBorder(i_query);
-		Plane vBorder = getVerticalBorder(i_query);
+		Plane visBorder =
+			getVisibleBorder(i_rayOrigin, i_rayDirection, i_context);
+		Plane hBorder =
+			getHorizontalBorder(i_rayOrigin, i_rayDirection, i_context);
+		Plane vBorder =
+			getVerticalBorder(i_rayOrigin, i_rayDirection, i_context);
 
 		IVector3f p1 = points.get(0);
 		IVector3f p2;
@@ -144,13 +150,10 @@ public class PolylineFigureShape implements Shape {
 
 							// intersection only if tmp is on the
 							// picking ray
-							IVector3f rayOrigin = i_query.getRayOrigin();
-							IVector3f rayDirection = i_query.getRayDirection();
-
-							Math3D.sub(intersection, rayOrigin, tmp);
-							float fx = tmp.getX() / rayDirection.getX();
-							float fy = tmp.getY() / rayDirection.getY();
-							float fz = tmp.getZ() / rayDirection.getZ();
+							Math3D.sub(intersection, i_rayOrigin, tmp);
+							float fx = tmp.getX() / i_rayDirection.getX();
+							float fy = tmp.getY() / i_rayDirection.getY();
+							float fz = tmp.getZ() / i_rayDirection.getZ();
 
 							if (!Math3D.equals(fx, fy, ACCURACY))
 								return Float.NaN;
@@ -199,22 +202,24 @@ public class PolylineFigureShape implements Shape {
 		return 0;
 	}
 
-	private Plane getHorizontalBorder(Query i_query) {
+	private Plane getHorizontalBorder(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, Map<Object, Object> i_context) {
 
-		Plane horizontalBorder = (Plane) i_query.get(KEY_HORIZONTAL_BORDER);
+		Plane horizontalBorder = null;
+		if (i_context != null)
+			horizontalBorder = (Plane) i_context.get(KEY_HORIZONTAL_BORDER);
+
 		if (horizontalBorder == null) {
 			Vector3f normal = Math3DCache.getVector3f();
 			try {
-				IVector3f rayOrigin = i_query.getRayOrigin();
-				IVector3f rayDirection = i_query.getRayDirection();
-
-				Math3D.cross(rayOrigin, rayDirection, normal);
+				Math3D.cross(i_rayOrigin, i_rayDirection, normal);
 				Math3D.normalise(normal, normal);
 
 				horizontalBorder = new Plane();
-				horizontalBorder.set(rayOrigin, normal);
+				horizontalBorder.set(i_rayOrigin, normal);
 
-				i_query.set(KEY_HORIZONTAL_BORDER, horizontalBorder);
+				if (i_context != null)
+					i_context.put(KEY_HORIZONTAL_BORDER, horizontalBorder);
 			} finally {
 				Math3DCache.returnVector3f(normal);
 			}
@@ -244,23 +249,28 @@ public class PolylineFigureShape implements Shape {
 		return RenderType.getRenderType(m_figure.getAlpha(), false);
 	}
 
-	private Plane getVerticalBorder(Query i_query) {
+	private Plane getVerticalBorder(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, Map<Object, Object> i_context) {
 
-		Plane verticalBorder = (Plane) i_query.get(KEY_VERTICAL_BORDER);
+		Plane verticalBorder = null;
+		if (i_context != null)
+			verticalBorder = (Plane) i_context.get(KEY_VERTICAL_BORDER);
+
 		if (verticalBorder == null) {
 			Vector3f hNormal = Math3DCache.getVector3f();
 			Vector3f vNormal = Math3DCache.getVector3f();
 			try {
-				Plane horizontalBorder = getHorizontalBorder(i_query);
+				Plane horizontalBorder =
+					getHorizontalBorder(i_rayOrigin, i_rayDirection, i_context);
 				horizontalBorder.getNormal(hNormal);
-				IVector3f rayDirection = i_query.getRayDirection();
 
-				Math3D.cross(rayDirection, hNormal, vNormal);
+				Math3D.cross(i_rayDirection, hNormal, vNormal);
 
 				verticalBorder = new Plane();
-				verticalBorder.set(i_query.getRayOrigin(), vNormal);
+				verticalBorder.set(i_rayOrigin, vNormal);
 
-				i_query.set(KEY_VERTICAL_BORDER, verticalBorder);
+				if (i_context != null)
+					i_context.put(KEY_VERTICAL_BORDER, verticalBorder);
 			} finally {
 				Math3DCache.returnVector3f(hNormal, vNormal);
 			}
@@ -269,17 +279,19 @@ public class PolylineFigureShape implements Shape {
 		return verticalBorder;
 	}
 
-	private Plane getVisibleBorder(Query i_query) {
+	private Plane getVisibleBorder(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, Map<Object, Object> i_context) {
 
-		Plane visibleBorder = (Plane) i_query.get(KEY_VISIBLE_BORDER);
+		Plane visibleBorder = null;
+		if (i_context != null)
+			visibleBorder = (Plane) i_context.get(KEY_VISIBLE_BORDER);
+
 		if (visibleBorder == null) {
-			IVector3f rayOrigin = i_query.getRayOrigin();
-			IVector3f rayDirection = i_query.getRayDirection();
-
 			visibleBorder = new Plane();
-			visibleBorder.set(rayOrigin, rayDirection);
+			visibleBorder.set(i_rayOrigin, i_rayDirection);
 
-			i_query.set(KEY_VISIBLE_BORDER, visibleBorder);
+			if (i_context != null)
+				i_context.put(KEY_VISIBLE_BORDER, visibleBorder);
 		}
 
 		return visibleBorder;

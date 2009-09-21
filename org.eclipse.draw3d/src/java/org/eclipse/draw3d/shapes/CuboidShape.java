@@ -11,6 +11,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.draw3d.DisplayListManager;
@@ -24,7 +25,6 @@ import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
-import org.eclipse.draw3d.picking.Query;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
@@ -165,13 +165,12 @@ public class CuboidShape extends PositionableShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.PositionableShape#doGetDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doGetDistance(org.eclipse.draw3d.geometry.IVector3f,
+	 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
 	 */
 	@Override
-	protected float doGetDistance(Query i_query) {
-
-		IVector3f rayOrigin = i_query.getRayOrigin();
-		IVector3f rayDirection = i_query.getRayDirection();
+	protected float doGetDistance(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, Map<Object, Object> i_context) {
 
 		IVector3f[] face = new Vector3f[4];
 		float distance;
@@ -181,7 +180,7 @@ public class CuboidShape extends PositionableShape {
 				face[j] = VERTICES[FACES[i][j]];
 
 			distance =
-				Math3D.rayIntersectsPolygon(rayOrigin, rayDirection, face,
+				Math3D.rayIntersectsPolygon(i_rayOrigin, i_rayDirection, face,
 					NORMALS[i], null);
 
 			if (!Float.isNaN(distance))

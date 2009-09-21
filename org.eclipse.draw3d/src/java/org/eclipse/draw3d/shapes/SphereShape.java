@@ -10,8 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
@@ -118,7 +118,7 @@ public class SphereShape extends PositionableShape {
 	 * Caches the stripes across multiple instances since they never change.
 	 */
 	private static final Map<Integer, SphereTriangle[][]> STRIPE_CACHE =
-		new WeakHashMap<Integer, SphereTriangle[][]>();
+		new HashMap<Integer, SphereTriangle[][]>();
 
 	private static final float[] TMP_F2 = new float[2];
 
@@ -251,10 +251,12 @@ public class SphereShape extends PositionableShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.PositionableShape#doGetDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doGetDistance(org.eclipse.draw3d.geometry.IVector3f,
+	 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
 	 */
 	@Override
-	protected float doGetDistance(Query i_query) {
+	protected float doGetDistance(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, Map<Object, Object> i_context) {
 
 		// TODO: intersect with individual triangles for low precision
 
@@ -265,15 +267,12 @@ public class SphereShape extends PositionableShape {
 		// vector from origin + proj to sphere center
 		Vector3f orth = Draw3DCache.getVector3f();
 		try {
-			IVector3f rayOrigin = i_query.getRayOrigin();
-			IVector3f rayDirection = i_query.getRayDirection();
-
 			// vector from ray origin to center
-			Math3D.sub(CENTER, rayOrigin, roToC);
+			Math3D.sub(CENTER, i_rayOrigin, roToC);
 
 			// project that vector onto the ray direction
-			float dot = Math3D.dot(roToC, rayDirection);
-			Math3D.scale(dot, rayDirection, proj);
+			float dot = Math3D.dot(roToC, i_rayDirection);
+			Math3D.scale(dot, i_rayDirection, proj);
 
 			Math3D.sub(roToC, proj, orth);
 

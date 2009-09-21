@@ -10,8 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
@@ -22,7 +22,6 @@ import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
-import org.eclipse.draw3d.picking.Query;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -258,7 +257,7 @@ public class CylinderShape extends PositionableShape {
 	}
 
 	private static final Map<CylinderConfigKey, CylinderConfig> CONFIG_CACHE =
-		new WeakHashMap<CylinderConfigKey, CylinderConfig>();
+		new HashMap<CylinderConfigKey, CylinderConfig>();
 
 	private static final float[] TMP_F2 = new float[2];
 
@@ -447,18 +446,20 @@ public class CylinderShape extends PositionableShape {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.shapes.PositionableShape#doGetDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.shapes.PositionableShape#doGetDistance(org.eclipse.draw3d.geometry.IVector3f,
+	 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
 	 */
 	@Override
-	protected float doGetDistance(Query i_query) {
+	protected float doGetDistance(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, Map<Object, Object> i_context) {
 
 		float radiusProportions = m_config.getRadiusProportions();
 		if (radiusProportions == 1)
-			return getCylinderDistance(i_query);
+			return getCylinderDistance(i_rayOrigin, i_rayDirection);
 		else if (radiusProportions == 0)
-			return getConeDistance(i_query);
+			return getConeDistance(i_rayOrigin, i_rayDirection);
 		else
-			return getTruncatedConeDistance(i_query);
+			return getTruncatedConeDistance(i_rayOrigin, i_rayDirection);
 	}
 
 	/**
@@ -486,68 +487,62 @@ public class CylinderShape extends PositionableShape {
 		}
 	}
 
-	private float getCapDistance(Query i_query) {
-
-		IVector3f rayOrigin = i_query.getRayOrigin();
-		IVector3f rayDirection = i_query.getRayDirection();
+	private float getCapDistance(IVector3f i_rayOrigin, IVector3f i_rayDirection) {
 
 		IVector3f[] bottom = m_config.getBottomVertices();
 		if (bottom.length > 1) {
 			float d =
-				Math3D.rayIntersectsPolygon(rayOrigin, rayDirection, bottom,
-					IVector3f.Z_AXIS_NEG, null);
+				Math3D.rayIntersectsPolygon(i_rayOrigin, i_rayDirection,
+					bottom, IVector3f.Z_AXIS_NEG, null);
 			if (!Float.isNaN(d))
 				return d;
 		}
 
 		IVector3f[] top = m_config.getTopVertices();
-		return Math3D.rayIntersectsPolygon(rayOrigin, rayDirection, top,
+		return Math3D.rayIntersectsPolygon(i_rayOrigin, i_rayDirection, top,
 			IVector3f.Z_AXIS, null);
 	}
 
-	private float getConeDistance(Query i_query) {
+	private float getConeDistance(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection) {
 
 		// if we hit an end cap, we are done
-		float d = getCapDistance(i_query);
+		float d = getCapDistance(i_rayOrigin, i_rayDirection);
 		if (!Float.isNaN(d))
 			return d;
 
 		// it's much quicker to intersect with a cone whose apex is the
 		// origin and that extends along the positive Z axis, so translate the
 		// ray accordingly
-		Vector3f rayOrigin = Draw3DCache.getVector3f();
+		Vector3f newOrigin = Draw3DCache.getVector3f();
 		try {
-			Math3D
-				.translate(i_query.getRayOrigin(), -0.5f, -0.5f, 0, rayOrigin);
-			IVector3f rayDirection = i_query.getRayDirection();
-
-			return doGetConeDistance(rayOrigin, rayDirection, 0, 1);
+			Math3D.translate(i_rayOrigin, -0.5f, -0.5f, 0, newOrigin);
+			return doGetConeDistance(newOrigin, i_rayDirection, 0, 1);
 		} finally {
-			Draw3DCache.returnVector3f(rayOrigin);
+			Draw3DCache.returnVector3f(newOrigin);
 		}
 	}
 
-	private float getCylinderDistance(Query i_query) {
+	private float getCylinderDistance(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection) {
 
 		// if we hit one of the end caps, we are done
-		float d = getCapDistance(i_query);
+		float d = getCapDistance(i_rayOrigin, i_rayDirection);
 		if (!Float.isNaN(d))
 			return d;
 
 		// it's much quicker to intersect with a cylinder that stands on the
 		// origin and extends along the positive Z axis, so translate the ray
 		// accordingly
-		Vector3f rayOrigin = Draw3DCache.getVector3f();
+		Vector3f newOrigin = Draw3DCache.getVector3f();
 		try {
-			Math3D
-				.translate(i_query.getRayOrigin(), -0.5f, -0.5f, 0, rayOrigin);
-			IVector3f rayDirection = i_query.getRayDirection();
+			Math3D.translate(i_rayOrigin, -0.5f, -0.5f, 0, newOrigin);
 
 			// now intersect with infinite cylinder along Z axis:
-			float xo = rayOrigin.getX();
-			float yo = rayOrigin.getY();
-			float xd = rayDirection.getX();
-			float yd = rayDirection.getY();
+			float xo = newOrigin.getX();
+			float yo = newOrigin.getY();
+			float xd = i_rayDirection.getX();
+			float yd = i_rayDirection.getY();
 
 			float A = xd * xd + yd * yd;
 			float B = 2 * (xo * xd + yo * yd);
@@ -556,7 +551,7 @@ public class CylinderShape extends PositionableShape {
 			Math3D.solveQuadraticEquation(A, B, C, TMP_F2);
 			return Math3D.minDistance(TMP_F2);
 		} finally {
-			Draw3DCache.returnVector3f(rayOrigin);
+			Draw3DCache.returnVector3f(newOrigin);
 		}
 	}
 
@@ -570,26 +565,25 @@ public class CylinderShape extends PositionableShape {
 		return RenderType.getRenderType(m_alpha, m_superimposed);
 	}
 
-	private float getTruncatedConeDistance(Query i_query) {
+	private float getTruncatedConeDistance(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection) {
 
 		// if we hit an end cap, we are done
-		float d = getCapDistance(i_query);
+		float d = getCapDistance(i_rayOrigin, i_rayDirection);
 		if (!Float.isNaN(d))
 			return d;
 
 		// it's much quicker to intersect with a cone whose apex is the
 		// origin and that extends along the positive Z axis, so translate the
 		// ray accordingly and then check with a positive min Z value
-		Vector3f rayOrigin = Draw3DCache.getVector3f();
+		Vector3f newOrigin = Draw3DCache.getVector3f();
 		try {
 			float h = m_config.getHeight();
-			Math3D.translate(i_query.getRayOrigin(), -0.5f, -0.5f, h - 1,
-				rayOrigin);
-			IVector3f rayDirection = i_query.getRayDirection();
+			Math3D.translate(i_rayOrigin, -0.5f, -0.5f, h - 1, newOrigin);
 
-			return doGetConeDistance(rayOrigin, rayDirection, h - 1, h);
+			return doGetConeDistance(newOrigin, i_rayDirection, h - 1, h);
 		} finally {
-			Draw3DCache.returnVector3f(rayOrigin);
+			Draw3DCache.returnVector3f(newOrigin);
 		}
 	}
 

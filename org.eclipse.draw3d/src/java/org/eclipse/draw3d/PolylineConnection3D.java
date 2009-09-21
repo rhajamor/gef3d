@@ -27,7 +27,7 @@ import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.RotatableDecoration;
 import org.eclipse.draw2d.RoutingListener;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw3d.ArrowLocator3D.Alignment;
+import org.eclipse.draw3d.ConnectionLocator3D.Alignment;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 /**

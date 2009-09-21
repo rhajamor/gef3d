@@ -208,7 +208,7 @@ public class FirstPersonCamera extends AbstractCamera {
 	/**
 	 * Distance of the far clipping plane.
 	 */
-	protected int m_far = 40000;
+	protected int m_far = 10000;
 
 	/**
 	 * The field of vision angle in degrees.
@@ -220,7 +220,7 @@ public class FirstPersonCamera extends AbstractCamera {
 	/**
 	 * Distance of the near clipping plane.
 	 */
-	protected int m_near = 1;
+	protected int m_near = 100;
 
 	/**
 	 * The current camera position.
@@ -293,9 +293,9 @@ public class FirstPersonCamera extends AbstractCamera {
 	@Override
 	protected void fireCameraChanged() {
 
-		super.fireCameraChanged();
 		m_matricesValid = false;
 		m_cachedProjection.invalidate();
+		super.fireCameraChanged();
 	}
 
 	private float getAspect() {
@@ -515,7 +515,11 @@ public class FirstPersonCamera extends AbstractCamera {
 			tmp.transform(rot);
 			Math3D.add(tmp, i_center, m_position);
 
-			rotate(0, i_vAngle, i_hAngle);
+			// view direction and reference vectors
+			m_viewDir.transform(rot);
+			m_right.transform(rot);
+			m_up.transform(rot);
+
 			fireCameraChanged();
 		} finally {
 			Math3DCache.returnMatrix4f(rot);
@@ -570,8 +574,8 @@ public class FirstPersonCamera extends AbstractCamera {
 	 */
 	public Point project(IVector3f i_wLocation, Point io_result) {
 
-		return project(i_wLocation.getX(), i_wLocation.getY(), i_wLocation
-			.getZ(), io_result);
+		return project(i_wLocation.getX(), i_wLocation.getY(),
+			i_wLocation.getZ(), io_result);
 	}
 
 	/**
@@ -698,8 +702,8 @@ public class FirstPersonCamera extends AbstractCamera {
 			calculateInversionMatrix(i_modelMatrix, inversion);
 			result.transform(inversion);
 
-			m_cachedProjection.update(result.getX(), result.getY(), result
-				.getZ(), i_mx, i_my, i_depth, i_modelMatrix);
+			m_cachedProjection.update(result.getX(), result.getY(),
+				result.getZ(), i_mx, i_my, i_depth, i_modelMatrix);
 
 			return result;
 		} finally {

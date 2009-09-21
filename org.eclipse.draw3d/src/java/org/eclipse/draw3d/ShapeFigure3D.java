@@ -10,11 +10,12 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
+import java.util.Map;
+
+import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBoxImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.Query;
-import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.draw3d.util.Draw3DCache;
 
@@ -44,12 +45,14 @@ public abstract class ShapeFigure3D extends Figure3D {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.picking.Query)
+	 * @see org.eclipse.draw3d.Figure3D#getDistance(org.eclipse.draw3d.geometry.IVector3f,
+	 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
 	 */
 	@Override
-	public float getDistance(Query i_query) {
+	public float getDistance(IVector3f i_rayOrigin, IVector3f i_rayDirection,
+		Map<Object, Object> i_context) {
 
-		return getShape().getDistance(i_query);
+		return getShape().getDistance(i_rayOrigin, i_rayDirection, i_context);
 	}
 
 	/**
@@ -101,8 +104,7 @@ public abstract class ShapeFigure3D extends Figure3D {
 		if (m_shape == null) {
 			m_shape = createShape();
 			if (m_shape == null) {
-				throw new NullPointerException(
-					"created shape mmust not be null");
+				throw new NullPointerException("created shape must not be null");
 			}
 		}
 

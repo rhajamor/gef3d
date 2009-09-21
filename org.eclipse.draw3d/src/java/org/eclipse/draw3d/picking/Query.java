@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.picking;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,7 @@ public class Query {
 	/**
 	 * This is a simple map for storing client specific data.
 	 */
-	private Map<Object, Object> m_objects;
+	private Map<Object, Object> m_context;
 
 	private IVector3f m_rayDirection;
 
@@ -112,13 +111,10 @@ public class Query {
 		if (parentFigure3D.equals(m_rootFigure)) {
 			if (m_debug)
 				if (i_childHit != null)
-					log
-						.info(i_childHit.getFigure3D() + " wins over parent "
-							+ i_parentFigure
-							+ " because parent is the root figure");
+					log.info(i_childHit.getFigure3D() + " wins over parent "
+						+ i_parentFigure + " because parent is the root figure");
 				else
-					log
-						.info("neither parent nor child was hit, parent is root");
+					log.info("neither parent nor child was hit, parent is root");
 
 			return i_childHit;
 		}
@@ -144,7 +140,9 @@ public class Query {
 
 		HitImpl hit = i_childHit;
 		if (accept(parentFigure3D, m_search) || searchResult != null) {
-			float realDistance = parentFigure3D.getDistance(this);
+			float realDistance =
+				parentFigure3D.getDistance(m_rayOrigin, m_rayDirection,
+					m_context);
 			if (!Float.isNaN(realDistance)
 				&& (hit == null || realDistance < hit.getDistance())) {
 				if (searchResult == null)
@@ -274,10 +272,10 @@ public class Query {
 		if (i_key == null)
 			throw new NullPointerException("i_key must not be null");
 
-		if (m_objects == null)
+		if (m_context == null)
 			return null;
 
-		return m_objects.get(i_key);
+		return m_context.get(i_key);
 	}
 
 	private float getBoundingBoxDistance(IFigure3D i_figure) {
@@ -341,37 +339,6 @@ public class Query {
 			log.info(i_figure + " pruned by tree search");
 
 		return prune;
-	}
-
-	/**
-	 * Caches the given object in this query under the given key. This can be
-	 * used by objects implementing {@link Pickable} to store information that
-	 * is valid for the duration of a query, for example helper objects or
-	 * derived mathematical variables.
-	 * <p>
-	 * If the given object is <code>null</code>, it will be removed from the
-	 * cache.
-	 * </p>
-	 * 
-	 * @param i_key the key to store the object under
-	 * @param i_object the object to store
-	 * @throws NullPointerException if the given key is <code>null</code>
-	 */
-	public void set(Object i_key, Object i_object) {
-
-		if (i_key == null)
-			throw new NullPointerException("i_key must not be null");
-
-		if (i_object == null) {
-			if (m_objects != null)
-				m_objects.remove(i_key);
-			return;
-		}
-
-		if (m_objects == null)
-			m_objects = new HashMap<Object, Object>();
-
-		m_objects.put(i_key, i_object);
 	}
 
 	/**

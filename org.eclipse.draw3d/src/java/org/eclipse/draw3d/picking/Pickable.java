@@ -10,6 +10,9 @@
  ******************************************************************************/
 package org.eclipse.draw3d.picking;
 
+import java.util.Map;
+
+import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 
 /**
@@ -34,13 +37,15 @@ public interface Pickable {
 	 * in which p is the point of intersection, if any. If the given ray does
 	 * not intersect with this object, {@link Float#NaN} is returned.
 	 * 
-	 * @param i_query the current picking query
+	 * @param i_rayOrigin the origin of the picking ray
+	 * @param i_rayDirection the direction of the picking ray
+	 * @param i_context a map that can be used to store context information if
+	 *            not <code>null</code>
 	 * @return the scalar value as described above or {@link Float#NaN} if the
 	 *         given ray does not intersect with this object
-	 * @throws IllegalArgumentException if the given direction vector has a
-	 *             length of zero
 	 */
-	public float getDistance(Query i_query);
+	public float getDistance(IVector3f i_rayOrigin, IVector3f i_rayDirection,
+		Map<Object, Object> i_context);
 
 	/**
 	 * Returns a paraxial (to the world coordinate system) bounding box that
