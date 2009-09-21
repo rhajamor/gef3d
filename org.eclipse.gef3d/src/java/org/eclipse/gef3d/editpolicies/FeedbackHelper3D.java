@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.gef3d.editpolicies;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ConnectionAnchor;
@@ -164,9 +163,6 @@ public class FeedbackHelper3D extends FeedbackHelper {
 
 			if (surface != initialSurface
 				&& !(m_helper.getReference() instanceof IFigure3D)) {
-				if (log.isLoggable(Level.INFO)) {
-					log.info("surface changed"); //$NON-NLS-1$
-				}
 				dummy = m_helper.getReferencePosition3D(surface.getHost());
 			} else {
 				dummy = m_helper.getReferencePosition3D();
@@ -244,9 +240,6 @@ public class FeedbackHelper3D extends FeedbackHelper {
 		Position3D refPosition = m_helper.getReferencePosition3D();
 
 		if (surface != initialSurface) {
-			if (log.isLoggable(Level.INFO)) {
-				log.info("surface changed"); //$NON-NLS-1$
-			}
 			Position3D result =
 				Position3DUtil.createRelativePosition(surface.getHost());
 			result.setSize3D(refPosition.getSize3D());
