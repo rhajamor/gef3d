@@ -33,8 +33,8 @@ public class Math3DVector3f extends Math3DVector2f {
 
 		if (io_result == null)
 			io_result =
-				new Vector3fImpl(Math.abs(i_source.getX()), Math.abs(i_source
-					.getY()), Math.abs(i_source.getZ()));
+				new Vector3fImpl(Math.abs(i_source.getX()),
+					Math.abs(i_source.getY()), Math.abs(i_source.getZ()));
 		else
 			io_result.set(Math.abs(i_source.getX()), Math.abs(i_source.getY()),
 				Math.abs(i_source.getZ()));
@@ -54,9 +54,8 @@ public class Math3DVector3f extends Math3DVector2f {
 		Vector3f o_result) {
 
 		if (o_result == null) {
-			return new Vector3fImpl(i_left.getX() + i_right.getX(), i_left
-				.getY()
-				+ i_right.getY(), i_left.getZ() + i_right.getZ());
+			return new Vector3fImpl(i_left.getX() + i_right.getX(),
+				i_left.getY() + i_right.getY(), i_left.getZ() + i_right.getZ());
 		} else {
 			o_result.set(i_left.getX() + i_right.getX(), i_left.getY()
 				+ i_right.getY(), i_left.getZ() + i_right.getZ());
@@ -231,6 +230,37 @@ public class Math3DVector3f extends Math3DVector2f {
 	}
 
 	/**
+	 * Returns the world location of a point that is given by a ray and a
+	 * distance. The given ray direction is scaled with the given distance and
+	 * added to the given ray origin.
+	 * 
+	 * @param i_rayOrigin the origin of the ray
+	 * @param i_rayDirection the direction of the ray
+	 * @param i_distance the distance of the point to the origin of the ray
+	 * @param io_result the result vector, if <code>null</code>, a new vector
+	 *            will be created
+	 * @return the point
+	 */
+	public static Vector3f getLocation(IVector3f i_rayOrigin,
+		IVector3f i_rayDirection, float i_distance, Vector3f io_result) {
+
+		Vector3f result = io_result;
+		if (result == null)
+			result = new Vector3fImpl();
+
+		Vector3f tmp = Math3DCache.getVector3f();
+		try {
+			tmp.set(i_rayDirection);
+			tmp.scale(i_distance);
+			Math3D.add(i_rayOrigin, tmp, result);
+
+			return result;
+		} finally {
+			Math3DCache.returnVector3f(tmp);
+		}
+	}
+
+	/**
 	 * Returns the normalised direction vector of a ray that starts at the given
 	 * origin and that contains the given point.
 	 * 
@@ -396,9 +426,8 @@ public class Math3DVector3f extends Math3DVector2f {
 		Vector3f o_result) {
 
 		if (o_result == null) {
-			return new Vector3fImpl(i_left.getX() - i_right.getX(), i_left
-				.getY()
-				- i_right.getY(), i_left.getZ() - i_right.getZ());
+			return new Vector3fImpl(i_left.getX() - i_right.getX(),
+				i_left.getY() - i_right.getY(), i_left.getZ() - i_right.getZ());
 		} else {
 			o_result.set(i_left.getX() - i_right.getX(), i_left.getY()
 				- i_right.getY(), i_left.getZ() - i_right.getZ());
