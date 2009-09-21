@@ -18,7 +18,6 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
 import org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramEditor;
-import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.GraphicalViewer;
@@ -28,7 +27,7 @@ import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
-import org.eclipse.gef3d.ext.multieditor.INestableTransactionalEditor;
+import org.eclipse.gef3d.ext.multieditor.INestableEditor;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
 import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
@@ -63,7 +62,7 @@ import org.eclipse.ui.IEditorSite;
  * @since 01.12.2008
  */
 public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
-		INestableTransactionalEditor {
+		INestableEditor {
 
 	/**
 	 * Logger for this class
@@ -126,13 +125,11 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 			final RootEditPart rootEP =
 				EditPartService.getInstance().createRootEditPart(getDiagram());
 			if (rootEP instanceof IDiagramPreferenceSupport) {
-				((IDiagramPreferenceSupport) rootEP)
-					.setPreferencesHint(getPreferencesHint());
+				((IDiagramPreferenceSupport) rootEP).setPreferencesHint(getPreferencesHint());
 			}
 
 			if (getDiagramGraphicalViewer() instanceof DiagramGraphicalViewer) {
-				((DiagramGraphicalViewer) getDiagramGraphicalViewer())
-					.hookWorkspacePreferenceStore(getWorkspaceViewerPreferenceStore());
+				((DiagramGraphicalViewer) getDiagramGraphicalViewer()).hookWorkspacePreferenceStore(getWorkspaceViewerPreferenceStore());
 			}
 
 			viewer.setRootEditPart(rootEP);
@@ -144,10 +141,8 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 			getSite().registerContextMenu(
 				ActionIds.DIAGRAM_EDITOR_CONTEXT_MENU, provider, viewer);
 			final KeyHandler viewerKeyHandler =
-				new DiagramGraphicalViewerKeyHandler(viewer)
-					.setParent(getKeyHandler());
-			viewer.setKeyHandler(new DirectEditKeyHandler(viewer)
-				.setParent(viewerKeyHandler));
+				new DiagramGraphicalViewerKeyHandler(viewer).setParent(getKeyHandler());
+			viewer.setKeyHandler(new DirectEditKeyHandler(viewer).setParent(viewerKeyHandler));
 		}
 	}
 
@@ -313,16 +308,5 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 		// zoom needs to be 1
 		super.initializeGraphicalViewerContents();
 		getZoomManager().setZoom(1.0);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef3d.ext.multieditor.INestableTransactionalEditor#joinTransactionalEditingDomain(org.eclipse.emf.transaction.TransactionalEditingDomain)
-	 */
-	public void joinTransactionalEditingDomain(
-		TransactionalEditingDomain i_domain) {
-
-		getDiagramDocument().setEditingDomain(i_domain);
 	}
 }
