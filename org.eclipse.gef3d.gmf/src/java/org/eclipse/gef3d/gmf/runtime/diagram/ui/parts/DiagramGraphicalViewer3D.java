@@ -198,6 +198,8 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 
 		return (ProviderAcceptor) getProperty(ProviderAcceptor.PROVIDER_ACCEPTOR_PROPERTY_KEY);
 	}
+	
+	
 
 	/**
 	 * {@inheritDoc}
