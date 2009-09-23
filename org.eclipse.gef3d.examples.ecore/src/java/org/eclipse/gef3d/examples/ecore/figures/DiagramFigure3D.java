@@ -27,13 +27,14 @@ import org.eclipse.draw3d.shapes.Shape;
  */
 public class DiagramFigure3D extends ShapeFigure3D {
 
-	protected int headerStyle;
-
 	/**
 	 * The surface of this figure. This is where 2D children are placed.
 	 */
 	private ISurface m_surface = new FigureSurface(this);
 
+	/**
+	 * Creates a new instance.
+	 */
 	public DiagramFigure3D() {
 
 		setLayoutManager(new FreeformLayout());
@@ -47,6 +48,7 @@ public class DiagramFigure3D extends ShapeFigure3D {
 	 */
 	@Override
 	protected Shape createShape() {
+
 		return new CuboidFigureShape(this, false);
 	}
 

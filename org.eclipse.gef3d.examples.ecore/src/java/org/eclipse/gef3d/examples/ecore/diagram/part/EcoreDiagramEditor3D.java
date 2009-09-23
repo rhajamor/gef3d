@@ -44,7 +44,6 @@ import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.parts.IDiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider;
 import org.eclipse.gmf.runtime.diagram.ui.services.editpart.EditPartService;
-import org.eclipse.gmf.runtime.draw2d.ui.mapmode.MapModeTypes;
 import org.eclipse.gmf.runtime.notation.Diagram;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Composite;
@@ -82,17 +81,6 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 	 * A reference to the 3D diagram graphical viewer.
 	 */
 	protected DiagramGraphicalViewer3D viewer3D;
-
-	/**
-	 * Creates a new editor instance.
-	 */
-	public EcoreDiagramEditor3D() {
-
-		super();
-
-		// this is a hack:
-		MapModeTypes.DEFAULT_MM = MapModeTypes.IDENTITY_MM;
-	}
 
 	/**
 	 * {@inheritDoc}
