@@ -28,6 +28,7 @@ import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
+import org.eclipse.gef3d.ext.multieditor.AbstractMultiEditor3D;
 import org.eclipse.gef3d.ext.multieditor.IMultiEditor;
 import org.eclipse.gef3d.ext.multieditor.INestableEditor;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer;
@@ -43,6 +44,7 @@ import org.eclipse.gef3d.ui.parts.GraphicalViewer3D;
 import org.eclipse.gmf.runtime.draw2d.ui.mapmode.MapModeTypes;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.AbstractMultiEditor;
 import org.osgi.framework.Bundle;
 
 /**
@@ -57,7 +59,7 @@ import org.osgi.framework.Bundle;
  * @version $Revision$
  * @since Apr 14, 2009
  */
-public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
+public class MultiGraphicalEditor3D extends AbstractMultiEditor3D
 		implements IMultiEditor {
 	/**
 	 * Logger for this class
@@ -65,100 +67,26 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 	private static final Logger log =
 		Logger.getLogger(MultiGraphicalEditor3D.class.getName());
 
-	private MultiEditorPartFactory m_multiFactory;
-
-	private MultiEditorModelContainer m_container;
-
-	private Map<String, PaletteDrawer> m_nestedPaletteDrawers;
 
 	/**
 	 * 
 	 */
 	public MultiGraphicalEditor3D() {
-		m_nestedPaletteDrawers = new HashMap<String, PaletteDrawer>();
-
 		// GMF specific:
 		MapModeTypes.DEFAULT_MM = MapModeTypes.IDENTITY_MM;
-		setEditDomain(new DefaultEditDomain(this));
-
 	}
 
-	/**
+		
+	/** 
 	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette#getPaletteRoot()
+	 * @see org.eclipse.gef3d.ext.multieditor.AbstractMultiEditor3D#createRootEditPart()
 	 */
 	@Override
-	protected PaletteRoot getPaletteRoot() {
-		MultiPaletteRoot root = new MultiPaletteRoot();
-		PaletteDrawer drawer = new PaletteDrawer("GEF3D");
-		drawer.setDescription("GEF3D tools");
-		drawer.add(new ToolEntry("Camera", "Camera Tool", null, null,
-			CameraTool.class) {
-			// nothing to implement
-		});
-		drawer.setInitialState(PaletteDrawer.INITIAL_STATE_PINNED_OPEN);
-		root.add(0, drawer);
-
-		m_nestedPaletteDrawers.put(drawer.getLabel(), drawer);
-
-		return root;
+	protected RootEditPart createRootEditPart() {
+		return new DiagramRootEditPart3D();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
-	 */
-	@Override
-	public void doSave(IProgressMonitor i_monitor) {
-		// TODO implement method MultiGraphicalEditor3D.doSave
-
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef3d.examples.graph.editor.GraphEditor3D#configureGraphicalViewer()
-	 */
-	@Override
-	protected void configureGraphicalViewer() {
-
-		super.configureGraphicalViewer();
-
-		// we need a special 3D root edit part for connections and feedback
-		RootEditPart root = new DiagramRootEditPart3D();
-		getGraphicalViewer().setRootEditPart(root);
-
-		m_multiFactory = new MultiEditorPartFactory();
-		getGraphicalViewer().setEditPartFactory(m_multiFactory);
-
-		getGraphicalViewer().addDropTargetListener(
-			new EditorInputTransferDropTargetListener(this,
-				getGraphicalViewer()));
-
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef.ui.parts.GraphicalEditor#initializeGraphicalViewer()
-	 */
-	@Override
-	protected void initializeGraphicalViewer() {
-
-		m_container = new MultiEditorModelContainer();
-		GraphicalViewer viewer = getGraphicalViewer();
-		// MultiEditorPartFactory multiFactory = (MultiEditorPartFactory) viewer
-		// .getEditPartFactory();
-		viewer.setContents(m_container);
-
-		viewer.getContents().installEditPolicy(
-			EditorInputDropPolicy.EDITOR_INPUT_ROLE,
-			new EditorInputDropPolicy());
-
-		addEditor(getEditorInput());
-	}
+	
 
 	/**
 	 * {@inheritDoc}
@@ -170,129 +98,15 @@ public class MultiGraphicalEditor3D extends GraphicalEditor3DWithFlyoutPalette
 		return new DiagramGraphicalViewer3D();
 	}
 
-	/**
+	/** 
 	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditor#addEditor(org.eclipse.ui.IEditorInput)
-	 */
-	public void addEditor(IEditorInput i_editorInput) {
-		// find appropriate editor
-		INestableEditor nestedEditor = findEditor(i_editorInput);
-		if (nestedEditor == null) {
-			if (log.isLoggable(Level.INFO)) {
-				log
-					.info("IEditorInput - No nestable editor found - i_editorInput=" + i_editorInput); //$NON-NLS-1$
-			}
-
-			return;
-		}
-
-		try {
-			nestedEditor.init(getEditorSite(), i_editorInput);
-
-			nestedEditor.initializeAsNested(getGraphicalViewer(),
-				m_multiFactory, m_container);
-
-			addNestedPalette(nestedEditor.createPaletteDrawer());
-
-		} catch (PartInitException ex) {
-			log.warning("IEditorInput - exception: " + ex); //$NON-NLS-1$
-
-		}
-		getGraphicalViewer().getRootEditPart().refresh();
-
-	}
-
-	/**
-	 * @param i_createPaletteDrawer
-	 */
-	private void addNestedPalette(PaletteDrawer drawer) {
-
-		if (drawer == null)
-			return;
-
-		PaletteRoot root = getEditDomain().getPaletteViewer().getPaletteRoot();
-
-		if (m_nestedPaletteDrawers.containsKey(drawer.getLabel()))
-			return;
-		root.add(drawer);
-		m_nestedPaletteDrawers.put(drawer.getLabel(), drawer);
-		getEditDomain().getPaletteViewer();
-
-	}
-
-	/**
-	 * Searches matching editor for given input (in extension registry) and
-	 * returns an instance of that editor.
-	 * @param i_editorInput
-	 * @return the nestable editor, or null if no matching editor was found
-	 */
-	private INestableEditor findEditor(IEditorInput i_editorInput) {
-		String strName = i_editorInput.getName();
-		IExtensionRegistry registry = Platform.getExtensionRegistry();
-		IExtensionPoint point =
-			registry.getExtensionPoint("org.eclipse.ui.editors");
-		if (point == null)
-			return null;
-		IExtension[] extensions = point.getExtensions();
-
-		for (IExtension extension : extensions) {
-			String strContributorName = extension.getContributor().getName();
-			// if (log.isLoggable(Level.INFO)) {
-			// log.info("Extension found: " + extension
-			//					+ ", Contributor: " + strContributorName); //$NON-NLS-1$
-			// }
-
-			IConfigurationElement[] ices = extension.getConfigurationElements();
-			String ext, token;
-			StringTokenizer strt;
-			for (IConfigurationElement element : ices) {
-				if (element.getName().equals("editor")) {
-					ext = element.getAttribute("extensions");
-					if (ext != null) {
-						strt = new StringTokenizer(ext, ",");
-						while (strt.hasMoreTokens()) {
-							token = strt.nextToken();
-							if (strName.endsWith(token)) {
-								Bundle bundle =
-									Platform.getBundle(strContributorName);
-								String strClassname =
-									element.getAttribute("class");
-								try {
-									Class clazz =
-										bundle.loadClass(strClassname);
-									if (INestableEditor.class
-										.isAssignableFrom(clazz)) {
-										Object obj = clazz.newInstance();
-										return (INestableEditor) obj;
-									}
-								} catch (ClassNotFoundException ex) {
-									log.warning("Cannot create nested editor " //$NON-NLS-1$
-										+ strClassname + ", ex=" + ex);  //$NON-NLS-1$
-								} catch (InstantiationException ex) {
-									log.warning("Cannot create nested editor " //$NON-NLS-1$
-										+ strClassname + ", ex=" + ex);  //$NON-NLS-1$
-								} catch (IllegalAccessException ex) {
-									log.warning("Cannot create nested editor " //$NON-NLS-1$
-										+ strClassname + ", ex=" + ex);  //$NON-NLS-1$
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditor#acceptsInput(org.eclipse.ui.IEditorInput)
 	 */
 	public boolean acceptsInput(IEditorInput i_editorInput) {
-
-		// TODO implement method IMultiEditor.acceptsInput
-		return true;
+		return ! findNestableEditorClasses(i_editorInput).isEmpty();
 	}
+
+		
+
+	
 }
