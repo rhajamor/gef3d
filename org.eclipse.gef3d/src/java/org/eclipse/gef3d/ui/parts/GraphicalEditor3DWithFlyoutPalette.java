@@ -111,6 +111,8 @@ public abstract class GraphicalEditor3DWithFlyoutPalette extends
     /**
      * Here, a {@link GraphicalViewer3DImpl} is created instead of a
      * ScrollingGraphicalViewer.
+     * This method is only called from {@link #createGraphicalViewer(Composite)},
+     * override this method, if a different viewer is needed.
      * 
      * @return
      */
