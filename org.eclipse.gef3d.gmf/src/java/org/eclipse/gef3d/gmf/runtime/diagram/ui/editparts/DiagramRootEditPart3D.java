@@ -19,6 +19,7 @@ import org.eclipse.draw3d.DispatchingConnectionLayer;
 import org.eclipse.draw3d.FeedbackLayer3D;
 import org.eclipse.gef3d.gmf.runtime.draw2d.ui.internal.figures.ConnectionLayerEx.DispatchingConnectionLayerEx;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramRootEditPart;
+import org.eclipse.gmf.runtime.notation.MeasurementUnit;
 
 /**
  * 3D diagram root edit part with feedback, primary, connection, and
@@ -29,6 +30,14 @@ import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramRootEditPart;
  * @since Apr 7, 2009
  */
 public class DiagramRootEditPart3D extends DiagramRootEditPart {
+
+	/**
+	 * Creates a new instance that uses an identity map mode.
+	 */
+	public DiagramRootEditPart3D() {
+
+		super(MeasurementUnit.PIXEL_LITERAL);
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -59,8 +68,7 @@ public class DiagramRootEditPart3D extends DiagramRootEditPart {
 			public void paint(Graphics graphics) {
 				for (Object child : getChildren()) {
 					if (child instanceof DispatchingConnectionLayer) {
-						((DispatchingConnectionLayer) child)
-							.dispatchPendingConnections();
+						((DispatchingConnectionLayer) child).dispatchPendingConnections();
 					}
 				}
 				super.paint(graphics);
