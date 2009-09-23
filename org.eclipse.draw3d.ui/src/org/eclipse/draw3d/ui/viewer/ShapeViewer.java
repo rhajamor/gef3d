@@ -13,7 +13,7 @@ package org.eclipse.draw3d.ui.viewer;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.shapes.CuboidShape;
+import org.eclipse.draw3d.shapes.CylinderShape;
 import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Device;
@@ -46,13 +46,16 @@ public class ShapeViewer extends Draw3DViewer {
 			@Override
 			protected Shape createShape() {
 
-				return new CuboidShape(this.getPosition3D(), false);
+				return new CylinderShape(getPosition3D(), 12, 0);
+				// return new CuboidShape(getPosition3D(), false);
 			}
 		};
 
-		figure.getPosition3D().setLocation3D(new Vector3fImpl(0, 0, 0));
-		figure.getPosition3D().setSize3D(new Vector3fImpl(200, 300, 100));
-		figure.getPosition3D().setRotation3D(new Vector3fImpl(20, 0, 0));
+		figure.getPosition3D().setLocation3D(new Vector3fImpl(-100, -100, 0));
+		figure.getPosition3D().setSize3D(new Vector3fImpl(200, 200, 200));
+		figure.getPosition3D().setRotation3D(
+			new Vector3fImpl((float) Math.toRadians(30),
+				(float) Math.toRadians(187), (float) Math.toRadians(22)));
 
 		Device dev = Display.getCurrent();
 		figure.setBackgroundColor(dev.getSystemColor(SWT.COLOR_DARK_BLUE));
