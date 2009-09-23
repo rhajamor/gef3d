@@ -10,11 +10,13 @@
  ******************************************************************************/
 package org.eclipse.gef3d.ext.multieditor;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithPalette;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
@@ -71,7 +73,7 @@ public interface INestableEditor {
 		throws PartInitException;
 
 	/**
-	 * Creates a new palette drawer with all tools of this nested editor. This
+	 * Creates new palette drawer with all tools of this nested editor. This
 	 * method is quite similar to
 	 * {@link GraphicalEditorWithPalette#getPaletteRoot()}, except that a drawer
 	 * is expected instead of a root. The name of the drawer is used to identify
@@ -85,5 +87,26 @@ public interface INestableEditor {
 	 * @return the editor specific drawer or null, if no palette is provided.
 	 */
 	PaletteDrawer createPaletteDrawer();
-
+	
+	/**
+	 * This method is already defined in {@link IEditorPart} and used
+	 * by multi editor to distinguish loaded editors. 
+	 * @return
+	 * @see IEditorPart#getEditorInput()
+	 * 
+	 */
+	IEditorInput getEditorInput();
+	
+	
+	/**
+	 * @param monitor
+	 * @see EditorPart#doSave(IProgressMonitor)
+	 */
+	void doSave(IProgressMonitor monitor);
+	
+	/**
+	 * @see EditorPart#isDirty()
+	 * @return
+	 */
+	boolean isDirty();
 }
