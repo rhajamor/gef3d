@@ -11,12 +11,12 @@
 package org.eclipse.gef3d.examples.ecore.diagram.parts;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw3d.Figure3D;
+import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.requests.SelectionRequest;
 import org.eclipse.gef.tools.DeselectAllTracker;
-import org.eclipse.gef3d.examples.ecore.figures.DiagramFigure3D;
+import org.eclipse.gef3d.gmf.runtime.diagram.ui.figures.DiagramFigure3D;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.tools.DragEditPartsTrackerEx;
 import org.eclipse.gmf.runtime.notation.View;
@@ -48,7 +48,7 @@ public class DiagramEditPart3D extends DiagramEditPart {
 	 */
 	@Override
 	protected IFigure createFigure() {
-		Figure3D f = new DiagramFigure3D();
+		IFigure3D f = new DiagramFigure3D();
 
 		f.setBackgroundColor(new Color(Display.getCurrent(), 255, 255, 255));
 		f.setAlpha((byte) (255 / 2));
