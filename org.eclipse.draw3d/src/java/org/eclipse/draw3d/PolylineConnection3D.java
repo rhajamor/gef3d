@@ -363,12 +363,20 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 	/**
 	 * Sets the anchor to be used at the start of this polyline connection.
 	 * 
-	 * @param anchor the new source anchor
+	 * @param anchor the new source anchor, must be a 3D anchor or an anchor
+	 *            attached to a figure for which a 3D host figure is retrievable
 	 * @see PolylineConnection#setSourceAnchor(ConnectionAnchor)
 	 */
 	public void setSourceAnchor(ConnectionAnchor anchor) {
 		if (anchor == startAnchor) {
 			return;
+		}
+		if (!(anchor instanceof ConnectionAnchor3D)) {
+			if (Figure3DHelper.getAncestor3D(anchor.getOwner()) == null) {
+				throw new IllegalArgumentException(
+					"Cannot set 2D anchor w/o available 3D owner, you probably"
+						+ "would subclass your connection edit part from a 3D base class");
+			}
 		}
 		unhookSourceAnchor();
 		// No longer needed, revalidate does this. (original comment)
@@ -403,12 +411,20 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 	 * Sets the anchor to be used at the end of the polyline connection. Removes
 	 * this listener from the old anchor and adds it to the new anchor.
 	 * 
-	 * @param anchor the new target anchor
+	 * @param anchor the new target anchor, must be a 3D anchor or an anchor
+	 *            attached to a figure for which a 3D host figure is retrievable
 	 * @see PolylineConnection#setTargetAnchor(ConnectionAnchor)
 	 */
 	public void setTargetAnchor(ConnectionAnchor anchor) {
 		if (anchor == endAnchor) {
 			return;
+		}
+		if (!(anchor instanceof ConnectionAnchor3D)) {
+			if (Figure3DHelper.getAncestor3D(anchor.getOwner()) == null) {
+				throw new IllegalArgumentException(
+					"Cannot set 2D anchor w/o available 3D owner, you probably"
+						+ "would subclass your connection edit part from a 3D base class");
+			}
 		}
 		unhookTargetAnchor();
 		endAnchor = anchor;
