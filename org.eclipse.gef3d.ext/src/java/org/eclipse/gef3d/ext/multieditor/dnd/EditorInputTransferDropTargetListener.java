@@ -11,6 +11,7 @@
 package org.eclipse.gef3d.ext.multieditor.dnd;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -146,16 +147,9 @@ public class EditorInputTransferDropTargetListener extends
 		EditorInputDropRequest request =
 			(EditorInputDropRequest) getTargetRequest();
 
-		if (event.data instanceof EditorInputTransfer.EditorInputData[]) {
-			List<IEditorInput> editorInputs = new ArrayList<IEditorInput>();
-			EditorInputTransfer.EditorInputData[] editorInputsData =
-				(EditorInputData[]) event.data;
-			for (EditorInputTransfer.EditorInputData data : editorInputsData) {
-				editorInputs.add(data.input);
-
-			}
+		List<IEditorInput> editorInputs = retrieveEditorInput(event);
+		if (!editorInputs.isEmpty())
 			request.setEditorInputs(editorInputs);
-		}
 
 		try {
 			super.handleDrop();
@@ -166,4 +160,22 @@ public class EditorInputTransferDropTargetListener extends
 
 	}
 
+	/**
+	 * @param event
+	 */
+	private List<IEditorInput> retrieveEditorInput(DropTargetEvent event) {
+		if (event.data instanceof EditorInputTransfer.EditorInputData[]) {
+			List<IEditorInput> editorInputs = new ArrayList<IEditorInput>();
+			EditorInputTransfer.EditorInputData[] editorInputsData =
+				(EditorInputData[]) event.data;
+			for (EditorInputTransfer.EditorInputData data : editorInputsData) {
+				editorInputs.add(data.input);
+
+			}
+			return editorInputs;
+		}
+		return Collections.emptyList();
+	}
+
+	
 }
