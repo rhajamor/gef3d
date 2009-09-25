@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
+import org.eclipse.draw2d.AnchorListener;
 import org.eclipse.draw2d.XYAnchor;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IVector3f;
@@ -25,6 +26,49 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
  */
 public class XYZAnchor extends XYAnchor implements ConnectionAnchor3D {
 
+	public static class Immutable extends XYZAnchor {
+
+		/**
+		 * @param i_location
+		 */
+		public Immutable(Vector3fImpl i_location) {
+			super(i_location);
+		}
+		
+		/** 
+		 * As this class is immutable, this method throws an
+		 * {@link UnsupportedOperationException}.
+		 * 
+		 * @see org.eclipse.draw3d.XYZAnchor#setLocation(org.eclipse.draw2d.geometry.Point)
+		 */
+		@Override
+		public void setLocation(Point i_p) {
+			throw new UnsupportedOperationException("Anchor is immutable");
+		}
+
+		/** 
+		 * As this class is immutable, this method throws an
+		 * {@link UnsupportedOperationException}.
+		 * @see org.eclipse.draw3d.XYZAnchor#setLocation3D(org.eclipse.draw3d.geometry.IVector3f)
+		 */
+		@Override
+		public void setLocation3D(IVector3f i_location) {
+			throw new UnsupportedOperationException("Anchor is immutable");
+		}
+
+		/** 
+		 * As this class is immutable, no events will ever been thrown.
+		 * Thus, this method does nothing.
+		 * @see org.eclipse.draw2d.ConnectionAnchorBase#addAnchorListener(org.eclipse.draw2d.AnchorListener)
+		 */
+		@Override
+		public void addAnchorListener(AnchorListener i_listener) {
+		}
+	}
+	
+		
+	
+	
     Vector3fImpl m_location3D = new Vector3fImpl();
 
     /**
@@ -36,7 +80,8 @@ public class XYZAnchor extends XYAnchor implements ConnectionAnchor3D {
     public XYZAnchor(Vector3fImpl i_location) {
 
         super(new Point(i_location.getX(), i_location.getY()));
-        setLocation3D(i_location);
+        // do not use setter here in order to enable immutable versions
+        m_location3D.set(i_location);
     }
 
     /**
