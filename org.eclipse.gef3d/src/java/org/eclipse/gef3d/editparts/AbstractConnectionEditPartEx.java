@@ -24,7 +24,7 @@ import org.eclipse.gef3d.factories.IFigureFactoryProvider;
  * @version	$Revision$
  * @since 	Apr 22, 2008
  */
-public abstract class AbstractConnectionEditPartEx extends AbstractConnectionEditPart {
+public abstract class AbstractConnectionEditPartEx extends AbstractConnectionEditPart3D {
 
 	/**
 	 * Creates a figure for this edit part using a figure factory. The figure
