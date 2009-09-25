@@ -16,6 +16,7 @@ import java.beans.PropertyChangeListener;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.ArrowDecoration3D;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
+import org.eclipse.gef3d.editparts.AbstractConnectionEditPart3D;
 import org.eclipse.gef3d.examples.graph.editor.figures.EdgeFigure3D;
 import org.eclipse.gef3d.examples.graph.model.Edge;
 import org.eclipse.swt.SWT;
@@ -29,7 +30,7 @@ import org.eclipse.swt.widgets.Display;
  * @version $Revision$
  * @since 04.04.2008
  */
-public class IntermodelEdgePart extends AbstractConnectionEditPart implements
+public class IntermodelEdgePart extends AbstractConnectionEditPart3D implements
 		PropertyChangeListener {
 
 	/**
