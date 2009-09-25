@@ -72,6 +72,20 @@ public abstract class AbstractMultiEditor3D extends
 
 	protected MultiEditorModelContainer m_container;
 
+	/**
+	 * @return the container
+	 */
+	public MultiEditorModelContainer getContainer() {
+		return m_container;
+	}
+
+	/**
+	 * @return the multiFactory
+	 */
+	protected MultiEditorPartFactory getMultiFactory() {
+		return m_multiFactory;
+	}
+
 	protected MultiEditorPartFactory m_multiFactory;
 
 	protected ResourceSet resourceSet;
