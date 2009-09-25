@@ -11,10 +11,11 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.draw3d,
  org.eclipse.ui,
  org.eclipse.emf.transaction;bundle-version="1.3.0"
-Eclipse-LazyStart: true
+Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.gef3d.ext,
  org.eclipse.gef3d.ext.assimilator,
  org.eclipse.gef3d.ext.intermodel,
  org.eclipse.gef3d.ext.multieditor,
  org.eclipse.gef3d.ext.multieditor.dnd,
  org.eclipse.gef3d.ext.reverselookup
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
