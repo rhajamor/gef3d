@@ -294,7 +294,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			Vector3f w = Draw3DCache.getVector3f();
 			try {
 				surface.getWorldLocation(p, w);
-				log.info(w.toString());
+//				log.info(w.toString());
 				m_dummyAnchor.setLocation3D(w);
 				setAnchor(m_dummyAnchor);
 			} finally {
