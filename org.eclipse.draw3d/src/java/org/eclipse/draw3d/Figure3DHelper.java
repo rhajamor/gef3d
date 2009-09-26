@@ -569,8 +569,9 @@ public class Figure3DHelper {
 		g3d.deactivateGraphics2D();
 
 		figure.collectRenderFragments(renderContext);
-		
-		if (renderContext.getScene().isDebug())
+
+		IScene scene = renderContext.getScene();
+		if (scene != null && scene.isDebug())
 			renderContext.addRenderFragment(new ParaxialBoundsFigureShape(
 				figure));
 	}
