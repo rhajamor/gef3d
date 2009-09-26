@@ -320,8 +320,6 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 
 		GL11.glFlush();
 
-		dump();
-
 		// restore OpenGL state
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glPopMatrix();
