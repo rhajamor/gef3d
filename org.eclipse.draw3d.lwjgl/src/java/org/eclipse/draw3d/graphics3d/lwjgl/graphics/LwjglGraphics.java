@@ -920,7 +920,9 @@ public class LwjglGraphics extends Graphics {
 	public LwjglGraphics(int i_width, int i_height,
 			LwjglFontManager i_fontManager) {
 
-		setDimensions(i_width, i_height);
+		m_width = i_width;
+		m_height = i_height;
+
 		initDefaultGraphicsState();
 
 		glSetClip();
@@ -2043,9 +2045,9 @@ public class LwjglGraphics extends Graphics {
 		return m_fontManager.getFont(font, (char) 32, (char) 127);
 	}
 
-	private void glRestoreState(GraphicsState i_state) {
+	private void glRestoreState(GraphicsState i_previous) {
 
-		Matrix4f transformation = i_state.getTransformation();
+		Matrix4f transformation = i_previous.getTransformation();
 		if (transformation != null) {
 			FloatBuffer buffer = Draw3DCache.getFloatBuffer(16);
 			Matrix4f inverse = Draw3DCache.getMatrix4f();
@@ -2063,27 +2065,27 @@ public class LwjglGraphics extends Graphics {
 			}
 		}
 
-		if (i_state.getClip() == null) {
+		if (i_previous.getClip() == null) {
 			if (m_state.getClip() != null)
 				glSetClip();
 		} else {
-			if (!i_state.getClip().equals(m_state.getClip()))
+			if (!i_previous.getClip().equals(m_state.getClip()))
 				glSetClip();
 		}
 
-		if (i_state.getLineWidth() != m_state.getLineWidth())
+		if (i_previous.getLineWidth() != m_state.getLineWidth())
 			glSetLineWidth();
 
-		if (i_state.getLineStyle() != m_state.getLineStyle()
-			|| (i_state.getLineStyle() == SWT.LINE_CUSTOM
+		if (i_previous.getLineStyle() != m_state.getLineStyle()
+			|| (i_previous.getLineStyle() == SWT.LINE_CUSTOM
 				&& m_state.getLineStyle() == SWT.LINE_CUSTOM && !Arrays.equals(
-				i_state.getLineDash(), m_state.getLineDash())))
+				i_previous.getLineDash(), m_state.getLineDash())))
 			glSetLineStyle();
 
-		if (i_state.getXORMode() != m_state.getXORMode())
+		if (i_previous.getXORMode() != m_state.getXORMode())
 			glSetXORMode();
 
-		if (i_state.getAntialias() != m_state.getAntialias())
+		if (i_previous.getAntialias() != m_state.getAntialias())
 			glSetAntialias();
 
 		m_lastColor = LastColor.UNKNOWN;
@@ -2485,20 +2487,6 @@ public class LwjglGraphics extends Graphics {
 
 		m_state.setClip(i_clip);
 		glSetClip();
-	}
-
-	/**
-	 * Sets the dimensions of this graphics object.
-	 * 
-	 * @param i_width the new width
-	 * @param i_height the new height
-	 */
-	public void setDimensions(int i_width, int i_height) {
-
-		checkDisposed();
-
-		m_width = i_width;
-		m_height = i_height;
 	}
 
 	/**

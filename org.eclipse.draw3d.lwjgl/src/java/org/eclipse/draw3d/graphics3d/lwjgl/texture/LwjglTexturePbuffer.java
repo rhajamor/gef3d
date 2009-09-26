@@ -181,13 +181,8 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 
 		try {
 			if (!m_valid || (m_pBuffer != null && m_pBuffer.isBufferLost())) {
-
-				if (m_graphics == null) {
-					m_graphics =
-						new LwjglGraphics(m_width, m_height, m_fontManager);
-				} else {
-					m_graphics.setDimensions(m_width, m_height);
-				}
+				m_graphics =
+					new LwjglGraphics(m_width, m_height, m_fontManager);
 
 				deleteTexture(m_glTexture);
 				deletePBuffer(m_pBuffer);

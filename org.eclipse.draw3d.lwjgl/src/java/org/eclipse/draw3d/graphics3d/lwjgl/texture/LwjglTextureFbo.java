@@ -190,8 +190,7 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 				glFrameBuffer = createFbo();
 				glTexture = createTexture(32, 32);
 				int status =
-					EXTFramebufferObject
-						.glCheckFramebufferStatusEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT);
+					EXTFramebufferObject.glCheckFramebufferStatusEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT);
 				if (status != EXTFramebufferObject.GL_FRAMEBUFFER_COMPLETE_EXT) {
 					return false;
 				}
@@ -251,20 +250,14 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 		EXTFramebufferObject.glBindFramebufferEXT(
 			EXTFramebufferObject.GL_FRAMEBUFFER_EXT, m_glFrameBuffer);
 		if (!m_valid) {
-			if (m_graphics == null) {
-				m_graphics =
-					new LwjglGraphics(m_width, m_height, m_fontManager);
-			} else {
-				m_graphics.setDimensions(m_width, m_height);
-			}
+			m_graphics = new LwjglGraphics(m_width, m_height, m_fontManager);
 
 			deleteTexture(m_glTexture);
 			m_glTexture = createTexture(m_width, m_height);
 			m_valid = true;
 
 			int status =
-				EXTFramebufferObject
-					.glCheckFramebufferStatusEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT);
+				EXTFramebufferObject.glCheckFramebufferStatusEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT);
 			if (status != EXTFramebufferObject.GL_FRAMEBUFFER_COMPLETE_EXT) {
 				throw new RuntimeException(getStatus(status));
 			}
@@ -326,6 +319,8 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 			throw new IllegalStateException("texture is disposed");
 
 		GL11.glFlush();
+
+		dump();
 
 		// restore OpenGL state
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
