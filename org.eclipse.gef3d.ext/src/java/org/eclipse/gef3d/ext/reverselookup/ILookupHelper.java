@@ -14,7 +14,8 @@ package org.eclipse.gef3d.ext.reverselookup;
  * Super interface for adapters used in {@link ReverseLookupManager}, providing
  * a method indicating if this helper can handle a given element. The returned
  * value indicates "how well" is can be handled, if the element cannot be
- * handled, 0 is to be returned.
+ * handled, 0 is to be returned. This interface is used by ILookupStrategy and
+ * ModelPathFi
  * 
  * @author Jens von Pilgrim
  * @version $Revision$

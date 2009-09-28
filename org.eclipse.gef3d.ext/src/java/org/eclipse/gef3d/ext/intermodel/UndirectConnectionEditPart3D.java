@@ -34,9 +34,15 @@ import org.eclipse.gef3d.ext.reverselookup.ReverseLookupManager;
  * This class can be used instead of using the connected element adapter
  * pattern.
  * </p>
+ * <p>
+ * In most cases, the source edit part will be set by the client and only the 
+ * target edit part is to be looked up. That is, usually this class is 
+ * initialized via
+ * {@link #UndirectConnectionEditPart3D(false, true)}, this is equal to calling
+ * the empty constructor.
+ * </p>
  * 
  * @todo reconnect not implemented yet!
- * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Sep 25, 2009
@@ -47,6 +53,37 @@ public abstract class UndirectConnectionEditPart3D extends
 	EditPart adaptedSourceEditPart;
 
 	EditPart adaptedTargetEditPart;
+
+	boolean lookupSource, lookupTarget;
+
+	/**
+	 * Creates this edit part, source edit part is expected to be set (and not
+	 * looked up), while target edit part is looked up.
+	 * Calling this constructor is equal to calling {@link
+	 * UndirectConnectionEditPart3D#UndirectConnectionEditPart3D(false, true)}
+	 */
+	public UndirectConnectionEditPart3D() {
+		this(false, true);
+	}
+
+	/**
+	 * Creates this edit part, source and target edit part are looked up as
+	 * configured by the given parameters.
+	 * 
+	 * @param i_lookupSource if true, source edit part is looked up based on its
+	 *            model element, which is retrieved via
+	 *            {@link #getSourceModel()}; otherwise the source edit part
+	 *            needs to be set via {@link #setSource(EditPart)}
+	 * @param i_lookupTarget if true, target edit part is looked up based on its
+	 *            model element, which is retrieved via
+	 *            {@link #getTargetModel()}; otherwise the target edit part
+	 *            needs to be set via {@link #setTarget(EditPart)}
+	 */
+	public UndirectConnectionEditPart3D(boolean i_lookupSource,
+			boolean i_lookupTarget) {
+		lookupSource = i_lookupSource;
+		lookupTarget = i_lookupTarget;
+	}
 
 	/**
 	 * This method is to be overridden by subclasses May return null if target
@@ -68,8 +105,9 @@ public abstract class UndirectConnectionEditPart3D extends
 
 	/**
 	 * Get target edit part, tries to perform a reverse lookup in order to
-	 * retrieve the edit part by its model. If target edit part is set, this
-	 * method simply returns it as the original overridden method. Otherwise,
+	 * retrieve the edit part by its model if configured accordingly (see
+	 * constructor for details). If target edit part is set, this method simply
+	 * returns it as the original overridden method. Otherwise,
 	 * {@link #getTargetModel()} is used to perform a reverse lookup for
 	 * retrieving the source edit part. If the reverse lookup fails, an
 	 * {@link IllegalStateException} is thrown.
@@ -83,7 +121,7 @@ public abstract class UndirectConnectionEditPart3D extends
 		if (part != null)
 			return part;
 
-		if (adaptedTargetEditPart == null) {
+		if (adaptedTargetEditPart == null && lookupTarget) {
 			Object targetModel = getTargetModel();
 			if (targetModel == null) {
 				return null;
@@ -107,7 +145,8 @@ public abstract class UndirectConnectionEditPart3D extends
 
 	/**
 	 * Get source edit part, tries to perform a reverse lookup in order to
-	 * retrieve the edit part by its model. If source edit part is set, this
+	 * retrieve the edit part by its model if configured accordingly (see
+	 * constructor for details). If source edit part is set, this
 	 * method simply returns it as the original overridden method. Otherwise,
 	 * {@link #getSourceModel()} is used to perform a reverse lookup for
 	 * retrieving the source edit part. If the reverse lookup fails, an
@@ -122,7 +161,7 @@ public abstract class UndirectConnectionEditPart3D extends
 		if (part != null)
 			return part;
 
-		if (adaptedSourceEditPart == null) {
+		if (adaptedSourceEditPart == null && lookupSource) {
 			Object sourceModel = getSourceModel();
 			if (sourceModel == null) {
 				return null;

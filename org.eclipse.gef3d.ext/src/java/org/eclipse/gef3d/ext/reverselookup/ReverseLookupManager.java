@@ -10,14 +10,13 @@
  ******************************************************************************/
 package org.eclipse.gef3d.ext.reverselookup;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
 import java.util.Set;
-import java.util.logging.Level;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import org.eclipse.gef.EditPart;
@@ -25,59 +24,64 @@ import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
 
 /**
- * Manager for finding notation elements by given domain elements. This class
- * solves the problem that domain elements have usually no reference to their
- * notation elements, i.e. we have to perform a lookup search. This manager
- * makes the following assumption:
+ * Manager for finding notation elements by given domain elements. This is a
+ * general implementation of a reverse lookup, with parameterised notation type
+ * (usually EditParts), and dynamically installable lookup strategies. A kind of
+ * special solution of that problem is the map managed by the edit part viewer
+ * {@link EditPartViewer#getEditPartRegistry()}, this special case is used as
+ * the default lookup strategy.
+ * <p>
+ * Three lookup strategies are provided:
  * <ol>
- * <li>If a predecessor of a given domain element is linked to some notation
- * element, then the searched notation element is contained in the subtree of
- * the notation element.</li>
+ * <li>{@link EditPartRegistryLookupStrategy}, uses
+ * {@link EditPartViewer#getEditPartRegistry()}</li>
+ * <li>
+ * <code>org.eclipse.gef3d.gmf.ext.reverselookup.GMFEditPartMapLookupStrategy</code>
+ * (in plugin org.eclipse.gef3d.gmf) for GMF editors using GMF's notation model</li>
+ * <li>{@link EditPartByModelPathFinderStrategy}, GEF3D's multi purpose reverse
+ * lookup method</li>
  * </ol>
- * The algorithm for finding a notation element by its referenced domain element
- * is a combination of a width- and depth-first tree search.
- * <p>
- * The idea of the algorithm for finding an notation element is as follows:
- * Instead of simply searching for a notation element referencing a domain
- * model, we try to find notation elements referencing an element of the path
- * which is defined from the domain model to its root (assuming the domain model
- * is organized as (containment) tree, somehow. As long as no notation element
- * is found which references an element of the domain model path, a width-first
- * search is performed on the notation model tree. But if a notation model
- * element is found, which references to an element in the domain model path,
- * then the search strategy is changed and a depth-first search on the children
- * of this notation model is performed, always searching for domain elements in
- * the domain model path. If this fails, the children of the firstly found
- * notation element are searched via width-first again.
+ * The first one, {@link EditPartRegistryLookupStrategy} is installed by default
+ * if the lookup manager is lazily created in
+ * {@link #getEditPartLookupManager(EditPartViewer)}.
  * </p>
  * <p>
- * The following figure illustrates the idea:
- * 
- * <pre>
- *    ___1____
- *   /  / \   \
- *  2   3  4-p 5 
- *  |   |  |   |
- *  .   .  6-p .
- * </pre>
- * 
- * The figure shows the notation tree, the "p"s repreent the domain model graph.
- * Nodes 2, 3, and 4 are traversed via width-first. In 4, the path is found, now
- * depth-first is used for finding 6 (i.e. 5 is not tested).
+ * Lookup strategies can be installed by priority, which defines the order in
+ * which they are used for finding an edit part. The priority only defined the
+ * order, in general all registered strategies are used as long as no matching
+ * edit part has been found.
  * </p>
  * <p>
- * In order to retrieve the domain model path and notation model children and
- * their references domain model elements, {@link IModelPathFinder} and
- * {@link INotationAdapter} instances are used. These helpers are registers via
- * the {@link #addModelPathFinder(IModelPathFinder)} and
- * {@link #addNotationAdapter(INotationAdapter)}. If am object is handled by
- * several helpers, the helper with the highest matching result is used.
- * </p>
- * <p>
- * In order to use a reverse lookup manager for finding elements, at least one
- * {@link INotationAdapter} must be added, e.g. {@link EditPartNotationAdapter}.
- * For improving search speed, {@link IModelPathFinder} should be added.
- * </p>
+ * If you need to configure the {@link ReverseLookupManager}, you probably want
+ * to do that in the editor, e.g., <br/>
+ * <code><pre>
+ * protected void initializeGraphicalViewer() {
+ * 	...
+ * 	super.initializeGraphicalViewer();
+ * 	ReverseLookupManager<EditPart> rlm =
+ * 		ReverseLookupManager.getEditPartLookupManager(getGraphicalViewer());
+ * 		// EditPartRegistryLookupStrategy already installed with prio=0
+ * 	// add GMF strategy:
+ * 	if (getGraphicalViewer() instanceof IDiagramGraphicalViewer) {
+ * 		rlm.addLookupStrategy(1, new GMFEditPartMapLookupStrategy(
+ * 		(IDiagramGraphicalViewer) getGraphicalViewer()));
+ * 	} else {
+ * 		EditPartByModelPathFinderStrategy<EditPart> gef3DStrategy =
+ * 			new EditPartByModelPathFinderStrategy<EditPart>(
+ * 		getGraphicalViewer().getContents());
+ * 		gef3DStrategy.addNotationAdapter(GMFEditPartNotationAdapter.INSTANCE);
+ * 		// gef3DStrategy.addNotationAdapter(EditPartNotationAdapter.INSTANCE);
+ * 		gef3DStrategy.addModelPathFinder(EObjectPathFinder.INSTANCE);
+ * 		rlm.addLookupStrategy(1, gef3DStrategy);
+ * 	}
+ * }
+ * </pre></code> <br/>
+ * Later, an edit part can easily be retrieved in an {@link EditPart}
+ * (independent of its editor and lookup strategy) via <code><pre>
+ * ReverseLookupManager<EditPart> rlm = (ReverseLookupManager<EditPart>) getViewer().getProperty(
+ * 				ReverseLookupManager.RLM_ID);
+ * EditPart editPart = rlm.findNotationElementForDomainElement(modelElement);
+ * </pre></code>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -90,14 +94,21 @@ public class ReverseLookupManager<NotationType> {
 	 */
 	public final static String RLM_ID = "ReverseLookupManager<EditPart>";
 
+	protected SortedMap<Integer, Set<ILookupStrategy<NotationType>>> lookupStrategies =
+		new TreeMap<Integer, Set<ILookupStrategy<NotationType>>>();
+
+	/**
+	 * Logger for this class
+	 */
+	private static final Logger log =
+		Logger.getLogger(ReverseLookupManager.class.getName());
+
 	/**
 	 * Returns a {@link ReverseLookupManager} associated to a given edit part
 	 * viewer ({@link EditPart#getViewer()},
 	 * {@link GraphicalEditor#getGraphicalViewer()}). The instance is created
-	 * lazily if it doesn't exists, the viewer's content (
-	 * {@link EditPartViewer#getContents()} is set as default notation root.
-	 * Note that in order to use this instance, at least one notation adapter
-	 * has to be added.
+	 * lazily if it doesn't exists, an {@link EditPartRegistryLookupStrategy} is
+	 * installed with priority 0.
 	 * <p>
 	 * The instance is set as a viewer's properties
 	 * {@link EditPartViewer#setProperty(String, Object)} using {@link #RLM_ID}
@@ -114,310 +125,134 @@ public class ReverseLookupManager<NotationType> {
 		if (reverseLookupManager == null) {
 			reverseLookupManager = new ReverseLookupManager<EditPart>();
 			viewer.setProperty(RLM_ID, reverseLookupManager);
-			reverseLookupManager.setDefaultNotationRoot(viewer.getContents());
+			reverseLookupManager.addLookupStrategy(0,
+				new EditPartRegistryLookupStrategy(viewer));
 		}
 		return reverseLookupManager;
 	}
 
 	/**
-	 * Logger for this class
+	 * @param priority, must be greater or equal 0
+	 * @param lookupStrategy
+	 * @return true, if strategy was newly inserted, false, if strategy was
+	 *         already registered and was only set to given priority
 	 */
-	private static final Logger log =
-		Logger.getLogger(ReverseLookupManager.class.getName());
+	public boolean addLookupStrategy(int priority,
+		ILookupStrategy<NotationType> lookupStrategy) {
+		if (priority < 0) // parameter precondition
+			throw new IllegalArgumentException(
+				"priority must be greater or equal 0, was  " + priority);
+
+		// do not allow a strategy registered more then once.
+		boolean bFound = removeLookupStrategy(lookupStrategy);
+
+		Set<ILookupStrategy<NotationType>> strategies =
+			lookupStrategies.get(-priority);
+		if (strategies == null) {
+			strategies = new LinkedHashSet<ILookupStrategy<NotationType>>();
+			lookupStrategies.put(-priority, strategies);
+		}
+
+		strategies.add(lookupStrategy);
+		return bFound;
+	}
 
 	/**
-	 * Set of model element path finders.
+	 * Removes a strategy.
+	 * 
+	 * @param lookupStrategy
+	 * @return true if strategy was removed, false if strategy was not found
 	 */
-	protected Set<ILookupHelper> modelElementPathFinders =
-		new LinkedHashSet<ILookupHelper>();
+	public boolean removeLookupStrategy(
+		ILookupStrategy<NotationType> lookupStrategy) {
+		boolean bFound = false;
+		for (Set<ILookupStrategy<NotationType>> strategies : lookupStrategies
+			.values()) {
+			if (strategies.remove(lookupStrategy))
+				bFound = true;
+		}
+		return bFound;
+	}
+
+	public void removeAllLookupStrategies() {
+		lookupStrategies.clear();
+	}
 
 	/**
-	 * Set of notation adapters.
-	 */
-	protected Set<ILookupHelper> notationAdapters =
-		new LinkedHashSet<ILookupHelper>();
-
-	/**
-	 * The default root, used in
-	 * {@link #findNotationElementForDomainElement(Object)}
-	 */
-	protected NotationType defaultNotationRoot;
-
-	/**
-	 * Finds a notation element by its referenced domain element. This method
-	 * requires a notation root to be set (see
-	 * {@link #setDefaultNotationRoot(Object)}.
+	 * Finds a notation element by its referenced domain element by using
+	 * registered {@link ILookupStrategy} in the order of their priority.
 	 * 
 	 * @param domainElement domain element which is referenced
 	 * @return notation element referencing given domainElement, or null if no
 	 *         such element is found
 	 */
-	public NotationType findNotationElementForDomainElement(Object domainElement) {
-		return findNotationElementForDomainElement(getDefaultNotationRoot(),
-			domainElement);
-	}
-
-	/**
-	 * Finds a notation element by its referenced domain element. Note that the
-	 * given notationRoot has not necessarily to be the real root of the
-	 * notation tree, but may be the root of a subtree in order to optimize the
-	 * search.
-	 * 
-	 * @param notationRoot the root of the notation element tree
-	 * @param domainElement domainElement domain element which is referenced
-	 * @return notation element referencing given domainElement, or null if no
-	 *         such element is found
-	 */
 	public NotationType findNotationElementForDomainElement(
-		NotationType notationRoot, Object domainElement) {
-		if (notationRoot == null) {
-			log.warning("No notation root specified, cannot start search."); //$NON-NLS-1$
-			return null;
-		}
+		final Object domainElement) {
+		NotationType notationType = null;
+		for (Set<ILookupStrategy<NotationType>> strategies : lookupStrategies
+			.values()) {
 
-		// create path
-		List domainPath = findPath(domainElement);
+			// this set must be sorted individually for each domain element,
+			// as handlesElement may return different values depending on the
+			// element
+			SortedSet<ILookupStrategy<NotationType>> sortedStrategies =
+				new TreeSet<ILookupStrategy<NotationType>>(
+					new Comparator<ILookupStrategy<NotationType>>() {
 
-		Queue<NotationType> queue = new LinkedList<NotationType>();
-		queue.add(notationRoot);
-		return findNotationElementWidthFirst(queue, domainPath);
-	}
+						/**
+						 * ascending!
+						 * 
+						 * @param s1
+						 * @param s2
+						 * @return
+						 */
+						public int compare(ILookupStrategy<NotationType> s1,
+							ILookupStrategy<NotationType> s2) {
+							int h1 = s1.handlesElement(domainElement);
+							int h2 = s2.handlesElement(domainElement);
+							if (h1 < h2)
+								return 1;
+							return -1;
 
-	/**
-	 * Adds a model path finder. Actually, no model path finder is required, in
-	 * this case the calculated path only contains the searched element.
-	 * 
-	 * @param modelPathFinder, must not be null
-	 */
-	public void addModelPathFinder(IModelPathFinder modelPathFinder) {
-		if (modelPathFinder == null) // parameter precondition
-			throw new NullPointerException("modelPathFinder must not be null");
+						}
+					});
+			sortedStrategies.addAll(strategies);
 
-		modelElementPathFinders.add(modelPathFinder);
-	}
-
-	/**
-	 * Adds a notation adapter, at least one notation adapter is required in
-	 * order to make the lookup work.
-	 * 
-	 * @param notationAdpater, must not be null
-	 */
-	public void addNotationAdapter(
-		INotationAdapter<NotationType> notationAdpater) {
-		if (notationAdpater == null) // parameter precondition
-			throw new NullPointerException("notationAdpater must not be null");
-
-		notationAdapters.add(notationAdpater);
-	}
-
-	/**
-	 * First part of algorithm, performing a widht-first search on the notation
-	 * tree. This method calls itself recursively as long as no domain element
-	 * of the path was found. In the latter case, the search strategy is
-	 * switched to depth-first (
-	 * {@link #findNotationChildrenDepthFirst(List, List)}.
-	 * 
-	 * @param notationElements the queued notation elements to be searched
-	 * @param domainPath the domain path, the searched element must be at index
-	 *            0
-	 * @return notation element referencing given domainElement, or null if no
-	 *         such element is found
-	 */
-	protected NotationType findNotationElementWidthFirst(
-		Queue<NotationType> notationElements, List domainPath) {
-		if (notationElements.isEmpty())
-			return null;
-
-		NotationType currentNotationElement = notationElements.poll();
-
-		Object currentDomainElement = getDomainElement(currentNotationElement);
-		int pathIndex =
-			(currentDomainElement == null) ? -1 : domainPath
-				.indexOf(currentDomainElement);
-		if (pathIndex == 0) { // found
-			return currentNotationElement;
-		}
-
-		List<NotationType> notationChildren =
-			findNotationChildren(currentNotationElement);
-
-		if (pathIndex > 0) { // in index, switch to depth first
-			domainPath = domainPath.subList(0, pathIndex);
-			return findNotationChildrenDepthFirst(notationChildren, domainPath);
-		} else { // width-first search:
-			notationElements.addAll(notationChildren);
-			return findNotationElementWidthFirst(notationElements, domainPath);
-		}
-
-	}
-
-	/**
-	 * Searches the domain element using a depth-first search algorithm. If the
-	 * domain element is not found this way, the search is continued with
-	 * widht-first search.
-	 * 
-	 * @param notationChildren a list of notation elements which are depth-first
-	 *            searched
-	 * @param domainPath the domain path, the searched element must be at index
-	 *            0
-	 * @return notation element referencing given domainElement, or null if no
-	 *         such element is found
-	 */
-	protected NotationType findNotationChildrenDepthFirst(
-		List<NotationType> notationChildren, List domainPath) {
-
-		for (NotationType currentNotationElement : notationChildren) {
-			Object currentDomainElement =
-				getDomainElement(currentNotationElement);
-			int pathIndex = domainPath.indexOf(currentDomainElement);
-			if (pathIndex == 0) {
-				return currentNotationElement;
-			} else if (pathIndex > 0) { // in index, proceed with depth first
-				domainPath = domainPath.subList(0, pathIndex);
-				notationChildren = findNotationChildren(currentNotationElement);
-				return findNotationChildrenDepthFirst(notationChildren,
-					domainPath);
+			for (ILookupStrategy<NotationType> strategy : sortedStrategies) {
+				notationType =
+					strategy.findNotationElementForDomainElement(domainElement);
+				if (notationType != null)
+					return notationType;
 			}
 		}
+		return notationType;
 
-		// uups, not found, let's switch to width-first search of this subtree
-		Queue<NotationType> queue = new LinkedList<NotationType>();
-		for (NotationType currentNotationElement : notationChildren) {
-			queue.addAll(findNotationChildren(currentNotationElement));
-		}
-		return findNotationElementWidthFirst(queue, domainPath);
 	}
 
 	/**
-	 * Finds the children of a notation element, for that registered
-	 * {@link INotationAdapter} are used.
+	 * {@inheritDoc}
 	 * 
-	 * @param notationElement
-	 * @return list of children, this list may be empty but never null
+	 * @see java.lang.Object#toString()
 	 */
-	protected List<NotationType> findNotationChildren(
-		NotationType notationElement) {
-		INotationAdapter<NotationType> notationAdapter =
-			getNotationAdapter(notationElement);
-		List<NotationType> notationChildren = null;
-		if (notationAdapter != null) {
-			notationChildren =
-				notationAdapter.getNotationChildren(notationElement);
-		}
-		if (notationChildren == null)
-			notationChildren = Collections.emptyList();
+	@Override
+	public String toString() {
+		StringBuilder strb = new StringBuilder("ReverseLookupManager [");
+		for (int prio : lookupStrategies.keySet()) {
+			Set<ILookupStrategy<NotationType>> strategies =
+				lookupStrategies.get(prio);
+			strb.append("\n").append(-prio).append(": ");
+			boolean first = true;
+			for (ILookupStrategy<NotationType> strategy : strategies) {
+				if (!first)
+					strb.append(", ");
+				else
+					first = false;
+				strb.append(strategy.toString());
 
-		return notationChildren;
-	}
-
-	/**
-	 * Returns the domain element referenced by a given notatoin element, using
-	 * {@link INotationAdapter}s. If no notation adapters are registered, this
-	 * method returns null.
-	 * 
-	 * @param notationElement
-	 * @return domain element referenced by given notation element, or null, if
-	 *         no element is referenced
-	 */
-	protected Object getDomainElement(NotationType notationElement) {
-		INotationAdapter<NotationType> notationAdapter =
-			getNotationAdapter(notationElement);
-		Object domainElement = null;
-		if (notationAdapter != null) {
-			domainElement = notationAdapter.getDomainObject(notationElement);
-		}
-		return domainElement;
-	}
-
-	/**
-	 * Returns the path of given domain element (at path index 0) to its root in
-	 * an assumed domain model tree. The path is calculated by registered
-	 * {@link IModelPathFinder}s, if no such finders are registered, a path
-	 * containing only the given element is returned.
-	 * 
-	 * @param domainElement
-	 * @return returns the path, this path contains at least the given element
-	 */
-	protected List findPath(Object domainElement) {
-		IModelPathFinder modelPathFinder =
-			(IModelPathFinder) getBestMatchingHelper(modelElementPathFinders,
-				domainElement);
-		List path = null;
-		if (modelPathFinder == null) {
-			if (log.isLoggable(Level.INFO)) {
-				log.info("No model path finder found for " + domainElement); //$NON-NLS-1$
-			}
-		} else {
-			path = modelPathFinder.findPath(domainElement);
-		}
-		if (path == null) {
-			path = new ArrayList(1);
-			path.add(domainElement);
-		}
-		return path;
-	}
-
-	/**
-	 * Internal helper method, returns notation adapter or null, if no adapter
-	 * was found for given notation element type. If no adapter was found, a
-	 * warning is logged.
-	 * 
-	 * @param notationElement
-	 * @return
-	 */
-	protected INotationAdapter<NotationType> getNotationAdapter(
-		NotationType notationElement) {
-		INotationAdapter<NotationType> notationAdapter =
-			(INotationAdapter<NotationType>) getBestMatchingHelper(
-				notationAdapters, notationElement);
-		if (notationAdapter == null) {
-			if (log.isLoggable(Level.INFO)) {
-				log
-					.info("No notation adapter found for  " + notationElement + ", registered helpers: " + notationAdapters); //$NON-NLS-1$
 			}
 		}
-		return notationAdapter;
-	}
+		strb.append("]");
+		return strb.toString();
 
-	/**
-	 * Internal helper method, returning best matching {@link ILookupHelper},
-	 * i.e. {@link INotationAdapter} or {@link IModelPathFinder} for given
-	 * element.
-	 * 
-	 * @param helpers
-	 * @param obj
-	 * @return
-	 */
-	protected ILookupHelper getBestMatchingHelper(Set<ILookupHelper> helpers,
-		Object obj) {
-		int match = 0;
-		int maxMatch = 0;
-		ILookupHelper bestHelper = null;
-		for (ILookupHelper helper : helpers) {
-			match = helper.handlesElement(obj);
-			if (match > maxMatch) {
-				maxMatch = match;
-				bestHelper = helper;
-			}
-		}
-		return bestHelper;
-	}
-
-	/**
-	 * Returns the default root used in {@link #findNotationChildren(Object)}.
-	 * 
-	 * @return the defaultNotationRoot
-	 */
-	public NotationType getDefaultNotationRoot() {
-		return defaultNotationRoot;
-	}
-
-	/**
-	 * Sets the default root used in {@link #findNotationChildren(Object)}.
-	 * 
-	 * @param i_defaultNotationRoot the defaultNotationRoot to set
-	 */
-	public void setDefaultNotationRoot(NotationType i_defaultNotationRoot) {
-		defaultNotationRoot = i_defaultNotationRoot;
 	}
 }
