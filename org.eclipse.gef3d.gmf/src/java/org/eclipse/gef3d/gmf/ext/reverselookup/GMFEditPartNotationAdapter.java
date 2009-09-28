@@ -10,12 +10,17 @@
  ******************************************************************************/
 package org.eclipse.gef3d.gmf.ext.reverselookup;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef3d.ext.reverselookup.EditPartNotationAdapter;
+import org.eclipse.gef3d.ext.reverselookup.INotationAdapter;
 import org.eclipse.gmf.runtime.notation.View;
 
 /**
- * GMFEditPartNotationAdapter There should really be more documentation here.
+ * Implementation of {@link INotationAdapter} (indirectly by subclassing
+ * {@link EditPartNotationAdapter} for returning the semantic (or domain) model
+ * element handled by an {@link EditPart}. This class basically "skips" the
+ * notation model element.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -26,8 +31,9 @@ public class GMFEditPartNotationAdapter extends EditPartNotationAdapter {
 	/**
 	 * The singleton instance, object has no state
 	 */
-	public final static GMFEditPartNotationAdapter INSTANCE = new GMFEditPartNotationAdapter();
-	
+	public final static GMFEditPartNotationAdapter INSTANCE =
+		new GMFEditPartNotationAdapter();
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -38,8 +44,9 @@ public class GMFEditPartNotationAdapter extends EditPartNotationAdapter {
 	}
 
 	/**
-	 * Returns 2, since the length of the navigation path is 2
-	 * (getModel().getElement()).
+	 * Returns 2 if the element is an {@link EObject} and its model element is
+	 * a {@link View}, since the length of the navigation path is 2
+	 * (getModel().getElement()). Otherwise, -1 is returned.
 	 * 
 	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupHelper#handlesElement(java.lang.Object)
 	 */
@@ -49,7 +56,7 @@ public class GMFEditPartNotationAdapter extends EditPartNotationAdapter {
 				return 2;
 			}
 		}
-		return 0;
+		return -1;
 	}
 
 }
