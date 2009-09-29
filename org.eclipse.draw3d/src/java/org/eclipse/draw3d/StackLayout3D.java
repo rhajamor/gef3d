@@ -21,15 +21,53 @@ import org.eclipse.draw3d.util.Draw3DCache;
 /**
  * A layout that stacks 3D figures along the Z axis in a configurable distance.
  * The X and Y position is set to 0. 2D children are ignored. The size and
- * rotation of the children is not changed.
+ * rotation of the children are not changed.
  * 
- * @author Kristian Duske
+ * @author Kristian Duske, Jens von Pilgrim
  * @version $Revision$
  * @since 06.09.2009
  */
 public class StackLayout3D extends AbstractLayout {
 
-	private float m_distance = 1000;
+	/**
+	 * The distance between two layers
+	 */
+	protected float m_distance;
+
+	/**
+	 * Creates a stack layout with a layer distance of 1000
+	 */
+	public StackLayout3D() {
+		this(1000f);
+	}
+
+	/**
+	 * Creates a stack layout with a given layer distance
+	 * 
+	 * @param i_distance
+	 */
+	public StackLayout3D(float i_distance) {
+		m_distance = i_distance;
+	}
+
+	/**
+	 * Returns the currently used distance.
+	 * 
+	 * @return the distance
+	 */
+	public float getDistance() {
+		return m_distance;
+	}
+
+	/**
+	 * Sets a new distance between layers. This distance is only effective when
+	 * the figure is redrawn.
+	 * 
+	 * @param i_distance the distance to set
+	 */
+	public void setDistance(float i_distance) {
+		m_distance = i_distance;
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -49,7 +87,6 @@ public class StackLayout3D extends AbstractLayout {
 	 * 
 	 * @see org.eclipse.draw2d.LayoutManager#layout(org.eclipse.draw2d.IFigure)
 	 */
-	@SuppressWarnings("unchecked")
 	public void layout(IFigure i_container) {
 
 		Vector3f location = Draw3DCache.getVector3f();
@@ -60,13 +97,27 @@ public class StackLayout3D extends AbstractLayout {
 				if (!(child instanceof IFigure3D))
 					continue;
 
-				IFigure3D child3D = (IFigure3D) child;
-				child3D.getPosition3D().setLocation3D(location);
+				if (layoutChild(child)) {
+					IFigure3D child3D = (IFigure3D) child;
+					child3D.getPosition3D().setLocation3D(location);
 
-				location.translate(0, 0, m_distance);
+					location.translate(0, 0, m_distance);
+				}
 			}
 		} finally {
 			Draw3DCache.returnVector3f(location);
 		}
+	}
+
+	/**
+	 * Returns true if the given child is to be layouted, that is if it is a
+	 * layer added to the stacks. This method returns true by default,
+	 * subclasses may override this method.
+	 * 
+	 * @param i_child
+	 * @return
+	 */
+	protected boolean layoutChild(Object i_child) {
+		return true;
 	}
 }
