@@ -52,6 +52,16 @@ import org.eclipse.gef.EditPartFactory;
  * {@link #prepare(Object, EditPartFactory)}. Intermodel factories are then
  * added using a high weight via {@link #add(EditPart, EditPartFactory, int)}
  * with {@link #HIGHEST_PRIORITY}.
+ * </p>
+ * <p>
+ * The edit part for the multi container model element (
+ * {@link MultiEditorModelContainer} is created in
+ * {@link #createMultiContainerEditPart()}. If you need other another edit part
+ * to be created for the container, set the type of the edit part created for
+ * the container in setMultiEditorContainerEditPartType() (sorry for that long
+ * method name). This usually is the case if you need to define a different
+ * layout for the container, which is set in the container's edit part.
+ * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -159,6 +169,14 @@ public class MultiEditorPartFactory implements EditPartFactory {
 	Map<Object, FactorySet> m_preparedFactories;
 
 	FactoryIndicatorStrategy m_factoryIndicatorStrategy;
+
+	/**
+	 * EditPart type used in {@link #createMultiContainerEditPart()} for
+	 * creating the controller for the container. This is a
+	 * {@link MultiEditorModelContainerEditPart} by default.
+	 */
+	protected Class m_multiEditorContainerEditPartType =
+		MultiEditorModelContainerEditPart.class;
 
 	// EditPartFactory defaultFactory = null;
 
@@ -308,8 +326,7 @@ public class MultiEditorPartFactory implements EditPartFactory {
 			// if (log.isLoggable(Level.INFO)) {
 			// log.info("create multi edit part"); //$NON-NLS-1$
 			// }
-
-			EditPart part = new MultiEditorModelContainerEditPart();
+			EditPart part = createMultiContainerEditPart();
 			part.setModel(i_model);
 			return part;
 		}
@@ -403,6 +420,44 @@ public class MultiEditorPartFactory implements EditPartFactory {
 
 		return part;
 
+	}
+
+	/**
+	 * Creates the edit part for the multi editor container, this method is only
+	 * called by {@link #createEditPart(EditPart, Object)}. This is a
+	 * {@link MultiEditorModelContainerEditPart} by default, if you need another
+	 * editpart class, set the new type in
+	 * 
+	 * @return the edit part for the multi container
+	 */
+	protected EditPart createMultiContainerEditPart() {
+		EditPart part = null;
+		try {
+			part = (EditPart) m_multiEditorContainerEditPartType.newInstance();
+		} catch (Exception ex) {
+			throw new IllegalArgumentException(
+				"Error creating container's edit part", ex);
+		}
+		return part;
+	}
+
+	/**
+	 * @param i_mMultiEditorContainerEditPartType the
+	 *            mMultiEditorContainerEditPartType to set
+	 */
+	public void setMultiEditorContainerEditPartType(
+		Class i_multiEditorContainerEditPartType) {
+		if (i_multiEditorContainerEditPartType == null) // parameter
+			// precondition
+			throw new NullPointerException(
+				"i_multiEditorContainerEditPartType must not be null");
+		if (!EditPart.class
+			.isAssignableFrom(i_multiEditorContainerEditPartType)) {
+			throw new IllegalArgumentException(
+				"container's edit part must be a subclass of EditPart, was "
+					+ i_multiEditorContainerEditPartType);
+		}
+		m_multiEditorContainerEditPartType = i_multiEditorContainerEditPartType;
 	}
 
 	/**
