@@ -69,6 +69,7 @@ import org.eclipse.ui.IEditorPart;
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since May 26, 2009
+ * @see https://bugs.eclipse.org/278066
  */
 public class ProviderAcceptor implements Adapter {
 
