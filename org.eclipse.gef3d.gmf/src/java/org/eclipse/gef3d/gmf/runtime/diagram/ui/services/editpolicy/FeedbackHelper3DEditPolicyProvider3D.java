@@ -17,6 +17,7 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.NodeEditPart;
 import org.eclipse.gef3d.editpolicies.Handles3DEditPolicy;
+import org.eclipse.gef3d.editpolicies.ShowLayoutFeedbackEditPolicy3D;
 import org.eclipse.gef3d.editpolicies.ShowSourceFeedback3DEditPolicy;
 import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gmf.runtime.common.core.service.AbstractProvider;
@@ -29,10 +30,10 @@ import org.eclipse.gmf.runtime.diagram.ui.services.editpolicy.IEditPolicyProvide
  * Adds policy for enabling 3D feedbck when creating or reconnecting
  * connections.
  * <p>
- * This provider uses the {@link ProviderAcceptor} in order to check whether
- * is has to provide the functionality in the given context. Here, the
- * acceptor must accept 3D policies, i.e.
- * {@link ProviderAcceptor#isGEF3D()} must return true.
+ * This provider uses the {@link ProviderAcceptor} in order to check whether is
+ * has to provide the functionality in the given context. Here, the acceptor
+ * must accept 3D policies, i.e. {@link ProviderAcceptor#isGEF3D()} must return
+ * true.
  * </p>
  * 
  * @author Jens von Pilgrim
@@ -56,8 +57,12 @@ public class FeedbackHelper3DEditPolicyProvider3D extends AbstractProvider
 			log.fine("modifying edit policies of "
 				+ i_editPart.getClass().getName());
 
+		
+
+		// show feedback when creating connections
 		i_editPart.installEditPolicy(ShowSourceFeedback3DEditPolicy.ROLE,
 			new ShowSourceFeedback3DEditPolicy());
+
 	}
 
 	/**

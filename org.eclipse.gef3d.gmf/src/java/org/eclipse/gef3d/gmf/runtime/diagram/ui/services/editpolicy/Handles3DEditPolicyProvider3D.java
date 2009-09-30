@@ -17,6 +17,8 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef3d.editpolicies.Handles3DEditPolicy;
+import org.eclipse.gef3d.editpolicies.ShowLayoutFeedbackEditPolicy3D;
+import org.eclipse.gef3d.editpolicies.ShowSourceFeedback3DEditPolicy;
 import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gmf.runtime.common.core.service.AbstractProvider;
 import org.eclipse.gmf.runtime.common.core.service.IOperation;
@@ -48,8 +50,15 @@ public class Handles3DEditPolicyProvider3D extends AbstractProvider implements
 			log.fine("modifying edit policies of "
 				+ i_editPart.getClass().getName());
 
+		// show feedback when creating new nodes
+		i_editPart.installEditPolicy(ShowLayoutFeedbackEditPolicy3D.ROLE,
+			new ShowLayoutFeedbackEditPolicy3D());
+		
+		// show handles
 		i_editPart.installEditPolicy(EditPolicy.PRIMARY_DRAG_ROLE,
 			new Handles3DEditPolicy());
+		
+		
 	}
 
 	/**
