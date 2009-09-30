@@ -124,7 +124,7 @@
  * <h3>Performance Isues</h3>
  * A discussion about performance issues can be found at 
  * {@link http://lwjgl.org/forum/index.php/topic,2456.0.html}. Here is a test
- * whic was implemented during this discussion:
+ * which was implemented during this discussion:
  * 
  * <h4>The Test</h4>
  * Tested were two classes (or interfaces) implementing a Vector3f version. 
