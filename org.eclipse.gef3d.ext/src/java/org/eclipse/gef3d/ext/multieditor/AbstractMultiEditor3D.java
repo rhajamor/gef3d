@@ -27,7 +27,6 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.RootEditPart;
-import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
@@ -72,25 +71,11 @@ public abstract class AbstractMultiEditor3D extends
 
 	protected MultiEditorModelContainer m_container;
 
-	/**
-	 * @return the container
-	 */
-	public MultiEditorModelContainer getContainer() {
-		return m_container;
-	}
-
-	/**
-	 * @return the multiFactory
-	 */
-	protected MultiEditorPartFactory getMultiFactory() {
-		return m_multiFactory;
-	}
-
 	protected MultiEditorPartFactory m_multiFactory;
 
-	protected ResourceSet resourceSet;
-
 	protected List<INestableEditor> nestedEditors;
+
+	protected ResourceSet resourceSet;
 
 	/**
 	 * 
@@ -98,70 +83,8 @@ public abstract class AbstractMultiEditor3D extends
 	public AbstractMultiEditor3D() {
 
 		setEditDomain(new DefaultEditDomain(this));
-		resourceSet = new ResourceSetImpl();
+		resourceSet = createResourceSet();
 		nestedEditors = new ArrayList<INestableEditor>(5);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef3d.examples.graph.editor.GraphEditor3D#configureGraphicalViewer()
-	 */
-	@Override
-	protected void configureGraphicalViewer() {
-		super.configureGraphicalViewer();
-
-		RootEditPart root = createRootEditPart();
-		getGraphicalViewer().setRootEditPart(root);
-
-		m_multiFactory = createMulitFactory();
-		getGraphicalViewer().setEditPartFactory(m_multiFactory);
-	}
-
-	/**
-	 * Default implementation returns a {@link ScalableFreeformRootEditPart3D},
-	 * called from {@link #configureGraphicalViewer()}.
-	 * 
-	 * @return
-	 */
-	protected RootEditPart createRootEditPart() {
-		// we need a special 3D root edit part for connections and feedback
-		return new ScalableFreeformRootEditPart3D();
-	}
-
-	/**
-	 * 
-	 */
-	protected MultiEditorPartFactory createMulitFactory() {
-		return new MultiEditorPartFactory();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef.ui.parts.GraphicalEditor#initializeGraphicalViewer()
-	 */
-	@Override
-	protected void initializeGraphicalViewer() {
-		m_container = new MultiEditorModelContainer();
-		GraphicalViewer viewer = getGraphicalViewer();
-		viewer.setContents(m_container);
-
-		installDragAndDrop();
-
-		addEditor(getEditorInput());
-	}
-
-	/**
-	 * 
-	 */
-	protected void installDragAndDrop() {
-		GraphicalViewer viewer = getGraphicalViewer();
-		viewer.addDropTargetListener(new EditorInputTransferDropTargetListener(
-			this, viewer));
-		viewer.getContents().installEditPolicy(
-			EditorInputDropPolicy.EDITOR_INPUT_ROLE,
-			new EditorInputDropPolicy());
 	}
 
 	/**
@@ -204,7 +127,39 @@ public abstract class AbstractMultiEditor3D extends
 		} catch (PartInitException ex) {
 			log.warning("IEditorInput - exception: " + ex); //$NON-NLS-1$
 		}
-//		getGraphicalViewer().getRootEditPart().refresh();
+		// getGraphicalViewer().getRootEditPart().refresh();
+	}
+
+	/**
+	 * @param i_createPaletteDrawer
+	 */
+	protected void addNestedPalette(PaletteDrawer drawer) {
+
+		if (drawer != null)
+			getPaletteRoot().add(drawer);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.examples.graph.editor.GraphEditor3D#configureGraphicalViewer()
+	 */
+	@Override
+	protected void configureGraphicalViewer() {
+		super.configureGraphicalViewer();
+
+		RootEditPart root = createRootEditPart();
+		getGraphicalViewer().setRootEditPart(root);
+
+		m_multiFactory = createMultiFactory();
+		getGraphicalViewer().setEditPartFactory(m_multiFactory);
+	}
+
+	/**
+	 * 
+	 */
+	protected MultiEditorPartFactory createMultiFactory() {
+		return new MultiEditorPartFactory();
 	}
 
 	/**
@@ -229,6 +184,60 @@ public abstract class AbstractMultiEditor3D extends
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Called by {@link #getPaletteRoot()} to lazily create the palette.
+	 * 
+	 * @return
+	 */
+	protected PaletteRoot createPaletteRoot() {
+		PaletteRoot root;
+		root = new MultiPaletteRoot();
+		PaletteDrawer drawer = new PaletteDrawer("GEF3D");
+		drawer.setDescription("General Multi Editor 3D Tools");
+
+		drawer.add(new ToolEntry("Camera", "Camera Tool", null, null,
+			CameraTool.class) {
+			// nothing to implement
+		});
+
+		root.add(drawer);
+		return root;
+	}
+
+	/**
+	 * Returns the resource set to be used in the editor. Returns a new resource
+	 * set by default.
+	 * 
+	 * @return the resource set
+	 */
+	protected ResourceSet createResourceSet() {
+
+		return new ResourceSetImpl();
+	}
+
+	/**
+	 * Default implementation returns a {@link ScalableFreeformRootEditPart3D},
+	 * called from {@link #configureGraphicalViewer()}.
+	 * 
+	 * @return
+	 */
+	protected RootEditPart createRootEditPart() {
+		// we need a special 3D root edit part for connections and feedback
+		return new ScalableFreeformRootEditPart3D();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
+	 */
+	@Override
+	public void doSave(IProgressMonitor monitor) {
+		for (INestableEditor editor : nestedEditors) {
+			editor.doSave(monitor);
+		}
 	}
 
 	/**
@@ -275,8 +284,7 @@ public abstract class AbstractMultiEditor3D extends
 								Class clazz;
 								try {
 									clazz = bundle.loadClass(strClassname);
-									if (INestableEditor.class
-										.isAssignableFrom(clazz)) {
+									if (INestableEditor.class.isAssignableFrom(clazz)) {
 										editorClasses.add(clazz);
 									}
 								} catch (ClassNotFoundException ex) {
@@ -292,6 +300,20 @@ public abstract class AbstractMultiEditor3D extends
 			}
 		}
 		return editorClasses;
+	}
+
+	/**
+	 * @return the container
+	 */
+	public MultiEditorModelContainer getContainer() {
+		return m_container;
+	}
+
+	/**
+	 * @return the multiFactory
+	 */
+	protected MultiEditorPartFactory getMultiFactory() {
+		return m_multiFactory;
 	}
 
 	/**
@@ -312,41 +334,31 @@ public abstract class AbstractMultiEditor3D extends
 	}
 
 	/**
-	 * Called by {@link #getPaletteRoot()} to lazily create the palette.
-	 * @return
-	 */
-	protected PaletteRoot createPaletteRoot() {
-		PaletteRoot root;
-		root = new MultiPaletteRoot();
-		PaletteDrawer drawer = new PaletteDrawer("GEF3D");
-		drawer.setDescription("General Multi Editor 3D Tools");
-
-		drawer.add(new ToolEntry("Camera", "Camera Tool", null, null,
-			CameraTool.class) {
-			// nothing to implement
-		});
-
-		root.add(drawer);
-		return root;
-	}
-
-	/**
-	 * @param i_createPaletteDrawer
-	 */
-	protected void addNestedPalette(PaletteDrawer drawer) {
-		getPaletteRoot().add(drawer);
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
+	 * @see org.eclipse.gef.ui.parts.GraphicalEditor#initializeGraphicalViewer()
 	 */
 	@Override
-	public void doSave(IProgressMonitor monitor) {
-		for (INestableEditor editor : nestedEditors) {
-			editor.doSave(monitor);
-		}
+	protected void initializeGraphicalViewer() {
+		m_container = new MultiEditorModelContainer();
+		GraphicalViewer viewer = getGraphicalViewer();
+		viewer.setContents(m_container);
+
+		installDragAndDrop();
+
+		addEditor(getEditorInput());
+	}
+
+	/**
+	 * 
+	 */
+	protected void installDragAndDrop() {
+		GraphicalViewer viewer = getGraphicalViewer();
+		viewer.addDropTargetListener(new EditorInputTransferDropTargetListener(
+			this, viewer));
+		viewer.getContents().installEditPolicy(
+			EditorInputDropPolicy.EDITOR_INPUT_ROLE,
+			new EditorInputDropPolicy());
 	}
 
 	/**

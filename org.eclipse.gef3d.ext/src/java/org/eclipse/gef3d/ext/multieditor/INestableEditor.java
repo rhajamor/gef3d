@@ -56,6 +56,7 @@ public interface INestableEditor {
 	 * @param i_graphicalViewer
 	 * @param i_multiFactory
 	 * @param i_container
+	 * @todo maybe rename this? It is confusing to have to init methods.
 	 */
 	void initializeAsNested(GraphicalViewer i_graphicalViewer,
 		MultiEditorPartFactory i_multiFactory,
