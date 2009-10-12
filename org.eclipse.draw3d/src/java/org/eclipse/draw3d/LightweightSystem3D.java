@@ -195,6 +195,20 @@ public class LightweightSystem3D extends LightweightSystem implements
 		/**
 		 * {@inheritDoc}
 		 * 
+		 * @see org.eclipse.draw2d.Figure#findMouseEventTargetAt(int, int)
+		 */
+		@Override
+		public IFigure findMouseEventTargetAt(int i_sx, int i_sy) {
+
+			Picker picker = getScene().getPicker();
+			ISurface surface = picker.getCurrentSurface();
+
+			return surface.findFigureAt(i_sx, i_sy, null);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
 		 * @see org.eclipse.draw3d.IFigure3D#getAlpha()
 		 */
 		public int getAlpha() {

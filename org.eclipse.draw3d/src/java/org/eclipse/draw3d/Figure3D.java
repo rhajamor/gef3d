@@ -37,6 +37,7 @@ import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.geometryext.SyncedVector3f;
 import org.eclipse.draw3d.geometryext.SynchronizedPosition3DImpl;
+import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Font;
 
@@ -149,17 +150,6 @@ public class Figure3D extends Figure implements IFigure3D {
 		helper = new Figure3DHelper(friend);
 	}
 
-	/**
-	 * Creates the position instance of this figure. By default, an instance of
-	 * {@link SynchronizedPosition3DImpl} is created.
-	 * 
-	 * @return the position instance
-	 */
-	protected Position3D createPosition3D() {
-
-		return new SynchronizedPosition3DImpl(this);
-	}
-
 	@Override
 	public void add(IFigure i_figure, Object i_constraint, int i_index) {
 
@@ -182,6 +172,17 @@ public class Figure3D extends Figure implements IFigure3D {
 	}
 
 	/**
+	 * Creates the position instance of this figure. By default, an instance of
+	 * {@link SynchronizedPosition3DImpl} is created.
+	 * 
+	 * @return the position instance
+	 */
+	protected Position3D createPosition3D() {
+
+		return new SynchronizedPosition3DImpl(this);
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw2d.Figure#findFigureAt(int, int,
@@ -192,6 +193,20 @@ public class Figure3D extends Figure implements IFigure3D {
 	public IFigure findFigureAt(int i_mx, int i_my, TreeSearch i_search) {
 
 		return helper.findFigureAt(i_mx, i_my, i_search);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Figure#findMouseEventTargetAt(int, int)
+	 */
+	@Override
+	public IFigure findMouseEventTargetAt(int i_sx, int i_sy) {
+
+		Picker picker = getScene().getPicker();
+		ISurface surface = picker.getCurrentSurface();
+
+		return surface.findFigureAt(i_sx, i_sy, null);
 	}
 
 	/**
