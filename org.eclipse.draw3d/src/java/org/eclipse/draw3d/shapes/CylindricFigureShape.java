@@ -10,12 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.shapes;
 
-import java.util.Map;
-
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 
 /**
  * CylindricFigureShape There should really be more documentation here.
@@ -24,11 +20,7 @@ import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
  * @version $Revision$
  * @since 31.08.2009
  */
-public class CylindricFigureShape implements Shape {
-
-	private IFigure3D m_figure;
-
-	private CylinderShape m_shape;
+public class CylindricFigureShape extends FigureShape<CylinderShape> {
 
 	/**
 	 * Creates a new cylindric shape that represents the given figure.
@@ -44,56 +36,8 @@ public class CylindricFigureShape implements Shape {
 	public CylindricFigureShape(IFigure3D i_figure, int i_segments,
 			float i_radiusProportions, boolean i_superimposed) {
 
-		if (i_figure == null)
-			throw new NullPointerException("i_figure must not be null");
-
-		m_figure = i_figure;
-		m_shape =
-			new CylinderShape(m_figure.getPosition3D(), i_segments,
-				i_radiusProportions, i_superimposed);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.picking.Pickable#getDistance(org.eclipse.draw3d.geometry.IVector3f,
-	 *      org.eclipse.draw3d.geometry.IVector3f, java.util.Map)
-	 */
-	public float getDistance(IVector3f i_rayOrigin, IVector3f i_rayDirection,
-		Map<Object, Object> i_context) {
-
-		return m_shape.getDistance(i_rayOrigin, i_rayDirection, i_context);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.RenderFragment#getDistanceMeasure(org.eclipse.draw3d.RenderContext)
-	 */
-	public float getDistanceMeasure(RenderContext i_renderContext) {
-
-		return m_shape.getDistanceMeasure(i_renderContext);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.picking.Pickable#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
-	 */
-	public ParaxialBoundingBox getParaxialBoundingBox(
-		ParaxialBoundingBox o_result) {
-
-		return m_shape.getParaxialBoundingBox(o_result);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
-	 */
-	public RenderType getRenderType() {
-
-		return m_shape.getRenderType();
+		super(i_figure, new CylinderShape(i_figure.getPosition3D(), i_segments,
+			i_radiusProportions, i_superimposed));
 	}
 
 	/**
@@ -103,11 +47,11 @@ public class CylindricFigureShape implements Shape {
 	 */
 	public void render(RenderContext i_renderContext) {
 
-		m_shape.setAlpha(m_figure.getAlpha());
-		m_shape.setFillColor(m_figure.getBackgroundColor());
-		m_shape.setOutlineColor(m_figure.getForegroundColor());
+		getShape().setAlpha(getFigure().getAlpha());
+		getShape().setFillColor(getFigure().getBackgroundColor());
+		getShape().setOutlineColor(getFigure().getForegroundColor());
 
-		m_shape.render(i_renderContext);
+		getShape().render(i_renderContext);
 	}
 
 	/**
@@ -118,7 +62,7 @@ public class CylindricFigureShape implements Shape {
 	 */
 	public void setFill(boolean i_fill) {
 
-		m_shape.setFill(i_fill);
+		getShape().setFill(i_fill);
 	}
 
 	/**
@@ -129,16 +73,6 @@ public class CylindricFigureShape implements Shape {
 	 */
 	public void setOutline(boolean i_outline) {
 
-		m_shape.setOutline(i_outline);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "CylindricFigureShape [m_figure=" + m_figure + "]";
+		getShape().setOutline(i_outline);
 	}
 }
