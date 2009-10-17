@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.geometry.Point;
@@ -129,6 +130,15 @@ public class Query {
 				searchResult =
 					parentSurface.findFigureAt(sLocation.x, sLocation.y,
 						m_search);
+
+				if (searchResult == parentFigure3D) {
+					ConnectionLayer connectionLayer =
+						parentFigure3D.getConnectionLayer(null);
+					if (connectionLayer != null)
+						searchResult =
+							connectionLayer.findFigureAt(sLocation.x,
+								sLocation.y, m_search);
+				}
 			} finally {
 				Draw3DCache.returnPoint(sLocation);
 			}
