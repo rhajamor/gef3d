@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.AnchorListener;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.ConnectionAnchor;
+import org.eclipse.draw2d.ConnectionLocator;
 import org.eclipse.draw2d.ConnectionRouter;
 import org.eclipse.draw2d.DelegatingLayout;
 import org.eclipse.draw2d.Figure;
@@ -27,7 +28,6 @@ import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.RotatableDecoration;
 import org.eclipse.draw2d.RoutingListener;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw3d.ConnectionLocator3D.Alignment;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 /**
@@ -403,7 +403,7 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 		}
 		startArrow = dec;
 		if (startArrow != null) {
-			add(startArrow, new ArrowLocator3D(this, Alignment.SOURCE));
+			add(startArrow, new ArrowLocator3D(this, ConnectionLocator.SOURCE));
 		}
 	}
 
@@ -449,7 +449,7 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 		}
 		endArrow = dec;
 		if (endArrow != null) {
-			add(endArrow, new ArrowLocator3D(this, Alignment.TARGET));
+			add(endArrow, new ArrowLocator3D(this, ConnectionLocator.TARGET));
 		}
 	}
 

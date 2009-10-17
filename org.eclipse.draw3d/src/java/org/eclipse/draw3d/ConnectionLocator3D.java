@@ -14,17 +14,22 @@ package org.eclipse.draw3d;
 
 import java.util.List;
 
+import org.eclipse.draw2d.Connection;
+import org.eclipse.draw2d.ConnectionAnchor;
+import org.eclipse.draw2d.ConnectionLocator;
 import org.eclipse.draw2d.DelegatingLayout;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.Locator;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.geometryext.PointList3D;
 import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
- * Locator used to place an {@link IFigure3D} on a {@link Connection3D}. The
+ * Locator used to place an {@link IFigure3D} on a {@link Connection}. The
  * figure can be placed at the source or target end of the connection figure.
  * The default connection implementation uses a {@link DelegatingLayout} which
  * requires locators.
@@ -33,73 +38,17 @@ import org.eclipse.draw3d.util.Draw3DCache;
  * @version $Revision: 248 $
  * @since 17.05.2008
  */
-public class ConnectionLocator3D implements Locator {
+public class ConnectionLocator3D extends ConnectionLocator {
 
 	/**
-	 * Enumerates the alignment options for a 3D locator.
+	 * Creates a new 3D connection locator for the given connection and with the
+	 * given alignment.
 	 * 
-	 * @author Kristian Duske
-	 * @version $Revision: 248 $
-	 * @since 19.05.2008
+	 * @param i_connection the connection
+	 * @param i_align the alignment
 	 */
-	public static enum Alignment {
-		/**
-		 * The middle of the connection.
-		 */
-		MIDDLE,
-		/**
-		 * The source of the connection.
-		 */
-		SOURCE,
-		/**
-		 * The target of the connection.
-		 */
-		TARGET
-	}
-
-	private Alignment m_alignment;
-
-	private Connection3D m_connection;
-
-	/**
-	 * Creates a new locator for the given connection and with the given
-	 * alignment.
-	 * 
-	 * @param i_connection the connection associated with the locator
-	 * @param i_alignment the alignment of the locator
-	 * @throws NullPointerException if either of the given arguments is
-	 *             <code>null</code>
-	 */
-	public ConnectionLocator3D(Connection3D i_connection, Alignment i_alignment) {
-
-		if (i_connection == null)
-			throw new NullPointerException("i_connection must not be null");
-
-		if (i_alignment == null)
-			throw new NullPointerException("i_alignment must not be null");
-
-		m_connection = i_connection;
-		m_alignment = i_alignment;
-	}
-
-	/**
-	 * Returns the alignment of this locator.
-	 * 
-	 * @return the alignment of this locator
-	 */
-	public Alignment getAlignment() {
-
-		return m_alignment;
-	}
-
-	/**
-	 * Returns the connection associated with this locator.
-	 * 
-	 * @return the connection associated with this locator
-	 */
-	public Connection3D getConnection() {
-
-		return m_connection;
+	public ConnectionLocator3D(Connection i_connection, int i_align) {
+		super(i_connection, i_align);
 	}
 
 	/**
@@ -121,7 +70,7 @@ public class ConnectionLocator3D implements Locator {
 			result = new Vector3fImpl();
 
 		int size = i_points.size();
-		switch (m_alignment) {
+		switch (getAlignment()) {
 		case SOURCE:
 			result.set(i_points.get(0));
 			break;
@@ -141,10 +90,43 @@ public class ConnectionLocator3D implements Locator {
 			}
 			break;
 		default:
-			throw new IllegalStateException("unknown location: " + m_alignment);
+			throw new IllegalStateException("unknown location: "
+				+ getAlignment());
 		}
 
 		return result;
+	}
+
+	/**
+	 * Returns the surface to onto which the connection figure is projected if
+	 * it is a 2D connection.
+	 * 
+	 * @return the surface or <code>null</code> if the connection is a 3D
+	 *         connection
+	 */
+	protected ISurface getSurface() {
+
+		if (getConnection() instanceof Connection3D)
+			return null;
+
+		IFigure figure = null;
+		ConnectionAnchor sourceAnchor = getConnection().getSourceAnchor();
+		if (sourceAnchor != null)
+			figure = sourceAnchor.getOwner();
+
+		if (figure == null) {
+			ConnectionAnchor targetAnchor = getConnection().getTargetAnchor();
+			if (targetAnchor != null)
+				figure = targetAnchor.getOwner();
+		}
+
+		if (figure != null) {
+			IFigure3D figure3D = Figure3DHelper.getAncestor3D(figure);
+			if (figure3D != null)
+				return figure3D.getSurface();
+		}
+
+		return null;
 	}
 
 	/**
@@ -152,18 +134,36 @@ public class ConnectionLocator3D implements Locator {
 	 * 
 	 * @see org.eclipse.draw2d.Locator#relocate(org.eclipse.draw2d.IFigure)
 	 */
+	@Override
 	public void relocate(IFigure i_target) {
 
 		IFigure3D target3D = (IFigure3D) i_target;
 
-		Vector3f location = Draw3DCache.getVector3f();
+		Vector3f wLocation = Draw3DCache.getVector3f();
+		Vector3f size = Draw3DCache.getVector3f();
 		try {
-			List<IVector3f> points = m_connection.getPoints3D();
+			if (getConnection() instanceof Connection3D) {
+				Connection3D connection3D = (Connection3D) getConnection();
+				PointList3D points = connection3D.getPoints3D();
+				getLocation(points, wLocation);
+			} else {
+				PointList points = getConnection().getPoints();
+				Point sLocation = getLocation(points);
 
-			getLocation(points, location);
-			target3D.getPosition3D().setLocation3D(location);
+				ISurface surface = getSurface();
+				if (surface != null)
+					surface.getWorldLocation(sLocation, wLocation);
+			}
+
+			size.set(target3D.getPreferredSize3D());
+			target3D.getPosition3D().setSize3D(size);
+
+			size.scale(0.5f);
+			Math3D.sub(wLocation, size, wLocation);
+
+			target3D.getPosition3D().setLocation3D(wLocation);
 		} finally {
-			Draw3DCache.returnVector3f(location);
+			Draw3DCache.returnVector3f(wLocation, size);
 		}
 	}
 }

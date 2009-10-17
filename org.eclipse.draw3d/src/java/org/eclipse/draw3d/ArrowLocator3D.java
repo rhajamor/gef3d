@@ -36,7 +36,7 @@ public class ArrowLocator3D extends ConnectionLocator3D {
 	 * @param i_connection the connection
 	 * @param i_alignment the alignment
 	 */
-	public ArrowLocator3D(Connection3D i_connection, Alignment i_alignment) {
+	public ArrowLocator3D(Connection3D i_connection, int i_alignment) {
 		super(i_connection, i_alignment);
 	}
 
@@ -50,12 +50,18 @@ public class ArrowLocator3D extends ConnectionLocator3D {
 
 		super.relocate(i_target);
 
-		List<IVector3f> points = getConnection().getPoints3D();
-		RotatableDecoration3D arrow = (RotatableDecoration3D) i_target;
+		if (getConnection() instanceof Connection3D) {
+			Connection3D connection3D = (Connection3D) getConnection();
 
-		if (getAlignment() == Alignment.SOURCE)
-			arrow.setReferencePoint3D(points.get(1));
-		else if (getAlignment() == Alignment.TARGET)
-			arrow.setReferencePoint3D(points.get(points.size() - 2));
+			List<IVector3f> points = connection3D.getPoints3D();
+			RotatableDecoration3D arrow = (RotatableDecoration3D) i_target;
+
+			if (getAlignment() == SOURCE)
+				arrow.setReferencePoint3D(points.get(1));
+			else if (getAlignment() == TARGET)
+				arrow.setReferencePoint3D(points.get(points.size() - 2));
+		}
+
+		// TODO implement for 2D connections also
 	}
 }

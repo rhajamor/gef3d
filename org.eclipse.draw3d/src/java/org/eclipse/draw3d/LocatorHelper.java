@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
+import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.geometry.IVector3f;
@@ -56,7 +57,11 @@ public class LocatorHelper {
 	 * @return the reference position
 	 */
 	public Position3D getReferencePosition3D() {
-		return getReferencePosition3D(m_reference.getParent());
+
+		if (m_reference instanceof IFigure3D)
+			return getReferencePosition3D(m_reference.getParent());
+
+		return getReferencePosition3D(m_reference);
 	}
 
 	public Position3D getReferencePosition3D(IFigure host) {
@@ -73,7 +78,12 @@ public class LocatorHelper {
 			Vector3f size = Draw3DCache.getVector3f();
 			try {
 
-				Rectangle refBounds = m_reference.getBounds();
+				Rectangle refBounds;
+				if (m_reference instanceof Connection)
+					refBounds =
+						((Connection) m_reference).getPoints().getBounds();
+				else
+					refBounds = m_reference.getBounds();
 				// m_reference.getParent().translateToAbsolute(refBounds);
 
 				location.set(refBounds.x, refBounds.y, 0);
