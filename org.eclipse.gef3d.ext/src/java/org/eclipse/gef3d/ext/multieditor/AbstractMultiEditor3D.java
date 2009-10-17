@@ -275,7 +275,7 @@ public abstract class AbstractMultiEditor3D extends
 						strt = new StringTokenizer(ext, ",");
 						while (strt.hasMoreTokens()) {
 							token = strt.nextToken();
-							if (strName.endsWith(token)) {
+							if (strName.endsWith("." + token)) {
 								Bundle bundle =
 									Platform.getBundle(strContributorName);
 								String strClassname =
