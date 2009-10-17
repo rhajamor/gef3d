@@ -103,6 +103,8 @@ public class LogGraphics extends Graphics {
 		m_graphics = i_graphics;
 		if (i_prefix != null)
 			m_prefix = i_prefix;
+
+		log.info("// ======== LogGraphics initialized ========");
 	}
 
 	private String boolArgs(boolean... args) {
