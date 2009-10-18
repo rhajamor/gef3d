@@ -127,17 +127,19 @@ public class Query {
 			try {
 				parentSurface.getSurfaceLocation2D(m_rayOrigin, m_rayDirection,
 					sLocation);
-				searchResult =
-					parentSurface.findFigureAt(sLocation.x, sLocation.y,
-						m_search);
 
-				if (searchResult == parentFigure3D) {
-					ConnectionLayer connectionLayer =
-						parentFigure3D.getConnectionLayer(null);
-					if (connectionLayer != null)
-						searchResult =
-							connectionLayer.findFigureAt(sLocation.x,
-								sLocation.y, m_search);
+				// prefer connections over figures
+				ConnectionLayer connectionLayer =
+					parentFigure3D.getConnectionLayer(null);
+				if (connectionLayer != null)
+					searchResult =
+						connectionLayer.findFigureAt(sLocation.x, sLocation.y,
+							m_search);
+
+				if (searchResult == null) {
+					searchResult =
+						parentSurface.findFigureAt(sLocation.x, sLocation.y,
+							m_search);
 				}
 			} finally {
 				Draw3DCache.returnPoint(sLocation);
