@@ -35,11 +35,10 @@ import org.eclipse.gef3d.ext.reverselookup.ReverseLookupManager;
  * pattern.
  * </p>
  * <p>
- * In most cases, the source edit part will be set by the client and only the 
- * target edit part is to be looked up. That is, usually this class is 
- * initialized via
- * {@link #UndirectConnectionEditPart3D(false, true)}, this is equal to calling
- * the empty constructor.
+ * In most cases, the source edit part will be set by the client and only the
+ * target edit part is to be looked up. That is, usually this class is
+ * initialized via {@link #UndirectConnectionEditPart3D(false, true)}, this is
+ * equal to calling the empty constructor.
  * </p>
  * 
  * @todo reconnect not implemented yet!
@@ -54,12 +53,16 @@ public abstract class UndirectConnectionEditPart3D extends
 
 	EditPart adaptedTargetEditPart;
 
+	private Object lastSourceModel;
+
+	private Object lastTargetModel;
+
 	boolean lookupSource, lookupTarget;
 
 	/**
 	 * Creates this edit part, source edit part is expected to be set (and not
-	 * looked up), while target edit part is looked up.
-	 * Calling this constructor is equal to calling {@link
+	 * looked up), while target edit part is looked up. Calling this constructor
+	 * is equal to calling {@link
 	 * UndirectConnectionEditPart3D#UndirectConnectionEditPart3D(false, true)}
 	 */
 	public UndirectConnectionEditPart3D() {
@@ -86,13 +89,117 @@ public abstract class UndirectConnectionEditPart3D extends
 	}
 
 	/**
-	 * This method is to be overridden by subclasses May return null if target
-	 * edit part is known, as this method is only called in order to retrieve
-	 * the edit part.
+	 * {@inheritDoc} Removes this edit part from the source and/or target
+	 * figures.
+	 * 
+	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#deactivate()
+	 */
+	@Override
+	public void deactivate() {
+		super.deactivate();
+		if (adaptedSourceEditPart != null
+			&& adaptedSourceEditPart instanceof GraphicalEditPart) {
+			((GraphicalEditPart) adaptedSourceEditPart).getFigure().removeFigureListener(
+				this);
+		}
+		if (adaptedTargetEditPart != null
+			&& adaptedTargetEditPart instanceof GraphicalEditPart) {
+			((GraphicalEditPart) adaptedTargetEditPart).getFigure().removeFigureListener(
+				this);
+		}
+	}
+
+	private boolean equals(Object i_o1, Object i_o2) {
+
+		if (i_o1 == i_o2)
+			return true;
+
+		if (i_o1 != null)
+			return i_o1.equals(i_o2);
+
+		return false;
+	}
+
+	/**
+	 * Refresh the connection edit part visuals, i.e. its figure, if an observed
+	 * figure, i.e. target or source figure, has been moved.
+	 * 
+	 * @see org.eclipse.draw2d.FigureListener#figureMoved(org.eclipse.draw2d.IFigure)
+	 */
+	public void figureMoved(IFigure i_source) {
+		refreshVisuals();
+	}
+
+	/**
+	 * Returns the reverse lookup manager, for details oin how to install this
+	 * manager, see {@link ReverseLookupManager}.
 	 * 
 	 * @return
 	 */
-	abstract public Object getTargetModel();
+	@SuppressWarnings("unchecked")
+	protected ReverseLookupManager<EditPart> getReverseLookupManager() {
+
+		// prevent NPE if the edit part is not yet fully initialized
+		if (getParent() == null)
+			return null;
+
+		ReverseLookupManager<EditPart> reverseLookupManager =
+			(ReverseLookupManager<EditPart>) getViewer().getProperty(
+				ReverseLookupManager.RLM_ID);
+		if (reverseLookupManager == null) {
+			throw new NullPointerException(
+				"ReverseLookupManager not found in viewer properies, "
+					+ "check configuration");
+		}
+		return reverseLookupManager;
+	}
+
+	/**
+	 * Get source edit part, tries to perform a reverse lookup in order to
+	 * retrieve the edit part by its model if configured accordingly (see
+	 * constructor for details). If source edit part is set, this method simply
+	 * returns it as the original overridden method. Otherwise,
+	 * {@link #getSourceModel()} is used to perform a reverse lookup for
+	 * retrieving the source edit part. If the reverse lookup fails, an
+	 * {@link IllegalStateException} is thrown.
+	 * 
+	 * @see org.eclipse.gef.editparts.AbstractConnectionEditPart#getTarget()
+	 * @throws IllegalStateException if reverse lookup fails
+	 */
+	@Override
+	public EditPart getSource() {
+		EditPart part = super.getSource();
+		if (part != null)
+			return part;
+
+		Object sourceModel = getSourceModel();
+		if (!equals(sourceModel, lastSourceModel)
+			|| (adaptedSourceEditPart == null && lookupSource)) {
+
+			lastSourceModel = sourceModel;
+			if (sourceModel == null) {
+				return null;
+			}
+
+			ReverseLookupManager<EditPart> rlm = getReverseLookupManager();
+			if (rlm == null)
+				return null;
+
+			adaptedSourceEditPart =
+				rlm.findNotationElementForDomainElement(sourceModel);
+			if (adaptedSourceEditPart == null) {
+				throw new IllegalStateException(
+					"Source edit part not found by reverse lookup, "
+						+ "check reverse lookup configuration.");
+			}
+			if (adaptedSourceEditPart instanceof GraphicalEditPart)
+				((GraphicalEditPart) adaptedSourceEditPart).getFigure().addFigureListener(
+					this);
+
+		}
+		return adaptedSourceEditPart;
+
+	}
 
 	/**
 	 * This method is to be overridden by subclasses. May return null if source
@@ -121,22 +228,29 @@ public abstract class UndirectConnectionEditPart3D extends
 		if (part != null)
 			return part;
 
-		if (adaptedTargetEditPart == null && lookupTarget) {
-			Object targetModel = getTargetModel();
+		Object targetModel = getTargetModel();
+		if (!equals(targetModel, lastTargetModel)
+			|| (adaptedTargetEditPart == null && lookupTarget)) {
+
+			lastTargetModel = targetModel;
 			if (targetModel == null) {
 				return null;
 			}
+
+			ReverseLookupManager<EditPart> rlm = getReverseLookupManager();
+			if (rlm == null)
+				return null;
+
 			adaptedTargetEditPart =
-				getReverseLookupManager().findNotationElementForDomainElement(
-					targetModel);
+				rlm.findNotationElementForDomainElement(targetModel);
 			if (adaptedTargetEditPart == null) {
 				throw new IllegalStateException(
 					"Target edit part not found by reverse lookup, "
 						+ "check reverse lookup configuration.");
 			}
 			if (adaptedTargetEditPart instanceof GraphicalEditPart)
-				((GraphicalEditPart) adaptedTargetEditPart).getFigure()
-					.addFigureListener(this);
+				((GraphicalEditPart) adaptedTargetEditPart).getFigure().addFigureListener(
+					this);
 
 		}
 		return adaptedTargetEditPart;
@@ -144,94 +258,13 @@ public abstract class UndirectConnectionEditPart3D extends
 	}
 
 	/**
-	 * Get source edit part, tries to perform a reverse lookup in order to
-	 * retrieve the edit part by its model if configured accordingly (see
-	 * constructor for details). If source edit part is set, this
-	 * method simply returns it as the original overridden method. Otherwise,
-	 * {@link #getSourceModel()} is used to perform a reverse lookup for
-	 * retrieving the source edit part. If the reverse lookup fails, an
-	 * {@link IllegalStateException} is thrown.
-	 * 
-	 * @see org.eclipse.gef.editparts.AbstractConnectionEditPart#getTarget()
-	 * @throws IllegalStateException if reverse lookup fails
-	 */
-	@Override
-	public EditPart getSource() {
-		EditPart part = super.getSource();
-		if (part != null)
-			return part;
-
-		if (adaptedSourceEditPart == null && lookupSource) {
-			Object sourceModel = getSourceModel();
-			if (sourceModel == null) {
-				return null;
-			}
-			adaptedSourceEditPart =
-				getReverseLookupManager().findNotationElementForDomainElement(
-					sourceModel);
-			if (adaptedSourceEditPart == null) {
-				throw new IllegalStateException(
-					"Source edit part not found by reverse lookup, "
-						+ "check reverse lookup configuration.");
-			}
-			if (adaptedSourceEditPart instanceof GraphicalEditPart)
-				((GraphicalEditPart) adaptedSourceEditPart).getFigure()
-					.addFigureListener(this);
-
-		}
-		return adaptedSourceEditPart;
-
-	}
-
-	/**
-	 * Returns the reverse lookup manager, for details oin how to install this
-	 * manager, see {@link ReverseLookupManager}.
+	 * This method is to be overridden by subclasses May return null if target
+	 * edit part is known, as this method is only called in order to retrieve
+	 * the edit part.
 	 * 
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	protected ReverseLookupManager<EditPart> getReverseLookupManager() {
-		ReverseLookupManager<EditPart> reverseLookupManager =
-			(ReverseLookupManager<EditPart>) getViewer().getProperty(
-				ReverseLookupManager.RLM_ID);
-		if (reverseLookupManager == null) {
-			throw new NullPointerException(
-				"ReverseLookupManager not found in viewer properies, "
-					+ "check configuration");
-		}
-		return reverseLookupManager;
-	}
-
-	/**
-	 * Refresh the connection edit part visuals, i.e. its figure, if an observed
-	 * figure, i.e. target or source figure, has been moved.
-	 * 
-	 * @see org.eclipse.draw2d.FigureListener#figureMoved(org.eclipse.draw2d.IFigure)
-	 */
-	public void figureMoved(IFigure i_source) {
-		refreshVisuals();
-	}
-
-	/**
-	 * {@inheritDoc} Removes this edit part from the source and/or target
-	 * figures.
-	 * 
-	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#deactivate()
-	 */
-	@Override
-	public void deactivate() {
-		super.deactivate();
-		if (adaptedSourceEditPart != null
-			&& adaptedSourceEditPart instanceof GraphicalEditPart) {
-			((GraphicalEditPart) adaptedSourceEditPart).getFigure()
-				.removeFigureListener(this);
-		}
-		if (adaptedTargetEditPart != null
-			&& adaptedTargetEditPart instanceof GraphicalEditPart) {
-			((GraphicalEditPart) adaptedTargetEditPart).getFigure()
-				.removeFigureListener(this);
-		}
-	}
+	abstract public Object getTargetModel();
 
 	/**
 	 * {@inheritDoc}
