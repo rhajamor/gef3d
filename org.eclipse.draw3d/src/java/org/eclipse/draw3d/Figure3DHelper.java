@@ -148,7 +148,7 @@ public class Figure3DHelper {
 		IFigure current = i_figure;
 		while (current != null && !(current instanceof IFigure3D)) {
 			if (current instanceof Connection) {
-				Connection conn = (Connection) i_figure;
+				Connection conn = (Connection) current;
 				return getAncestor3D(conn.getSourceAnchor().getOwner());
 			}
 			current = current.getParent();
