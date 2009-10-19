@@ -317,9 +317,8 @@ public class BorderAnchor3D extends AbstractConnectionAnchor3D {
 			doGetReferencePoint3D((IFigure3D) owner, result);
 		} else {
 			Point ref2D = getReferencePoint();
-			IFigure3D host = Figure3DHelper.getAncestor3D(owner);
 
-			ISurface surface = host.getSurface();
+			ISurface surface = getSurface();
 			surface.getWorldLocation(ref2D, result);
 		}
 
