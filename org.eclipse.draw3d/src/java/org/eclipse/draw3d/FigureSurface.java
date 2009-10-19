@@ -12,6 +12,7 @@ package org.eclipse.draw3d;
 
 import java.util.List;
 
+import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.FigureListener;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
@@ -72,6 +73,19 @@ public class FigureSurface extends AbstractSurface {
 			return null;
 
 		IFigure hit = null;
+
+		// try connections first
+		ConnectionLayer connectionLayer = m_host.getConnectionLayer(null);
+		if (connectionLayer != null) {
+			if (i_search != null)
+				hit = connectionLayer.findFigureAt(i_sx, i_sy, i_search);
+			else
+				hit = connectionLayer.findFigureAt(i_sy, i_sy);
+
+			if (hit != null && hit != connectionLayer)
+				return hit;
+		}
+
 		List<IFigure> children = m_host.getChildren();
 		for (IFigure child : children) {
 			if (!(child instanceof IFigure3D)) {
