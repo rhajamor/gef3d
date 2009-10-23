@@ -188,9 +188,9 @@ public abstract class UndirectConnectionEditPart3D extends
 			adaptedSourceEditPart =
 				rlm.findNotationElementForDomainElement(sourceModel);
 			if (adaptedSourceEditPart == null) {
-				throw new IllegalStateException(
-					"Source edit part not found by reverse lookup, "
-						+ "check reverse lookup configuration.");
+				throw new IllegalStateException("Source edit part for "
+					+ sourceModel + " not found by reverse lookup, "
+					+ "check reverse lookup configuration.");
 			}
 			if (adaptedSourceEditPart instanceof GraphicalEditPart)
 				((GraphicalEditPart) adaptedSourceEditPart).getFigure().addFigureListener(
@@ -244,9 +244,9 @@ public abstract class UndirectConnectionEditPart3D extends
 			adaptedTargetEditPart =
 				rlm.findNotationElementForDomainElement(targetModel);
 			if (adaptedTargetEditPart == null) {
-				throw new IllegalStateException(
-					"Target edit part not found by reverse lookup, "
-						+ "check reverse lookup configuration.");
+				throw new IllegalStateException("Target edit part for "
+					+ targetModel + " not found by reverse lookup, "
+					+ "check reverse lookup configuration.");
 			}
 			if (adaptedTargetEditPart instanceof GraphicalEditPart)
 				((GraphicalEditPart) adaptedTargetEditPart).getFigure().addFigureListener(

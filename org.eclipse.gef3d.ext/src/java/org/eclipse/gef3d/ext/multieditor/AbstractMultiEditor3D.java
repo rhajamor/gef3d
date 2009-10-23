@@ -285,7 +285,9 @@ public abstract class AbstractMultiEditor3D extends
 								try {
 									clazz = bundle.loadClass(strClassname);
 									if (INestableEditor.class.isAssignableFrom(clazz)) {
-										editorClasses.add(clazz);
+										if (isCompatibleEditor(i_editorInput,
+											element, clazz))
+											editorClasses.add(clazz);
 									}
 								} catch (ClassNotFoundException ex) {
 									log.warning("Cannot create nested editor " //$NON-NLS-1$
@@ -359,6 +361,24 @@ public abstract class AbstractMultiEditor3D extends
 		viewer.getContents().installEditPolicy(
 			EditorInputDropPolicy.EDITOR_INPUT_ROLE,
 			new EditorInputDropPolicy());
+	}
+
+	/**
+	 * Indicates whether an editor that was discovered using the plugin registry
+	 * is compatible with the given editor input. Subclasses can override this
+	 * method to customize the selection of editors
+	 * 
+	 * @param i_editorInput the editor input
+	 * @param i_element the configuration element that represents the extension
+	 *            point
+	 * @param i_clazz the editor class
+	 * @return <code>true</code> if the given editor is compatible or
+	 *         <code>false</code> otherwise
+	 */
+	protected boolean isCompatibleEditor(IEditorInput i_editorInput,
+		IConfigurationElement i_element, Class i_clazz) {
+
+		return true;
 	}
 
 	/**

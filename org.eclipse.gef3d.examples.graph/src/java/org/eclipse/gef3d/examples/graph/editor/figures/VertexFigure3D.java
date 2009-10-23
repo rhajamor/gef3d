@@ -52,7 +52,7 @@ public class VertexFigure3D extends ShapeFigure3D {
 		this.setAlpha(0xBB);
 
 		Vector3f v = new Vector3fImpl(getPosition3D().getSize3D());
-		v.setZ(50);
+		v.setZ(20);
 		getPosition3D().setSize3D(v);
 
 		add(new Label("Node " + counter));

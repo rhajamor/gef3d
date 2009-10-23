@@ -11,7 +11,6 @@
 package org.eclipse.gef3d.examples.graph.editor.figures;
 
 import java.util.Map;
-import java.util.Random;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.FreeformLayout;
@@ -65,22 +64,13 @@ public class GraphFigure3D extends FreeformLayer3D {
 		// }
 
 		Vector3fImpl size = new Vector3fImpl(getPosition3D().getSize3D());
-		size.setZ(150);
+		size.set(400, 300, 20);
 		getPosition3D().setSize3D(size);
 		// was: bounds3D.setDepth(150);
 
-		Random gen = new Random(System.currentTimeMillis());
-		float rotX = (float) Math.toRadians(gen.nextInt(360));
-		float rotY = (float) Math.toRadians(gen.nextInt(360));
-		float rotZ = (float) Math.toRadians(gen.nextInt(360));
-
-		// float rotX = (float) Math.toRadians(37);
-		// float rotY = 0;
-		// float rotZ = 0;
-
-		// Rotation is disabled, leads to an infinite loop in conjunction
-		// with handles.
-		getPosition3D().setRotation3D(new Vector3fImpl(rotX, rotY, rotZ));
+		// getPosition3D().setRotation3D(
+		// new Vector3fImpl((float) Math.toRadians(30),
+		// (float) Math.toRadians(30), 0));
 
 		Color bgColor = new Color(Display.getCurrent(), 0xFF, 0xFF, 0xFF);
 		setBackgroundColor(bgColor);
