@@ -666,10 +666,12 @@ public class LightweightSystem3D extends LightweightSystem implements
 		// log.info("Update after camera update"); //$NON-NLS-1$
 		// }
 
-		UpdateManager updateManager = getUpdateManager();
+		// UpdateManager updateManager = getUpdateManager();
+		//
+		// updateManager.addDirtyRegion(getRootFigure(), 0, 0, 1000, 10000);
+		// updateManager.performUpdate();
 
-		updateManager.addDirtyRegion(getRootFigure(), 0, 0, 1000, 10000);
-		updateManager.performUpdate();
+		render();
 	}
 
 	/**
