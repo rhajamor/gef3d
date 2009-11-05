@@ -115,7 +115,7 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
 				GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-				GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+				GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S,
 				GL11.GL_CLAMP);
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T,
@@ -213,7 +213,7 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 
 	private int m_glTexture = 0;
 
-	private LwjglGraphics m_graphics;
+	private Graphics m_graphics;
 
 	private int m_height = -1;
 
@@ -287,9 +287,6 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 
 		GLU.gluOrtho2D(0, m_width, m_height, 0);
 		GL11.glViewport(0, 0, m_width, m_height);
-
-		GL11.glTranslatef(LwjglGraphics.RASTER_OFFSET,
-			LwjglGraphics.RASTER_OFFSET, 0);
 	}
 
 	/**
@@ -319,6 +316,10 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 			throw new IllegalStateException("texture is disposed");
 
 		GL11.glFlush();
+
+		// calculate mipmaps
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_glTexture);
+		EXTFramebufferObject.glGenerateMipmapEXT(GL11.GL_TEXTURE_2D);
 
 		// restore OpenGL state
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
