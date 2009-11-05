@@ -29,49 +29,21 @@ import org.eclipse.swt.graphics.FontData;
 public class LwjglFontManager {
 
 	/**
-	 * The font manager is created by the texture manager 
-	 * ({@link LwjglTextureManager}), this class should not be created by
-	 * other classes.
+	 * The font manager is created by the texture manager (
+	 * {@link LwjglTextureManager}), this class should not be created by other
+	 * classes.
 	 */
 	public LwjglFontManager() {
+
+		// nothing to initliaze
 	}
-	
-	
-//	/**
-//	 * The font manager instance which is shared between all graphics instances
-//	 * created within the same thread.
-//	 */
-//	private static final ThreadLocal<LwjglFontManager> fontManager = new ThreadLocal<LwjglFontManager>() {
-//		/**
-//		 * {@inheritDoc}
-//		 * 
-//		 * @see java.lang.ThreadLocal#initialValue()
-//		 */
-//		@Override
-//		protected LwjglFontManager initialValue() {
-//
-//			return new LwjglFontManager();
-//		}
-//	};
-//
-//	/**
-//	 * Gets the thread's font manager instance.
-//	 * 
-//	 * @return
-//	 */
-//	public static LwjglFontManager getFontManager() {
-//		return fontManager.get();
-//	}
-//
+
 	/**
 	 * Key for the font map.
 	 * 
 	 * @author Kristian Duske
 	 * @version $Revision$
 	 * @since 10.06.2008
-	 * @see $HeadURL:
-	 *      https://gorgo.fernuni-hagen.de/OpenglGEF/trunk/org.eclipse.
-	 *      draw3d/src/java/de/feu/draw3d/font/LwjglFontManager.java $
 	 */
 	private class GLFontKey {
 
@@ -83,17 +55,22 @@ public class LwjglFontManager {
 		 * @param i_font the font
 		 * @param i_startChar the start character
 		 * @param i_endChar the end character
+		 * @param i_antiAliased whether or not the font is antialiased
 		 */
-		public GLFontKey(Font i_font, char i_startChar, char i_endChar) {
+		public GLFontKey(Font i_font, char i_startChar, char i_endChar,
+				boolean i_antiAliased) {
 
 			m_hashCode = 17;
 			m_hashCode = 37 * m_hashCode + i_font.hashCode();
-			m_hashCode = 37 * m_hashCode + i_startChar;
-			m_hashCode = 37 * m_hashCode + i_endChar;
+			m_hashCode =
+				37 * m_hashCode + new Character(i_startChar).hashCode();
+			m_hashCode = 37 * m_hashCode + new Character(i_endChar).hashCode();
+			m_hashCode =
+				37 * m_hashCode + new Boolean(i_antiAliased).hashCode();
 
 			FontData[] fontDatas = i_font.getFontData();
 			for (FontData fontData : fontDatas)
-				m_hashCode = 37 * fontData.hashCode();
+				m_hashCode = m_hashCode + 37 * fontData.hashCode();
 		}
 
 		/**
@@ -130,12 +107,13 @@ public class LwjglFontManager {
 	}
 
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(LwjglFontManager.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(LwjglFontManager.class.getName());
 
 	private boolean m_disposed = false;
 
-	private Map<GLFontKey, LwjglFont> m_fonts = new HashMap<GLFontKey, LwjglFont>();
+	private Map<GLFontKey, LwjglFont> m_fonts =
+		new HashMap<GLFontKey, LwjglFont>();
 
 	/**
 	 * Disposes all managed fonts.
@@ -158,10 +136,13 @@ public class LwjglFontManager {
 	 * @param i_font the SWT font
 	 * @param i_startChar the start character
 	 * @param i_endChar the end character
+	 * @param i_antiAliased whether or not the font should be rendered with
+	 *            antialiasing
 	 * @return the GL font
 	 * @throws NullPointerException if the given SWT font is <code>null</code>
 	 */
-	public LwjglFont getFont(Font i_font, char i_startChar, char i_endChar) {
+	public LwjglFont getFont(Font i_font, char i_startChar, char i_endChar,
+		boolean i_antiAliased) {
 
 		if (m_disposed)
 			throw new IllegalStateException("font manager is disposed");
@@ -169,10 +150,12 @@ public class LwjglFontManager {
 		if (i_font == null)
 			throw new NullPointerException("i_font must not be null");
 
-		GLFontKey key = new GLFontKey(i_font, i_startChar, i_endChar);
+		GLFontKey key =
+			new GLFontKey(i_font, i_startChar, i_endChar, i_antiAliased);
 		LwjglFont glFont = m_fonts.get(key);
 		if (glFont == null) {
-			glFont = new LwjglFont(i_font, i_startChar, i_endChar);
+			glFont =
+				new LwjglFont(i_font, i_startChar, i_endChar, i_antiAliased);
 			m_fonts.put(key, glFont);
 		}
 
@@ -190,8 +173,7 @@ public class LwjglFontManager {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("LwjglFontManager [");
-		for (Iterator<LwjglFont> iter = m_fonts.values().iterator(); iter
-				.hasNext();) {
+		for (Iterator<LwjglFont> iter = m_fonts.values().iterator(); iter.hasNext();) {
 			LwjglFont glFont = iter.next();
 
 			builder.append("Font: ");

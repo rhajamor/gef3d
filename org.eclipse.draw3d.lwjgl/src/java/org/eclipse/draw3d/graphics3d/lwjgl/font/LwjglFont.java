@@ -87,9 +87,12 @@ public class LwjglFont {
 	 * @param i_font the SWT font to render
 	 * @param i_startChar the first available character
 	 * @param i_endChar the last available character
+	 * @param i_antiAliased whether or not the font should be rendered with
+	 *            antialiasing
 	 * @throws NullPointerException if the given font is <code>null</code>
 	 */
-	public LwjglFont(Font i_font, char i_startChar, char i_endChar) {
+	public LwjglFont(Font i_font, char i_startChar, char i_endChar,
+			boolean i_antiAliased) {
 
 		if (i_font == null)
 			throw new NullPointerException("i_font must not be null");
@@ -143,6 +146,7 @@ public class LwjglFont {
 			image = new Image(device, m_width, m_height);
 			gc = new GC(image);
 
+			gc.setTextAntialias(i_antiAliased ? SWT.ON : SWT.OFF);
 			gc.setFont(i_font);
 			gc.setForeground(device.getSystemColor(SWT.COLOR_BLACK));
 			gc.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
@@ -241,6 +245,9 @@ public class LwjglFont {
 			if (i < fontData.length - 1)
 				builder.append(", ");
 		}
+
+		builder.append(", Antialiasing: ");
+		builder.append(i_antiAliased);
 
 		m_description = builder.toString();
 	}
