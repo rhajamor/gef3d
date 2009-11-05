@@ -36,25 +36,33 @@ import org.eclipse.swt.opengl.GLCanvas;
 public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 
 	/**
+	 * Property name for the font antialias property. Possible values are:
+	 * <ul>
+	 * <li><code>Boolean.toString(true)</code> to always enable font
+	 * antialiasing</li>
+	 * <li><code>Boolean.toString(false)</code> to always diable font
+	 * antialiasing</li>
+	 * <li><code>null</code> to let the embedded editors control font
+	 * antialiasing</li>
+	 * </ul>
+	 */
+	public static final String PROP_FONT_AA = "fontAntialias";
+
+	/**
 	 * Activates a graphics object which will receive all following draw
 	 * operations. If a graphics object was already created for the given key
 	 * object (which can e.g. be a figure), it will be re-used.
 	 * 
-	 * @param i_key
-	 *            Object associated respective to associate with the activated
+	 * @param i_key Object associated respective to associate with the activated
 	 *            graphics objects.
-	 * @param i_width
-	 *            Desired width of the graphics object.
-	 * @param i_height
-	 *            Desired height of the graphics object.
-	 * @param i_alpha
-	 *            Desired alpha value of the graphics object.
-	 * @param i_color
-	 *            Desired background color of the graphics object.
+	 * @param i_width Desired width of the graphics object.
+	 * @param i_height Desired height of the graphics object.
+	 * @param i_alpha Desired alpha value of the graphics object.
+	 * @param i_color Desired background color of the graphics object.
 	 * @return The activated graphics object.
 	 */
 	public Graphics activateGraphics2D(Object i_key, int i_width, int i_height,
-			int i_alpha, Color i_color);
+		int i_alpha, Color i_color);
 
 	/**
 	 * Deactivates the active graphics object.
@@ -76,43 +84,36 @@ public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 	/**
 	 * Gets an ID for the graphics object associated with the given key object.
 	 * 
-	 * @param i_key
-	 *            The key object.
+	 * @param i_key The key object.
 	 * @return The ID of the graphics object associated with the key object.
-	 * @throws IllegalArgumentException
-	 *             If there is no graphics object associated with the key object
-	 *             yet.
+	 * @throws IllegalArgumentException If there is no graphics object
+	 *             associated with the key object yet.
 	 */
 	public int getGraphics2DId(Object i_key);
 
 	/**
 	 * Creates an offscreen buffer for the current rendering implementation.
 	 * 
-	 * @param i_height
-	 *            The height of the buffer
-	 * @param i_width
-	 *            The width of the buffer
-	 * @param i_bufferConfig
-	 *            The configuration for the buffer
+	 * @param i_height The height of the buffer
+	 * @param i_width The width of the buffer
+	 * @param i_bufferConfig The configuration for the buffer
 	 * @return A new offscreen buffer instance
 	 */
 	public Graphics3DOffscreenBuffers getGraphics3DOffscreenBuffer(
-			int i_height, int i_width,
-			Graphics3DOffscreenBufferConfig i_bufferConfig);
+		int i_height, int i_width,
+		Graphics3DOffscreenBufferConfig i_bufferConfig);
 
 	/**
 	 * Creates a configuration for an offscreen buffer. This object may be used
 	 * either to create an offscreen buffer immediately or may be saved to
 	 * create several offscreen buffers of the same type.
 	 * 
-	 * @param i_buffers
-	 *            Determines which buffer possibilities to use.
-	 * @param i_args
-	 *            Arguments for the buffer
+	 * @param i_buffers Determines which buffer possibilities to use.
+	 * @param i_args Arguments for the buffer
 	 * @return The created offscreen buffer configuration instance.
 	 */
 	public Graphics3DOffscreenBufferConfig getGraphics3DOffscreenBufferConfig(
-			int i_buffers, int... i_args);
+		int i_buffers, int... i_args);
 
 	/**
 	 * Returns the ID of the Graphics3D instance, e.g. the class name. This ID
@@ -134,8 +135,7 @@ public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 	 * Returns whether there is a graphics object associate with the given key
 	 * object.
 	 * 
-	 * @param i_key
-	 *            The key object.
+	 * @param i_key The key object.
 	 * @return <code>true</code> if there was a graphics object associated to
 	 *         the key obect previously or <code>false</code> otherwise
 	 */
@@ -156,8 +156,7 @@ public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 	/**
 	 * Enables logging of 2D drawing operations.
 	 * 
-	 * @param i_log2D
-	 *            <code>true</code> if 2D logging should be enabled and
+	 * @param i_log2D <code>true</code> if 2D logging should be enabled and
 	 *            <code>false</code> otherwise
 	 */
 	public void setLog2D(boolean i_log2D);
