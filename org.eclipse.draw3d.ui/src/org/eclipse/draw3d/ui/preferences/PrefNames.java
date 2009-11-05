@@ -20,6 +20,24 @@ package org.eclipse.draw3d.ui.preferences;
 public interface PrefNames {
 
 	/**
+	 * Preference value to indiciate that the font antialiasing setting is
+	 * determined by the editor.
+	 */
+	public static final String FONT_AA_EDITOR = "editor";
+
+	/**
+	 * Preference value to indiciate that the font antialiasing setting is
+	 * overridden to be always on.
+	 */
+	public static final String FONT_AA_ON = "on";
+
+	/**
+	 * Preference value to indiciate that the font antialiasing setting is
+	 * overridden to be always off.
+	 */
+	public static final String FONT_AA_OFF = "off";
+
+	/**
 	 * Preference name for the backward key binding.
 	 */
 	public static final String KEY_BACKWARD = "moveBackwardKey";
@@ -84,6 +102,11 @@ public interface PrefNames {
 	 * coordinate axes.
 	 */
 	public static final String LWS_DRAW_AXES = "lwsDrawCoordinateAxes";
+
+	/**
+	 * Preference name for the font antialasing value.
+	 */
+	public static final String LWS_FONT_AA = "lwsFontAntialias";
 
 	/**
 	 * Preference name for the modifier key for camera orbit mode.

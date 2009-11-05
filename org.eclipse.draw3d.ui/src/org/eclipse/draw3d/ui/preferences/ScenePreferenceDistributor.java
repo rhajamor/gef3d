@@ -13,6 +13,7 @@ package org.eclipse.draw3d.ui.preferences;
 import java.util.logging.Logger;
 
 import org.eclipse.draw3d.IScene;
+import org.eclipse.draw3d.IScene.FontAntialias;
 import org.eclipse.draw3d.camera.FirstPersonCamera;
 import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -35,11 +36,11 @@ public class ScenePreferenceDistributor extends Draw3DPreferenceDistributor
 	/**
 	 * The default camera type.
 	 */
-	public static final String DEFAULT_CAMERA_TYPE = FirstPersonCamera.class
-			.getName();
+	public static final String DEFAULT_CAMERA_TYPE =
+		FirstPersonCamera.class.getName();
 
-	private static final Logger log = Logger
-			.getLogger(ScenePreferenceDistributor.class.getName());
+	private static final Logger log =
+		Logger.getLogger(ScenePreferenceDistributor.class.getName());
 
 	private IScene m_scene;
 
@@ -47,10 +48,8 @@ public class ScenePreferenceDistributor extends Draw3DPreferenceDistributor
 	 * Creates a new instance that distributes preference changes to the given
 	 * scene.
 	 * 
-	 * @param i_scene
-	 *            the scene
-	 * @param i_store
-	 *            the preference store
+	 * @param i_scene the scene
+	 * @param i_store the preference store
 	 */
 	public ScenePreferenceDistributor(IScene i_scene) {
 
@@ -61,14 +60,11 @@ public class ScenePreferenceDistributor extends Draw3DPreferenceDistributor
 	 * Returns the camera of the given type or the default camera type if the
 	 * given type is unavailable.
 	 * 
-	 * @param type
-	 *            the type name of the camera to return
+	 * @param type the type name of the camera to return
 	 * @return the camera of the given type
-	 * @throws NullPointerException
-	 *             if the given type is <code>null</code>
-	 * @throws IllegalArgumentException
-	 *             if the given type is the default camera type, but it cannot
-	 *             be loaded
+	 * @throws NullPointerException if the given type is <code>null</code>
+	 * @throws IllegalArgumentException if the given type is the default camera
+	 *             type, but it cannot be loaded
 	 */
 	private ICamera getCamera(String type) {
 
@@ -81,7 +77,7 @@ public class ScenePreferenceDistributor extends Draw3DPreferenceDistributor
 		} catch (Exception ex) {
 			if (DEFAULT_CAMERA_TYPE.equals(type))
 				throw new IllegalArgumentException("Default camera type "
-						+ DEFAULT_CAMERA_TYPE + " is unavailable", ex);
+					+ DEFAULT_CAMERA_TYPE + " is unavailable", ex);
 
 			log.severe("Unable to load camera type " + type);
 			return getCamera(DEFAULT_CAMERA_TYPE);
@@ -100,6 +96,7 @@ public class ScenePreferenceDistributor extends Draw3DPreferenceDistributor
 		m_scene.setDebug(i_store.getBoolean(LWS_DEBUG));
 		setSceneBackgroundColor(i_store.getString(LWS_BACKGROUND));
 		setSceneCamera(i_store.getString(LWS_CAMERA_TYPE));
+		setSceneFontAntialias(i_store.getString(LWS_FONT_AA));
 	}
 
 	/**
@@ -127,6 +124,21 @@ public class ScenePreferenceDistributor extends Draw3DPreferenceDistributor
 			setSceneBackgroundColor(newValue);
 		else if (name.equals(LWS_CAMERA_TYPE))
 			setSceneCamera(newValue);
+		else if (name.equals(LWS_FONT_AA)) {
+			setSceneFontAntialias(newValue);
+		}
+
+		m_scene.render(name.equals(LWS_FONT_AA));
+	}
+
+	private void setSceneFontAntialias(String i_value) {
+
+		if (i_value.equals(FONT_AA_ON))
+			m_scene.setFontAntialias(FontAntialias.ON);
+		else if (i_value.equals(FONT_AA_OFF))
+			m_scene.setFontAntialias(FontAntialias.OFF);
+		else
+			m_scene.setFontAntialias(FontAntialias.EDITOR);
 	}
 
 	private void setSceneBackgroundColor(String i_value) {
@@ -144,7 +156,7 @@ public class ScenePreferenceDistributor extends Draw3DPreferenceDistributor
 		ICamera currentCamera = m_scene.getCamera();
 
 		if (currentCamera != null
-				&& !currentCamera.getClass().equals(newCamera.getClass()))
+			&& !currentCamera.getClass().equals(newCamera.getClass()))
 			m_scene.setCamera(newCamera);
 	}
 

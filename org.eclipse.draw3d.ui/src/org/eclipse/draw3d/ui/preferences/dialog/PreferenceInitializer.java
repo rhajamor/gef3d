@@ -43,17 +43,19 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	@Override
 	public void initializeDefaultPreferences() {
 
-		IPreferenceStore store = Draw3DUIPlugin.getDefault()
-				.getPreferenceStore();
+		IPreferenceStore store =
+			Draw3DUIPlugin.getDefault().getPreferenceStore();
 
 		store.setDefault(LWS_CAMERA_TYPE,
-				ScenePreferenceDistributor.DEFAULT_CAMERA_TYPE);
+			ScenePreferenceDistributor.DEFAULT_CAMERA_TYPE);
 
 		Display display = Display.getCurrent();
 		Color backgroundColor = display.getSystemColor(SWT.COLOR_GRAY);
 
-		store.setDefault(LWS_BACKGROUND, StringConverter
-				.asString(backgroundColor.getRGB()));
+		store.setDefault(LWS_BACKGROUND,
+			StringConverter.asString(backgroundColor.getRGB()));
+
+		store.setDefault(LWS_FONT_AA, FONT_AA_EDITOR);
 
 		store.setDefault(LWS_DEBUG, false);
 		store.setDefault(LWS_DRAW_AXES, true);

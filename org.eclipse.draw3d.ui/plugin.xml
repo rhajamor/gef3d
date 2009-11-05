@@ -10,9 +10,20 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            class="org.eclipse.draw3d.ui.preferences.dialog.CameraPreferencePage"
-            id="org.eclipse.draw3d.ui.cameraPreferences"
+            class="org.eclipse.draw3d.ui.preferences.dialog.Draw3DPreferencePage"
+            id="org.eclipse.draw3d.ui.draw3dPreferences"
             name="Draw3D">
+      </page>
+      <page
+            category="org.eclipse.draw3d.ui.draw3dPreferences"
+            class="org.eclipse.draw3d.ui.preferences.dialog.CameraPreferencePage"
+            id="org.eclipse.draw3d.ui.page1"
+            name="Camera Controls">
+      </page>
+      <page
+            class="org.eclipse.draw3d.ui.WorkbenchPreferencePage2"
+            id="org.eclipse.draw3d.ui.cameraPreferences"
+            name="name">
       </page>
    </extension>
    <extension
