@@ -208,9 +208,6 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 				GLU.gluOrtho2D(0, m_width, m_height, 0);
 				GL11.glViewport(0, 0, m_width, m_height);
 
-				GL11.glTranslatef(LwjglGraphics.RASTER_OFFSET,
-					LwjglGraphics.RASTER_OFFSET, 0);
-
 				m_valid = true;
 			} else {
 				m_pBuffer.makeCurrent();
