@@ -24,6 +24,7 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBackBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
@@ -109,10 +110,20 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		textureManager.activateTexture(i_key);
 		textureManager.clearTexture(i_key, i_color, i_alpha);
 
+		Graphics graphics = textureManager.getGraphics();
+		if (graphics instanceof LwjglGraphics) {
+			LwjglGraphics lwjglGraphics = (LwjglGraphics) graphics;
+			String fontAntialias = getProperty(PROP_FONT_AA);
+			if (fontAntialias != null)
+				lwjglGraphics.setOverrideTextAntialias(Boolean.valueOf(fontAntialias));
+			else
+				lwjglGraphics.setOverrideTextAntialias(null);
+		}
+
 		if (m_log2D)
-			return new LogGraphics(textureManager.getGraphics());
-		else
-			return textureManager.getGraphics();
+			graphics = new LogGraphics(graphics);
+
+		return graphics;
 	}
 
 	/**
