@@ -25,6 +25,28 @@ import org.eclipse.swt.graphics.Color;
 public interface IScene {
 
 	/**
+	 * Enumerates the options for 2D font antialiasing.
+	 * 
+	 * @author Kristian Duske
+	 * @version $Revision$
+	 * @since 03.11.2009
+	 */
+	public enum FontAntialias {
+		/**
+		 * 2D font antialiasing is determined by the embedded editor.
+		 */
+		EDITOR,
+		/**
+		 * 2D font antialiasing is always off.
+		 */
+		OFF,
+		/**
+		 * 2D font antialiasing is always on.
+		 */
+		ON
+	}
+
+	/**
 	 * Adds the given listener to this scene. If the given listener is already
 	 * registered with this scene, nothing happens.
 	 * 
@@ -72,8 +94,10 @@ public interface IScene {
 
 	/**
 	 * Instructs the scene to render itself.
+	 * 
+	 * @param i_redraw2D if <code>true</code>, all 2D content will be redrawn
 	 */
-	public void render();
+	public void render(boolean i_redraw2D);
 
 	/**
 	 * Sets the background color of this scene.
@@ -104,4 +128,12 @@ public interface IScene {
 	 *            <code>false</code> otherwise
 	 */
 	public void setDrawAxes(boolean i_drawAxes);
+
+	/**
+	 * Specifies how 2D font antialiasing should be handled in this scene.
+	 * 
+	 * @param i_antialias the antialias value
+	 * @see FontAntialias
+	 */
+	public void setFontAntialias(FontAntialias i_antialias);
 }

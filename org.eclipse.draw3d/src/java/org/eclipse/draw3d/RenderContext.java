@@ -49,6 +49,8 @@ public class RenderContext {
 
 	private Graphics3D m_g3d = null;
 
+	private boolean m_redraw2DContent;
+
 	private Map<RenderType, List<RenderFragment>> m_renderFragments =
 		new HashMap<RenderType, List<RenderFragment>>();
 
@@ -102,6 +104,7 @@ public class RenderContext {
 		m_renderFragments.clear();
 		// m_displayListManagers.clear();
 		m_scene = null;
+		m_redraw2DContent = false;
 	}
 
 	/**
@@ -176,6 +179,17 @@ public class RenderContext {
 	}
 
 	/**
+	 * Indicates whether 2D content should be redrawn.
+	 * 
+	 * @return <code>true</code> if 2D content should be redrawn and
+	 *         <code>false</code> otherwise
+	 */
+	public boolean isRedraw2DContent() {
+
+		return m_redraw2DContent;
+	}
+
+	/**
 	 * Renders all render fragments.
 	 */
 	public void renderFragments() {
@@ -219,6 +233,15 @@ public class RenderContext {
 	 */
 	public void setGraphics3D(Graphics3D i_g3d) {
 		this.m_g3d = i_g3d;
+	}
+
+	/**
+	 * Calling this method forces all 2D content to be redrawn during the next
+	 * render pass.
+	 */
+	public void setRedraw2DContent() {
+
+		m_redraw2DContent = true;
 	}
 
 	/**

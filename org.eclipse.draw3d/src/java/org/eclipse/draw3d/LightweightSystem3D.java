@@ -671,7 +671,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 		// updateManager.addDirtyRegion(getRootFigure(), 0, 0, 1000, 10000);
 		// updateManager.performUpdate();
 
-		render();
+		render(false);
 	}
 
 	/**
@@ -801,10 +801,14 @@ public class LightweightSystem3D extends LightweightSystem implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.IScene#render()
+	 * @see org.eclipse.draw3d.IScene#render(boolean)
 	 */
-	public void render() {
+	public void render(boolean i_redraw2d) {
 
+		if (i_redraw2d)
+			m_renderContext.setRedraw2DContent();
+
+		getUpdateManager().addInvalidFigure(getRootFigure());
 		getUpdateManager().performUpdate();
 	}
 
@@ -915,6 +919,29 @@ public class LightweightSystem3D extends LightweightSystem implements
 			dispatcher = new EventDispatcher3D(dispatcher, this);
 
 		super.setEventDispatcher(dispatcher);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.IScene#setFontAntialias(org.eclipse.draw3d.IScene.FontAntialias)
+	 */
+	public void setFontAntialias(FontAntialias i_antialias) {
+
+		switch (i_antialias) {
+		case ON:
+			m_renderContext.getGraphics3D().setProperty(
+				Graphics3D.PROP_FONT_AA, Boolean.toString(true));
+			break;
+		case OFF:
+			m_renderContext.getGraphics3D().setProperty(
+				Graphics3D.PROP_FONT_AA, Boolean.toString(false));
+			break;
+		default:
+			m_renderContext.getGraphics3D().setProperty(
+				Graphics3D.PROP_FONT_AA, null);
+			break;
+		}
 	}
 
 	/**

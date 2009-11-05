@@ -471,33 +471,25 @@ public class Figure3DHelper {
 
 			RenderContext renderContext = figure.getRenderContext();
 
+			Rectangle bounds = figure.getBounds();
+			int width = bounds.width;
+			int height = bounds.height;
+
 			boolean repaint2D =
-				m_figuresFriend.is2DContentDirty()
-					&& !figure.getBounds().isEmpty();
+				(renderContext.isRedraw2DContent() || m_figuresFriend.is2DContentDirty())
+					&& width > 0
+					&& width < Integer.MAX_VALUE
+					&& height > 0
+					&& height < Integer.MAX_VALUE;
 
 			Graphics graphics = i_graphics;
 			if (repaint2D) {
 
 				Graphics3D g3d = renderContext.getGraphics3D();
-				Rectangle bounds = figure.getBounds();
 
 				Graphics textureGraphics =
-					g3d.activateGraphics2D(figure, bounds.width, bounds.height,
+					g3d.activateGraphics2D(figure, width, height,
 						figure.getAlpha(), figure.getBackgroundColor());
-
-				/*
-				 * if (!textureManager.contains(figure)) {
-				 * textureManager.createTexture(figure, bounds.width,
-				 * bounds.height); } else { textureManager.resizeTexture(figure,
-				 * bounds.width, bounds.height); }
-				 * textureManager.activateTexture(figure);
-				 * textureManager.clearTexture(figure,
-				 * figure.getBackgroundColor(), figure.getAlpha()); Graphics
-				 * textureGraphics = textureManager.getGraphics(); Graphics
-				 * textureGraphics = g3d.activateGraphics2D(figure,
-				 * bounds.width, bounds.height, figure.getAlpha(), figure
-				 * .getBackgroundColor());
-				 */
 
 				Font font = i_graphics.getFont();
 				textureGraphics.setFont(font);
