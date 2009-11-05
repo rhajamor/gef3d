@@ -120,6 +120,7 @@ import org.lwjgl.opengl.GL11;
  *       segments for long arcs, resulting in a performance penalty
  * @todo implement the unsupported methods
  */
+@SuppressWarnings("unused")
 public class LwjglGraphics extends Graphics {
 
 	/**
@@ -205,15 +206,13 @@ public class LwjglGraphics extends Graphics {
 				// Rectangle clipping, so we emulate the SWTClipping here:
 				double l = Math.max(m_clip.preciseX(), i_clip.preciseX());
 				double r =
-					Math.min(m_clip.preciseX() + m_clip.preciseWidth(), i_clip
-						.preciseX()
-						+ i_clip.preciseWidth());
+					Math.min(m_clip.preciseX() + m_clip.preciseWidth(),
+						i_clip.preciseX() + i_clip.preciseWidth());
 
 				double t = Math.max(m_clip.preciseY(), i_clip.preciseY());
 				double b =
-					Math.min(m_clip.preciseY() + m_clip.preciseHeight(), i_clip
-						.preciseY()
-						+ i_clip.preciseHeight());
+					Math.min(m_clip.preciseY() + m_clip.preciseHeight(),
+						i_clip.preciseY() + i_clip.preciseHeight());
 
 				if (r < l || b < t) {
 					// width and height of -1 to avoid ceiling function from
@@ -840,6 +839,24 @@ public class LwjglGraphics extends Graphics {
 		}
 	}
 
+	private enum RasterOffset {
+
+		POLYGON, LINE, POINT;
+
+		public float getOffset() {
+
+			switch (this) {
+			case POLYGON:
+				return 0;
+			case LINE:
+			case POINT:
+				return 0.49f;
+			}
+
+			throw new AssertionError("unknown raster offset enum: " + this);
+		}
+	}
+
 	private enum LastColor {
 
 		/**
@@ -878,11 +895,6 @@ public class LwjglGraphics extends Graphics {
 	private static final Logger log =
 		Logger.getLogger(LwjglGraphics.class.getName());
 
-	/**
-	 * Offset value needed for correct rasterization.
-	 */
-	public static final float RASTER_OFFSET = 0.375f;
-
 	private static final float[] TMP_F4 = new float[4];
 
 	private boolean m_clippingEnabled = true;
@@ -909,6 +921,21 @@ public class LwjglGraphics extends Graphics {
 	private GraphicsState m_state;
 
 	private int m_width;
+
+	private Boolean m_overrideTextAntialias;
+
+	/**
+	 * Specifies whether the font antialiasing setting should be overridden.
+	 * 
+	 * @param i_overrideTextAntialias if <code>true</code>, font antialiasing is
+	 *            always enabled, if <code>false</code>, it's always disabled,
+	 *            if <code>null</code>, the value set by
+	 *            {@link #setTextAntialias(int)} is used.
+	 */
+	public void setOverrideTextAntialias(Boolean i_overrideTextAntialias) {
+
+		m_overrideTextAntialias = i_overrideTextAntialias;
+	}
 
 	/**
 	 * Creates a new OpenGL graphics object with the given width and height;
@@ -1001,20 +1028,24 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		glSetForegroundColor();
-
-		if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
-			m_currentLinePattern.activate();
-			try {
+		glSetRasterOffset(RasterOffset.LINE);
+		try {
+			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+				m_currentLinePattern.activate();
+				try {
+					GL11.glBegin(GL11.GL_LINE_STRIP);
+					glDrawTexturedArc(i_x, i_y, i_w, i_h, i_offset, i_length);
+					GL11.glEnd();
+				} finally {
+					m_currentLinePattern.deactivate();
+				}
+			} else {
 				GL11.glBegin(GL11.GL_LINE_STRIP);
-				glDrawTexturedArc(i_x, i_y, i_w, i_h, i_offset, i_length);
+				glDrawArc(i_x, i_y, i_w, i_h, i_offset, i_length);
 				GL11.glEnd();
-			} finally {
-				m_currentLinePattern.deactivate();
 			}
-		} else {
-			GL11.glBegin(GL11.GL_LINE_STRIP);
-			glDrawArc(i_x, i_y, i_w, i_h, i_offset, i_length);
-			GL11.glEnd();
+		} finally {
+			glResetRasterOffset();
 		}
 	}
 
@@ -1075,59 +1106,61 @@ public class LwjglGraphics extends Graphics {
 
 		checkDisposed();
 
-		ConversionSpecs specs = new ConversionSpecs();
-		specs.foregroundAlpha = 255;
-		specs.textureWidth = i_w1;
-		specs.textureHeight = i_h1;
-		specs.clip =
-			new org.eclipse.swt.graphics.Rectangle(i_x1, i_y1, i_w1, i_h1);
-
-		BufferInfo info =
-			new BufferInfo(m_width, m_height, GL11.GL_RGBA,
-				GL11.GL_UNSIGNED_BYTE, 1);
-
-		ImageConverter converter = ImageConverter.getInstance();
-		ByteBuffer buffer =
-			converter.imageToBuffer(i_srcImage, info, null, false);
-
-		IntBuffer nameBuffer = IntBuffer.allocate(1);
-		GL11.glGenTextures(nameBuffer);
-		int textureId = nameBuffer.get(0);
+		glSetRasterOffset(RasterOffset.POLYGON);
 		try {
-
-			GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
-			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, i_w1, i_h1,
-				0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
-
-			GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
+			ConversionSpecs specs = new ConversionSpecs();
+			specs.foregroundAlpha = 255;
+			specs.textureWidth = i_w1;
+			specs.textureHeight = i_h1;
+			specs.clip =
+				new org.eclipse.swt.graphics.Rectangle(i_x1, i_y1, i_w1, i_h1);
+			BufferInfo info =
+				new BufferInfo(m_width, m_height, GL11.GL_RGBA,
+					GL11.GL_UNSIGNED_BYTE, 1);
+			ImageConverter converter = ImageConverter.getInstance();
+			ByteBuffer buffer =
+				converter.imageToBuffer(i_srcImage, info, null, false);
+			IntBuffer nameBuffer = IntBuffer.allocate(1);
+			GL11.glGenTextures(nameBuffer);
+			int textureId = nameBuffer.get(0);
 			try {
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-					GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-					GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-					GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
-				GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE,
-					GL11.GL_REPLACE);
 
-				GL11.glBegin(GL11.GL_QUADS);
-				GL11.glTexCoord2f(0, 0);
-				GL11.glVertex2i(i_x2, i_y2);
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
+				GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, i_w1,
+					i_h1, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
 
-				GL11.glTexCoord2f(1, 0);
-				GL11.glVertex2i(i_x2 + i_w2, i_y2);
+				GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
+				try {
+					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+						GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+						GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
+					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+						GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
+					GL11.glTexEnvi(GL11.GL_TEXTURE_ENV,
+						GL11.GL_TEXTURE_ENV_MODE, GL11.GL_REPLACE);
 
-				GL11.glTexCoord2f(1, 1);
-				GL11.glVertex2i(i_x2 + i_w2, i_y2 + i_h2);
+					GL11.glBegin(GL11.GL_QUADS);
+					GL11.glTexCoord2f(0, 0);
+					GL11.glVertex2i(i_x2, i_y2);
 
-				GL11.glTexCoord2f(0, 1);
-				GL11.glVertex2i(i_x2, i_y2 + i_h2);
-				GL11.glEnd();
+					GL11.glTexCoord2f(1, 0);
+					GL11.glVertex2i(i_x2 + i_w2, i_y2);
+
+					GL11.glTexCoord2f(1, 1);
+					GL11.glVertex2i(i_x2 + i_w2, i_y2 + i_h2);
+
+					GL11.glTexCoord2f(0, 1);
+					GL11.glVertex2i(i_x2, i_y2 + i_h2);
+					GL11.glEnd();
+				} finally {
+					GL11.glPopAttrib();
+				}
 			} finally {
-				GL11.glPopAttrib();
+				GL11.glDeleteTextures(nameBuffer);
 			}
 		} finally {
-			GL11.glDeleteTextures(nameBuffer);
+			glResetRasterOffset();
 		}
 	}
 
@@ -1142,26 +1175,31 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		glSetForegroundColor();
+		glSetRasterOffset(RasterOffset.LINE);
+		try {
+			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+				m_currentLinePattern.activate();
+				try {
+					double s =
+						m_currentLinePattern.getS(i_x1, i_y1, i_x2, i_y2);
 
-		if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
-			m_currentLinePattern.activate();
-			try {
-				double s = m_currentLinePattern.getS(i_x1, i_y1, i_x2, i_y2);
-
+					GL11.glBegin(GL11.GL_LINES);
+					GL11.glTexCoord1f(0);
+					GL11.glVertex2i(i_x1, i_y1);
+					GL11.glTexCoord1d(s);
+					GL11.glVertex2i(i_x2, i_y2);
+					GL11.glEnd();
+				} finally {
+					m_currentLinePattern.deactivate();
+				}
+			} else {
 				GL11.glBegin(GL11.GL_LINES);
-				GL11.glTexCoord1f(0);
 				GL11.glVertex2i(i_x1, i_y1);
-				GL11.glTexCoord1d(s);
 				GL11.glVertex2i(i_x2, i_y2);
 				GL11.glEnd();
-			} finally {
-				m_currentLinePattern.deactivate();
 			}
-		} else {
-			GL11.glBegin(GL11.GL_LINES);
-			GL11.glVertex2i(i_x1, i_y1);
-			GL11.glVertex2i(i_x2, i_y2);
-			GL11.glEnd();
+		} finally {
+			glResetRasterOffset();
 		}
 	}
 
@@ -1187,21 +1225,25 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		glSetForegroundColor();
-		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-
-		if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
-			m_currentLinePattern.activate();
-			try {
+		glSetRasterOffset(RasterOffset.LINE);
+		try {
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+				m_currentLinePattern.activate();
+				try {
+					GL11.glBegin(GL11.GL_LINE_LOOP);
+					glDrawTexturedPointList(i_points);
+					GL11.glEnd();
+				} finally {
+					m_currentLinePattern.deactivate();
+				}
+			} else {
 				GL11.glBegin(GL11.GL_LINE_LOOP);
-				glDrawTexturedPointList(i_points);
+				glDrawPointList(i_points);
 				GL11.glEnd();
-			} finally {
-				m_currentLinePattern.deactivate();
 			}
-		} else {
-			GL11.glBegin(GL11.GL_LINE_LOOP);
-			glDrawPointList(i_points);
-			GL11.glEnd();
+		} finally {
+			glResetRasterOffset();
 		}
 	}
 
@@ -1219,20 +1261,24 @@ public class LwjglGraphics extends Graphics {
 			return;
 
 		glSetForegroundColor();
-
-		if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
-			m_currentLinePattern.activate();
-			try {
+		glSetRasterOffset(RasterOffset.LINE);
+		try {
+			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+				m_currentLinePattern.activate();
+				try {
+					GL11.glBegin(GL11.GL_LINE_STRIP);
+					glDrawTexturedPointList(i_points);
+					GL11.glEnd();
+				} finally {
+					m_currentLinePattern.deactivate();
+				}
+			} else {
 				GL11.glBegin(GL11.GL_LINE_STRIP);
-				glDrawTexturedPointList(i_points);
+				glDrawPointList(i_points);
 				GL11.glEnd();
-			} finally {
-				m_currentLinePattern.deactivate();
 			}
-		} else {
-			GL11.glBegin(GL11.GL_LINE_STRIP);
-			glDrawPointList(i_points);
-			GL11.glEnd();
+		} finally {
+			glResetRasterOffset();
 		}
 	}
 
@@ -1247,21 +1293,25 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		glSetForegroundColor();
-		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-
-		if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
-			m_currentLinePattern.activate();
-			try {
+		glSetRasterOffset(RasterOffset.LINE);
+		try {
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+				m_currentLinePattern.activate();
+				try {
+					GL11.glBegin(GL11.GL_LINE_LOOP);
+					glDrawTexturedRectangle(i_x, i_y, i_width, i_height);
+					GL11.glEnd();
+				} finally {
+					m_currentLinePattern.deactivate();
+				}
+			} else {
 				GL11.glBegin(GL11.GL_LINE_LOOP);
-				glDrawTexturedRectangle(i_x, i_y, i_width, i_height);
+				glDrawRectangle(i_x, i_y, i_width, i_height);
 				GL11.glEnd();
-			} finally {
-				m_currentLinePattern.deactivate();
 			}
-		} else {
-			GL11.glBegin(GL11.GL_LINE_LOOP);
-			glDrawRectangle(i_x, i_y, i_width, i_height);
-			GL11.glEnd();
+		} finally {
+			glResetRasterOffset();
 		}
 
 		/*-
@@ -1287,23 +1337,26 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		glSetForegroundColor();
-		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-
-		if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
-			m_currentLinePattern.activate();
-			try {
+		glSetRasterOffset(RasterOffset.LINE);
+		try {
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+				m_currentLinePattern.activate();
+				try {
+					GL11.glBegin(GL11.GL_LINE_LOOP);
+					glDrawTexturedRoundRectangle(i_r, i_arcWidth, i_arcHeight);
+					GL11.glEnd();
+				} finally {
+					m_currentLinePattern.deactivate();
+				}
+			} else {
 				GL11.glBegin(GL11.GL_LINE_LOOP);
-				glDrawTexturedRoundRectangle(i_r, i_arcWidth, i_arcHeight);
+				glDrawRoundRectangle(i_r, i_arcWidth, i_arcHeight);
 				GL11.glEnd();
-			} finally {
-				m_currentLinePattern.deactivate();
 			}
-		} else {
-			GL11.glBegin(GL11.GL_LINE_LOOP);
-			glDrawRoundRectangle(i_r, i_arcWidth, i_arcHeight);
-			GL11.glEnd();
+		} finally {
+			glResetRasterOffset();
 		}
-
 	}
 
 	/**
@@ -1317,8 +1370,13 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		glSetForegroundColor();
-		LwjglFont glFont = glGetFont();
-		glFont.renderString(i_s, i_x, i_y, false);
+		glSetRasterOffset(RasterOffset.POLYGON);
+		try {
+			LwjglFont glFont = glGetFont();
+			glFont.renderString(i_s, i_x, i_y, false);
+		} finally {
+			glResetRasterOffset();
+		}
 	}
 
 	/**
@@ -1332,8 +1390,13 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		glSetForegroundColor();
-		LwjglFont glFont = glGetFont();
-		glFont.renderString(i_s, i_x, i_y, true);
+		glSetRasterOffset(RasterOffset.POLYGON);
+		try {
+			LwjglFont glFont = glGetFont();
+			glFont.renderString(i_s, i_x, i_y, true);
+		} finally {
+			glResetRasterOffset();
+		}
 	}
 
 	/**
@@ -1378,12 +1441,16 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		glSetBackgroundColor();
-		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-
-		GL11.glBegin(GL11.GL_POLYGON);
-		GL11.glVertex2f(i_x + (float) i_w / 2, i_y + (float) i_h / 2);
-		glDrawArc(i_x, i_y, i_w, i_h, i_offset, i_length);
-		GL11.glEnd();
+		glSetRasterOffset(RasterOffset.POLYGON);
+		try {
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+			GL11.glBegin(GL11.GL_POLYGON);
+			GL11.glVertex2f(i_x + (float) i_w / 2, i_y + (float) i_h / 2);
+			glDrawArc(i_x, i_y, i_w, i_h, i_offset, i_length);
+			GL11.glEnd();
+		} finally {
+			glResetRasterOffset();
+		}
 	}
 
 	/**
@@ -1397,25 +1464,44 @@ public class LwjglGraphics extends Graphics {
 		boolean i_vertical) {
 
 		checkDisposed();
-		// TODO evaluate i_vertical
-		int x1 = i_x;
-		int y1 = i_y;
-		int x2 = i_x + i_width;
-		int y2 = i_y + i_height;
 
-		GL11.glBegin(GL11.GL_QUADS);
-		// GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-		// GL11.glColor3f(1.0f,0.0f,0.0f); -- test
-		glSetForegroundColor(); // from
-		GL11.glVertex2i(x1, y1);
-		GL11.glVertex2i(x2, y1);
+		glSetRasterOffset(RasterOffset.POLYGON);
 
-		glSetBackgroundColor(); // to
-		// GL11.glColor3f(0.0f,1.0f,0.0f); -- test
-		GL11.glVertex2i(x2, y2);
-		GL11.glVertex2i(x1, y2);
-		GL11.glEnd();
+		IntBuffer shadeModel = Draw3DCache.getIntBuffer(1);
+		GL11.glGetInteger(GL11.GL_SHADE_MODEL, shadeModel);
+		GL11.glShadeModel(GL11.GL_SMOOTH);
+		try {
+			int x1 = i_x;
+			int y1 = i_y;
+			int x2 = i_x + i_width;
+			int y2 = i_y + i_height;
 
+			GL11.glBegin(GL11.GL_QUADS);
+			glSetForegroundColor(); // from
+			if (i_vertical) {
+				GL11.glVertex2i(x1, y1);
+				GL11.glVertex2i(x2, y1);
+			} else {
+				GL11.glVertex2i(x1, y2);
+				GL11.glVertex2i(x1, y1);
+			}
+
+			glSetBackgroundColor(); // to
+			if (i_vertical) {
+				GL11.glVertex2i(x2, y2);
+				GL11.glVertex2i(x1, y2);
+			} else {
+				GL11.glVertex2i(x2, y1);
+				GL11.glVertex2i(x2, y2);
+			}
+			GL11.glEnd();
+		} finally {
+			glResetRasterOffset();
+			if (shadeModel != null) {
+				GL11.glShadeModel(shadeModel.get(0));
+				Draw3DCache.returnIntBuffer(shadeModel);
+			}
+		}
 	}
 
 	/**
@@ -1440,11 +1526,15 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		glSetBackgroundColor();
-		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-
-		GL11.glBegin(GL11.GL_POLYGON);
-		glDrawPointList(i_points);
-		GL11.glEnd();
+		glSetRasterOffset(RasterOffset.POLYGON);
+		try {
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+			GL11.glBegin(GL11.GL_POLYGON);
+			glDrawPointList(i_points);
+			GL11.glEnd();
+		} finally {
+			glResetRasterOffset();
+		}
 	}
 
 	/**
@@ -1458,11 +1548,15 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		glSetBackgroundColor();
-		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-
-		GL11.glBegin(GL11.GL_QUADS);
-		glDrawRectangle(i_x, i_y, i_width, i_height);
-		GL11.glEnd();
+		glSetRasterOffset(RasterOffset.POLYGON);
+		try {
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+			GL11.glBegin(GL11.GL_QUADS);
+			glDrawRectangle(i_x, i_y, i_width, i_height);
+			GL11.glEnd();
+		} finally {
+			glResetRasterOffset();
+		}
 	}
 
 	/**
@@ -1478,11 +1572,15 @@ public class LwjglGraphics extends Graphics {
 		checkDisposed();
 
 		glSetBackgroundColor();
-		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-
-		GL11.glBegin(GL11.GL_POLYGON);
-		glDrawRoundRectangle(i_r, i_arcWidth, i_arcHeight);
-		GL11.glEnd();
+		glSetRasterOffset(RasterOffset.POLYGON);
+		try {
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+			GL11.glBegin(GL11.GL_POLYGON);
+			glDrawRoundRectangle(i_r, i_arcWidth, i_arcHeight);
+			GL11.glEnd();
+		} finally {
+			glResetRasterOffset();
+		}
 	}
 
 	/**
@@ -1885,6 +1983,31 @@ public class LwjglGraphics extends Graphics {
 		glDrawTexturedArc(i_x, i_y, i_w, i_h, i_offset, i_length, 0);
 	}
 
+	private RasterOffset m_lastOffset;
+
+	private void glSetRasterOffset(RasterOffset i_offset) {
+
+		if (m_lastOffset != null)
+			throw new IllegalStateException("raster offset was not reset");
+
+		if (i_offset.getOffset() != 0)
+			GL11.glTranslatef(i_offset.getOffset(), i_offset.getOffset(), 0);
+
+		m_lastOffset = i_offset;
+	}
+
+	private void glResetRasterOffset() {
+
+		if (m_lastOffset == null)
+			throw new IllegalStateException("raster offset was reset");
+
+		if (m_lastOffset.getOffset() != 0)
+			GL11.glTranslatef(-m_lastOffset.getOffset(),
+				-m_lastOffset.getOffset(), 0);
+
+		m_lastOffset = null;
+	}
+
 	private double glDrawTexturedArc(int i_x, int i_y, int i_w, int i_h,
 		int i_offset, int i_length, double i_s) {
 
@@ -2041,8 +2164,17 @@ public class LwjglGraphics extends Graphics {
 			m_disposeFonts = true;
 		}
 
+		int antialias = getAntialias();
+		if (m_overrideTextAntialias != null) {
+			if (m_overrideTextAntialias)
+				antialias = SWT.ON;
+			else
+				antialias = SWT.OFF;
+		}
+
 		Font font = m_state.getFont();
-		return m_fontManager.getFont(font, (char) 32, (char) 127);
+		return m_fontManager.getFont(font, (char) 32, (char) 127,
+			antialias == SWT.ON);
 	}
 
 	private void glRestoreState(GraphicsState i_previous) {
@@ -2128,9 +2260,6 @@ public class LwjglGraphics extends Graphics {
 			GL11.glMatrixMode(GL11.GL_MODELVIEW);
 			GL11.glPushMatrix();
 			try {
-				// undo raster offset
-				GL11.glTranslatef(-RASTER_OFFSET, -RASTER_OFFSET, 0);
-
 				DoubleBuffer buffer = Draw3DCache.getDoubleBuffer(16);
 				try {
 					// left plane
@@ -2368,6 +2497,9 @@ public class LwjglGraphics extends Graphics {
 	public void rotate(float i_degrees) {
 
 		checkDisposed();
+
+		if (i_degrees == 0)
+			return;
 
 		m_state.rotate(i_degrees);
 		GL11.glRotatef(i_degrees, 0, 0, 1);
