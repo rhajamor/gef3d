@@ -13,7 +13,6 @@ package org.eclipse.draw3d.shapes;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector3f;
@@ -21,6 +20,7 @@ import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Position3DImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Query;
@@ -303,7 +303,7 @@ public class SphereShape extends PositionableShape {
 
 		Graphics3D g3d = i_renderContext.getGraphics3D();
 		DisplayListManager displayListManager =
-			i_renderContext.getDisplayListManager();
+			i_renderContext.getGraphics3D().getDisplayListManager();
 
 		initDisplayLists(displayListManager, g3d);
 

@@ -14,7 +14,7 @@
 package org.eclipse.draw3d.graphics3d;
 
 import org.eclipse.draw2d.Graphics;
-import org.eclipse.swt.graphics.Color;
+import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.swt.opengl.GLCanvas;
 
 /**
@@ -55,14 +55,13 @@ public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 	 * 
 	 * @param i_key Object associated respective to associate with the activated
 	 *            graphics objects.
+	 * @param i_position the position to use for setting up the transformation
 	 * @param i_width Desired width of the graphics object.
 	 * @param i_height Desired height of the graphics object.
-	 * @param i_alpha Desired alpha value of the graphics object.
-	 * @param i_color Desired background color of the graphics object.
 	 * @return The activated graphics object.
 	 */
-	public Graphics activateGraphics2D(Object i_key, int i_width, int i_height,
-		int i_alpha, Color i_color);
+	public Graphics activateGraphics2D(Object i_key, IPosition3D i_position,
+		int i_width, int i_height);
 
 	/**
 	 * Deactivates the active graphics object.
@@ -80,6 +79,13 @@ public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 	 * @return
 	 */
 	public Graphics3DDescriptor getDescriptor();
+
+	/**
+	 * Returns the display list manager for this instance.
+	 * 
+	 * @return the display list manager
+	 */
+	public DisplayListManager getDisplayListManager();
 
 	/**
 	 * Gets an ID for the graphics object associated with the given key object.

@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.texture.LwjglTextureManager;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -28,14 +29,22 @@ import org.eclipse.swt.graphics.FontData;
  */
 public class LwjglFontManager {
 
+	private DisplayListManager m_displayListManager;
+
 	/**
 	 * The font manager is created by the texture manager (
 	 * {@link LwjglTextureManager}), this class should not be created by other
 	 * classes.
+	 * 
+	 * @param i_displayListManager the display list manager
 	 */
-	public LwjglFontManager() {
+	public LwjglFontManager(DisplayListManager i_displayListManager) {
 
-		// nothing to initliaze
+		if (i_displayListManager == null)
+			throw new NullPointerException(
+				"i_displayListManager must not be null");
+
+		m_displayListManager = i_displayListManager;
 	}
 
 	/**
@@ -155,7 +164,8 @@ public class LwjglFontManager {
 		LwjglFont glFont = m_fonts.get(key);
 		if (glFont == null) {
 			glFont =
-				new LwjglFont(i_font, i_startChar, i_endChar, i_antiAliased);
+				new LwjglFont(i_font, i_startChar, i_endChar, i_antiAliased,
+					m_displayListManager);
 			m_fonts.put(key, glFont);
 		}
 

@@ -14,8 +14,10 @@ import java.util.List;
 
 import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.FigureListener;
+import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
@@ -24,6 +26,7 @@ import org.eclipse.draw3d.geometry.Matrix4f;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
@@ -242,5 +245,52 @@ public class FigureSurface extends AbstractSurface {
 		b.append("]");
 
 		return b.toString();
+	}
+
+	private boolean m_active = false;
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ISurface#activate(Graphics3D)
+	 */
+	public Graphics activate(Graphics3D i_g3d) {
+
+		if (m_active)
+			throw new IllegalStateException(this
+				+ " is already activated for 2D rendering");
+
+		Rectangle bounds = m_host.getBounds();
+		int width = bounds.width;
+		int height = bounds.height;
+
+		m_active = true;
+		return i_g3d.activateGraphics2D(m_host, m_host.getPosition3D(), width,
+			height);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ISurface#deactivate()
+	 */
+	public void deactivate(Graphics3D i_g3d) {
+
+		if (!m_active)
+			throw new IllegalStateException(this
+				+ " is not activated for 2D rendering");
+
+		i_g3d.deactivateGraphics2D();
+		m_active = false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ISurface#is2DHost()
+	 */
+	public boolean is2DHost() {
+
+		return true;
 	}
 }

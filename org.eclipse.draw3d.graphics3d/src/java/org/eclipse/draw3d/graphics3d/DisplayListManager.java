@@ -8,7 +8,7 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d;
+package org.eclipse.draw3d.graphics3d;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,10 +16,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
-
-import org.eclipse.draw3d.graphics3d.Graphics3D;
-import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 
 /**
  * Manages display lists during a render operation in the current GL context.
@@ -81,6 +79,9 @@ public class DisplayListManager {
 		m_freeIds.clear();
 	}
 
+	private LinkedList<List<Integer>> m_creationStack =
+		new LinkedList<List<Integer>>();
+
 	/**
 	 * Creates a new display lists with the given key. The display lists will
 	 * contain the GL commands that are executed by the given runnable. If there
@@ -104,35 +105,61 @@ public class DisplayListManager {
 		if (i_runnable == null)
 			throw new NullPointerException("i_runnable must not be null");
 
+		if (!m_creationStack.isEmpty())
+			m_graphics3D.glEnd();
+
+		Integer id = doCreateDisplayList(i_key, i_runnable);
+
+		if (!m_creationStack.isEmpty()) {
+			id = getNewId();
+			m_creationStack.getLast().add(id);
+			m_graphics3D.glNewList(id, Graphics3DDraw.GL_COMPILE);
+		}
+	}
+
+	private Integer doCreateDisplayList(Object i_key, Runnable i_runnable) {
+
 		Integer id = m_displayLists.get(i_key);
 		if (id == null)
 			id = getNewId();
+
+		List<Integer> subListIds = new LinkedList<Integer>();
+		subListIds.add(id);
+		m_creationStack.addLast(subListIds);
 
 		m_graphics3D.glNewList(id, Graphics3DDraw.GL_COMPILE);
 		i_runnable.run();
 		m_graphics3D.glEndList();
 
+		if (subListIds.size() > 1) {
+			id = getNewId();
+			m_graphics3D.glNewList(id, Graphics3DDraw.GL_COMPILE);
+			for (Integer subListId : subListIds)
+				m_graphics3D.glCallList(subListId);
+			m_graphics3D.glEndList();
+		}
+
 		m_displayLists.put(i_key, id);
+		m_creationStack.removeLast();
+
+		return id;
 	}
 
-	/**
-	 * Deletes the display lists with the given keys. If any of the given keys
-	 * is not the key of a display list that was created with this manager, it
-	 * is ignored.
-	 * 
-	 * @param i_keys the keys of the display lists to delete
-	 * @throws IllegalStateException if this display list manager is disposed
-	 */
-	public void deleteDisplayLists(Object... i_keys) {
+	public void createDisplayLists(Map<Object, Runnable> i_requests) {
 
-		if (m_disposed)
-			throw new IllegalStateException("display list manager is disposed");
+		if (i_requests == null)
+			throw new NullPointerException("i_requests must not be null");
 
-		for (Object key : i_keys) {
-			int id = m_displayLists.get(key);
-			m_graphics3D.glDeleteLists(id, 1);
-			m_displayLists.remove(key);
-			m_freeIds.offer(id);
+		if (!m_creationStack.isEmpty())
+			m_graphics3D.glEnd();
+
+		for (Entry<Object, Runnable> entry : i_requests.entrySet())
+			doCreateDisplayList(entry.getKey(), entry.getValue());
+
+		if (!m_creationStack.isEmpty()) {
+			Integer id = getNewId();
+			m_creationStack.getLast().add(id);
+			m_graphics3D.glNewList(id, Graphics3DDraw.GL_COMPILE);
 		}
 	}
 

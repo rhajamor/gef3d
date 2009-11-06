@@ -41,6 +41,7 @@ import org.eclipse.draw3d.geometry.Position3DImpl;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Picker;
@@ -128,7 +129,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 
 			final RenderContext renderContext = getRenderContext();
 			DisplayListManager displayListManager =
-				renderContext.getDisplayListManager();
+				renderContext.getGraphics3D().getDisplayListManager();
 
 			if (!displayListManager.isDisplayList(DL_AXES))
 				displayListManager.createDisplayList(DL_AXES, new Runnable() {

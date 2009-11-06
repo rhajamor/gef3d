@@ -14,7 +14,6 @@ package org.eclipse.draw3d.shapes;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector2f;
@@ -23,6 +22,7 @@ import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector2fImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.swt.SWT;
@@ -198,7 +198,7 @@ public class CuboidShape extends PositionableShape {
 	@Override
 	protected void doRender(RenderContext i_renderContext) {
 		DisplayListManager displayListManager =
-			i_renderContext.getDisplayListManager();
+			i_renderContext.getGraphics3D().getDisplayListManager();
 
 		Graphics3D g3d = i_renderContext.getGraphics3D();
 		initDisplayLists(displayListManager, g3d);

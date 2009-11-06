@@ -28,11 +28,6 @@ public class LwjglFontChar {
 	private final int m_height;
 
 	/**
-	 * The id of the display list that renders this character.
-	 */
-	private int m_listId = -1;
-
-	/**
 	 * The S texture coordinate of the upper left corner of this character.
 	 */
 	private float m_s1;
@@ -70,15 +65,13 @@ public class LwjglFontChar {
 	}
 
 	/**
-	 * Builds a display list for this character.
+	 * Renders this character.
 	 * 
-	 * @param i_listId the id of the display list to build
 	 * @param i_width the width of the character texture
 	 * @param i_height the height of the character texture
 	 */
-	public void buildList(int i_listId, int i_width, int i_height) {
+	public void render(int i_width, int i_height) {
 
-		GL11.glNewList(i_listId, GL11.GL_COMPILE);
 		GL11.glBegin(GL11.GL_QUADS);
 
 		GL11.glTexCoord2f(m_s1, m_t1);
@@ -92,18 +85,6 @@ public class LwjglFontChar {
 
 		GL11.glEnd();
 		GL11.glEndList();
-
-		m_listId = i_listId;
-	}
-
-	/**
-	 * Returns the id of the display list that renders this character.
-	 * 
-	 * @return the list id
-	 */
-	public int getListId() {
-
-		return m_listId;
 	}
 
 	/**

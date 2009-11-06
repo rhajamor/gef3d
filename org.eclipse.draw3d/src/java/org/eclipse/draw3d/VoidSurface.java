@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
+import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.geometry.Point;
@@ -18,6 +19,7 @@ import org.eclipse.draw3d.camera.ICameraListener;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.Hit;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.util.Draw3DCache;
@@ -72,6 +74,17 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.ISurface#activate(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 */
+	public Graphics activate(Graphics3D i_g3d) {
+
+		throw new UnsupportedOperationException(
+			"void surface cannot host 2D content");
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.ISceneListener#cameraChanged(org.eclipse.draw3d.camera.ICamera,
 	 *      org.eclipse.draw3d.camera.ICamera)
 	 */
@@ -81,6 +94,17 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 		i_newCamera.addCameraListener(m_cameraListener);
 
 		coordinateSystemChanged();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ISurface#deactivate(Graphics3D)
+	 */
+	public void deactivate(Graphics3D i_g3d) {
+
+		throw new UnsupportedOperationException(
+			"void surface cannot host 2D content");
 	}
 
 	/**
@@ -140,6 +164,22 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.ISurface#getSurfaceRotation(org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	public Vector3f getSurfaceRotation(Vector3f o_result) {
+
+		Vector3f zAxis = Draw3DCache.getVector3f();
+		try {
+			getZAxis(zAxis);
+			return Math3D.eulerAngles(zAxis, IVector3f.Z_AXIS, o_result);
+		} finally {
+			Draw3DCache.returnVector3f(zAxis);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.AbstractSurface#getXAxis(org.eclipse.draw3d.geometry.Vector3f)
 	 */
 	@Override
@@ -182,6 +222,16 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.ISurface#is2DHost()
+	 */
+	public boolean is2DHost() {
+
+		return false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.ISceneListener#renderPassFinished(org.eclipse.draw3d.RenderContext)
 	 */
 	public void renderPassFinished(RenderContext i_renderContext) {
@@ -214,21 +264,5 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 		b.append(" and depth " + m_depth);
 
 		return b.toString();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.ISurface#getSurfaceRotation(org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	public Vector3f getSurfaceRotation(Vector3f o_result) {
-
-		Vector3f zAxis = Draw3DCache.getVector3f();
-		try {
-			getZAxis(zAxis);
-			return Math3D.eulerAngles(zAxis, IVector3f.Z_AXIS, o_result);
-		} finally {
-			Draw3DCache.returnVector3f(zAxis);
-		}
 	}
 }

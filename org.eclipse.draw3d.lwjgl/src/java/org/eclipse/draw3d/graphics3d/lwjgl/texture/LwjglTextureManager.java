@@ -59,27 +59,20 @@ public class LwjglTextureManager {
 	 * textures.
 	 * 
 	 * @param i_context the main GL context
+	 * @param i_fontManager the font manager
 	 */
-	public LwjglTextureManager(GLCanvas i_context) {
+	public LwjglTextureManager(GLCanvas i_context,
+			LwjglFontManager i_fontManager) {
 
 		if (i_context == null)
 			throw new NullPointerException("i_context must not be null");
 
+		if (i_fontManager == null)
+			throw new NullPointerException("i_fontManager must not be null");
+
 		m_context = i_context;
 		m_textures = new HashMap<Object, LwjglTexture>();
-	}
-
-	/**
-	 * This method should not be called from outside, it is only defined public
-	 * here for tests.
-	 * 
-	 * @return the font manager
-	 */
-	public LwjglFontManager getFontManager() {
-		if (m_fontManager == null) { // lazy initialization
-			m_fontManager = new LwjglFontManager();
-		}
-		return m_fontManager;
+		m_fontManager = i_fontManager;
 	}
 
 	/**
@@ -161,8 +154,7 @@ public class LwjglTextureManager {
 				log.fine("Pbuffer texture support detected");
 				m_textureSupport = TextureSupport.PBUFFER;
 			} else {
-				log
-					.fine("No hardware support for accelerated texture drawing detected, using SWT images");
+				log.fine("No hardware support for accelerated texture drawing detected, using SWT images");
 				m_textureSupport = TextureSupport.SWT;
 			}
 		}
@@ -199,12 +191,12 @@ public class LwjglTextureManager {
 
 		switch (getTextureSupport()) {
 		case FBO:
-			texture = new LwjglTextureFbo(i_width, i_height, getFontManager());
+			texture = new LwjglTextureFbo(i_width, i_height, m_fontManager);
 			break;
 		case PBUFFER:
 			texture =
 				new LwjglTexturePbuffer(m_context, i_width, i_height,
-					getFontManager());
+					m_fontManager);
 			break;
 		case SWT:
 			texture = new LwjglTextureSwt(i_width, i_height);

@@ -33,6 +33,7 @@ import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
@@ -464,69 +465,66 @@ public class Figure3DHelper {
 	 */
 	private void paintChildren2D(Graphics i_graphics) {
 
-		Collection<IFigure> children2D = getChildren2D();
+		final Collection<IFigure> children2D = getChildren2D();
 		if (!children2D.isEmpty()) {
-
-			IFigure3D figure = m_figuresFriend.figure;
+			final IFigure3D figure = m_figuresFriend.figure;
+			ISurface surface = figure.getSurface();
 
 			RenderContext renderContext = figure.getRenderContext();
+			Graphics3D g3d = renderContext.getGraphics3D();
 
-			Rectangle bounds = figure.getBounds();
-			int width = bounds.width;
-			int height = bounds.height;
+			DisplayListManager displayListManager = g3d.getDisplayListManager();
 
-			boolean repaint2D =
-				(renderContext.isRedraw2DContent() || m_figuresFriend.is2DContentDirty())
-					&& width > 0
-					&& width < Integer.MAX_VALUE
-					&& height > 0
-					&& height < Integer.MAX_VALUE;
+			if (surface != null && surface.is2DHost()) {
+				if ((renderContext.isRedraw2DContent() || m_figuresFriend.is2DContentDirty())) {
+					final Graphics graphics = surface.activate(g3d);
+					try {
+						graphics.setFont(i_graphics.getFont());
+						configureGraphics(graphics);
 
-			Graphics graphics = i_graphics;
-			if (repaint2D) {
-
-				Graphics3D g3d = renderContext.getGraphics3D();
-
-				Graphics textureGraphics =
-					g3d.activateGraphics2D(figure, width, height,
-						figure.getAlpha(), figure.getBackgroundColor());
-
-				Font font = i_graphics.getFont();
-				textureGraphics.setFont(font);
-
-				graphics = textureGraphics;
-			}
-
-			configureGraphics(graphics);
-			try {
-				graphics.pushState();
-
-				try {
-					for (IFigure child2D : children2D) {
-						graphics.clipRect(child2D.getBounds());
-						child2D.paint(graphics);
-						// if (repaint2D)
-						// textureManager.activateTexture(figure);
-						graphics.restoreState();
+						displayListManager.createDisplayList(figure,
+							new Runnable() {
+								public void run() {
+									doPaintChildren2D(children2D, figure,
+										graphics);
+								}
+							});
+					} finally {
+						surface.deactivate(g3d);
 					}
 
-					ConnectionLayer connectionLayer =
-						figure.getConnectionLayer(null);
-
-					// paint the connections
-					if (connectionLayer != null) {
-						connectionLayer.paint(graphics);
-						graphics.restoreState();
-					}
-				} finally {
-					graphics.popState();
+					displayListManager.executeDisplayList(figure);
 				}
-			} finally {
-				if (repaint2D) {
-					Graphics3D g3d = renderContext.getGraphics3D();
-					g3d.deactivateGraphics2D();
-				}
+			} else {
+				doPaintChildren2D(children2D, figure, i_graphics);
 			}
+		}
+	}
+
+	/**
+	 * @param children2D
+	 * @param host
+	 * @param graphics
+	 */
+	private void doPaintChildren2D(Collection<IFigure> children2D,
+		IFigure3D host, Graphics graphics) {
+		graphics.pushState();
+		try {
+			for (IFigure child2D : children2D) {
+				graphics.clipRect(child2D.getBounds());
+				child2D.paint(graphics);
+				graphics.restoreState();
+			}
+
+			ConnectionLayer connectionLayer = host.getConnectionLayer(null);
+
+			// paint the connections
+			if (connectionLayer != null) {
+				connectionLayer.paint(graphics);
+				graphics.restoreState();
+			}
+		} finally {
+			graphics.popState();
 		}
 	}
 

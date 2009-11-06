@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.draw3d.RenderFragment.RenderType;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.swt.opengl.GLCanvas;
@@ -45,8 +46,6 @@ public class RenderContext {
 
 	private GLCanvas m_Canvas;
 
-	private final Map<Graphics3D, DisplayListManager> m_displayListManagers;
-
 	private Graphics3D m_g3d = null;
 
 	private boolean m_redraw2DContent;
@@ -55,15 +54,6 @@ public class RenderContext {
 		new HashMap<RenderType, List<RenderFragment>>();
 
 	private IScene m_scene;
-
-	/**
-	 * Creates a new render context. The context is created by the
-	 * {@link LightweightSystem3D}.
-	 */
-	public RenderContext() {
-
-		m_displayListManagers = new HashMap<Graphics3D, DisplayListManager>();
-	}
 
 	/**
 	 * 
@@ -108,55 +98,13 @@ public class RenderContext {
 	}
 
 	/**
-	 * Clears the display manager for the current g3d instance.
-	 */
-	public void clearDisplayListManager() {
-		if (getGraphics3D() == null) {
-			throw new IllegalStateException("no graphics3D intance set yet");
-		}
-		m_displayListManagers.remove(getGraphics3D());
-	}
-
-	/**
 	 * Disposes all {@link DisplayListManager}, clears display manager map, and
 	 * disposes the current {@link Graphics3D} instance. This method is called
 	 * by the {@link LightweightSystem3D} when the widget is disposed.
 	 */
 	public synchronized void dispose() {
 
-		try {
-			for (DisplayListManager manager : m_displayListManagers.values())
-				manager.dispose();
-
-			m_displayListManagers.clear();
-			m_g3d.dispose();
-		} catch (Exception ex) {
-			log.warning("Error disposing render context: " + ex);
-		}
-	}
-
-	/**
-	 * Returns the display list manager of this render context.
-	 * 
-	 * @return the display list manager
-	 * @throws IllegalStateException if no display list manager is set
-	 */
-	public DisplayListManager getDisplayListManager() {
-
-		if (getGraphics3D() == null) {
-			throw new IllegalStateException("no graphcis 3D instance set yet");
-		}
-
-		DisplayListManager manager = m_displayListManagers.get(getGraphics3D());
-		// if (manager == null)
-		// throw new IllegalStateException(
-		// "display list manager was not set for this graphics3D instane");
-		if (manager == null) {
-			manager = new DisplayListManager(getGraphics3D());
-			m_displayListManagers.put(getGraphics3D(), manager);
-		}
-
-		return manager;
+		m_g3d.dispose();
 	}
 
 	/**
