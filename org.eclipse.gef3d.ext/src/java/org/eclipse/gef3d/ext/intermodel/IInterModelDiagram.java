@@ -12,7 +12,9 @@
 package org.eclipse.gef3d.ext.intermodel;
 
 /**
- * IInterModelDiagram There should really be more documentation here.
+ * Empty interface to mark a diagram figure as an inter model diagram. An inter 
+ * model diagram does not have a surface, instead it is only a layer and its
+ * children are inter-model connections, such as traces.  
  * 
  * @author Jens von Pilgrim
  * @version $Revision$

@@ -21,7 +21,9 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.gef.GraphicalEditPart;
 
 /**
- * ConnectedElementAdapter There should really be more documentation here.
+ * Serves as the model for the {@link ConnectedElementEditPart}, working as 
+ * a proxy nesting the actually connected element (i.e. its EditPart).
+ *  
  * 
  * @author Jens von Pilgrim
  * @version $Revision$

@@ -12,7 +12,9 @@
 package org.eclipse.gef3d.ext.intermodel;
 
 /**
- * IInterModelRootEditPart There should really be more documentation here.
+ * Empty interface to mark an edit part as an inter model edit part. An
+ * inter model is only a container for inter-model connections, such as
+ * traces. That is, it is not visible itself.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
