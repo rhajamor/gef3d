@@ -747,8 +747,11 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 *      java.lang.Object)
 	 */
 	public void setProperty(String key, String value) {
-		properties.setProperty(key, value);
 
+		if (value != null)
+			properties.setProperty(key, value);
+		else
+			properties.remove(key);
 	}
 
 	/**
