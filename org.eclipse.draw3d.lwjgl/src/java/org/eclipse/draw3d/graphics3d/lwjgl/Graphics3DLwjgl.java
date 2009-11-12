@@ -122,8 +122,13 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	public Graphics activateGraphics2D(Object i_key, IPosition3D i_position,
 		int i_width, int i_height) {
 
+		log.info("activating 2D graphics");
+
 		LwjglGraphics graphics =
-			new LwjglGraphics(i_width, i_height, getFontManager());
+			new LwjglGraphics(i_width, i_height, getDisplayListManager(),
+				getFontManager());
+
+		graphics.disableClipping();
 
 		String fontAntialias = getProperty(PROP_FONT_AA);
 		if (fontAntialias != null)
@@ -169,6 +174,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#deactivateGraphics2D()
 	 */
 	public void deactivateGraphics2D() {
+
+		log.info("deactivating 2D graphics");
 
 		GL11.glPopMatrix();
 		GL11.glPopAttrib();
@@ -276,7 +283,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 		if (m_textureManager == null)
 			m_textureManager =
-				new LwjglTextureManager(m_context, getFontManager());
+				new LwjglTextureManager(m_context, getDisplayListManager(),
+					getFontManager());
 		else if (m_textureManager.isDisposed())
 			throw new IllegalStateException("TextureManager is disposed");
 
@@ -816,7 +824,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			properties.setProperty(key, value);
 		else
 			properties.remove(key);
-
 	}
 
 	/**

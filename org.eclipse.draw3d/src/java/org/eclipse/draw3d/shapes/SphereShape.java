@@ -331,38 +331,50 @@ public class SphereShape extends PositionableShape {
 	private void initDisplayLists(DisplayListManager i_manager,
 		final Graphics3D i_graphics3D) {
 
-		if (m_fill && !i_manager.isDisplayList(m_fillKey)) {
-			i_manager.createDisplayList(m_fillKey, new Runnable() {
-				public void run() {
-					i_graphics3D.glPushMatrix();
-					try {
-						renderFill(i_graphics3D);
-						for (int i = 0; i < 3; i++) {
-							i_graphics3D.setPosition(ROTATE_Z90);
-							renderFill(i_graphics3D);
-						}
-					} finally {
-						i_graphics3D.glPopMatrix();
-					}
-				}
-			});
-		}
+		boolean initFill = m_fill && !i_manager.isDisplayList(m_fillKey);
+		boolean initOutline =
+			m_outline && !i_manager.isDisplayList(m_outlineKey);
 
-		if (m_outline && !i_manager.isDisplayList(m_outlineKey)) {
-			i_manager.createDisplayList(m_outlineKey, new Runnable() {
-				public void run() {
-					i_graphics3D.glPushMatrix();
-					try {
-						renderOutline(i_graphics3D);
-						for (int i = 0; i < 3; i++) {
-							i_graphics3D.setPosition(ROTATE_Z90);
-							renderOutline(i_graphics3D);
+		if (!initFill && !initOutline)
+			return;
+
+		i_manager.interruptDisplayList();
+		try {
+			if (initFill) {
+				i_manager.createDisplayList(m_fillKey, new Runnable() {
+					public void run() {
+						i_graphics3D.glPushMatrix();
+						try {
+							renderFill(i_graphics3D);
+							for (int i = 0; i < 3; i++) {
+								i_graphics3D.setPosition(ROTATE_Z90);
+								renderFill(i_graphics3D);
+							}
+						} finally {
+							i_graphics3D.glPopMatrix();
 						}
-					} finally {
-						i_graphics3D.glPopMatrix();
 					}
-				}
-			});
+				});
+			}
+
+			if (initOutline) {
+				i_manager.createDisplayList(m_outlineKey, new Runnable() {
+					public void run() {
+						i_graphics3D.glPushMatrix();
+						try {
+							renderOutline(i_graphics3D);
+							for (int i = 0; i < 3; i++) {
+								i_graphics3D.setPosition(ROTATE_Z90);
+								renderOutline(i_graphics3D);
+							}
+						} finally {
+							i_graphics3D.glPopMatrix();
+						}
+					}
+				});
+			}
+		} finally {
+			i_manager.resumeDisplayList();
 		}
 	}
 

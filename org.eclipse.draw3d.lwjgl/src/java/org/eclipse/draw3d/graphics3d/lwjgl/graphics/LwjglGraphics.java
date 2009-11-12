@@ -24,10 +24,12 @@ import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.PrecisionRectangle;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Matrix4f;
 import org.eclipse.draw3d.graphics.GraphicsState;
 import org.eclipse.draw3d.graphics.StatefulGraphics;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFont;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.draw3d.util.ColorConverter;
@@ -114,6 +116,8 @@ import org.lwjgl.opengl.GL11;
  *       arc, since it will work for small arcs, but it will draw too many
  *       segments for long arcs, resulting in a performance penalty
  * @todo implement the unsupported methods
+ * @todo tweak arc factors so that less segments are created
+ * @todo cache textures for images
  */
 @SuppressWarnings("unused")
 public class LwjglGraphics extends StatefulGraphics {
@@ -147,19 +151,21 @@ public class LwjglGraphics extends StatefulGraphics {
 				return 0;
 			case LINE:
 			case POINT:
-				return 0.49f;
+				return 0;
+				// return 0.49f;
 			}
 
 			throw new AssertionError("unknown raster offset enum: " + this);
 		}
 	}
 
-	private static final double ARC_LENGTH_FACTOR = 4 * Math.PI * Math.PI;
+	private static final float ARC_LENGTH_FACTOR =
+		4 * (float) Math.PI * (float) Math.PI;
 
 	/**
 	 * Decrease this factor to get a larger number of segments and vice versa.
 	 */
-	private static final double ARC_SEGMENTS_FACTOR = 5 * Math.PI;
+	private static final float ARC_SEGMENTS_FACTOR = 5 * (float) Math.PI;
 
 	/**
 	 * This value is used as the base for clipping plane equations.
@@ -186,6 +192,8 @@ public class LwjglGraphics extends StatefulGraphics {
 
 	private LwjglFontManager m_fontManager;
 
+	private DisplayListManager m_displayListManager;
+
 	private int m_height;
 
 	private LastColor m_lastColor = LastColor.UNKNOWN;
@@ -204,12 +212,18 @@ public class LwjglGraphics extends StatefulGraphics {
 	 * 
 	 * @param i_width the width of this graphics object
 	 * @param i_height the height of this graphics object
+	 * @param i_displayListManager the display list manager
 	 * @param i_fontManager to the font manager to use
 	 */
 	public LwjglGraphics(int i_width, int i_height,
+			DisplayListManager i_displayListManager,
 			LwjglFontManager i_fontManager) {
 
 		super();
+
+		if (i_displayListManager == null)
+			throw new NullPointerException(
+				"i_displayListManager must not be null");
 
 		if (i_fontManager == null)
 			throw new NullPointerException("i_fontManager must not be null");
@@ -436,7 +450,7 @@ public class LwjglGraphics extends StatefulGraphics {
 			if (getState().getLineStyle() == SWT.LINE_CUSTOM) {
 				m_currentLinePattern.activate();
 				try {
-					double s =
+					float s =
 						m_currentLinePattern.getS(i_x1, i_y1, i_x2, i_y2);
 
 					GL11.glBegin(GL11.GL_LINES);
@@ -734,9 +748,7 @@ public class LwjglGraphics extends StatefulGraphics {
 
 		glSetRasterOffset(RasterOffset.POLYGON);
 
-		IntBuffer shadeModel = Draw3DCache.getIntBuffer(1);
-		GL11.glGetInteger(GL11.GL_SHADE_MODEL, shadeModel);
-		GL11.glShadeModel(GL11.GL_SMOOTH);
+		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 		try {
 			int x1 = i_x;
 			int y1 = i_y;
@@ -764,10 +776,7 @@ public class LwjglGraphics extends StatefulGraphics {
 			GL11.glEnd();
 		} finally {
 			glResetRasterOffset();
-			if (shadeModel != null) {
-				GL11.glShadeModel(shadeModel.get(0));
-				Draw3DCache.returnIntBuffer(shadeModel);
-			}
+			GL11.glPopAttrib();
 		}
 	}
 
@@ -899,29 +908,29 @@ public class LwjglGraphics extends StatefulGraphics {
 	private void glDrawArc(int i_x, int i_y, int i_w, int i_h, int i_offset,
 		int i_length) {
 
-		double start = Math.toRadians(i_offset);
-		double length = Math.toRadians(i_length);
+		float start = (float) Math.toRadians(i_offset);
+		float length = (float) Math.toRadians(i_length);
 
-		double xFactor = i_w / 2;
-		double yFactor = i_h / 2;
+		float xFactor = i_w / 2;
+		float yFactor = i_h / 2;
 
-		double avgRadius = (xFactor + yFactor) / 2;
-		double arcLength = ARC_LENGTH_FACTOR * avgRadius / length;
+		float avgRadius = (xFactor + yFactor) / 2;
+		float arcLength = ARC_LENGTH_FACTOR * avgRadius / length;
 
-		double inc = ARC_SEGMENTS_FACTOR / arcLength;
+		float inc = ARC_SEGMENTS_FACTOR / arcLength;
 
-		double xOffset = i_x + i_w / 2;
-		double yOffset = i_y + i_h / 2;
+		float xOffset = i_x + i_w / 2;
+		float yOffset = i_y + i_h / 2;
 
-		for (double a = start; a < start + length; a += inc) {
-			double x = xOffset + Math.cos(a) * xFactor;
-			double y = yOffset - Math.sin(a) * yFactor;
-			GL11.glVertex2d(x, y);
+		for (float a = start; a < start + length; a += ARC_INC) {
+			float x = xOffset + (float) Math.cos(a) * xFactor;
+			float y = yOffset - (float) Math.sin(a) * yFactor;
+			GL11.glVertex2f(x, y);
 		}
 
-		double x = xOffset + Math.cos(start + length) * xFactor;
-		double y = yOffset - Math.sin(start + length) * yFactor;
-		GL11.glVertex2d(x, y);
+		float x = xOffset + (float) Math.cos(start + length) * xFactor;
+		float y = yOffset - (float) Math.sin(start + length) * yFactor;
+		GL11.glVertex2f(x, y);
 	}
 
 	private void glDrawPointList(PointList i_points) {
@@ -957,33 +966,33 @@ public class LwjglGraphics extends StatefulGraphics {
 		int y2 = y1 + i_r.height;
 		int w = i_arcWidth;
 		int h = i_arcHeight;
-		int w2 = w / 2;
-		int h2 = h / 2;
+		float w2 = w / 2;
+		float h2 = h / 2;
 
 		// left
-		GL11.glVertex2i(x1, y1 + h2);
-		GL11.glVertex2i(x1, y2 - h2);
+		GL11.glVertex2f(x1, y1 + h2);
+		// GL11.glVertex2f(x1, y2 - h2);
 
 		// bottom left corner
 		glDrawArc(x1, y2 - h, w, h, 180, 90);
 
 		// bottom
-		GL11.glVertex2i(x1 + w2, y2);
-		GL11.glVertex2i(x2 - w2, y2);
+		GL11.glVertex2f(x1 + w2, y2);
+		// GL11.glVertex2f(x2 - w2, y2);
 
 		// bottom right corner
 		glDrawArc(x2 - w, y2 - h, w, h, 270, 90);
 
 		// right
-		GL11.glVertex2i(x2, y2 - h2);
-		GL11.glVertex2i(x2, y1 + h2);
+		GL11.glVertex2f(x2, y2 - h2);
+		// GL11.glVertex2f(x2, y1 + h2);
 
 		// top right corner
 		glDrawArc(x2 - w, y1, w, h, 0, 90);
 
 		// top
-		GL11.glVertex2i(x2 - w2, y1);
-		GL11.glVertex2i(x1 + w2, y1);
+		GL11.glVertex2f(x2 - w2, y1);
+		// GL11.glVertex2f(x1 + w2, y1);
 
 		// top left corner
 		glDrawArc(x1, y1, w, h, 90, 90);
@@ -995,33 +1004,33 @@ public class LwjglGraphics extends StatefulGraphics {
 		glDrawTexturedArc(i_x, i_y, i_w, i_h, i_offset, i_length, 0);
 	}
 
-	private double glDrawTexturedArc(int i_x, int i_y, int i_w, int i_h,
-		int i_offset, int i_length, double i_s) {
+	private float glDrawTexturedArc(int i_x, int i_y, int i_w, int i_h,
+		int i_offset, int i_length, float i_s) {
 
-		double start = Math.toRadians(i_offset);
-		double length = Math.toRadians(i_length);
+		float start = (float) Math.toRadians(i_offset);
+		float length = (float) Math.toRadians(i_length);
 
-		double xFactor = i_w / 2;
-		double yFactor = i_h / 2;
+		float xFactor = i_w / 2;
+		float yFactor = i_h / 2;
 
-		double avgRadius = (xFactor + yFactor) / 2;
-		double arcLength = ARC_LENGTH_FACTOR * avgRadius / length;
+		float avgRadius = (xFactor + yFactor) / 2;
+		float arcLength = ARC_LENGTH_FACTOR * avgRadius / length;
 
-		double inc = ARC_SEGMENTS_FACTOR / arcLength;
+		float inc = ARC_SEGMENTS_FACTOR / arcLength;
 
-		double xOffset = i_x + i_w / 2;
-		double yOffset = i_y + i_h / 2;
+		float xOffset = i_x + i_w / 2;
+		float yOffset = i_y + i_h / 2;
 
-		double lastX = xOffset + Math.cos(start) * xFactor;
-		double lastY = yOffset - Math.sin(start) * yFactor;
+		float lastX = xOffset + (float) Math.cos(start) * xFactor;
+		float lastY = yOffset - (float) Math.sin(start) * yFactor;
 
-		double s = i_s;
+		float s = i_s;
 		GL11.glTexCoord1d(s);
 		GL11.glVertex2d(lastX, lastY);
 
-		for (double a = start + inc; a < start + length; a += inc) {
-			double x = xOffset + Math.cos(a) * xFactor;
-			double y = yOffset - Math.sin(a) * yFactor;
+		for (float a = start + inc; a < start + length; a += inc) {
+			float x = xOffset + (float) Math.cos(a) * xFactor;
+			float y = yOffset - (float) Math.sin(a) * yFactor;
 			s += m_currentLinePattern.getS(lastX, lastY, x, y);
 
 			GL11.glTexCoord1d(s);
@@ -1031,8 +1040,8 @@ public class LwjglGraphics extends StatefulGraphics {
 			lastY = y;
 		}
 
-		double x = xOffset + Math.cos(start + length) * xFactor;
-		double y = yOffset - Math.sin(start + length) * yFactor;
+		float x = xOffset + (float) Math.cos(start + length) * xFactor;
+		float y = yOffset - (float) Math.sin(start + length) * yFactor;
 		s += m_currentLinePattern.getS(lastX, lastY, x, y);
 
 		GL11.glTexCoord1d(s);
@@ -1049,7 +1058,7 @@ public class LwjglGraphics extends StatefulGraphics {
 			int lastX = vertices[0];
 			int lastY = vertices[1];
 
-			double s = 0;
+			float s = 0;
 
 			GL11.glTexCoord1d(s);
 			GL11.glVertex2i(lastX, lastY);
@@ -1076,7 +1085,7 @@ public class LwjglGraphics extends StatefulGraphics {
 		int x2 = i_x + i_width;
 		int y2 = i_y;
 
-		double s = 0;
+		float s = 0;
 		GL11.glTexCoord1d(s);
 		GL11.glVertex2i(x1, y1);
 
@@ -1102,11 +1111,11 @@ public class LwjglGraphics extends StatefulGraphics {
 		int y2 = y1 + i_r.height;
 		int w = i_arcWidth;
 		int h = i_arcHeight;
-		double w2 = (double) w / 2;
-		double h2 = (double) h / 2;
+		float w2 = w / 2;
+		float h2 = h / 2;
 
 		// left
-		double s = 0;
+		float s = 0;
 		GL11.glTexCoord1d(s);
 		GL11.glVertex2i(x1, y1 + h / 2);
 		s += m_currentLinePattern.getS(x1, y1 + h2, x1, y2 - h2);
@@ -1174,7 +1183,8 @@ public class LwjglGraphics extends StatefulGraphics {
 	private void glRestoreState(GraphicsState i_previous) {
 
 		Matrix4f transformation = i_previous.getTransformation();
-		if (transformation != null) {
+		if (transformation != null
+			&& !IMatrix4f.IDENTITY.equals(transformation)) {
 			FloatBuffer buffer = Draw3DCache.getFloatBuffer(16);
 			Matrix4f inverse = Draw3DCache.getMatrix4f();
 			try {
@@ -1380,7 +1390,8 @@ public class LwjglGraphics extends StatefulGraphics {
 			Object key = LwjglLinePattern.getKey(dashPattern);
 			m_currentLinePattern = m_linePatterns.get(key);
 			if (m_currentLinePattern == null) {
-				m_currentLinePattern = new LwjglLinePattern(dashPattern);
+				m_currentLinePattern =
+					new LwjglLinePattern(dashPattern, m_displayListManager);
 				m_linePatterns.put(key, m_currentLinePattern);
 			}
 			break;
@@ -1524,17 +1535,18 @@ public class LwjglGraphics extends StatefulGraphics {
 		if (!Arrays.equals(previous, getState().getLineDash()))
 			glSetLineStyle();
 	}
-	
-	/** 
+
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.graphics.StatefulGraphics#setLineDash(float[])
 	 */
 	@Override
 	public void setLineDash(float[] i_dash) {
-		
+
 		int[] previous = getState().getLineDash();
 		super.setLineDash(i_dash);
-		
+
 		if (!Arrays.equals(previous, getState().getLineDash()))
 			glSetLineStyle();
 	}

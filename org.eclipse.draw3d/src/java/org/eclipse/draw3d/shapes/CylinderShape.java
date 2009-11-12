@@ -590,20 +590,32 @@ public class CylinderShape extends PositionableShape {
 	private void initDisplayLists(DisplayListManager i_manager,
 		final Graphics3D i_graphics3D) {
 
-		if (m_fill && !i_manager.isDisplayList(m_fillKey)) {
-			i_manager.createDisplayList(m_fillKey, new Runnable() {
-				public void run() {
-					renderFill(i_graphics3D);
-				}
-			});
-		}
+		boolean initFill = m_fill && !i_manager.isDisplayList(m_fillKey);
+		boolean initOutline =
+			m_outline && !i_manager.isDisplayList(m_outlineKey);
 
-		if (m_outline && !i_manager.isDisplayList(m_outlineKey)) {
-			i_manager.createDisplayList(m_outlineKey, new Runnable() {
-				public void run() {
-					renderOutline(i_graphics3D);
-				}
-			});
+		if (!initFill && !initOutline)
+			return;
+
+		i_manager.interruptDisplayList();
+		try {
+			if (initFill) {
+				i_manager.createDisplayList(m_fillKey, new Runnable() {
+					public void run() {
+						renderFill(i_graphics3D);
+					}
+				});
+			}
+
+			if (initOutline) {
+				i_manager.createDisplayList(m_outlineKey, new Runnable() {
+					public void run() {
+						renderOutline(i_graphics3D);
+					}
+				});
+			}
+		} finally {
+			i_manager.resumeDisplayList();
 		}
 	}
 

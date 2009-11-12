@@ -108,169 +108,178 @@ public class LwjglFont {
 
 		m_displayListManager = i_displayListManager;
 
-		m_startChar = i_startChar;
-		m_endChar = i_endChar;
-
-		int numChars = m_endChar - m_startChar + 1;
-		m_chars = new LwjglFontChar[numChars];
-
-		Device device = i_font.getDevice();
-		Image image = null;
-		GC gc = null;
+		m_displayListManager.interruptDisplayList();
 		try {
-			image = new Image(device, 1, 1);
-			gc = new GC(image);
+			m_startChar = i_startChar;
+			m_endChar = i_endChar;
 
-			gc.setFont(i_font);
-			m_fontMetrics = gc.getFontMetrics();
+			int numChars = m_endChar - m_startChar + 1;
+			m_chars = new LwjglFontChar[numChars];
 
-			m_tabWidth = gc.textExtent("\t").x;
-			int height = m_fontMetrics.getHeight();
+			Device device = i_font.getDevice();
+			Image image = null;
+			GC gc = null;
+			try {
+				image = new Image(device, 1, 1);
+				gc = new GC(image);
 
-			// calculate the area needed to render all available characters
-			long area = 0;
-			for (int i = 0; i < numChars; i++) {
+				gc.setFont(i_font);
+				m_fontMetrics = gc.getFontMetrics();
 
-				char c = (char) (m_startChar + i);
-				String s = Character.toString(c);
-				Point cExtent = gc.stringExtent(s);
+				m_tabWidth = gc.textExtent("\t").x;
+				int height = m_fontMetrics.getHeight();
 
-				m_chars[i] = new LwjglFontChar(cExtent.x, height);
-				area += (cExtent.x + 1) * (height + 1);
-			}
+				// calculate the area needed to render all available characters
+				long area = 0;
+				for (int i = 0; i < numChars; i++) {
 
-			// calculate the texture dimensions needed to hold all characters
-			int sideLength = 64; // minimum texture size
-			int textureArea = 0;
-			while (textureArea < area) {
-				sideLength *= 2;
-				textureArea = sideLength * sideLength;
-			}
+					char c = (char) (m_startChar + i);
+					String s = Character.toString(c);
+					Point cExtent = gc.stringExtent(s);
 
-			m_width = sideLength;
-			m_height = sideLength;
-
-			gc.dispose();
-			image.dispose();
-
-			// create and initialize the image and GC to draw the characters
-			image = new Image(device, m_width, m_height);
-			gc = new GC(image);
-
-			gc.setTextAntialias(i_antiAliased ? SWT.ON : SWT.OFF);
-			gc.setFont(i_font);
-			gc.setForeground(device.getSystemColor(SWT.COLOR_BLACK));
-			gc.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
-			gc.fillRectangle(image.getBounds());
-
-			// fill the image with the available characters
-			int x = 0;
-			int y = 0;
-			for (int i = 0; i < numChars; i++) {
-
-				LwjglFontChar fontChar = m_chars[i];
-				int w = fontChar.getWidth() + 1;
-
-				if (x + w > m_width) {
-					x = 0;
-					y += height + 1;
+					m_chars[i] = new LwjglFontChar(c, cExtent.x, height);
+					area += (cExtent.x + 1) * (height + 1);
 				}
 
-				char c = (char) (m_startChar + i);
-				String s = Character.toString(c);
-				gc.drawString(s, x, y);
+				// calculate the texture dimensions needed to hold all
+				// characters
+				int sideLength = 64; // minimum texture size
+				int textureArea = 0;
+				while (textureArea < area) {
+					sideLength *= 2;
+					textureArea = sideLength * sideLength;
+				}
 
-				float s1 = (float) x / m_width;
-				float t1 = (float) y / m_height;
-				float s2 = (float) (x + fontChar.getWidth()) / m_width;
-				float t2 = (float) (y + height) / m_height;
-				fontChar.setTextureCoords(s1, t1, s2, t2);
+				m_width = sideLength;
+				m_height = sideLength;
 
-				x += w;
-			}
+				gc.dispose();
+				image.dispose();
 
-			// create a luminance alpha texture from the image
-			BufferInfo info =
-				new BufferInfo(m_width, m_height, GL11.GL_LUMINANCE_ALPHA,
-					GL11.GL_UNSIGNED_BYTE, 1);
+				// create and initialize the image and GC to draw the characters
+				image = new Image(device, m_width, m_height);
+				gc = new GC(image);
 
-			ImageConverter converter = ImageConverter.getInstance();
-			ByteBuffer buffer =
-				converter.imageToBuffer(image, info, null, false);
+				gc.setTextAntialias(i_antiAliased ? SWT.ON : SWT.OFF);
+				gc.setFont(i_font);
+				gc.setForeground(device.getSystemColor(SWT.COLOR_BLACK));
+				gc.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+				gc.fillRectangle(image.getBounds());
 
-			GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
-			try {
-				IntBuffer intBuf = Draw3DCache.getIntBuffer(1);
-				try {
-					GL11.glGenTextures(intBuf);
-					m_textureId = intBuf.get(0);
+				// fill the image with the available characters
+				int x = 0;
+				int y = 0;
+				for (int i = 0; i < numChars; i++) {
 
-					GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_textureId);
-					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-					GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0,
-						GL11.GL_LUMINANCE_ALPHA, m_width, m_height, 0,
-						GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, buffer);
+					LwjglFontChar fontChar = m_chars[i];
+					int w = fontChar.getWidth() + 1;
 
-					// GLU.gluBuild2DMipmaps(m_textureId, 2, m_width, m_height,
-					// GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, buffer);
-
-					// generate a display list for each available character
-					Map<Object, Runnable> requests =
-						new HashMap<Object, Runnable>(m_chars.length);
-					for (final LwjglFontChar c : m_chars) {
-						requests.put(c, new Runnable() {
-							public void run() {
-								c.render(m_width, m_height);
-							}
-						});
+					if (x + w > m_width) {
+						x = 0;
+						y += height + 1;
 					}
 
-					m_displayListManager.createDisplayLists(requests);
+					char c = (char) (m_startChar + i);
+					String s = Character.toString(c);
+					gc.drawString(s, x, y);
+
+					float s1 = (float) x / m_width;
+					float t1 = (float) y / m_height;
+					float s2 = (float) (x + fontChar.getWidth()) / m_width;
+					float t2 = (float) (y + height) / m_height;
+					fontChar.setTextureCoords(s1, t1, s2, t2);
+
+					x += w;
+				}
+
+				// create a luminance alpha texture from the image
+				BufferInfo info =
+					new BufferInfo(m_width, m_height, GL11.GL_LUMINANCE_ALPHA,
+						GL11.GL_UNSIGNED_BYTE, 1);
+
+				ImageConverter converter = ImageConverter.getInstance();
+				ByteBuffer buffer =
+					converter.imageToBuffer(image, info, null, false);
+
+				GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
+				try {
+					IntBuffer intBuf = Draw3DCache.getIntBuffer(1);
+					try {
+						GL11.glGenTextures(intBuf);
+						m_textureId = intBuf.get(0);
+
+						GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_textureId);
+						GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+							GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+						GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+							GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+						GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+							GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+						GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+							GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+						GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0,
+							GL11.GL_LUMINANCE_ALPHA, m_width, m_height, 0,
+							GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE,
+							buffer);
+
+						// GLU.gluBuild2DMipmaps(m_textureId, 2, m_width,
+						// m_height,
+						// GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE,
+						// buffer);
+
+						// generate a display list for each available character
+						Map<Object, Runnable> requests =
+							new HashMap<Object, Runnable>(m_chars.length);
+						for (final LwjglFontChar c : m_chars) {
+							requests.put(c, new Runnable() {
+								public void run() {
+									c.render(m_width, m_height);
+								}
+							});
+						}
+
+						m_displayListManager.createDisplayLists(requests);
+					} finally {
+						Draw3DCache.returnIntBuffer(intBuf);
+					}
 				} finally {
-					Draw3DCache.returnIntBuffer(intBuf);
+					GL11.glPopAttrib();
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 				}
 			} finally {
-				GL11.glPopAttrib();
-				GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+				if (gc != null && !gc.isDisposed())
+					gc.dispose();
+				if (image != null && !image.isDisposed())
+					image.dispose();
 			}
+
+			FontData[] fontData = i_font.getFontData();
+			StringBuilder builder = new StringBuilder();
+			for (int i = 0; i < fontData.length; i++) {
+				builder.append(fontData[i].getName());
+
+				int style = fontData[i].getStyle();
+				if ((style & SWT.NORMAL) != 0)
+					builder.append(" Normal");
+				if ((style & SWT.ITALIC) != 0)
+					builder.append(" Italic");
+				if ((style & SWT.BOLD) != 0)
+					builder.append(" Bold");
+
+				builder.append(" ");
+				builder.append(fontData[i].getHeight());
+
+				if (i < fontData.length - 1)
+					builder.append(", ");
+			}
+
+			builder.append(", Antialiasing: ");
+			builder.append(i_antiAliased);
+
+			m_description = builder.toString();
 		} finally {
-			if (gc != null && !gc.isDisposed())
-				gc.dispose();
-			if (image != null && !image.isDisposed())
-				image.dispose();
+			m_displayListManager.resumeDisplayList();
 		}
-
-		FontData[] fontData = i_font.getFontData();
-		StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < fontData.length; i++) {
-			builder.append(fontData[i].getName());
-
-			int style = fontData[i].getStyle();
-			if ((style & SWT.NORMAL) != 0)
-				builder.append(" Normal");
-			if ((style & SWT.ITALIC) != 0)
-				builder.append(" Italic");
-			if ((style & SWT.BOLD) != 0)
-				builder.append(" Bold");
-
-			builder.append(" ");
-			builder.append(fontData[i].getHeight());
-
-			if (i < fontData.length - 1)
-				builder.append(", ");
-		}
-
-		builder.append(", Antialiasing: ");
-		builder.append(i_antiAliased);
-
-		m_description = builder.toString();
 	}
 
 	/**

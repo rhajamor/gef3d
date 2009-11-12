@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
@@ -54,6 +55,8 @@ public class LwjglTextureManager {
 	 */
 	private LwjglFontManager m_fontManager;
 
+	private DisplayListManager m_displayListManager;
+
 	/**
 	 * Creates a new texture manager. The main GL context is needed for pbuffer
 	 * textures.
@@ -62,16 +65,22 @@ public class LwjglTextureManager {
 	 * @param i_fontManager the font manager
 	 */
 	public LwjglTextureManager(GLCanvas i_context,
+			DisplayListManager i_displayListManager,
 			LwjglFontManager i_fontManager) {
 
 		if (i_context == null)
 			throw new NullPointerException("i_context must not be null");
+
+		if (i_displayListManager == null)
+			throw new NullPointerException(
+				"i_displayListManager must not be null");
 
 		if (i_fontManager == null)
 			throw new NullPointerException("i_fontManager must not be null");
 
 		m_context = i_context;
 		m_textures = new HashMap<Object, LwjglTexture>();
+		m_displayListManager = i_displayListManager;
 		m_fontManager = i_fontManager;
 	}
 
@@ -191,12 +200,14 @@ public class LwjglTextureManager {
 
 		switch (getTextureSupport()) {
 		case FBO:
-			texture = new LwjglTextureFbo(i_width, i_height, m_fontManager);
+			texture =
+				new LwjglTextureFbo(i_width, i_height, m_displayListManager,
+					m_fontManager);
 			break;
 		case PBUFFER:
 			texture =
 				new LwjglTexturePbuffer(m_context, i_width, i_height,
-					m_fontManager);
+					m_displayListManager, m_fontManager);
 			break;
 		case SWT:
 			texture = new LwjglTextureSwt(i_width, i_height);

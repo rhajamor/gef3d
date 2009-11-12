@@ -423,9 +423,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 		public void paint(Graphics i_graphics) {
 
 			RenderContext renderContext = getRenderContext();
-			// display list not set here, automatically created and set by
-			// render context
-			// renderContext.setDisplayListManager(m_displayListManager);
 			renderContext.setScene(LightweightSystem3D.this);
 
 			// ignore the incoming graphics object if it is not a dummy
@@ -443,8 +440,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 				paintClientArea(graphics);
 
 				renderContext.renderFragments();
-
-				// renderContext.getGraphics3D().glFlush();
 			} finally {
 				for (ISceneListener listener : m_listeners)
 					listener.renderPassFinished(getRenderContext());

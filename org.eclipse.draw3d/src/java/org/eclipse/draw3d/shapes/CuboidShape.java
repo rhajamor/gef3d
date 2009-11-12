@@ -305,10 +305,15 @@ public class CuboidShape extends PositionableShape {
 			}
 		};
 
-		i_displayListManager.createDisplayList(DL_OUTLINE, outline);
-		i_displayListManager.createDisplayList(DL_FILL_FRONT, front);
-		i_displayListManager.createDisplayList(DL_TEXTURE, texture);
-		i_displayListManager.createDisplayList(DL_FILL_REST, rest);
+		i_displayListManager.interruptDisplayList();
+		try {
+			i_displayListManager.createDisplayList(DL_OUTLINE, outline);
+			i_displayListManager.createDisplayList(DL_FILL_FRONT, front);
+			i_displayListManager.createDisplayList(DL_TEXTURE, texture);
+			i_displayListManager.createDisplayList(DL_FILL_REST, rest);
+		} finally {
+			i_displayListManager.resumeDisplayList();
+		}
 	}
 
 	private void renderFill(DisplayListManager displayListManager,

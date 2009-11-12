@@ -463,39 +463,46 @@ public class Figure3DHelper {
 	 * 
 	 * @param i_graphics the graphics object to paint on
 	 */
-	private void paintChildren2D(Graphics i_graphics) {
+	private void paintChildren2D(final Graphics i_graphics) {
 
 		final Collection<IFigure> children2D = getChildren2D();
 		if (!children2D.isEmpty()) {
 			final IFigure3D figure = m_figuresFriend.figure;
-			ISurface surface = figure.getSurface();
+			final ISurface surface = figure.getSurface();
 
 			RenderContext renderContext = figure.getRenderContext();
-			Graphics3D g3d = renderContext.getGraphics3D();
+			final Graphics3D g3d = renderContext.getGraphics3D();
 
 			DisplayListManager displayListManager = g3d.getDisplayListManager();
 
 			if (surface != null && surface.is2DHost()) {
 				if ((renderContext.isRedraw2DContent() || m_figuresFriend.is2DContentDirty())) {
-					final Graphics graphics = surface.activate(g3d);
+					displayListManager.interruptDisplayList();
 					try {
-						graphics.setFont(i_graphics.getFont());
-						configureGraphics(graphics);
-
 						displayListManager.createDisplayList(figure,
 							new Runnable() {
 								public void run() {
-									doPaintChildren2D(children2D, figure,
-										graphics);
+									Graphics graphics = surface.activate(g3d);
+									try {
+										graphics.setFont(i_graphics.getFont());
+										configureGraphics(graphics);
+										doPaintChildren2D(children2D, figure,
+											graphics);
+									} finally {
+										surface.deactivate(g3d);
+									}
 								}
 							});
 					} finally {
-						surface.deactivate(g3d);
+						displayListManager.resumeDisplayList();
 					}
-
-					displayListManager.executeDisplayList(figure);
 				}
+
+				displayListManager.executeDisplayList(figure);
 			} else {
+				Graphics graphics = i_graphics;
+				graphics.setFont(i_graphics.getFont());
+				configureGraphics(graphics);
 				doPaintChildren2D(children2D, figure, i_graphics);
 			}
 		}
@@ -555,8 +562,8 @@ public class Figure3DHelper {
 		IFigure3D figure = m_figuresFriend.figure;
 		RenderContext renderContext = figure.getRenderContext();
 
-		Graphics3D g3d = renderContext.getGraphics3D();
-		g3d.deactivateGraphics2D();
+		// Graphics3D g3d = renderContext.getGraphics3D();
+		// g3d.deactivateGraphics2D();
 
 		figure.collectRenderFragments(renderContext);
 

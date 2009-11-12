@@ -22,6 +22,8 @@ import org.lwjgl.opengl.GL11;
  */
 public class LwjglFontChar {
 
+	private char m_char;
+
 	/**
 	 * The font height.
 	 */
@@ -55,13 +57,25 @@ public class LwjglFontChar {
 	/**
 	 * Creates a new character with the given width and height.
 	 * 
+	 * @param i_char the character
 	 * @param i_width the width of this character
 	 * @param i_height the height of the font this character belongs to
 	 */
-	public LwjglFontChar(int i_width, int i_height) {
+	public LwjglFontChar(char i_char, int i_width, int i_height) {
 
+		m_char = i_char;
 		m_width = i_width;
 		m_height = i_height;
+	}
+
+	/**
+	 * Returns the width of this character.
+	 * 
+	 * @return the width of this character
+	 */
+	public int getWidth() {
+
+		return m_width;
 	}
 
 	/**
@@ -84,17 +98,6 @@ public class LwjglFontChar {
 		GL11.glVertex2f(m_width, 0);
 
 		GL11.glEnd();
-		GL11.glEndList();
-	}
-
-	/**
-	 * Returns the width of this character.
-	 * 
-	 * @return the width of this character
-	 */
-	public int getWidth() {
-
-		return m_width;
 	}
 
 	/**
@@ -111,5 +114,16 @@ public class LwjglFontChar {
 		m_t1 = i_t1;
 		m_s2 = i_s2;
 		m_t2 = i_t2;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+
+		return Character.toString(m_char);
 	}
 }
