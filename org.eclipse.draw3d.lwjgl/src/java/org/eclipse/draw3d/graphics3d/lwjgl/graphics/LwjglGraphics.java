@@ -25,6 +25,7 @@ import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.PrecisionRectangle;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Matrix4f;
 import org.eclipse.draw3d.graphics.GraphicsState;
@@ -32,6 +33,7 @@ import org.eclipse.draw3d.graphics.StatefulGraphics;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFont;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
+import org.eclipse.draw3d.util.ArcHelper;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.ImageConverter.ConversionSpecs;
@@ -162,6 +164,8 @@ public class LwjglGraphics extends StatefulGraphics {
 	private static final float ARC_LENGTH_FACTOR =
 		4 * (float) Math.PI * (float) Math.PI;
 
+	private static final float ARC_PRECISION = 0.5f;
+
 	/**
 	 * Decrease this factor to get a larger number of segments and vice versa.
 	 */
@@ -188,11 +192,11 @@ public class LwjglGraphics extends StatefulGraphics {
 
 	private LwjglLinePattern m_currentLinePattern;
 
+	private DisplayListManager m_displayListManager;
+
 	private boolean m_disposed = false;
 
 	private LwjglFontManager m_fontManager;
-
-	private DisplayListManager m_displayListManager;
 
 	private int m_height;
 
@@ -450,8 +454,7 @@ public class LwjglGraphics extends StatefulGraphics {
 			if (getState().getLineStyle() == SWT.LINE_CUSTOM) {
 				m_currentLinePattern.activate();
 				try {
-					float s =
-						m_currentLinePattern.getS(i_x1, i_y1, i_x2, i_y2);
+					float s = m_currentLinePattern.getS(i_x1, i_y1, i_x2, i_y2);
 
 					GL11.glBegin(GL11.GL_LINES);
 					GL11.glTexCoord1f(0);
@@ -908,29 +911,14 @@ public class LwjglGraphics extends StatefulGraphics {
 	private void glDrawArc(int i_x, int i_y, int i_w, int i_h, int i_offset,
 		int i_length) {
 
-		float start = (float) Math.toRadians(i_offset);
-		float length = (float) Math.toRadians(i_length);
+		float rOffset = (float) Math.toRadians(i_offset);
+		float rLength = (float) Math.toRadians(i_length);
 
-		float xFactor = i_w / 2;
-		float yFactor = i_h / 2;
+		ArcHelper helper =
+			new ArcHelper(ARC_PRECISION, i_x, i_y, i_w, i_h, rOffset, rLength);
 
-		float avgRadius = (xFactor + yFactor) / 2;
-		float arcLength = ARC_LENGTH_FACTOR * avgRadius / length;
-
-		float inc = ARC_SEGMENTS_FACTOR / arcLength;
-
-		float xOffset = i_x + i_w / 2;
-		float yOffset = i_y + i_h / 2;
-
-		for (float a = start; a < start + length; a += ARC_INC) {
-			float x = xOffset + (float) Math.cos(a) * xFactor;
-			float y = yOffset - (float) Math.sin(a) * yFactor;
-			GL11.glVertex2f(x, y);
-		}
-
-		float x = xOffset + (float) Math.cos(start + length) * xFactor;
-		float y = yOffset - (float) Math.sin(start + length) * yFactor;
-		GL11.glVertex2f(x, y);
+		for (IVector2f v : helper)
+			GL11.glVertex2f(v.getX(), v.getY());
 	}
 
 	private void glDrawPointList(PointList i_points) {
@@ -970,28 +958,28 @@ public class LwjglGraphics extends StatefulGraphics {
 		float h2 = h / 2;
 
 		// left
-		GL11.glVertex2f(x1, y1 + h2);
+		// GL11.glVertex2f(x1, y1 + h2);
 		// GL11.glVertex2f(x1, y2 - h2);
 
 		// bottom left corner
 		glDrawArc(x1, y2 - h, w, h, 180, 90);
 
 		// bottom
-		GL11.glVertex2f(x1 + w2, y2);
+		// GL11.glVertex2f(x1 + w2, y2);
 		// GL11.glVertex2f(x2 - w2, y2);
 
 		// bottom right corner
 		glDrawArc(x2 - w, y2 - h, w, h, 270, 90);
 
 		// right
-		GL11.glVertex2f(x2, y2 - h2);
+		// GL11.glVertex2f(x2, y2 - h2);
 		// GL11.glVertex2f(x2, y1 + h2);
 
 		// top right corner
 		glDrawArc(x2 - w, y1, w, h, 0, 90);
 
 		// top
-		GL11.glVertex2f(x2 - w2, y1);
+		// GL11.glVertex2f(x2 - w2, y1);
 		// GL11.glVertex2f(x1 + w2, y1);
 
 		// top left corner
@@ -1524,10 +1512,10 @@ public class LwjglGraphics extends StatefulGraphics {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw2d.Graphics#setLineDash(int[])
+	 * @see org.eclipse.draw3d.graphics.StatefulGraphics#setLineDash(float[])
 	 */
 	@Override
-	public void setLineDash(int[] i_dash) {
+	public void setLineDash(float[] i_dash) {
 
 		int[] previous = getState().getLineDash();
 		super.setLineDash(i_dash);
@@ -1539,10 +1527,10 @@ public class LwjglGraphics extends StatefulGraphics {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics.StatefulGraphics#setLineDash(float[])
+	 * @see org.eclipse.draw2d.Graphics#setLineDash(int[])
 	 */
 	@Override
-	public void setLineDash(float[] i_dash) {
+	public void setLineDash(int[] i_dash) {
 
 		int[] previous = getState().getLineDash();
 		super.setLineDash(i_dash);
