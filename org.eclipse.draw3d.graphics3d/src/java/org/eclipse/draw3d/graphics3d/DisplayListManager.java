@@ -149,10 +149,11 @@ public class DisplayListManager {
 		if (log.isLoggable(Level.FINE))
 			log.fine("creating display list with key '" + i_key + "'");
 
-		doCreateDisplayList(i_key, i_runnable);
+		DisplayList list = doCreateDisplayList(i_key, i_runnable);
 
 		if (log.isLoggable(Level.FINE))
-			log.fine("display list with key '" + i_key + "' created");
+			log.fine("display list with key '" + i_key + "' created under id "
+				+ list.getId());
 	}
 
 	public void createDisplayLists(Map<Object, Runnable> i_requests) {
@@ -183,13 +184,16 @@ public class DisplayListManager {
 		if (m_disposed)
 			return;
 
+		if (log.isLoggable(Level.FINE))
+			log.info("disposing display list manager " + this);
+
 		clear();
 		m_baseIds = null;
 		m_displayLists = null;
 		m_creationStack = null;
 	}
 
-	private void doCreateDisplayList(Object i_key, Runnable i_runnable) {
+	private DisplayList doCreateDisplayList(Object i_key, Runnable i_runnable) {
 
 		if (m_displayLists.containsKey(i_key))
 			deleteDisplayLists(i_key);
@@ -220,8 +224,11 @@ public class DisplayListManager {
 			m_graphics3D.glEndList();
 		}
 
-		m_displayLists.put(i_key, new DisplayList(id, subListIds));
+		DisplayList list = new DisplayList(id, subListIds);
+		m_displayLists.put(i_key, list);
 		m_creationStack.removeLast();
+
+		return list;
 	}
 
 	private void deleteDisplayList(Integer id) {

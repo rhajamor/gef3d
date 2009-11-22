@@ -18,6 +18,7 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
@@ -281,11 +282,31 @@ public class LwjglGraphics extends StatefulGraphics {
 
 		checkDisposed();
 
-		for (LwjglLinePattern linePattern : m_linePatterns.values())
-			linePattern.dispose();
+		if (log.isLoggable(Level.FINE))
+			log.fine("disposing graphics " + this);
+
+		// for (LwjglLinePattern linePattern : m_linePatterns.values())
+		// linePattern.dispose();
+		//
+		// if (!m_images.isEmpty()) {
+		// IntBuffer textureNames = Draw3DCache.getIntBuffer(m_images.size());
+		// try {
+		// textureNames.rewind();
+		// for (Integer textureId : m_images.values())
+		// textureNames.put(textureId);
+		//
+		// textureNames.rewind();
+		// GL11.glDeleteTextures(textureNames);
+		// } finally {
+		// Draw3DCache.returnIntBuffer(textureNames);
+		// }
+		//
+		// m_images.clear();
+		// }
 
 		m_fontManager = null;
 		m_linePatterns = null;
+		m_images = null;
 
 		m_disposed = true;
 	}
@@ -368,6 +389,8 @@ public class LwjglGraphics extends StatefulGraphics {
 		drawImage(i_srcImage, x1, y1, w, h, x2, y2, w, h);
 	}
 
+	private Map<Image, Integer> m_images = new HashMap<Image, Integer>();
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -382,56 +405,71 @@ public class LwjglGraphics extends StatefulGraphics {
 
 		glSetRasterOffset(RasterOffset.POLYGON);
 		try {
-			ConversionSpecs specs = new ConversionSpecs();
-			specs.foregroundAlpha = 255;
-			specs.textureWidth = i_w1;
-			specs.textureHeight = i_h1;
-			specs.clip =
-				new org.eclipse.swt.graphics.Rectangle(i_x1, i_y1, i_w1, i_h1);
-			BufferInfo info =
-				new BufferInfo(m_width, m_height, GL11.GL_RGBA,
-					GL11.GL_UNSIGNED_BYTE, 1);
-			ImageConverter converter = ImageConverter.getInstance();
-			ByteBuffer buffer =
-				converter.imageToBuffer(i_srcImage, info, null, false);
-			IntBuffer nameBuffer = IntBuffer.allocate(1);
-			GL11.glGenTextures(nameBuffer);
-			int textureId = nameBuffer.get(0);
+			GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 			try {
+				Integer textureId = m_images.get(i_srcImage);
+				if (textureId == null) {
+					ConversionSpecs specs = new ConversionSpecs();
+					specs.foregroundAlpha = 255;
+					specs.textureWidth = i_w1;
+					specs.textureHeight = i_h1;
+					specs.clip =
+						new org.eclipse.swt.graphics.Rectangle(i_x1, i_y1,
+							i_w1, i_h1);
 
-				GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
-				GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, i_w1,
-					i_h1, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+					BufferInfo info =
+						new BufferInfo(m_width, m_height, GL11.GL_RGBA,
+							GL11.GL_UNSIGNED_BYTE, 1);
 
-				GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
-				try {
-					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
-					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
-					GL11.glTexEnvi(GL11.GL_TEXTURE_ENV,
-						GL11.GL_TEXTURE_ENV_MODE, GL11.GL_REPLACE);
+					ByteBuffer buffer =
+						Draw3DCache.getByteBuffer(info.getSize());
+					IntBuffer nameBuffer = Draw3DCache.getIntBuffer(1);
+					try {
+						ImageConverter converter = ImageConverter.getInstance();
+						buffer =
+							converter.imageToBuffer(i_srcImage, info, buffer,
+								false);
 
-					GL11.glBegin(GL11.GL_QUADS);
-					GL11.glTexCoord2f(0, 0);
-					GL11.glVertex2i(i_x2, i_y2);
+						nameBuffer.rewind();
+						GL11.glGenTextures(nameBuffer);
 
-					GL11.glTexCoord2f(1, 0);
-					GL11.glVertex2i(i_x2 + i_w2, i_y2);
+						textureId = nameBuffer.get(0);
+						GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
+						GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA,
+							i_w1, i_h1, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE,
+							buffer);
 
-					GL11.glTexCoord2f(1, 1);
-					GL11.glVertex2i(i_x2 + i_w2, i_y2 + i_h2);
-
-					GL11.glTexCoord2f(0, 1);
-					GL11.glVertex2i(i_x2, i_y2 + i_h2);
-					GL11.glEnd();
-				} finally {
-					GL11.glPopAttrib();
+						GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+							GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+						GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+							GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
+						GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+							GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
+						GL11.glTexEnvi(GL11.GL_TEXTURE_ENV,
+							GL11.GL_TEXTURE_ENV_MODE, GL11.GL_REPLACE);
+					} finally {
+						Draw3DCache.returnIntBuffer(nameBuffer);
+						Draw3DCache.returnByteBuffer(buffer);
+					}
+				} else {
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
 				}
+
+				GL11.glBegin(GL11.GL_QUADS);
+				GL11.glTexCoord2f(0, 0);
+				GL11.glVertex2i(i_x2, i_y2);
+
+				GL11.glTexCoord2f(1, 0);
+				GL11.glVertex2i(i_x2 + i_w2, i_y2);
+
+				GL11.glTexCoord2f(1, 1);
+				GL11.glVertex2i(i_x2 + i_w2, i_y2 + i_h2);
+
+				GL11.glTexCoord2f(0, 1);
+				GL11.glVertex2i(i_x2, i_y2 + i_h2);
+				GL11.glEnd();
 			} finally {
-				GL11.glDeleteTextures(nameBuffer);
+				GL11.glPopAttrib();
 			}
 		} finally {
 			glResetRasterOffset();

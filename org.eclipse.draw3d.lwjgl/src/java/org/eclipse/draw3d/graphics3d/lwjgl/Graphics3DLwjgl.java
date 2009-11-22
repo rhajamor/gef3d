@@ -190,6 +190,10 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		try {
 			if (m_textureManager != null)
 				m_textureManager.dispose();
+			if (m_fontManager != null)
+				m_fontManager.dispose();
+			if (m_displayListManager != null)
+				m_displayListManager.dispose();
 		} catch (Exception ex) {
 			log.warning("Error disposing texture manager: " + ex);
 		}

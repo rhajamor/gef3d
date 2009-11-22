@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
@@ -244,7 +245,6 @@ public class LwjglFont {
 					}
 				} finally {
 					GL11.glPopAttrib();
-					GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 				}
 			} finally {
 				if (gc != null && !gc.isDisposed())
@@ -290,10 +290,15 @@ public class LwjglFont {
 		if (m_disposed)
 			return;
 
+		if (log.isLoggable(Level.FINE))
+			log.fine("disposing font " + this);
+
 		if (m_textureId != -1) {
 			IntBuffer intBuf = Draw3DCache.getIntBuffer(1);
 			try {
 				intBuf.put(0, m_textureId);
+				intBuf.rewind();
+
 				GL11.glDeleteTextures(intBuf);
 				m_textureId = -1;
 			} finally {

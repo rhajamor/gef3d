@@ -12,6 +12,7 @@ package org.eclipse.draw3d.graphics3d.lwjgl.texture;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
@@ -265,16 +266,15 @@ public class LwjglTextureManager {
 		if (m_disposed)
 			return;
 
+		if (log.isLoggable(Level.FINE))
+			log.fine("disposing texture manager " + this);
+
 		deactivateTexture();
 		for (LwjglTexture lwjglTexture : m_textures.values())
 			lwjglTexture.dispose();
 
 		m_textures = null;
-
-		if (m_fontManager != null) {
-			m_fontManager.dispose();
-			m_fontManager = null;
-		}
+		m_fontManager = null;
 
 		m_disposed = true;
 	}
