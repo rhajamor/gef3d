@@ -53,16 +53,20 @@ public class AVLTree<T> implements Iterable<T> {
 			m_nodeMap.put(i_data, this);
 		}
 
-		public AVLNode findNode(T i_data) {
+		public boolean isLeft() {
 
-			int c = compare(i_data, data);
-			if (c < 0)
-				return left.findNode(i_data);
+			if (this.parent == null)
+				return false;
 
-			if (c > 0)
-				return right.findNode(i_data);
+			return this.parent.left == this;
+		}
 
-			return this;
+		public boolean isRight() {
+
+			if (this.parent == null)
+				return false;
+
+			return this.parent.right == this;
 		}
 
 		private int getBalance() {
@@ -210,30 +214,21 @@ public class AVLTree<T> implements Iterable<T> {
 				m_nodeMap.remove(i_data);
 
 				if (this.left == null || this.right == null) {
-					if (this.left == null && this.right == null) {
-						if (this.parent == null)
-							m_root = null;
-						else if (this == this.parent.left)
-							this.parent.left = null;
-						else
-							this.parent.right = null;
-					} else if (this.left == null) {
-						if (this.parent == null)
-							m_root = this.right;
-						else if (this == this.parent.left)
-							this.parent.left = this.right;
-						else
-							this.parent.right = this.right;
-						this.right.parent = this.parent;
-					} else if (this.right == null) {
-						if (this.parent == null)
-							m_root = this.left;
-						else if (this == this.parent.left)
-							this.parent.left = this.left;
-						else
-							this.parent.right = this.left;
-						this.left.parent = this.parent;
-					}
+					AVLNode child = null;
+					if (this.left != null)
+						child = this.left;
+					else if (this.right != null)
+						child = this.right;
+
+					if (isLeft())
+						this.parent.left = child;
+					else if (isRight())
+						this.parent.right = child;
+					else
+						m_root = child;
+
+					if (child != null)
+						child.parent = this.parent;
 
 					if (this.previous != null)
 						this.previous.next = this.next;
@@ -246,25 +241,29 @@ public class AVLTree<T> implements Iterable<T> {
 						m_last = this.previous;
 				} else {
 					AVLNode node = getNext();
-					this.data = node.data;
 
 					this.next = node.next;
 					if (this.next != null)
 						this.next.previous = this;
-
-					if (m_first == node)
-						m_first = this;
-
-					if (m_last == node)
+					else
 						m_last = this;
 
-					node.parent.left = node.right;
+					if (node.isLeft())
+						node.parent.left = node.right;
+					else
+						node.parent.right = node.right;
+
+					if (node.right != null)
+						node.right.parent = node.parent;
+
+					this.data = node.data;
 					m_nodeMap.put(this.data, this);
 
-					while (node.parent != null) {
+					do {
 						node = node.parent;
 						node.updateHeight();
-					}
+						node.rebalanceAfterRemove();
+					} while (node != this);
 				}
 
 				return true;
