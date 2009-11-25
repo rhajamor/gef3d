@@ -1467,7 +1467,9 @@ public class LwjglGraphics extends Graphics {
 
 		glSetRasterOffset(RasterOffset.POLYGON);
 
-		IntBuffer shadeModel = Draw3DCache.getIntBuffer(1);
+		IntBuffer shadeModel = Draw3DCache.getIntBuffer(16);
+		shadeModel.rewind();
+
 		GL11.glGetInteger(GL11.GL_SHADE_MODEL, shadeModel);
 		GL11.glShadeModel(GL11.GL_SMOOTH);
 		try {
@@ -1497,10 +1499,8 @@ public class LwjglGraphics extends Graphics {
 			GL11.glEnd();
 		} finally {
 			glResetRasterOffset();
-			if (shadeModel != null) {
-				GL11.glShadeModel(shadeModel.get(0));
-				Draw3DCache.returnIntBuffer(shadeModel);
-			}
+			GL11.glShadeModel(shadeModel.get(0));
+			Draw3DCache.returnIntBuffer(shadeModel);
 		}
 	}
 
