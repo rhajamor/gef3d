@@ -103,6 +103,8 @@ public class ArcHelper implements Iterable<IVector2f> {
 
 	private IVector2f m_start;
 
+	private boolean m_skipFinal;
+
 	/**
 	 * Creates a new helper for drawing an ellipse arc with the given
 	 * parameters.
@@ -115,9 +117,10 @@ public class ArcHelper implements Iterable<IVector2f> {
 	 * @param i_height the height of the bounding box
 	 * @param i_start the start angle, in radians
 	 * @param i_length the angle length, in radians
+	 * @param i_skipFinal skip the final vertex
 	 */
 	public ArcHelper(float i_precision, float i_x, float i_y, float i_width,
-			float i_height, float i_start, float i_length) {
+			float i_height, float i_start, float i_length, boolean i_skipFinal) {
 
 		if (i_precision <= 0 || i_precision > 1)
 			throw new IllegalArgumentException(
@@ -131,15 +134,80 @@ public class ArcHelper implements Iterable<IVector2f> {
 
 		float avgRadius = (m_axes.getX() + m_axes.getY()) / 2;
 		m_numSegments =
-			(int) Math.ceil(i_precision * 10 * Math.sqrt(avgRadius) * length
-				/ PI2);
+			(int) Math.ceil(i_precision * 10 * Math.sqrt(avgRadius)
+				* Math.abs(length) / PI2);
 
 		float theta = length / m_numSegments;
+
+		m_skipFinal = i_skipFinal;
+		if (m_skipFinal)
+			m_numSegments--;
+
 		m_cos = (float) Math.cos(theta);
 		m_sin = (float) Math.sin(theta);
 
 		m_start =
 			new Vector2fImpl((float) Math.cos(start), (float) Math.sin(start));
+	}
+
+	/**
+	 * Returns a new array containing all vertices of this arc.
+	 * 
+	 * @return the new array
+	 */
+	public float[] getArray() {
+
+		return getArray(new float[2 * getNumVertices()], 0);
+	}
+
+	/**
+	 * Adds all vertices of this arc to the given array, starting at position 0.
+	 * 
+	 * @param i_array the array to fill
+	 * @return the given array
+	 * @throws NullPointerException if the given array is <code>null</code>
+	 * @throws IllegalArgumentException if the given array is too small to
+	 *             contain all vertices
+	 */
+	public float[] getArray(float[] i_array) {
+
+		return getArray(i_array, 0);
+	}
+
+	/**
+	 * Adds all vertices of this arc to the given array, starting at the given
+	 * offset.
+	 * 
+	 * @param i_array the array to fill
+	 * @param i_offset the offset position in the array
+	 * @return the given array
+	 * @throws NullPointerException if the given array is <code>null</code>
+	 * @throws IllegalArgumentException if the given array is too small to
+	 *             contain all vertices
+	 */
+	public float[] getArray(float[] i_array, int i_offset) {
+
+		if (i_array.length - i_offset < 2 * getNumVertices())
+			throw new IllegalArgumentException("i_array is too small");
+
+		int i = i_offset;
+		for (IVector2f v : this) {
+			i_array[2 * i] = v.getX();
+			i_array[2 * i + 1] = v.getY();
+			i++;
+		}
+
+		return i_array;
+	}
+
+	/**
+	 * Returns the number of vertices in this arc.
+	 * 
+	 * @return the number of vertices
+	 */
+	public int getNumVertices() {
+
+		return m_numSegments + 1;
 	}
 
 	/**

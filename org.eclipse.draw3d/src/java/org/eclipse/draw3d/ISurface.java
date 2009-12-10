@@ -17,6 +17,7 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.graphics3d.ExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 
 /**
@@ -54,7 +55,7 @@ public interface ISurface {
 	 * @throws UnsupportedOperationException if this surface cannot host 2D
 	 *             content
 	 */
-	public void deactivate(Graphics3D i_g3d);
+	public ExecutableGraphics2D deactivate(Graphics3D i_g3d);
 
 	/**
 	 * Returns the child figure at the given surface coordinates or

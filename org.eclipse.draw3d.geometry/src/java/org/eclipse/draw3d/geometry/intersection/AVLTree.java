@@ -53,22 +53,6 @@ public class AVLTree<T> implements Iterable<T> {
 			m_nodeMap.put(i_data, this);
 		}
 
-		public boolean isLeft() {
-
-			if (this.parent == null)
-				return false;
-
-			return this.parent.left == this;
-		}
-
-		public boolean isRight() {
-
-			if (this.parent == null)
-				return false;
-
-			return this.parent.right == this;
-		}
-
 		private int getBalance() {
 
 			int l = left != null ? left.height : -1;
@@ -143,6 +127,74 @@ public class AVLTree<T> implements Iterable<T> {
 				}
 			} else
 				return false;
+		}
+
+		public boolean isLeft() {
+
+			if (this.parent == null)
+				return false;
+
+			return this.parent.left == this;
+		}
+
+		public boolean isRight() {
+
+			if (this.parent == null)
+				return false;
+
+			return this.parent.right == this;
+		}
+
+		public AVLNode query(Object i_query, Comparator<Object> i_comparator) {
+
+			int c = i_comparator.compare(i_query, data);
+			if (c < 0 && left != null)
+				return left.query(i_query, i_comparator);
+			else if (c > 0 && right != null)
+				return right.query(i_query, i_comparator);
+			else if (c == 0)
+				return this;
+
+			return null;
+		}
+
+		public AVLNode queryNext(Object i_query, Comparator<Object> i_comparator) {
+
+			if (i_comparator.compare(i_query, data) < 0) {
+				AVLNode result = null;
+				if (left != null)
+					result = left.queryNext(i_query, i_comparator);
+
+				if (result != null)
+					return result;
+
+				return this;
+			} else {
+				if (right != null)
+					return right.queryNext(i_query, i_comparator);
+
+				return null;
+			}
+		}
+
+		public AVLNode queryPrevious(Object i_query,
+			Comparator<Object> i_comparator) {
+
+			if (i_comparator.compare(i_query, data) > 0) {
+				AVLNode result = null;
+				if (right != null)
+					result = right.queryPrevious(i_query, i_comparator);
+
+				if (result != null)
+					return result;
+
+				return this;
+			} else {
+				if (left != null)
+					return left.queryPrevious(i_query, i_comparator);
+
+				return null;
+			}
 		}
 
 		private void rebalanceAfterInsert() {
@@ -433,6 +485,17 @@ public class AVLTree<T> implements Iterable<T> {
 		m_comparator = i_comparator;
 	}
 
+	/**
+	 * Clears this tree.
+	 */
+	public void clear() {
+
+		m_first = null;
+		m_last = null;
+		m_root = null;
+		m_nodeMap.clear();
+	}
+
 	@SuppressWarnings("unchecked")
 	private int compare(T i_o1, T i_o2) {
 
@@ -456,6 +519,48 @@ public class AVLTree<T> implements Iterable<T> {
 	}
 
 	/**
+	 * Returns the data object that has the same order index as the given data
+	 * object.
+	 * 
+	 * @param i_data the data object to search for
+	 * @return a data object with the same order index or <code>null</code> if
+	 *         no such data object is stored in this tree
+	 */
+	public T get(T i_data) {
+
+		if (i_data == null)
+			throw new NullPointerException("i_data must not be null");
+
+		return m_nodeMap.get(i_data).getData();
+	}
+
+	/**
+	 * Returns the first element in this tree.
+	 * 
+	 * @return the first element or <code>null</code> if this tree is empty
+	 */
+	public T getFirst() {
+
+		if (m_first == null)
+			return null;
+
+		return m_first.getData();
+	}
+
+	/**
+	 * Returns the last element in this tree.
+	 * 
+	 * @return the last element or <code>null</code> if this tree is empty
+	 */
+	public T getLast() {
+
+		if (m_last == null)
+			return null;
+
+		return m_last.getData();
+	}
+
+	/**
 	 * Returns the successor of the given element, if any.
 	 * 
 	 * @param i_data the element whose successor is requested
@@ -466,14 +571,13 @@ public class AVLTree<T> implements Iterable<T> {
 	public T getNext(T i_data) {
 
 		AVLNode node = m_nodeMap.get(i_data);
-		if (node == null)
-			return null;
+		if (node != null) {
+			AVLNode nextNode = node.getNext();
+			if (nextNode != null)
+				return nextNode.getData();
+		}
 
-		AVLNode nextNode = node.getNext();
-		if (nextNode == null)
-			return null;
-
-		return nextNode.getData();
+		return null;
 	}
 
 	/**
@@ -487,14 +591,13 @@ public class AVLTree<T> implements Iterable<T> {
 	public T getPrevious(T i_data) {
 
 		AVLNode node = m_nodeMap.get(i_data);
-		if (node == null)
-			return null;
+		if (node != null) {
+			AVLNode previousNode = node.getPrevious();
+			if (previousNode != null)
+				return previousNode.getData();
+		}
 
-		AVLNode previousNode = node.getPrevious();
-		if (previousNode == null)
-			return null;
-
-		return previousNode.getData();
+		return null;
 	}
 
 	/**
@@ -521,6 +624,17 @@ public class AVLTree<T> implements Iterable<T> {
 	}
 
 	/**
+	 * Indicates whether this tree is empty.
+	 * 
+	 * @return <code>true</code> if this tree is empty and <code>false</code>
+	 *         otherwise
+	 */
+	public boolean isEmpty() {
+
+		return m_root == null;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see java.lang.Iterable#iterator()
@@ -528,6 +642,51 @@ public class AVLTree<T> implements Iterable<T> {
 	public Iterator<T> iterator() {
 
 		return new AVLTreeIterator(m_first);
+	}
+
+	public T query(Object i_query, Comparator<Object> i_comparator) {
+
+		if (i_query == null)
+			throw new NullPointerException("i_query must not be null");
+
+		if (i_comparator == null)
+			throw new NullPointerException("i_comparator must not be null");
+
+		AVLNode node = m_root.query(i_query, i_comparator);
+		if (node != null)
+			return node.getData();
+
+		return null;
+	}
+
+	public T queryNext(Object i_query, Comparator<Object> i_comparator) {
+
+		if (i_query == null)
+			throw new NullPointerException("i_query must not be null");
+
+		if (i_comparator == null)
+			throw new NullPointerException("i_comparator must not be null");
+
+		AVLNode node = m_root.queryNext(i_query, i_comparator);
+		if (node != null)
+			return node.getData();
+
+		return null;
+	}
+
+	public T queryPrevious(Object i_query, Comparator<Object> i_comparator) {
+
+		if (i_query == null)
+			throw new NullPointerException("i_query must not be null");
+
+		if (i_comparator == null)
+			throw new NullPointerException("i_comparator must not be null");
+
+		AVLNode node = m_root.queryPrevious(i_query, i_comparator);
+		if (node != null)
+			return node.getData();
+
+		return null;
 	}
 
 	/**

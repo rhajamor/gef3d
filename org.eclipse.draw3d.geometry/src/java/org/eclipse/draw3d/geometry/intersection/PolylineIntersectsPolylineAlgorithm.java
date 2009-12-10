@@ -10,6 +10,17 @@
  ******************************************************************************/
 package org.eclipse.draw3d.geometry.intersection;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.eclipse.draw3d.geometry.IVector2f;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Math3DCache;
+import org.eclipse.draw3d.geometry.Vector2f;
+
 /**
  * PolylineIntersectsPolylineAlgorithm There should really be more documentation
  * here.
@@ -20,123 +31,483 @@ package org.eclipse.draw3d.geometry.intersection;
  */
 public class PolylineIntersectsPolylineAlgorithm {
 
-	private static enum Structure {
-		POLYLINE1, POLYLINE2, INTERSECTION, DONE;
+	private static class Event {
 
-		public boolean isSegment() {
+		/**
+		 * Segments of which this is an inner point.
+		 */
+		private Set<TreeSegment> m_inner;
 
-			return this == POLYLINE1 || this == POLYLINE2;
+		/**
+		 * Segments of which this is the lower point
+		 */
+		private Set<TreeSegment> m_lower;
+
+		private IVector2f m_point;
+
+		/**
+		 * Segments of which this is the upper point.
+		 */
+		private Set<TreeSegment> m_upper;
+
+		public Event(IVector2f i_point) {
+
+			m_point = i_point;
+		}
+
+		public void addInner(TreeSegment i_segment) {
+
+			if (m_inner == null)
+				m_inner = new HashSet<TreeSegment>();
+
+			m_inner.add(i_segment);
+		}
+
+		public void addLower(TreeSegment i_segment) {
+
+			if (m_lower == null)
+				m_lower = new HashSet<TreeSegment>();
+
+			m_lower.add(i_segment);
+		}
+
+		public void addUpper(TreeSegment i_segment) {
+
+			if (m_upper == null)
+				m_upper = new HashSet<TreeSegment>();
+
+			m_upper.add(i_segment);
+		}
+
+		public Set<TreeSegment> getInner() {
+
+			if (m_inner == null)
+				return Collections.emptySet();
+
+			return m_inner;
+		}
+
+		public Set<TreeSegment> getLower() {
+
+			if (m_lower == null)
+				return Collections.emptySet();
+
+			return m_lower;
+		}
+
+		public IVector2f getPoint() {
+
+			return m_point;
+		}
+
+		public Set<TreeSegment> getUpper() {
+
+			if (m_upper == null)
+				return Collections.emptySet();
+
+			return m_upper;
+		}
+
+		public boolean isEmpty() {
+
+			return (m_upper == null || m_upper.isEmpty())
+				&& (m_lower == null || m_lower.isEmpty())
+				&& (m_inner == null || m_inner.isEmpty());
+		}
+
+		public void removeInner(TreeSegment i_segment) {
+
+			m_inner.remove(i_segment);
 		}
 	}
 
-	private int[] isx;
+	private static class TreeSegment {
 
-	private int[] isy;
+		private IVector2f m_intersection;
 
-	private int is;
+		private Segment m_segment;
 
-	private int i1;
+		private Polyline m_line;
 
-	private int i2;
+		private Set<TreeSegment> m_overlaps;
 
-	private int nis;
+		public void addOverlap(TreeSegment i_segment) {
 
-	private int[] pl1;
+			if (m_overlaps == null)
+				m_overlaps = new HashSet<TreeSegment>();
 
-	private int[] pl2;
+			m_overlaps.add(i_segment);
 
-	private int[] s1;
+			if (!i_segment.getOverlaps().contains(this))
+				i_segment.addOverlap(this);
+		}
 
-	private int[] s2;
+		public Set<TreeSegment> getOverlaps() {
 
-	private int handleSegment(int[] pl, int si1, int si2) {
+			if (m_overlaps == null)
+				return Collections.emptySet();
 
-		int x1 = pl[2 * si1];
-		int x2 = pl[2 * si2];
+			return m_overlaps;
+		}
 
-		if (x1 == x2)
-			return testVerticalSegment(si1, si2);
+		public void removeOverlap(TreeSegment i_segment) {
 
-		if (x1 < x2)
-			return insertSegment(si1, si2);
+			m_overlaps.remove(i_segment);
 
-		deleteSegment(si1, si2);
-		return false;
-	}
+			if (i_segment.getOverlaps().contains(this))
+				i_segment.removeOverlap(this);
+		}
 
-	public int intersects(int i_max) {
+		public Polyline getPolyline() {
 
-		Structure a;
-		int num = 0;
-		while ((a = next()) != Structure.DONE) {
+			return m_line;
+		}
 
-			if (a.isSegment()) {
-				int si;
-				int n;
-				int[] pl;
+		public TreeSegment(Polyline i_line, Segment i_segment) {
 
-				if (a == Structure.POLYLINE1) {
-					si = s1[i1];
-					pl = pl1;
-					n = s1.length;
-				} else {
-					si = s2[i2];
-					pl = pl2;
-					n = s2.length;
+			m_line = i_line;
+			m_segment = i_segment;
+		}
+
+		public Segment getSegment() {
+
+			return m_segment;
+		}
+
+		public boolean overlaps(TreeSegment i_segment, Vector2f i_start,
+			Vector2f i_end) {
+
+			float mg = getSegment().getG();
+			float tg = i_segment.getSegment().getG();
+
+			float mc = getSegment().getC();
+			float tc = i_segment.getSegment().getC();
+
+			if (mg == tg && mc == tc) {
+				// segments are parallel
+				IVector2f mu = getUpper();
+				IVector2f ml = getLower();
+				IVector2f tu = i_segment.getUpper();
+				IVector2f tl = i_segment.getLower();
+
+				if (Math3D.in(mu.getY(), ml.getY(), tu.getY())) {
+					i_start.set(tu);
+					if (Math3D.in(mu.getY(), ml.getY(), tl.getY()))
+						i_end.set(tl);
+					else
+						i_end.set(ml);
+
+					return true;
+				} else if (Math3D.in(tu.getY(), tl.getY(), mu.getY())) {
+					i_start.set(mu);
+					if (Math3D.in(tu.getY(), tl.getY(), ml.getY()))
+						i_end.set(ml);
+					else
+						i_end.set(tl);
+
+					return true;
 				}
-
-				if (si == 0)
-					num += handleSegment(pl, 0, 1);
-				else if (si == n - 1)
-					num  += handleSegment(pl, n - 1, n - 2);
-				else {
-					num += handleSegment(pl, si, si - 1);
-					if (num < i_max)
-						num += handleSegment(pl, si, si - 2);
-				}
-
-				if (num >= i_max)
-					return num;
-			} else {
-				handleIntersection();
 			}
+
+			return false;
 		}
 
-		return num;
+		public boolean intersects(TreeSegment i_segment, Vector2f i_point) {
+
+			float mg = getSegment().getG();
+			float tg = i_segment.getSegment().getG();
+
+			float mc = getSegment().getC();
+			float tc = i_segment.getSegment().getC();
+
+			if (mg != tg) {
+				float x = (mc - tc) / (mg - tg);
+				float y = mg * x - mc;
+
+				i_point.set(x, y);
+				return true;
+			}
+
+			return false;
+		}
+
+		public IVector2f getLower() {
+
+			IVector2f s = m_segment.getStart();
+			IVector2f e = m_segment.getEnd();
+
+			return m_pointComparator.compare(s, e) < 0 ? s : e;
+		}
+
+		public IVector2f getUpper() {
+
+			if (m_intersection != null)
+				return m_intersection;
+
+			IVector2f s = m_segment.getStart();
+			IVector2f e = m_segment.getEnd();
+
+			return m_pointComparator.compare(s, e) > 0 ? s : e;
+		}
+
+		public void setIntersection(IVector2f i_intersection) {
+
+			m_intersection = i_intersection;
+		}
+
+		public void removeOverlaps() {
+
+		}
 	}
 
-	private Structure next() {
+	private static final Comparator<Event> m_eventComparator =
+		new Comparator<Event>() {
+			public int compare(Event i_e0, Event i_e1) {
 
-		if (i1 == s1.length || i2 == s2.length)
-			return Structure.DONE;
+				return m_pointComparator.compare(i_e0.getPoint(),
+					i_e1.getPoint());
+			}
+		};
 
-		int x1, x2, xis;
-		if (i1 < s1.length)
-			x1 = pl1[2 * s1[i1]];
-		else
-			x1 = Integer.MAX_VALUE;
+	private static final Comparator<IVector2f> m_pointComparator =
+		new Comparator<IVector2f>() {
+			public int compare(IVector2f i_p0, IVector2f i_p1) {
 
-		if (i2 < s2.length)
-			x2 = pl2[2 * s2[i2]];
-		else
-			x2 = Integer.MAX_VALUE;
+				if (i_p0.getY() < i_p1.getY())
+					return -1;
+				else if (i_p0.getY() > i_p1.getY())
+					return 1;
+				else if (i_p0.getX() < i_p1.getX())
+					return -1;
+				else if (i_p0.getX() > i_p1.getX())
+					return 1;
 
-		if (is < nis)
-			xis = isx[is];
-		else
-			xis = Integer.MAX_VALUE;
+				return 0;
+			}
+		};
 
-		if (x1 < x2 && x1 < xis) {
-			i1++;
-			return Structure.POLYLINE1;
+	private static final Comparator<Object> m_queryComparator =
+		new Comparator<Object>() {
+
+			public int compare(Object i_o0, Object i_o1) {
+
+				if (i_o0 instanceof TreeSegment && i_o1 instanceof TreeSegment)
+					return m_segmentComparator.compare((TreeSegment) i_o0,
+						(TreeSegment) i_o1);
+
+				if (i_o0 instanceof IVector2f && i_o1 instanceof IVector2f)
+					return m_pointComparator.compare((IVector2f) i_o0,
+						(IVector2f) i_o1);
+
+				if (i_o0 instanceof TreeSegment && i_o1 instanceof IVector2f) {
+
+					TreeSegment s = (TreeSegment) i_o0;
+					IVector2f v = (IVector2f) i_o1;
+
+					IVector2f u = s.getUpper();
+					IVector2f l = s.getLower();
+
+					int c = m_pointComparator.compare(u, v);
+					if (c == 0)
+						c = m_pointComparator.compare(l, v);
+
+					return c;
+				}
+
+				if (i_o0 instanceof IVector2f && i_o1 instanceof TreeSegment)
+					return -1 * compare(i_o1, i_o0);
+
+				throw new AssertionError(
+					"can only compare segments and vectors");
+			}
+
+		};
+
+	private static final Comparator<TreeSegment> m_segmentComparator =
+		new Comparator<TreeSegment>() {
+
+			public int compare(TreeSegment i_o0, TreeSegment i_o1) {
+
+				IVector2f u0 = i_o0.getUpper();
+				IVector2f l0 = i_o0.getLower();
+				IVector2f u1 = i_o1.getUpper();
+				IVector2f l1 = i_o1.getLower();
+
+				if (u0.getX() < u0.getX())
+					return -1;
+				else if (u0.getX() > u0.getX())
+					return 1;
+				else if (u0.getY() < u1.getY())
+					return -1;
+				else if (u0.getY() > u1.getY())
+					return 1;
+				else if (l0.getX() < l0.getX())
+					return -1;
+				else if (l0.getX() > l0.getX())
+					return 1;
+				else if (l0.getY() < l1.getY())
+					return -1;
+				else if (l0.getY() > l1.getY())
+					return 1;
+
+				return 0;
+			}
+		};
+
+	private AVLTree<Event> m_events;
+
+	private AVLTree<TreeSegment> m_segments;
+
+	private void buildEventQueue(Polyline i_line) {
+
+		if (m_events == null)
+			m_events = new AVLTree<Event>(m_eventComparator);
+
+		for (Segment s : i_line.getSegments()) {
+			Event u = new Event(s.getStart());
+			Event l = new Event(s.getEnd());
+
+			int c = m_eventComparator.compare(u, l);
+			if (c > 0) {
+				Event temp = u;
+				u = l;
+				l = temp;
+			} else if (c == 0)
+				throw new AssertionError("empty segment");
+
+			if (m_events.contains(u))
+				u = m_events.get(u);
+			else
+				m_events.insert(u);
+
+			if (m_events.contains(l))
+				l = m_events.get(l);
+			else
+				m_events.insert(l);
+
+			TreeSegment ts = new TreeSegment(i_line, s);
+
+			u.addUpper(ts);
+			l.addLower(ts);
+		}
+	}
+
+	private void handleEvent(Event i_event) {
+
+		IVector2f p = i_event.getPoint();
+		Set<TreeSegment> upper = i_event.getUpper();
+		Set<TreeSegment> inner = i_event.getInner();
+		Set<TreeSegment> lower = i_event.getLower();
+
+		TreeSegment ln = null;
+		TreeSegment rn = null;
+
+		for (TreeSegment ts : lower) {
+			m_segments.remove(ts);
+			ts.removeOverlaps();
 		}
 
-		if (x2 < x1 && x2 < xis) {
-			i2++;
-			return Structure.POLYLINE2;
+		for (TreeSegment ts : inner)
+			m_segments.remove(ts);
+
+		for (TreeSegment ts : inner) {
+			ts.setIntersection(p);
+			m_segments.insert(ts);
+
+			if (ln == null || m_segmentComparator.compare(ts, ln) < 0)
+				ln = ts;
+
+			if (rn == null || m_segmentComparator.compare(ts, rn) > 0)
+				rn = ts;
 		}
 
-		is++;
-		return Structure.INTERSECTION;
+		for (TreeSegment ts : upper) {
+			m_segments.insert(ts);
+
+			if (ln == null || m_segmentComparator.compare(ts, ln) < 0)
+				ln = ts;
+
+			if (rn == null || m_segmentComparator.compare(ts, rn) > 0)
+				rn = ts;
+		}
+
+		if (upper.isEmpty() && inner.isEmpty()) {
+			TreeSegment l = m_segments.queryPrevious(p, m_queryComparator);
+			TreeSegment r = m_segments.queryNext(p, m_queryComparator);
+			findNextEvent(l, r, i_event);
+		} else {
+			TreeSegment l = m_segments.getPrevious(ln);
+			TreeSegment r = m_segments.getNext(rn);
+
+			if (l != null)
+				findNextEvent(l, ln, i_event);
+
+			if (r != null)
+				findNextEvent(rn, r, i_event);
+		}
+	}
+
+	private Collection<Intersection> m_intersections =
+		new HashSet<Intersection>();
+
+	private void handleIntersection(TreeSegment i_left, TreeSegment i_right,
+		IVector2f i_point) {
+
+		Event e = new Event(i_point);
+		if (m_events.contains(e))
+			e = m_events.get(e);
+
+		e.addInner(i_left);
+		e.addInner(i_right);
+	}
+
+	private void handleOverlap(TreeSegment i_left, TreeSegment i_right,
+		IVector2f i_start, IVector2f i_end) {
+
+	}
+
+	private void findNextEvent(TreeSegment i_left, TreeSegment i_right,
+		Event i_event) {
+
+		Vector2f point = Math3DCache.getVector2f();
+		Vector2f start = Math3DCache.getVector2f();
+		Vector2f end = Math3DCache.getVector2f();
+		try {
+			if (i_left.overlaps(i_right, start, end)
+				&& (m_pointComparator.compare(start, i_event.getPoint()) > 0 || m_pointComparator.compare(
+					end, i_event.getPoint()) > 0))
+				handleOverlap(i_left, i_right, start, end);
+			else if (i_left.intersects(i_right, point)
+				&& m_pointComparator.compare(point, i_event.getPoint()) > 0)
+				handleIntersection(i_left, i_right, point);
+		} finally {
+			Math3DCache.returnVector2f(point, start, end);
+		}
+	}
+
+	public boolean intersects(Polyline i_line0, Polyline i_line1) {
+
+		if (i_line0 == null)
+			throw new NullPointerException("i_line0 must not be null");
+
+		if (i_line1 == null)
+			throw new NullPointerException("i_line1 must not be null");
+
+		if (i_line0.getSegments().isEmpty() || i_line1.getSegments().isEmpty())
+			return false;
+
+		if (m_events != null)
+			m_events.clear();
+
+		buildEventQueue(i_line0);
+		buildEventQueue(i_line1);
+
+		while (!m_events.isEmpty()) {
+			Event event = m_events.getFirst();
+			m_events.remove(event);
+			handleEvent(event);
+		}
+
+		return false;
 	}
 }

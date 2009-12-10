@@ -10,111 +10,175 @@
  ******************************************************************************/
 package org.eclipse.draw3d.geometry.intersection;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * PointQueueImpl There should really be more documentation here.
+ * PointQueue There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 19.11.2009
+ * @since 26.11.2009
  */
 public class PointQueue {
 
-	private int m_index;
+	private static class IndexedList {
 
-	private int m_size;
+		private int m_index = -1;
 
-	private int[] m_sorted;
+		private PointList m_list;
 
-	public PointQueue(int[] i_sorted, int i_size) {
+		public IndexedList(PointList i_list) {
 
-		m_sorted = i_sorted;
-		m_size = i_size;
-		m_index = 0;
+			m_list = i_list;
+		}
+
+		public void dec() {
+
+			if (m_index <= -1)
+				throw new NoSuchElementException();
+		}
+
+		public int getX() {
+
+			return m_list.getX(m_index);
+		}
+
+		public int getY() {
+
+			return m_list.getY(m_index);
+		}
+
+		public boolean hasNext() {
+
+			return m_index < m_list.getSize() - 1;
+		}
+
+		public void inc() {
+
+			if (!hasNext())
+				throw new NoSuchElementException();
+
+			m_index++;
+		}
+	}
+
+	private static class Point implements Comparable<Point> {
+
+		private int m_x;
+
+		private int m_y;
+
+		public Point(int i_x, int i_y) {
+
+			m_x = i_x;
+			m_y = i_y;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see java.lang.Comparable#compareTo(java.lang.Object)
+		 */
+		public int compareTo(Point i_o) {
+
+			return getX() - i_o.getX();
+		}
+
+		public int getX() {
+			return m_x;
+		}
+
+		public int getY() {
+			return m_y;
+		}
+	}
+
+	private int m_next = -1;
+
+	private List<IndexedList> m_readable = new ArrayList<IndexedList>();
+
+	private AVLTree<Point> m_writable = new AVLTree<Point>();
+
+	public PointQueue(PointList... i_lists) {
+
+		for (PointList list : i_lists)
+			m_readable.add(new IndexedList(list));
+	}
+
+	private void findNext() {
+
+		if (m_next != -2)
+			return;
+
+		int x;
+		if (m_writable.size() > 0) {
+			m_next = -1;
+			x = m_writable.getFirst().getX();
+		} else {
+			m_next = -2;
+			x = Integer.MIN_VALUE;
+		}
+
+		for (int i = 0; i < m_readable.size(); i++) {
+			IndexedList list = m_readable.get(i);
+			if (list.hasNext()) {
+				list.inc();
+				int listX = list.getX();
+				if (listX < x) {
+					x = listX;
+					m_next = i;
+				}
+				list.dec();
+			}
+		}
+	}
+
+	public int getX() {
+
+		if (m_next == -2)
+			throw new NoSuchElementException();
+
+		if (m_next == -1)
+			return m_writable.getFirst().getX();
+
+		return m_readable.get(m_next).getX();
+	}
+
+	public int getY() {
+
+		if (m_next == -2)
+			throw new NoSuchElementException();
+
+		if (m_next == -1)
+			return m_writable.getFirst().getY();
+
+		return m_readable.get(m_next).getY();
 	}
 
 	public boolean isEmpty() {
 
-		return m_index == m_size;
+		findNext();
+		return m_next == -2;
 	}
 
-	public int next() {
+	public void pop() {
 
 		if (isEmpty())
 			throw new NoSuchElementException();
 
-		if (m_sorted[m_index] == m_size - 1)
-			return -1;
+		if (m_next == -1)
+			m_writable.remove(m_writable.getFirst());
+		else
+			m_readable.get(m_next).inc();
 
-		return m_sorted[m_index] + 1;
+		m_next = -2;
 	}
 
-	public int peek() {
+	public void push(int i_x, int i_y) {
 
-		if (isEmpty())
-			throw new NoSuchElementException();
-
-		return m_sorted[m_index];
-	}
-
-	public int pop() {
-
-		if (isEmpty())
-			throw new NoSuchElementException();
-
-		return m_sorted[m_index]++;
-	}
-
-	public int previous() {
-
-		if (isEmpty())
-			throw new NoSuchElementException();
-
-		if (m_sorted[m_index] == 0)
-			return -1;
-
-		return m_sorted[m_index] - 1;
-	}
-
-	public int[] push(int i_x, int i_y, int[] i_points) {
-
-		int[] points = i_points;
-		if (m_size == points.length / 2) {
-			int[] t = points;
-			points = new int[2 * points.length];
-			System.arraycopy(t, 0, points, 0, t.length);
-		}
-
-		if (m_size == m_sorted.length) {
-			int[] t = m_sorted;
-			m_sorted = new int[2 * m_sorted.length];
-			System.arraycopy(t, 0, m_sorted, 0, t.length);
-		}
-
-		// find insert position
-		// TODO use binary search
-		int ins = 0;
-		while (ins < m_size && points[2 * m_sorted[ins]] < i_x)
-			ins++;
-
-		if (ins < m_size)
-			System.arraycopy(m_sorted, ins, m_sorted, ins + 1, m_size - ins);
-
-		points[2 * m_size] = i_x;
-		points[2 * m_size + 1] = i_y;
-		m_sorted[ins] = m_size;
-
-		m_size++;
-		if (ins < m_index)
-			m_index++;
-
-		return points;
-	}
-
-	public int size() {
-
-		return m_size;
+		m_writable.insert(new Point(i_x, i_y));
 	}
 
 }

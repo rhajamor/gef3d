@@ -19,5 +19,16 @@ package org.eclipse.draw3d.graphics.optimizer;
  */
 public enum PrimitiveType {
 
-	POLYGON, QUAD, POLYLINE, LINE;
+	FILLED_POLYGON, FILLED_QUAD, LINE, OUTLINED_POLYGON, OUTLINED_QUAD, POLYLINE;
+
+	public boolean isFilled() {
+
+		return this == FILLED_POLYGON || this == FILLED_QUAD;
+	}
+
+	public boolean isOutlined() {
+
+		return this == OUTLINED_POLYGON || this == OUTLINED_QUAD;
+	}
+
 }

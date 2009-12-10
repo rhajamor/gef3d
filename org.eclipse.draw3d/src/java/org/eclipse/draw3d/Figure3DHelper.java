@@ -33,7 +33,7 @@ import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.graphics3d.DisplayListManager;
+import org.eclipse.draw3d.graphics3d.ExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
@@ -440,6 +440,8 @@ public class Figure3DHelper {
 		paintChildren3D(i_graphics);
 	}
 
+	private ExecutableGraphics2D m_executable;
+
 	/**
 	 * Paints the given 2D figures. This method was extracted from
 	 * {@link #paintChildren(Graphics)} to make that method easier to read and
@@ -473,32 +475,27 @@ public class Figure3DHelper {
 			RenderContext renderContext = figure.getRenderContext();
 			final Graphics3D g3d = renderContext.getGraphics3D();
 
-			DisplayListManager displayListManager = g3d.getDisplayListManager();
-
 			if (surface != null && surface.is2DHost()) {
 				if ((renderContext.isRedraw2DContent() || m_figuresFriend.is2DContentDirty())) {
-					displayListManager.interruptDisplayList();
+
+					if (m_executable != null) {
+						m_executable.dispose(g3d);
+						m_executable = null;
+					}
+
+					Graphics graphics = surface.activate(g3d);
 					try {
-						displayListManager.createDisplayList(figure,
-							new Runnable() {
-								public void run() {
-									Graphics graphics = surface.activate(g3d);
-									try {
-										graphics.setFont(i_graphics.getFont());
-										configureGraphics(graphics);
-										doPaintChildren2D(children2D, figure,
-											graphics);
-									} finally {
-										surface.deactivate(g3d);
-									}
-								}
-							});
+						graphics.setFont(i_graphics.getFont());
+						configureGraphics(graphics);
+						doPaintChildren2D(children2D, figure, graphics);
 					} finally {
-						displayListManager.resumeDisplayList();
+						m_executable = surface.deactivate(g3d);
+						m_executable.initialize(g3d);
 					}
 				}
 
-				displayListManager.executeDisplayList(figure);
+				if (m_executable != null)
+					m_executable.execute(g3d);
 			} else {
 				Graphics graphics = i_graphics;
 				graphics.setFont(i_graphics.getFont());

@@ -19,6 +19,7 @@ import org.eclipse.draw3d.camera.ICameraListener;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.graphics3d.ExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.Hit;
 import org.eclipse.draw3d.picking.Picker;
@@ -101,8 +102,8 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	 * 
 	 * @see org.eclipse.draw3d.ISurface#deactivate(Graphics3D)
 	 */
-	public void deactivate(Graphics3D i_g3d) {
-
+	public ExecutableGraphics2D deactivate(Graphics3D i_g3d) {
+		
 		throw new UnsupportedOperationException(
 			"void surface cannot host 2D content");
 	}

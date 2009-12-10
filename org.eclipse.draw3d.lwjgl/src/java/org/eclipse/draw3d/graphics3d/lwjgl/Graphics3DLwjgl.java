@@ -12,6 +12,8 @@ package org.eclipse.draw3d.graphics3d.lwjgl;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,18 +21,21 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
-import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Matrix4f;
-import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.graphics.optimizer.Attributes;
+import org.eclipse.draw3d.graphics.optimizer.OptimizingGraphics;
+import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
+import org.eclipse.draw3d.graphics.optimizer.PrimitiveType;
 import org.eclipse.draw3d.graphics3d.AbstractGraphics3DDraw;
+import org.eclipse.draw3d.graphics3d.CompoundExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
+import org.eclipse.draw3d.graphics3d.ExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBackBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
@@ -113,6 +118,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		}
 	}
 
+	private Graphics m_activeGraphics;
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -124,48 +131,46 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 		log.info("activating 2D graphics");
 
-		LwjglGraphics graphics =
-			new LwjglGraphics(i_width, i_height, getDisplayListManager(),
-				getFontManager());
-
-		graphics.disableClipping();
-
-		String fontAntialias = getProperty(PROP_FONT_AA);
-		if (fontAntialias != null)
-			graphics.setOverrideTextAntialias(Boolean.valueOf(fontAntialias));
-		else
-			graphics.setOverrideTextAntialias(null);
-
-		// save all state variables that may be changed by the graphics object
-		GL11.glPushAttrib(ATTRIB_MASK);
-
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		GL11.glPushMatrix();
-
-		Matrix4f m = Draw3DCache.getMatrix4f();
-		Vector3f t = Draw3DCache.getVector3f();
-		try {
-			t.set(0, 0, 0.001f);
-			m.set(i_position.getRotationLocationMatrix());
-			Math3D.translate(m, t, m);
-			setMatrix(m);
-		} finally {
-			Draw3DCache.returnVector3f(t);
-			Draw3DCache.returnMatrix4f(m);
-		}
-
-		GL11.glShadeModel(GL11.GL_FLAT);
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		// GL11.glDepthFunc(GL11.GL_LEQUAL);
-		// GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ZERO);
-		GL11.glDisable(GL11.GL_CULL_FACE);
-		GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
-		GL11.glEnable(GL11.GL_LINE_SMOOTH);
+		m_activeGraphics = new OptimizingGraphics();
+		// graphics.disableClipping();
+		//
+		// String fontAntialias = getProperty(PROP_FONT_AA);
+		// if (fontAntialias != null)
+		// graphics.setOverrideTextAntialias(Boolean.valueOf(fontAntialias));
+		// else
+		// graphics.setOverrideTextAntialias(null);
+		//
+		// // save all state variables that may be changed by the graphics
+		// object
+		// GL11.glPushAttrib(ATTRIB_MASK);
+		//
+		// GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		// GL11.glPushMatrix();
+		//
+		// Matrix4f m = Draw3DCache.getMatrix4f();
+		// Vector3f t = Draw3DCache.getVector3f();
+		// try {
+		// t.set(0, 0, 0.001f);
+		// m.set(i_position.getRotationLocationMatrix());
+		// Math3D.translate(m, t, m);
+		// setMatrix(m);
+		// } finally {
+		// Draw3DCache.returnVector3f(t);
+		// Draw3DCache.returnMatrix4f(m);
+		// }
+		//
+		// GL11.glShadeModel(GL11.GL_FLAT);
+		// GL11.glDisable(GL11.GL_DEPTH_TEST);
+		// // GL11.glDepthFunc(GL11.GL_LEQUAL);
+		// // GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ZERO);
+		// GL11.glDisable(GL11.GL_CULL_FACE);
+		// GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
+		// GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
 		if (m_log2D)
-			return new LogGraphics(graphics);
+			return new LogGraphics(m_activeGraphics);
 
-		return graphics;
+		return m_activeGraphics;
 	}
 
 	/**
@@ -173,12 +178,47 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#deactivateGraphics2D()
 	 */
-	public void deactivateGraphics2D() {
+	public ExecutableGraphics2D deactivateGraphics2D() {
 
 		log.info("deactivating 2D graphics");
 
-		GL11.glPopMatrix();
-		GL11.glPopAttrib();
+		if (m_activeGraphics instanceof OptimizingGraphics) {
+			OptimizingGraphics og = (OptimizingGraphics) m_activeGraphics;
+			List<PrimitiveSet> primiveSets = og.getPrimiveSets();
+			List<ExecutableGraphics2D> executables =
+				new LinkedList<ExecutableGraphics2D>();
+
+			for (PrimitiveSet set : primiveSets) {
+				PrimitiveType type = set.getType();
+				Attributes attrs = set.getAttributes();
+				FloatBuffer buffer = set.getVertexBuffer();
+
+				switch (type) {
+				case FILLED_QUAD:
+				case OUTLINED_QUAD:
+				case LINE:
+					executables.add(new LwjglExecutableVBO(type, attrs, buffer));
+					break;
+				case FILLED_POLYGON:
+				case OUTLINED_POLYGON:
+				case POLYLINE:
+					int[] numVertices = set.getNumVertices();
+					executables.add(new LwjglExecutableVBO(type, attrs, buffer,
+						numVertices));
+					break;
+
+				default:
+					break;
+				}
+			}
+
+			return new CompoundExecutableGraphics2D(executables);
+		}
+
+		return null;
+
+		// GL11.glPopMatrix();
+		// GL11.glPopAttrib();
 	}
 
 	/**

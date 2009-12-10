@@ -24,6 +24,7 @@ import java.util.Queue;
 
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.geometry.Math3DCache;
 
 /**
@@ -108,6 +109,8 @@ public class Draw3DCache extends Math3DCache {
 		new ArrayList<BufferHolder>();
 
 	private static final Queue<Point> m_point = new LinkedList<Point>();
+
+	private static Queue<Rectangle> m_rectangle = new LinkedList<Rectangle>();
 
 	private static Buffer doGetBuffer(List<BufferHolder> i_buffers,
 		BufferHolder i_holder) {
@@ -287,6 +290,28 @@ public class Draw3DCache extends Math3DCache {
 	}
 
 	/**
+	 * Returns a cached {@link Rectangle}.
+	 * 
+	 * @return a cached rectangle
+	 */
+	public static Rectangle getRectangle() {
+
+		if (m_synchronized) {
+			synchronized (m_rectangle) {
+				if (m_rectangle.isEmpty())
+					return new Rectangle();
+				else
+					return m_rectangle.remove();
+			}
+		} else {
+			if (m_rectangle.isEmpty())
+				return new Rectangle();
+			else
+				return m_rectangle.remove();
+		}
+	}
+
+	/**
 	 * Returns the given byte buffers to the cache. If any of the given buffers
 	 * is <code>null</code>, it is ignored.
 	 * 
@@ -408,5 +433,25 @@ public class Draw3DCache extends Math3DCache {
 			for (Point p : i_ps)
 				if (p != null)
 					m_point.offer(p);
+	}
+
+	/**
+	 * Returns the given rectangles to the cache. If any of the given rectangles
+	 * is <code>null</code>, it is ignored.
+	 * 
+	 * @param i_rs the rectangles to return
+	 */
+	public static void returnRectangle(Rectangle... i_rs) {
+
+		if (m_synchronized)
+			synchronized (m_rectangle) {
+				for (Rectangle r : i_rs)
+					if (r != null)
+						m_rectangle.offer(r);
+			}
+		else
+			for (Rectangle r : i_rs)
+				if (r != null)
+					m_rectangle.offer(r);
 	}
 }

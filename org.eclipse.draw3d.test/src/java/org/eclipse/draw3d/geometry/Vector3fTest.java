@@ -595,7 +595,7 @@ public class Vector3fTest extends TestCase {
 
 		v0.transform(m0);
 
-		Math3D.transform(m0, v2, v2);
+		Math3D.transform(v2, m0, v2);
 
 		float x = v2.getX() / v2.getW();
 		float y = v2.getY() / v2.getW();

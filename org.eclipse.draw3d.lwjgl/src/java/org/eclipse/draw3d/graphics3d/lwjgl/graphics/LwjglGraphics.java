@@ -953,7 +953,8 @@ public class LwjglGraphics extends StatefulGraphics {
 		float rLength = (float) Math.toRadians(i_length);
 
 		ArcHelper helper =
-			new ArcHelper(ARC_PRECISION, i_x, i_y, i_w, i_h, rOffset, rLength);
+			new ArcHelper(ARC_PRECISION, i_x, i_y, i_w, i_h, rOffset + rLength,
+				-rLength, false);
 
 		for (IVector2f v : helper)
 			GL11.glVertex2f(v.getX(), v.getY());
@@ -992,8 +993,6 @@ public class LwjglGraphics extends StatefulGraphics {
 		int y2 = y1 + i_r.height;
 		int w = i_arcWidth;
 		int h = i_arcHeight;
-		float w2 = w / 2;
-		float h2 = h / 2;
 
 		// left
 		// GL11.glVertex2f(x1, y1 + h2);

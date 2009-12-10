@@ -290,7 +290,7 @@ public class BoundingBoxImpl implements BoundingBox {
 		float z = this.m_position.getZ();
 
 		Vector4f tmp = new Vector4fImpl(x, y, z, 1);
-		Math3D.transform(i_transformationMatrix4f, tmp, tmp);
+		Math3D.transform(tmp, i_transformationMatrix4f, tmp);
 
 		float w = tmp.getW();
 		x = tmp.getX() / w;

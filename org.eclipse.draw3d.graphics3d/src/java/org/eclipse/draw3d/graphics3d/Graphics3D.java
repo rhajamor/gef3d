@@ -66,7 +66,7 @@ public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 	/**
 	 * Deactivates the active graphics object.
 	 */
-	public void deactivateGraphics2D();
+	public ExecutableGraphics2D deactivateGraphics2D();
 
 	/**
 	 * Cleans up the ressources, instance is not usable afterwards any more.

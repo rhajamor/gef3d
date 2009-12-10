@@ -10,8 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics.optimizer;
 
-import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw3d.geometry.Math2D;
+import java.nio.FloatBuffer;
 
 /**
  * PolylinePrimitive There should really be more documentation here.
@@ -22,11 +21,14 @@ import org.eclipse.draw3d.geometry.Math2D;
  */
 public class PolylinePrimitive extends AbstractPrimitive {
 
-	private int[] m_points;
+	private float[] m_points;
 
-	private short[] m_sorted;
+	public PolylinePrimitive(float[] i_points) {
 
-	protected PolylinePrimitive(int[] i_points, PrimitiveType i_type) {
+		this(i_points, PrimitiveType.POLYLINE);
+	}
+
+	protected PolylinePrimitive(float[] i_points, PrimitiveType i_type) {
 
 		super(i_type);
 
@@ -36,76 +38,39 @@ public class PolylinePrimitive extends AbstractPrimitive {
 		m_points = i_points;
 	}
 
-	public PolylinePrimitive(int[] i_points) {
-
-		this(i_points, PrimitiveType.POLYLINE);
-	}
-
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics.optimizer.AbstractPrimitive#calculateBounds(org.eclipse.draw2d.geometry.Rectangle)
+	 * @see org.eclipse.draw3d.graphics.optimizer.AbstractPrimitive#createBounds()
 	 */
 	@Override
-	protected void calculateBounds(Rectangle io_bounds) {
-		// TODO implement method PolylinePrimitive.calculateBounds
+	protected PrimitiveBounds createBounds() {
 
+		return new PrimitiveBounds(m_points);
 	}
 
-	protected int[] getPoints() {
+	protected float[] getPoints() {
 
 		return m_points;
 	}
 
-	protected short[] getSortedIndices() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics.optimizer.Primitive#getVertices(java.nio.FloatBuffer)
+	 */
+	public void getVertices(FloatBuffer i_buffer) {
 
-		if (m_sorted == null)
-			m_sorted = Math2D.getSortedIndices(m_points);
-
-		return m_sorted;
+		i_buffer.put(m_points);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics.optimizer.AbstractPrimitive#intersectsLine(org.eclipse.draw3d.graphics.optimizer.LinePrimitive)
+	 * @see org.eclipse.draw3d.graphics.optimizer.Primitive#getNumVertices()
 	 */
-	@Override
-	protected boolean intersectsLine(LinePrimitive i_line) {
-		// TODO implement method AbstractPrimitive.intersectsLine
-		return false;
-	}
+	public int getNumVertices() {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics.optimizer.AbstractPrimitive#intersectsPolygon(org.eclipse.draw3d.graphics.optimizer.PolygonPrimitive)
-	 */
-	@Override
-	protected boolean intersectsPolygon(PolygonPrimitive i_polygon) {
-		// TODO implement method AbstractPrimitive.intersectsPolygon
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics.optimizer.AbstractPrimitive#intersectsPolyline(org.eclipse.draw3d.graphics.optimizer.PolylinePrimitive)
-	 */
-	@Override
-	protected boolean intersectsPolyline(PolylinePrimitive i_polyline) {
-		// TODO implement method AbstractPrimitive.intersectsPolyline
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics.optimizer.AbstractPrimitive#intersectsQuad(org.eclipse.draw3d.graphics.optimizer.QuadPrimitive)
-	 */
-	@Override
-	protected boolean intersectsQuad(QuadPrimitive i_quad) {
-		// TODO implement method AbstractPrimitive.intersectsQuad
-		return false;
+		return m_points.length / 2;
 	}
 }

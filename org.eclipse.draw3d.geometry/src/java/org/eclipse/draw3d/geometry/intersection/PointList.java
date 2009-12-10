@@ -8,25 +8,33 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.graphics.optimizer;
+package org.eclipse.draw3d.geometry.intersection;
 
 /**
- * QuadPrimitive There should really be more documentation here.
+ * PointQueue There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 18.11.2009
+ * @since 26.11.2009
  */
-public class QuadPrimitive extends PolygonPrimitive {
+public class PointList {
 
-	public QuadPrimitive(float[] i_points, boolean i_filled) {
+	private int[] m_points;
 
-		super(i_points, i_filled ? PrimitiveType.FILLED_QUAD
-			: PrimitiveType.OUTLINED_POLYGON);
+	private int[] m_order;
 
-		if (i_points.length != 8)
-			throw new IllegalArgumentException(
-				"a quad can only contain 4 vertices");
+	public int getX(int i_index) {
+
+		return m_points[2 * m_order[i_index]];
 	}
 
+	public int getY(int i_index) {
+
+		return m_points[2 * m_order[i_index] + 1];
+	}
+
+	public int getSize() {
+
+		return m_order.length;
+	}
 }

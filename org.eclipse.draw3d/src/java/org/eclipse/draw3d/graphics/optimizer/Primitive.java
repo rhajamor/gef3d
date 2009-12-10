@@ -10,15 +10,14 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics.optimizer;
 
-import org.eclipse.draw2d.geometry.Rectangle;
+import java.nio.FloatBuffer;
 
 /**
- * Primitive
- * There should really be more documentation here.
- *
- * @author 	Kristian Duske
- * @version	$Revision$
- * @since 	18.11.2009
+ * Primitive There should really be more documentation here.
+ * 
+ * @author Kristian Duske
+ * @version $Revision$
+ * @since 18.11.2009
  */
 public interface Primitive {
 
@@ -26,5 +25,9 @@ public interface Primitive {
 
 	public PrimitiveType getType();
 
-	public Rectangle getBounds();
+	public PrimitiveBounds getBounds();
+
+	public void getVertices(FloatBuffer i_buffer);
+
+	public int getNumVertices();
 }

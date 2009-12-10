@@ -770,7 +770,7 @@ public class Vector4fTest extends TestCase {
 		Vector4fImpl v1 = new Vector4fImpl(v0);
 
 		v0.transform(m0);
-		Math3D.transform(m0, v1, v1);
+		Math3D.transform(v1, m0, v1);
 
 		if (!v0.equals(v1)) {
 			fail("testTransform - Result not as expected: " + v0.toString()

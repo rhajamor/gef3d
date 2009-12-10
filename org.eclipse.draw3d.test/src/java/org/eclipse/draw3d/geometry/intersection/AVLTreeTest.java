@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -105,14 +106,19 @@ public class AVLTreeTest extends TestCase {
 
 	public void testRemove() {
 
-		int[] numbers =
-			Arrays.copyOf(UNIQUE_NUMBERS_10, UNIQUE_NUMBERS_10.length);
+		Random r = new Random(System.currentTimeMillis());
 
-		for (int i = 0; i < numbers.length; i++)
-			tree.insert(numbers[i]);
+		int[] numbers = new int[100];
+		int i = 0;
 
-		for (int i = 0; i < numbers.length; i++) {
-			numbers = remove(numbers, i % numbers.length);
+		while (i < numbers.length) {
+			int n = r.nextInt(numbers.length);
+			if (tree.insert(n))
+				numbers[i++] = n;
+		}
+
+		while (numbers.length > 0) {
+			numbers = remove(numbers, 0);
 
 			int[] tmp = Arrays.copyOf(numbers, numbers.length);
 			Arrays.sort(tmp);

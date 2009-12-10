@@ -21,19 +21,6 @@ import java.util.Comparator;
  */
 public class Math2D {
 
-	public static boolean polylineIntersectsPolyline(int[] polyline1,
-		int[] polyline2) {
-
-		return sortedPolylineIntersectsPolyline(polyline1,
-			getSortedIndices(polyline1), polyline2, getSortedIndices(polyline2));
-	}
-
-	public static boolean sortedPolylineIntersectsPolyline(int[] polyline1,
-		short[] sorted1, int[] i_polyline2, short[] sorted2) {
-
-
-	}
-
 	private static class VertexComparator implements Comparator<Integer> {
 
 		private int[] m_vertices;
@@ -86,17 +73,17 @@ public class Math2D {
 				+ " must contain at least three vertices");
 	}
 
-	public static short[] getSortedIndices(int[] points) {
+	public static int[] getSortedIndices(int[] points) {
 
 		checkPoints(points, "points");
 
 		int n = points.length / 2;
-		if (n > Short.MAX_VALUE)
+		if (n > Integer.MAX_VALUE)
 			throw new IllegalArgumentException("array contains too many points");
 
-		short[] sorted = new short[n];
+		int[] sorted = new int[n];
 
-		for (short i = 0; i < n; i++)
+		for (int i = 0; i < n; i++)
 			sorted[i] = i;
 
 		quicksort(sorted, points, 0, n - 1);
@@ -129,13 +116,14 @@ public class Math2D {
 		return false;
 	}
 
-	public static int pointsInPolygon(int[] polygon, int[] points) {
+	public static int pointsInPolygon(int[] polygon, int[] points, int max) {
 
-		return sortedPointsInPolygon(polygon, points, getSortedIndices(points));
+		return sortedPointsInPolygon(polygon, points, getSortedIndices(points),
+			max);
 	}
 
 	public static int sortedPointsInPolygon(int[] polygon, int[] points,
-		short[] sorted, int max) {
+		int[] sorted, int max) {
 
 		checkPolygon(polygon, "polygon");
 		checkPoints(points, "points");
@@ -260,7 +248,7 @@ public class Math2D {
 		return !hasSeparator(i_p1, i_p0);
 	}
 
-	private static void quicksort(short[] indices, int[] points, int low,
+	private static void quicksort(int[] indices, int[] points, int low,
 		int high) {
 
 		int i = low;
@@ -275,7 +263,7 @@ public class Math2D {
 				j--;
 
 			if (i <= j) {
-				short t = indices[i];
+				int t = indices[i];
 				indices[i] = indices[j];
 				indices[j] = t;
 

@@ -8,25 +8,21 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.graphics.optimizer;
+package org.eclipse.draw3d.graphics3d;
 
 /**
- * QuadPrimitive There should really be more documentation here.
- * 
- * @author Kristian Duske
- * @version $Revision$
- * @since 18.11.2009
+ * ExecutableGraphics2D
+ * There should really be more documentation here.
+ *
+ * @author 	Kristian Duske
+ * @version	$Revision$
+ * @since 	10.12.2009
  */
-public class QuadPrimitive extends PolygonPrimitive {
+public interface ExecutableGraphics2D {
 
-	public QuadPrimitive(float[] i_points, boolean i_filled) {
+	public void execute(Graphics3D i_g3d);
 
-		super(i_points, i_filled ? PrimitiveType.FILLED_QUAD
-			: PrimitiveType.OUTLINED_POLYGON);
+	public void initialize(Graphics3D i_g3d);
 
-		if (i_points.length != 8)
-			throw new IllegalArgumentException(
-				"a quad can only contain 4 vertices");
-	}
-
+	public void dispose(Graphics3D i_g3d);
 }
