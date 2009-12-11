@@ -10,8 +10,13 @@
  ******************************************************************************/
 package org.eclipse.draw3d.ui.preferences.dialog;
 
+import java.util.List;
+
 import org.eclipse.draw3d.camera.FirstPersonCamera;
 import org.eclipse.draw3d.camera.RestrictedFirstPersonCamera;
+import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
+import org.eclipse.draw3d.graphics3d.Graphics3DRegistry;
+import org.eclipse.draw3d.graphics3d.Graphics3DType;
 import org.eclipse.draw3d.ui.Draw3DUIPlugin;
 import org.eclipse.draw3d.ui.preferences.PrefNames;
 import org.eclipse.jface.preference.BooleanFieldEditor;
@@ -48,6 +53,23 @@ public class Draw3DPreferencePage extends FieldEditorPreferencePage implements
 	 */
 	@Override
 	public void createFieldEditors() {
+		
+		
+		Graphics3DRegistry.resetDescriptors();
+		List<Graphics3DDescriptor> descr =  Graphics3DRegistry.getRenderersForType(Graphics3DType.SCREEN);
+		String[][] renderers = new String[descr.size()][2];
+		for (int i=0; i<descr.size(); i++) {
+			renderers[i][0] = descr.get(i).getName();
+			renderers[i][1] = descr.get(i).getRendererID();
+		}
+		
+		ComboFieldEditor rendererCombo = new ComboFieldEditor(PrefNames.DEFAULT_SCREEN_RENDERER, "Default screen renderer", 
+			renderers, getFieldEditorParent());
+		addField(rendererCombo);
+		
+		// TODO enable
+		rendererCombo.setEnabled(false, getFieldEditorParent());
+		
 
 		String[][] cameraTypes =
 			new String[][] {

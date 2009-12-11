@@ -117,4 +117,9 @@ public interface PrefNames {
 	 * Preference name for the mouse sensitivity value.
 	 */
 	public static final String MOUSE_SENSITIVITY = "mouseSensitivity";
+	
+	/**
+	 * Preference name for the default screen renderer.
+	 */
+	public static final String DEFAULT_SCREEN_RENDERER = "defaultScreenRenderer";
 }
