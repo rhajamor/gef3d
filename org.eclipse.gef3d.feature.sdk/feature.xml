@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.eclipse.gef3d.feature.sdk"
-      label="Gef3D SDK (Source, Doc)"
+      label="GEF3D SDK (Source, Doc)"
       version="0.8.1"
       provider-name="Eclipse.org">
 
-   <description url="http://gef3d.org">
-      Gef3D is an Eclipse GEF extension bringing 3D to diagram editing.
-This feature contains all sources and documentation of Gef3D and some test classes.
+   <description url="http://eclipse.org/gef3d">
+      GEF3D is an Eclipse GEF extension bringing 3D to diagram editing.
+This feature contains all sources and documentation of GEF3D
+and some test classes.
 Sources and Javadoc are registered in order to be available simply
-by including Gef3D to the list of requried plugins.
+by including GEF3D to the list of requried plugins.
    </description>
 
-   <copyright url="http://gef3d.org">
-      Copyright (c) 2008 Jens von Pilgrim and others.
+   <copyright url="http://www.eclipse.org/legal/epl-v10.html">
+      Copyright (c) 2008, 2009 Jens von Pilgrim and others.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License v1.0
@@ -21,7 +22,7 @@ which accompanies this distribution, and is available at
 http://www.eclipse.org/legal/epl-v10.html
    </copyright>
 
-   <license url="http://gef3d.org">
+   <license url="http://www.eclipse.org/legal/epl-v10.html">
       SOFTWARE USER AGREEMENT
 
 Usage Of Content
@@ -38,7 +39,7 @@ BELOW, THEN YOU MAY NOT USE THE CONTENT.
 
 Applicable Licenses
 
-Unless otherwise indicated, Gef3D (including Draw3D)
+Unless otherwise indicated, GEF3D (including Draw3D)
 is provided to you under the terms and conditions of the Eclipse Public
 License Version 1.0 (&quot;EPL&quot;). A copy of the EPL is provided with this
 Content and is also available at http://www.eclipse.org/legal/epl-v10.html.
@@ -116,7 +117,7 @@ Java and all Java-based trademarks are trademarks of Sun Microsystems, Inc. in t
    </license>
 
    <url>
-      <discovery label="GEF3D Project Site" url="http://gef3d.org"/>
+      <discovery label="GEF3D Project Site" url="http://eclipse.org/gef3d"/>
    </url>
 
    <plugin
