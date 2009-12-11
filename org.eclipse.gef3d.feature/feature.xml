@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.eclipse.gef3d"
+      id="org.eclipse.gef3d.feature"
       label="GEF3D (Graphical Editing Framework 3D)"
       version="0.8.1"
       provider-name="Eclipse.org">
 
-   <description url="http://gef3d.org">
+   <description url="http://eclipse.org/gef3d">
       GEF3D is an Eclipse GEF extension bringing 3D to diagram editing. That is with GEF3D you can create  3D diagrams, 2D diagrams and combine 3D with 2D diagrams. It is based on OpenGL and Java technologies, thus running on Windows, Linux, and Mac OS X.
    </description>
 
-   <copyright url="http://gef3d.org">
-      Copyright (c) 2008 Jens von Pilgrim and others.
+   <copyright url="http://eclipse.org/gef3d">
+      Copyright (c) 2008, 2009 Jens von Pilgrim and others.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License v1.0
@@ -18,7 +18,7 @@ which accompanies this distribution, and is available at
 http://www.eclipse.org/legal/epl-v10.html
    </copyright>
 
-   <license url="http://gef3d.org">
+   <license url="http://www.eclipse.org/legal/epl-v10.html">
       SOFTWARE USER AGREEMENT
 
 Usage Of Content
@@ -35,7 +35,7 @@ BELOW, THEN YOU MAY NOT USE THE CONTENT.
 
 Applicable Licenses
 
-Unless otherwise indicated, Gef3D (including Draw3D)
+Unless otherwise indicated, GEF3D (including Draw3D)
 is provided to you under the terms and conditions of the Eclipse Public
 License Version 1.0 (&quot;EPL&quot;). A copy of the EPL is provided with this
 Content and is also available at http://www.eclipse.org/legal/epl-v10.html.
@@ -113,8 +113,7 @@ Java and all Java-based trademarks are trademarks of Sun Microsystems, Inc. in t
    </license>
 
    <url>
-      <update label="GEF3D Update Site" url="http://www.fernuni-hagen.de/se/personen/pilgrim/gef3d/update"/>
-      <discovery label="GEF3D Project Site" url="http://gef3d.org"/>
+      <discovery label="GEF3D Project Site" url="http://eclipse.org/gef3d"/>
    </url>
 
    <requires>
@@ -173,6 +172,13 @@ Java and all Java-based trademarks are trademarks of Sun Microsystems, Inc. in t
 
    <plugin
          id="org.eclipse.draw3d.x3d"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.gef3d.gmf"
          download-size="0"
          install-size="0"
          version="0.0.0"
