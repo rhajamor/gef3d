@@ -191,7 +191,11 @@ public class OptimizingGraphics extends StatefulGraphics {
 			}
 
 			transform(vertices);
-			addPrimitive(new PolylinePrimitive(vertices));
+			if (i_points.size() == 2)
+				addPrimitive(new LinePrimitive(vertices));
+			else
+				addPrimitive(new PolylinePrimitive(vertices));
+
 		} finally {
 			Draw3DCache.returnPoint(p);
 		}

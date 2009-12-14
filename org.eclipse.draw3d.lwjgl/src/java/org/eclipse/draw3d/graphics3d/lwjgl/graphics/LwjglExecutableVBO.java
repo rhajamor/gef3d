@@ -54,10 +54,10 @@ public class LwjglExecutableVBO implements ExecutableGraphics2D {
 		switch (i_type) {
 		case FILLED_QUAD:
 		case OUTLINED_QUAD:
-			m_numPrimitives = m_vertexBuffer.limit() / 4;
+			m_numPrimitives = m_vertexBuffer.limit() / 8;
 			break;
 		case LINE:
-			m_numPrimitives = m_vertexBuffer.limit() / 2;
+			m_numPrimitives = m_vertexBuffer.limit() / 4;
 			break;
 		default:
 			throw new IllegalArgumentException(
@@ -119,8 +119,8 @@ public class LwjglExecutableVBO implements ExecutableGraphics2D {
 
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 			for (int i = 0, index = 0; i < m_numPrimitives; i++) {
-				GL11.glDrawArrays(GL11.GL_POLYGON, index, m_numVertices[i]);
-				index += m_numVertices[i];
+				GL11.glDrawArrays(GL11.GL_POLYGON, index, 2 * m_numVertices[i]);
+				index += 2 * m_numVertices[i];
 			}
 			break;
 		case FILLED_QUAD:
@@ -128,16 +128,16 @@ public class LwjglExecutableVBO implements ExecutableGraphics2D {
 			i_g3d.glColor(fa.getColor(), fa.getAlpha());
 
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-			GL11.glDrawArrays(GL11.GL_QUADS, 0, 4 * m_numPrimitives);
+			GL11.glDrawArrays(GL11.GL_QUADS, 0, 2 * 4 * m_numPrimitives);
 			break;
 		case OUTLINED_POLYGON:
 			OutlineAttributes oa = (OutlineAttributes) m_attributes;
 			i_g3d.glColor(oa.getColor(), oa.getAlpha());
 
-			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
 			for (int i = 0, index = 0; i < m_numPrimitives; i++) {
-				GL11.glDrawArrays(GL11.GL_POLYGON, index, m_numVertices[i]);
-				index += m_numVertices[i];
+				GL11.glDrawArrays(GL11.GL_LINE_LOOP, index,
+					2 * m_numVertices[i]);
+				index += 2 * m_numVertices[i];
 			}
 			break;
 		case OUTLINED_QUAD:
@@ -145,27 +145,28 @@ public class LwjglExecutableVBO implements ExecutableGraphics2D {
 			i_g3d.glColor(oa.getColor(), oa.getAlpha());
 
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-			GL11.glDrawArrays(GL11.GL_QUADS, 0, 4 * m_numPrimitives);
+			GL11.glDrawArrays(GL11.GL_QUADS, 0, 2 * 4 * m_numPrimitives);
 			break;
 		case POLYLINE:
 			oa = (OutlineAttributes) m_attributes;
 			i_g3d.glColor(oa.getColor(), oa.getAlpha());
 			for (int i = 0, index = 0; i < m_numPrimitives; i++) {
-				GL11.glDrawArrays(GL11.GL_LINE_STRIP, index, m_numVertices[i]);
-				index += m_numVertices[i];
+				GL11.glDrawArrays(GL11.GL_LINE_STRIP, index,
+					2 * m_numVertices[i]);
+				index += 2 * m_numVertices[i];
 			}
 			break;
 		case LINE:
 			oa = (OutlineAttributes) m_attributes;
 			i_g3d.glColor(oa.getColor(), oa.getAlpha());
-			GL11.glDrawArrays(GL11.GL_LINES, 0, 2 * m_numPrimitives);
+			GL11.glDrawArrays(GL11.GL_LINES, 0, 2 * 2 * m_numPrimitives);
 			break;
 
 		default:
 			break;
 		}
 
-		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 	}
 
@@ -182,6 +183,7 @@ public class LwjglExecutableVBO implements ExecutableGraphics2D {
 			GL15.glGenBuffers(idBuffer);
 			m_id = idBuffer.get(0);
 
+			m_vertexBuffer.rewind();
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_id);
 			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, m_vertexBuffer,
 				GL15.GL_STATIC_DRAW);

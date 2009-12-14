@@ -38,6 +38,7 @@ import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
 import org.eclipse.draw3d.util.Draw3DCache;
+import org.eclipse.draw3d.util.StopWatch;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 
@@ -485,12 +486,16 @@ public class Figure3DHelper {
 
 					Graphics graphics = surface.activate(g3d);
 					try {
+						StopWatch.start("paint 2d");
 						graphics.setFont(i_graphics.getFont());
 						configureGraphics(graphics);
 						doPaintChildren2D(children2D, figure, graphics);
+						log.info(StopWatch.stop());
 					} finally {
+						StopWatch.start("init buffers");
 						m_executable = surface.deactivate(g3d);
 						m_executable.initialize(g3d);
+						log.info(StopWatch.stop());
 					}
 				}
 

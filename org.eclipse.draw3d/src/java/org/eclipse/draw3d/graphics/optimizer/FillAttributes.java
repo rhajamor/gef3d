@@ -22,11 +22,21 @@ import org.eclipse.swt.graphics.Color;
  */
 public class FillAttributes extends Attributes {
 
-	private Color m_color;
+	protected int m_fillRule;
 
-	private int m_fillRule;
+	protected boolean m_xorMode;
 
-	private boolean m_xorMode;
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+
+		return "FillAttributes [color=" + m_color + ", alpha=" + m_alpha
+			+ ", fillRule=" + m_fillRule + ", xorMode=" + m_xorMode + "]";
+	}
 
 	public Color getColor() {
 		return m_color;

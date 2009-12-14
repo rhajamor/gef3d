@@ -35,6 +35,19 @@ public class PrimitiveSet {
 
 	private PrimitiveType m_type;
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+
+		return "PrimitiveSet [type=" + m_type + ", attributes=" + m_attributes
+			+ ", primitives=" + m_primitives.size() + ", vertices: "
+			+ m_numVertices + "]";
+	}
+
 	public PrimitiveType getType() {
 
 		return m_type;
@@ -87,7 +100,8 @@ public class PrimitiveSet {
 		if (i_attributes == null)
 			throw new NullPointerException("i_attributes must not be null");
 
-		if (!m_attributes.equals(i_attributes))
+		if (!m_attributes.equals(i_attributes)
+			|| !(m_type.equals(i_primitive.getType())))
 			if (m_parent != null && !overlaps(i_primitive))
 				return m_parent.add(i_primitive, i_attributes);
 			else

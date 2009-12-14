@@ -23,26 +23,6 @@ import org.eclipse.draw3d.graphics.GraphicsState;
  */
 public class OutlineAttributes extends Attributes {
 
-	public int getLineCap() {
-		return m_lineCap;
-	}
-
-	public int[] getLineDash() {
-		return m_lineDash;
-	}
-
-	public int getLineJoin() {
-		return m_lineJoin;
-	}
-
-	public int getLineStyle() {
-		return m_lineStyle;
-	}
-
-	public float getLineWidth() {
-		return m_lineWidth;
-	}
-
 	private int m_lineCap;
 
 	private int[] m_lineDash;
@@ -52,6 +32,19 @@ public class OutlineAttributes extends Attributes {
 	private int m_lineStyle;
 
 	private float m_lineWidth;
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+
+		return "OutlinerAttributes [color=" + m_color + ", alpha=" + m_alpha
+			+ ", lineWidth=" + m_lineWidth + ", lineJoin=" + m_lineJoin
+			+ ", lineCap=" + m_lineCap + ", lineDash=" + m_lineDash + "]";
+	}
 
 	public OutlineAttributes(GraphicsState i_state) {
 
@@ -93,6 +86,26 @@ public class OutlineAttributes extends Attributes {
 			return false;
 
 		return true;
+	}
+
+	public int getLineCap() {
+		return m_lineCap;
+	}
+
+	public int[] getLineDash() {
+		return m_lineDash;
+	}
+
+	public int getLineJoin() {
+		return m_lineJoin;
+	}
+
+	public int getLineStyle() {
+		return m_lineStyle;
+	}
+
+	public float getLineWidth() {
+		return m_lineWidth;
 	}
 
 	/**

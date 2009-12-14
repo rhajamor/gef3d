@@ -33,6 +33,19 @@ public class GradientAttributes extends FillAttributes {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+
+		return "GradientAttributes [from color=" + m_color + ", to color="
+			+ m_gradientColor + ", alpha=" + m_alpha + ", fillRule="
+			+ m_fillRule + ", xorMode=" + m_xorMode + "]";
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.graphics.optimizer.FillAttributes#equals(java.lang.Object)
 	 */
 	@Override

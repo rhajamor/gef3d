@@ -22,7 +22,7 @@ public class QuadPrimitive extends PolygonPrimitive {
 	public QuadPrimitive(float[] i_points, boolean i_filled) {
 
 		super(i_points, i_filled ? PrimitiveType.FILLED_QUAD
-			: PrimitiveType.OUTLINED_POLYGON);
+			: PrimitiveType.OUTLINED_QUAD);
 
 		if (i_points.length != 8)
 			throw new IllegalArgumentException(
