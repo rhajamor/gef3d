@@ -19,16 +19,46 @@ package org.eclipse.draw3d.graphics.optimizer;
  */
 public enum PrimitiveType {
 
-	FILLED_POLYGON, FILLED_QUAD, LINE, OUTLINED_POLYGON, OUTLINED_QUAD, POLYLINE;
+	SOLID_POLYGON, SOLID_QUAD, LINE, OUTLINE_POLYGON, OUTLINE_QUAD, POLYLINE, IMAGE, GRADIENT_QUAD;
+
+	public boolean isImage() {
+
+		return this == IMAGE;
+	}
 
 	public boolean isFilled() {
 
-		return this == FILLED_POLYGON || this == FILLED_QUAD;
+		return this == SOLID_POLYGON || this == SOLID_QUAD;
 	}
 
 	public boolean isOutlined() {
 
-		return this == OUTLINED_POLYGON || this == OUTLINED_QUAD;
+		return this == OUTLINE_POLYGON || this == OUTLINE_QUAD;
+	}
+
+	public boolean isQuad() {
+
+		return this == OUTLINE_QUAD || this == SOLID_QUAD;
+	}
+
+	public boolean isPolygon() {
+
+		return this == OUTLINE_POLYGON || this == SOLID_POLYGON;
+	}
+
+	public boolean isPolyline() {
+
+		return this == POLYLINE;
+	}
+
+	public boolean isLine() {
+
+		return this == LINE;
+	}
+
+	public boolean isGradientQuad() {
+
+		return this == GRADIENT_QUAD;
 	}
 
 }

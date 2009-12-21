@@ -19,14 +19,18 @@ package org.eclipse.draw3d.graphics.optimizer;
  */
 public class QuadPrimitive extends PolygonPrimitive {
 
-	public QuadPrimitive(float[] i_points, boolean i_filled) {
+	protected QuadPrimitive(float[] i_points, PrimitiveType i_type) {
 
-		super(i_points, i_filled ? PrimitiveType.FILLED_QUAD
-			: PrimitiveType.OUTLINED_QUAD);
+		super(i_points, i_type);
 
 		if (i_points.length != 8)
 			throw new IllegalArgumentException(
 				"a quad can only contain 4 vertices");
 	}
 
+	public QuadPrimitive(float[] i_points, boolean i_filled) {
+
+		this(i_points, i_filled ? PrimitiveType.SOLID_QUAD
+			: PrimitiveType.OUTLINE_QUAD);
+	}
 }

@@ -13,6 +13,7 @@ package org.eclipse.draw3d.graphics.optimizer;
 import java.util.Arrays;
 
 import org.eclipse.draw3d.graphics.GraphicsState;
+import org.eclipse.swt.graphics.Color;
 
 /**
  * OutlineAttributes There should really be more documentation here.
@@ -32,6 +33,8 @@ public class OutlineAttributes extends Attributes {
 	private int m_lineStyle;
 
 	private float m_lineWidth;
+
+	protected Color m_color;
 
 	/**
 	 * {@inheritDoc}
@@ -69,6 +72,12 @@ public class OutlineAttributes extends Attributes {
 			return false;
 
 		OutlineAttributes other = (OutlineAttributes) i_obj;
+
+		if (m_color == null) {
+			if (other.m_color != null)
+				return false;
+		} else if (!m_color.equals(other.m_color))
+			return false;
 
 		if (m_lineCap != other.m_lineCap)
 			return false;
@@ -118,12 +127,17 @@ public class OutlineAttributes extends Attributes {
 
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + ((m_color == null) ? 0 : m_color.hashCode());
 		result = prime * result + m_lineCap;
 		result = prime * result + Arrays.hashCode(m_lineDash);
 		result = prime * result + m_lineJoin;
 		result = prime * result + m_lineStyle;
 		result = prime * result + Float.floatToIntBits(m_lineWidth);
 		return result;
+	}
+
+	public Color getColor() {
+		return m_color;
 	}
 
 }

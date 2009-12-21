@@ -11,25 +11,23 @@
 package org.eclipse.draw3d.graphics.optimizer;
 
 import org.eclipse.draw3d.graphics.GraphicsState;
+import org.eclipse.swt.graphics.Color;
 
 /**
- * FillAttributes2 There should really be more documentation here.
+ * FillAttributes There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 21.12.2009
+ * @since 09.12.2009
  */
-public abstract class FillAttributes extends Attributes {
+public class SolidAttributes extends FillAttributes {
 
-	protected int m_fillRule;
+	protected Color m_color;
 
-	protected boolean m_xorMode;
-
-	public FillAttributes(GraphicsState i_state) {
+	public SolidAttributes(GraphicsState i_state) {
 
 		super(i_state);
-		m_fillRule = i_state.getFillRule();
-		m_xorMode = i_state.getXORMode();
+		m_color = i_state.getBackgroundColor();
 	}
 
 	/**
@@ -43,19 +41,15 @@ public abstract class FillAttributes extends Attributes {
 		if (!super.equals(i_obj))
 			return false;
 
-		FillAttributes other = (FillAttributes) i_obj;
+		SolidAttributes other = (SolidAttributes) i_obj;
 
-		if (m_fillRule != other.m_fillRule)
-			return false;
-
-		if (m_xorMode != other.m_xorMode)
+		if (m_color == null) {
+			if (other.m_color != null)
+				return false;
+		} else if (!m_color.equals(other.m_color))
 			return false;
 
 		return true;
-	}
-
-	public int getFillRule() {
-		return m_fillRule;
 	}
 
 	/**
@@ -68,13 +62,24 @@ public abstract class FillAttributes extends Attributes {
 
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + m_fillRule;
-		result = prime * result + (m_xorMode ? 1231 : 1237);
+		result = prime * result + ((m_color == null) ? 0 : m_color.hashCode());
 		return result;
 	}
 
-	public boolean isXorMode() {
-		return m_xorMode;
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+
+		return "FillAttributes [color=" + m_color + ", alpha=" + m_alpha
+			+ ", fillRule=" + m_fillRule + ", xorMode=" + m_xorMode + "]";
+	}
+
+	public Color getColor() {
+		return m_color;
 	}
 
 }

@@ -791,6 +791,8 @@ public class LwjglGraphics extends StatefulGraphics {
 
 		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 		try {
+			GL11.glShadeModel(GL11.GL_SMOOTH);
+
 			int x1 = i_x;
 			int y1 = i_y;
 			int x2 = i_x + i_width;

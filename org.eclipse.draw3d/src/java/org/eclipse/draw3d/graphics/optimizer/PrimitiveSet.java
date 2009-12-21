@@ -11,6 +11,7 @@
 package org.eclipse.draw3d.graphics.optimizer;
 
 import java.nio.FloatBuffer;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,6 +35,11 @@ public class PrimitiveSet {
 	private List<Primitive> m_primitives = new LinkedList<Primitive>();
 
 	private PrimitiveType m_type;
+
+	public List<Primitive> getPrimitives() {
+
+		return Collections.unmodifiableList(m_primitives);
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -148,5 +154,10 @@ public class PrimitiveSet {
 				return true;
 
 		return false;
+	}
+
+	public int getSize() {
+
+		return m_primitives.size();
 	}
 }

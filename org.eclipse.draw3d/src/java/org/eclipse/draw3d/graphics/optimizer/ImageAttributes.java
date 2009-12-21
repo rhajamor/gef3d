@@ -10,23 +10,18 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics.optimizer;
 
+import org.eclipse.draw3d.graphics.GraphicsState;
+
 /**
- * PolygonPrimitive There should really be more documentation here.
+ * ImageAttributes There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 18.11.2009
+ * @since 16.12.2009
  */
-public class PolygonPrimitive extends PolylinePrimitive {
+public class ImageAttributes extends Attributes {
 
-	public PolygonPrimitive(float[] i_points, boolean i_filled) {
-
-		super(i_points, i_filled ? PrimitiveType.SOLID_POLYGON
-			: PrimitiveType.OUTLINE_POLYGON);
-	}
-
-	protected PolygonPrimitive(float[] i_points, PrimitiveType i_type) {
-
-		super(i_points, i_type);
+	public ImageAttributes(GraphicsState i_state) {
+		super(i_state);
 	}
 }

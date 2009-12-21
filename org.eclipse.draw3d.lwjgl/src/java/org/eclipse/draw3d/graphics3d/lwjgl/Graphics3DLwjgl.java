@@ -21,8 +21,9 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
-import org.eclipse.draw3d.graphics.optimizer.Attributes;
+import org.eclipse.draw3d.graphics.optimizer.ImagePrimitive;
 import org.eclipse.draw3d.graphics.optimizer.OptimizingGraphics;
+import org.eclipse.draw3d.graphics.optimizer.Primitive;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveType;
 import org.eclipse.draw3d.graphics3d.AbstractGraphics3DDraw;
@@ -35,7 +36,12 @@ import org.eclipse.draw3d.graphics3d.Graphics3DException;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableGradientQuads;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableImage;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableLines;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutablePolygons;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutablePolylines;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableQuads;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBackBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
@@ -190,29 +196,52 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 			for (PrimitiveSet set : primiveSets) {
 				PrimitiveType type = set.getType();
-				Attributes attrs = set.getAttributes();
-				FloatBuffer buffer = set.getVertexBuffer();
 
 				switch (type) {
-				case FILLED_QUAD:
-				case OUTLINED_QUAD:
-				case LINE:
-					executables.add(new LwjglExecutableVBO(type, attrs, buffer));
+				case SOLID_POLYGON:
+				case OUTLINE_POLYGON:
+					executables.add(new LwjglExecutablePolygons(set));
 					break;
-				case FILLED_POLYGON:
-				case OUTLINED_POLYGON:
+				case SOLID_QUAD:
+				case OUTLINE_QUAD:
+					executables.add(new LwjglExecutableQuads(set));
+					break;
+				case GRADIENT_QUAD:
+					executables.add(new LwjglExecutableGradientQuads(set));
+					break;
 				case POLYLINE:
-					int[] numVertices = set.getNumVertices();
-					executables.add(new LwjglExecutableVBO(type, attrs, buffer,
-						numVertices));
+					executables.add(new LwjglExecutablePolylines(set));
 					break;
-
+				case LINE:
+					executables.add(new LwjglExecutableLines(set));
+					break;
+				case IMAGE:
+					for (Primitive primitive : set.getPrimitives()) {
+						ImagePrimitive image = (ImagePrimitive) primitive;
+						executables.add(new LwjglExecutableImage(
+							image.getVertices(), image.getImage(),
+							image.getSourceX(), image.getSourceY(),
+							image.getSourceWidth(), image.getSourceHeight()));
+					}
+					break;
 				default:
 					break;
 				}
 			}
 
-			return new CompoundExecutableGraphics2D(executables);
+			return new CompoundExecutableGraphics2D(executables) {
+				/**
+				 * {@inheritDoc}
+				 * 
+				 * @see org.eclipse.draw3d.graphics3d.CompoundExecutableGraphics2D#execute(org.eclipse.draw3d.graphics3d.Graphics3D)
+				 */
+				@Override
+				public void execute(Graphics3D i_g3d) {
+					GL11.glDisable(GL11.GL_DEPTH_TEST);
+					super.execute(i_g3d);
+					GL11.glEnable(GL11.GL_DEPTH_TEST);
+				}
+			};
 		}
 
 		return null;

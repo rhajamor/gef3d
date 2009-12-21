@@ -23,6 +23,11 @@ public class PolylinePrimitive extends AbstractPrimitive {
 
 	private float[] m_points;
 
+	public float[] getVertices() {
+
+		return m_points;
+	}
+
 	public PolylinePrimitive(float[] i_points) {
 
 		this(i_points, PrimitiveType.POLYLINE);

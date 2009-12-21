@@ -49,14 +49,9 @@ public class OptimizingGraphics extends StatefulGraphics {
 
 	private PrimitiveSet m_primitives;
 
-	private void addGradientPrimitive(Primitive i_primitive) {
-
-		addPrimitive(i_primitive, getAttributes(i_primitive.getType(), true));
-	}
-
 	private void addPrimitive(Primitive i_primitive) {
 
-		addPrimitive(i_primitive, getAttributes(i_primitive.getType(), false));
+		addPrimitive(i_primitive, getAttributes(i_primitive.getType()));
 
 	}
 
@@ -123,8 +118,10 @@ public class OptimizingGraphics extends StatefulGraphics {
 	 */
 	@Override
 	public void drawImage(Image i_srcImage, int i_x, int i_y) {
-		// TODO implement method OptimizingGraphics.drawImage
 
+		int w = i_srcImage.getBounds().width;
+		int h = i_srcImage.getBounds().height;
+		drawImage(i_srcImage, 0, 0, w, h, i_x, i_y, w, h);
 	}
 
 	/**
@@ -136,8 +133,14 @@ public class OptimizingGraphics extends StatefulGraphics {
 	@Override
 	public void drawImage(Image i_srcImage, int i_x1, int i_y1, int i_w1,
 		int i_h1, int i_x2, int i_y2, int i_w2, int i_h2) {
-		// TODO implement method OptimizingGraphics.drawImage
 
+		float[] vertices =
+			new float[] { i_x2, i_y2, i_x2, i_y2 + i_h2, i_x2 + i_w2,
+				i_y2 + i_h2, i_x2 + i_w2, i_y2 };
+		transform(vertices);
+
+		addPrimitive(new ImagePrimitive(vertices, i_srcImage, i_x1, i_y1, i_w1,
+			i_h1));
 	}
 
 	/**
@@ -148,7 +151,10 @@ public class OptimizingGraphics extends StatefulGraphics {
 	@Override
 	public void drawLine(int i_x1, int i_y1, int i_x2, int i_y2) {
 
-		addPrimitive(new LinePrimitive(i_x1, i_y1, i_x2, i_y2));
+		float[] vertices = new float[] { i_x1, i_y1, i_x2, i_y2 };
+		transform(vertices);
+
+		addPrimitive(new LinePrimitive(vertices));
 	}
 
 	/**
@@ -359,18 +365,21 @@ public class OptimizingGraphics extends StatefulGraphics {
 
 	}
 
-	private Attributes getAttributes(PrimitiveType i_type, boolean i_gradient) {
+	private Attributes getAttributes(PrimitiveType i_type) {
 
 		switch (i_type) {
-		case FILLED_POLYGON:
-		case FILLED_QUAD:
-			return i_gradient ? new GradientAttributes(getState())
-				: new FillAttributes(getState());
-		case OUTLINED_POLYGON:
-		case OUTLINED_QUAD:
+		case SOLID_POLYGON:
+		case SOLID_QUAD:
+			return new SolidAttributes(getState());
+		case GRADIENT_QUAD:
+			return new GradientAttributes(getState());
+		case OUTLINE_POLYGON:
+		case OUTLINE_QUAD:
 		case POLYLINE:
 		case LINE:
 			return new OutlineAttributes(getState());
+		case IMAGE:
+			return new ImageAttributes(getState());
 		default:
 			throw new AssertionError("unknown primitive type: " + i_type);
 		}
@@ -416,7 +425,8 @@ public class OptimizingGraphics extends StatefulGraphics {
 			break;
 		case HGRADIENT:
 		case VGRADIENT:
-			addGradientPrimitive(new QuadPrimitive(vertices, true));
+			addPrimitive(new GradientQuadPrimitive(vertices,
+				getForegroundColor(), getBackgroundColor()));
 			break;
 		default:
 			throw new AssertionError();

@@ -10,23 +10,36 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics.optimizer;
 
+import org.eclipse.swt.graphics.Color;
+
 /**
- * PolygonPrimitive There should really be more documentation here.
+ * GradientQuadPrimitive There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 18.11.2009
+ * @since 21.12.2009
  */
-public class PolygonPrimitive extends PolylinePrimitive {
+public class GradientQuadPrimitive extends QuadPrimitive {
 
-	public PolygonPrimitive(float[] i_points, boolean i_filled) {
+	private Color m_fromColor;
 
-		super(i_points, i_filled ? PrimitiveType.SOLID_POLYGON
-			: PrimitiveType.OUTLINE_POLYGON);
+	private Color m_toColor;
+
+	public GradientQuadPrimitive(float[] i_points, Color i_fromColor,
+			Color i_toColor) {
+
+		super(i_points, PrimitiveType.GRADIENT_QUAD);
+
+		m_fromColor = i_fromColor;
+		m_toColor = i_toColor;
 	}
 
-	protected PolygonPrimitive(float[] i_points, PrimitiveType i_type) {
-
-		super(i_points, i_type);
+	public Color getFromColor() {
+		return m_fromColor;
 	}
+
+	public Color getToColor() {
+		return m_toColor;
+	}
+
 }

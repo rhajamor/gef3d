@@ -11,7 +11,6 @@
 package org.eclipse.draw3d.graphics.optimizer;
 
 import org.eclipse.draw3d.graphics.GraphicsState;
-import org.eclipse.swt.graphics.Color;
 
 /**
  * CommonAttributes There should really be more documentation here.
@@ -24,14 +23,8 @@ public abstract class Attributes {
 
 	protected int m_alpha;
 
-	protected Color m_color;
-
 	public int getAlpha() {
 		return m_alpha;
-	}
-
-	public Color getColor() {
-		return m_color;
 	}
 
 	public Attributes(GraphicsState i_state) {
@@ -61,12 +54,6 @@ public abstract class Attributes {
 		if (m_alpha != other.m_alpha)
 			return false;
 
-		if (m_color == null) {
-			if (other.m_color != null)
-				return false;
-		} else if (!m_color.equals(other.m_color))
-			return false;
-
 		return true;
 	}
 
@@ -81,7 +68,6 @@ public abstract class Attributes {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + m_alpha;
-		result = prime * result + ((m_color == null) ? 0 : m_color.hashCode());
 		return result;
 	}
 }
