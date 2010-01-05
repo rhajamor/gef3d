@@ -21,11 +21,9 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
-import org.eclipse.draw3d.graphics.optimizer.ImagePrimitive;
 import org.eclipse.draw3d.graphics.optimizer.OptimizingGraphics;
-import org.eclipse.draw3d.graphics.optimizer.Primitive;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
-import org.eclipse.draw3d.graphics.optimizer.PrimitiveType;
+import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics3d.AbstractGraphics3DDraw;
 import org.eclipse.draw3d.graphics3d.CompoundExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
@@ -37,7 +35,7 @@ import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableGradientQuads;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableImage;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableImages;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableLines;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutablePolygons;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutablePolylines;
@@ -195,37 +193,25 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 				new LinkedList<ExecutableGraphics2D>();
 
 			for (PrimitiveSet set : primiveSets) {
-				PrimitiveType type = set.getType();
-
-				switch (type) {
-				case SOLID_POLYGON:
-				case OUTLINE_POLYGON:
+				PrimitiveClass clazz = set.getPrimitiveClass();
+				if (clazz.isPolygon()) {
 					executables.add(new LwjglExecutablePolygons(set));
-					break;
-				case SOLID_QUAD:
-				case OUTLINE_QUAD:
-					executables.add(new LwjglExecutableQuads(set));
-					break;
-				case GRADIENT_QUAD:
-					executables.add(new LwjglExecutableGradientQuads(set));
-					break;
-				case POLYLINE:
+				} else if (clazz.isQuad()) {
+					if (clazz.isGradient())
+						executables.add(new LwjglExecutableGradientQuads(set));
+					else if (clazz.isImage())
+						executables.add(new LwjglExecutableImages(set));
+					else
+						executables.add(new LwjglExecutableQuads(set));
+				} else if (clazz.isPolyline()) {
 					executables.add(new LwjglExecutablePolylines(set));
-					break;
-				case LINE:
+				} else if (clazz.isLine()) {
 					executables.add(new LwjglExecutableLines(set));
-					break;
-				case IMAGE:
-					for (Primitive primitive : set.getPrimitives()) {
-						ImagePrimitive image = (ImagePrimitive) primitive;
-						executables.add(new LwjglExecutableImage(
-							image.getVertices(), image.getImage(),
-							image.getSourceX(), image.getSourceY(),
-							image.getSourceWidth(), image.getSourceHeight()));
-					}
-					break;
-				default:
-					break;
+				} else if (clazz.isText()) {
+
+				} else {
+					throw new AssertionError("unknown primitive class: "
+						+ clazz);
 				}
 			}
 

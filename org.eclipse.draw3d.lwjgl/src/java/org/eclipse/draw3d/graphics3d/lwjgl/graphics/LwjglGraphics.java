@@ -418,7 +418,7 @@ public class LwjglGraphics extends StatefulGraphics {
 							i_w1, i_h1);
 
 					BufferInfo info =
-						new BufferInfo(m_width, m_height, GL11.GL_RGBA,
+						new BufferInfo(i_w1, i_h1, GL11.GL_RGBA,
 							GL11.GL_UNSIGNED_BYTE, 1);
 
 					ByteBuffer buffer =
@@ -426,6 +426,8 @@ public class LwjglGraphics extends StatefulGraphics {
 					IntBuffer nameBuffer = Draw3DCache.getIntBuffer(1);
 					try {
 						ImageConverter converter = ImageConverter.getInstance();
+						buffer.rewind();
+
 						buffer =
 							converter.imageToBuffer(i_srcImage, info, buffer,
 								false);

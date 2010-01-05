@@ -12,11 +12,11 @@ package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 
 import java.nio.IntBuffer;
 
-import org.eclipse.draw3d.graphics.optimizer.OutlineAttributes;
-import org.eclipse.draw3d.graphics.optimizer.PolylinePrimitive;
-import org.eclipse.draw3d.graphics.optimizer.Primitive;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
-import org.eclipse.draw3d.graphics.optimizer.PrimitiveType;
+import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
+import org.eclipse.draw3d.graphics.optimizer.primitive.OutlineRenderRule;
+import org.eclipse.draw3d.graphics.optimizer.primitive.PolylinePrimitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.lwjgl.BufferUtils;
@@ -56,10 +56,10 @@ public class LwjglExecutablePolylines extends LwjglExecutableVBO {
 
 	public LwjglExecutablePolylines(PrimitiveSet i_primitives) {
 
-		super(i_primitives.getVertexBuffer());
+		super(i_primitives);
 
-		PrimitiveType type = i_primitives.getType();
-		if (!type.isPolyline())
+		PrimitiveClass clazz = i_primitives.getPrimitiveClass();
+		if (!clazz.isPolyline())
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain polylines");
 
@@ -71,14 +71,14 @@ public class LwjglExecutablePolylines extends LwjglExecutableVBO {
 		for (Primitive primitive : i_primitives.getPrimitives()) {
 			PolylinePrimitive polyline = (PolylinePrimitive) primitive;
 
-			int numVertices = polyline.getNumVertices();
+			int numVertices = polyline.getVertexCount();
 			m_numBuffer.put(numVertices);
 			m_firstBuffer.put(index);
 			index += numVertices;
 		}
 
-		OutlineAttributes oa = (OutlineAttributes) i_primitives.getAttributes();
-		ColorConverter.toFloatArray(oa.getColor(), oa.getAlpha(), m_color);
+		OutlineRenderRule rule = clazz.getRenderRule().asOutline();
+		ColorConverter.toFloatArray(rule.getColor(), rule.getAlpha(), m_color);
 	}
 
 	/**

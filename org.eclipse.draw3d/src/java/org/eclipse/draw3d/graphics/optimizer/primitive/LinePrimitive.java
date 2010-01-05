@@ -8,33 +8,23 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.graphics.optimizer;
+package org.eclipse.draw3d.graphics.optimizer.primitive;
 
 import org.eclipse.draw3d.graphics.GraphicsState;
 
 /**
- * GradientAttributes There should really be more documentation here.
+ * LinePrimitive There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 09.12.2009
+ * @since 25.12.2009
  */
-public class GradientAttributes extends FillAttributes {
+public class LinePrimitive extends AbstractVertexPrimitive {
 
-	public GradientAttributes(GraphicsState i_state) {
+	public LinePrimitive(GraphicsState i_state, int i_x1, int i_y1, int i_x2,
+			int i_y2) {
 
-		super(i_state);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-
-		return "GradientAttributes [alpha=" + m_alpha + ", fillRule="
-			+ m_fillRule + ", xorMode=" + m_xorMode + "]";
+		super(i_state.getTransformation(), new OutlineRenderRule(i_state),
+			new float[] { i_x1, i_y1, i_x2, i_y2 });
 	}
 }

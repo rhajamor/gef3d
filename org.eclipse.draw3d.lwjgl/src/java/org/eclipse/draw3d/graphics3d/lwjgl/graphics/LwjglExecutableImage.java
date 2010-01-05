@@ -147,6 +147,9 @@ public class LwjglExecutableImage implements ExecutableGraphics2D {
 			public void run() {
 				GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 				try {
+					GL11.glColor4f(1, 1, 1, 1);
+
+					GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 					GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_textureId);
 
 					GL11.glBegin(GL11.GL_QUADS);

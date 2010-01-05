@@ -8,20 +8,19 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.graphics.optimizer;
+package org.eclipse.draw3d.graphics.optimizer.classification;
 
-import org.eclipse.draw3d.graphics.GraphicsState;
+import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 
 /**
- * ImageAttributes There should really be more documentation here.
- * 
- * @author Kristian Duske
- * @version $Revision$
- * @since 16.12.2009
+ * PrimitiveClassifier
+ * There should really be more documentation here.
+ *
+ * @author 	Kristian Duske
+ * @version	$Revision$
+ * @since 	27.12.2009
  */
-public class ImageAttributes extends Attributes {
+public interface PrimitiveClassifier {
 
-	public ImageAttributes(GraphicsState i_state) {
-		super(i_state);
-	}
+	public PrimitiveClass classify(Primitive i_primitive);
 }

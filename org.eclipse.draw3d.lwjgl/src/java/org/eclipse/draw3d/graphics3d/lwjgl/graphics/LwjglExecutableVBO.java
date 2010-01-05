@@ -13,9 +13,13 @@ package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
+import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.VertexPrimitive;
 import org.eclipse.draw3d.graphics3d.ExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.Draw3DCache;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
@@ -32,9 +36,30 @@ public abstract class LwjglExecutableVBO implements ExecutableGraphics2D {
 
 	private int m_vertexBufferId;
 
-	protected LwjglExecutableVBO(FloatBuffer i_vertexBuffer) {
+	protected void setVertexBuffer(FloatBuffer i_vertexBuffer) {
 
 		m_vertexBuffer = i_vertexBuffer;
+	}
+
+	protected LwjglExecutableVBO() {
+
+		// nothing to initialize
+	}
+
+	protected LwjglExecutableVBO(PrimitiveSet i_primitives) {
+
+		if (i_primitives.getSize() == 0)
+			throw new IllegalArgumentException(i_primitives + " is empty");
+
+		FloatBuffer vertexBuffer =
+			BufferUtils.createFloatBuffer(2 * i_primitives.getNumVertices());
+
+		for (Primitive primitive : i_primitives.getPrimitives()) {
+			VertexPrimitive vertexPrimitive = (VertexPrimitive) primitive;
+			vertexBuffer.put(vertexPrimitive.getTransformedVertices());
+		}
+
+		setVertexBuffer(vertexBuffer);
 	}
 
 	/**
@@ -86,6 +111,9 @@ public abstract class LwjglExecutableVBO implements ExecutableGraphics2D {
 	 * @see org.eclipse.draw3d.graphics3d.ExecutableGraphics2D#initialize(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	public void initialize(Graphics3D i_g3d) {
+
+		if (m_vertexBuffer == null)
+			throw new IllegalStateException("vertex buffer not initialized");
 
 		IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
 		try {

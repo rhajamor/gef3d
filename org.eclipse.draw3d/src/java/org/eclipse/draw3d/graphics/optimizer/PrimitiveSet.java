@@ -10,12 +10,13 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics.optimizer;
 
-import java.nio.FloatBuffer;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.draw3d.util.BufferUtils;
+import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
+import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.VertexPrimitive;
 
 /**
  * PrimitiveSet There should really be more documentation here.
@@ -26,59 +27,26 @@ import org.eclipse.draw3d.util.BufferUtils;
  */
 public class PrimitiveSet {
 
-	private Attributes m_attributes;
-
-	private int m_numVertices = 0;
-
 	private PrimitiveSet m_parent;
+
+	private PrimitiveClass m_primitiveClass;
 
 	private List<Primitive> m_primitives = new LinkedList<Primitive>();
 
-	private PrimitiveType m_type;
+	private int m_vertexCount;
 
-	public List<Primitive> getPrimitives() {
+	public PrimitiveSet(PrimitiveClass i_primitiveClass) {
 
-		return Collections.unmodifiableList(m_primitives);
+		if (i_primitiveClass == null)
+			throw new NullPointerException("i_primitiveClass must not be null");
+
+		m_primitiveClass = i_primitiveClass;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
+	protected PrimitiveSet(PrimitiveSet i_parent,
+			PrimitiveClass i_primitiveClass) {
 
-		return "PrimitiveSet [type=" + m_type + ", attributes=" + m_attributes
-			+ ", primitives=" + m_primitives.size() + ", vertices: "
-			+ m_numVertices + "]";
-	}
-
-	public PrimitiveType getType() {
-
-		return m_type;
-	}
-
-	public Attributes getAttributes() {
-
-		return m_attributes;
-	}
-
-	public int[] getNumVertices() {
-
-		int[] result = new int[m_primitives.size()];
-		int i = 0;
-
-		for (Primitive primitive : m_primitives)
-			result[i++] = primitive.getNumVertices();
-
-		return result;
-	}
-
-	public PrimitiveSet(PrimitiveSet i_parent, PrimitiveType i_type,
-			Attributes i_attributes) {
-
-		this(i_type, i_attributes);
+		this(i_primitiveClass);
 
 		if (i_parent == null)
 			throw new NullPointerException("i_parent must not be null");
@@ -86,37 +54,40 @@ public class PrimitiveSet {
 		m_parent = i_parent;
 	}
 
-	public PrimitiveSet(PrimitiveType i_type, Attributes i_attributes) {
-
-		if (i_type == null)
-			throw new NullPointerException("i_type must not be null");
-
-		if (i_attributes == null)
-			throw new NullPointerException("i_attributes must not be null");
-
-		m_type = i_type;
-		m_attributes = i_attributes;
-	}
-
-	public boolean add(Primitive i_primitive, Attributes i_attributes) {
+	public boolean add(Primitive i_primitive) {
 
 		if (i_primitive == null)
 			throw new NullPointerException("i_primitive must not be null");
 
-		if (i_attributes == null)
-			throw new NullPointerException("i_attributes must not be null");
-
-		if (!m_attributes.equals(i_attributes)
-			|| !(m_type.equals(i_primitive.getType())))
+		if (!m_primitiveClass.contains(i_primitive))
 			if (m_parent != null && !overlaps(i_primitive))
-				return m_parent.add(i_primitive, i_attributes);
+				return m_parent.add(i_primitive);
 			else
 				return false;
 
 		m_primitives.add(i_primitive);
-		m_numVertices += i_primitive.getNumVertices();
+
+		if (i_primitive instanceof VertexPrimitive) {
+			VertexPrimitive vertexPrimitive = (VertexPrimitive) i_primitive;
+			m_vertexCount += vertexPrimitive.getVertexCount();
+		}
 
 		return true;
+	}
+
+	public int getNumVertices() {
+
+		return m_vertexCount;
+	}
+
+	public PrimitiveClass getPrimitiveClass() {
+
+		return m_primitiveClass;
+	}
+
+	public List<Primitive> getPrimitives() {
+
+		return Collections.unmodifiableList(m_primitives);
 	}
 
 	public List<PrimitiveSet> getSets(List<PrimitiveSet> io_result) {
@@ -132,16 +103,9 @@ public class PrimitiveSet {
 		return result;
 	}
 
-	public FloatBuffer getVertexBuffer() {
+	public int getSize() {
 
-		if (m_primitives.isEmpty())
-			return null;
-
-		FloatBuffer buffer = BufferUtils.createFloatBuffer(2 * m_numVertices);
-		for (Primitive primitive : m_primitives)
-			primitive.getVertices(buffer);
-
-		return buffer;
+		return m_primitives.size();
 	}
 
 	protected boolean overlaps(Primitive i_candidate) {
@@ -156,8 +120,15 @@ public class PrimitiveSet {
 		return false;
 	}
 
-	public int getSize() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
 
-		return m_primitives.size();
+		return "PrimitiveSet [class=" + m_primitiveClass + ", primitives="
+			+ m_primitives.size() + "]";
 	}
 }

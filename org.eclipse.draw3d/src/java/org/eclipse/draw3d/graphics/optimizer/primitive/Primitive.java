@@ -8,25 +8,26 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.graphics.optimizer;
+package org.eclipse.draw3d.graphics.optimizer.primitive;
+
+import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.graphics.optimizer.PrimitiveBounds;
 
 /**
- * PolygonPrimitive There should really be more documentation here.
- * 
- * @author Kristian Duske
- * @version $Revision$
- * @since 18.11.2009
+ * Primitive
+ * There should really be more documentation here.
+ *
+ * @author 	Kristian Duske
+ * @version	$Revision$
+ * @since 	22.12.2009
  */
-public class PolygonPrimitive extends PolylinePrimitive {
+public interface Primitive {
 
-	public PolygonPrimitive(float[] i_points, boolean i_filled) {
+	public IMatrix4f getTransformation();
 
-		super(i_points, i_filled ? PrimitiveType.SOLID_POLYGON
-			: PrimitiveType.OUTLINE_POLYGON);
-	}
+	public PrimitiveBounds getBounds();
 
-	protected PolygonPrimitive(float[] i_points, PrimitiveType i_type) {
+	public boolean intersects(Primitive i_primitive);
 
-		super(i_points, i_type);
-	}
+	public RenderRule getRenderRule();
 }

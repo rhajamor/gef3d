@@ -10,9 +10,9 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 
-import org.eclipse.draw3d.graphics.optimizer.OutlineAttributes;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
-import org.eclipse.draw3d.graphics.optimizer.PrimitiveType;
+import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
+import org.eclipse.draw3d.graphics.optimizer.primitive.OutlineRenderRule;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.lwjgl.opengl.GL11;
@@ -32,17 +32,20 @@ public class LwjglExecutableLines extends LwjglExecutableVBO {
 
 	public LwjglExecutableLines(PrimitiveSet i_primitives) {
 
-		super(i_primitives.getVertexBuffer());
+		super(i_primitives);
 
-		PrimitiveType type = i_primitives.getType();
-		if (!type.isLine())
+		PrimitiveClass primitiveClass = i_primitives.getPrimitiveClass();
+		if (!primitiveClass.isLine() || !primitiveClass.isOutline())
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain lines");
 
 		m_numLines = i_primitives.getSize();
 
-		OutlineAttributes oa = (OutlineAttributes) i_primitives.getAttributes();
-		ColorConverter.toFloatArray(oa.getColor(), oa.getAlpha(), m_color);
+		OutlineRenderRule renderRule =
+			primitiveClass.getRenderRule().asOutline();
+
+		ColorConverter.toFloatArray(renderRule.getColor(),
+			renderRule.getAlpha(), m_color);
 	}
 
 	/**

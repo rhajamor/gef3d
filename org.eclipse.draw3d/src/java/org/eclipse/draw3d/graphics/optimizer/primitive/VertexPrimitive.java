@@ -8,26 +8,22 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.graphics.optimizer;
+package org.eclipse.draw3d.graphics.optimizer.primitive;
 
-import java.nio.FloatBuffer;
 
 /**
- * Primitive There should really be more documentation here.
- * 
- * @author Kristian Duske
- * @version $Revision$
- * @since 18.11.2009
+ * VertexPrimitive
+ * There should really be more documentation here.
+ *
+ * @author 	Kristian Duske
+ * @version	$Revision$
+ * @since 	23.12.2009
  */
-public interface Primitive {
+public interface VertexPrimitive extends Primitive {
 
-	public boolean intersects(Primitive i_candidate);
+	public float[] getVertices();
 
-	public PrimitiveType getType();
+	public float[] getTransformedVertices();
 
-	public PrimitiveBounds getBounds();
-
-	public void getVertices(FloatBuffer i_buffer);
-
-	public int getNumVertices();
+	public int getVertexCount();
 }

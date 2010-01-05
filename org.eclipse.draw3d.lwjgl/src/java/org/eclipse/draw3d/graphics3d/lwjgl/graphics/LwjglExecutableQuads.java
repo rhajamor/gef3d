@@ -10,10 +10,10 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 
-import org.eclipse.draw3d.graphics.optimizer.SolidAttributes;
-import org.eclipse.draw3d.graphics.optimizer.OutlineAttributes;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
-import org.eclipse.draw3d.graphics.optimizer.PrimitiveType;
+import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
+import org.eclipse.draw3d.graphics.optimizer.primitive.OutlineRenderRule;
+import org.eclipse.draw3d.graphics.optimizer.primitive.SolidRenderRule;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.lwjgl.opengl.GL11;
@@ -27,7 +27,7 @@ import org.lwjgl.opengl.GL11;
  */
 public class LwjglExecutableQuads extends LwjglExecutableVBO {
 
-	private boolean m_filled;
+	private boolean m_solid;
 
 	private float[] m_color = new float[4];
 
@@ -35,22 +35,23 @@ public class LwjglExecutableQuads extends LwjglExecutableVBO {
 
 	public LwjglExecutableQuads(PrimitiveSet i_primitives) {
 
-		super(i_primitives.getVertexBuffer());
+		super(i_primitives);
 
-		PrimitiveType type = i_primitives.getType();
-		if (!type.isQuad())
+		PrimitiveClass clazz = i_primitives.getPrimitiveClass();
+		if (!clazz.isQuad())
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain quads");
 
 		m_numQuads = i_primitives.getSize();
-		m_filled = type.isFilled();
-		if (m_filled) {
-			SolidAttributes fa = (SolidAttributes) i_primitives.getAttributes();
-			ColorConverter.toFloatArray(fa.getColor(), fa.getAlpha(), m_color);
+		m_solid = clazz.isSolid();
+		if (m_solid) {
+			SolidRenderRule rule = clazz.getRenderRule().asSolid();
+			ColorConverter.toFloatArray(rule.getColor(), rule.getAlpha(),
+				m_color);
 		} else {
-			OutlineAttributes oa =
-				(OutlineAttributes) i_primitives.getAttributes();
-			ColorConverter.toFloatArray(oa.getColor(), oa.getAlpha(), m_color);
+			OutlineRenderRule rule = clazz.getRenderRule().asOutline();
+			ColorConverter.toFloatArray(rule.getColor(), rule.getAlpha(),
+				m_color);
 		}
 	}
 
@@ -64,7 +65,7 @@ public class LwjglExecutableQuads extends LwjglExecutableVBO {
 
 		i_g3d.glColor4f(m_color);
 
-		if (m_filled)
+		if (m_solid)
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 		else
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);

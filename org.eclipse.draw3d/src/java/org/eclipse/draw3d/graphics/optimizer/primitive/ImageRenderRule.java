@@ -8,26 +8,22 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.graphics.optimizer;
+package org.eclipse.draw3d.graphics.optimizer.primitive;
 
 import org.eclipse.draw3d.graphics.GraphicsState;
 
 /**
- * CommonAttributes There should really be more documentation here.
+ * ImageRenderRule There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 09.12.2009
+ * @since 23.12.2009
  */
-public abstract class Attributes {
+public class ImageRenderRule extends AbstractRenderRule {
 
-	protected int m_alpha;
+	private int m_alpha;
 
-	public int getAlpha() {
-		return m_alpha;
-	}
-
-	public Attributes(GraphicsState i_state) {
+	public ImageRenderRule(GraphicsState i_state) {
 
 		m_alpha = i_state.getAlpha();
 	}
@@ -35,39 +31,46 @@ public abstract class Attributes {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
+	 * @see org.eclipse.draw3d.graphics.optimizer.primitive.AbstractRenderRule#asImage()
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public ImageRenderRule asImage() {
+		return this;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-
 		if (obj == null)
 			return false;
-
 		if (getClass() != obj.getClass())
 			return false;
-
-		Attributes other = (Attributes) obj;
-
+		ImageRenderRule other = (ImageRenderRule) obj;
 		if (m_alpha != other.m_alpha)
 			return false;
-
 		return true;
+	}
+
+	public int getAlpha() {
+		return m_alpha;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + m_alpha;
+		return result;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see java.lang.Object#hashCode()
+	 * @see org.eclipse.draw3d.graphics.optimizer.primitive.AbstractRenderRule#isImage()
 	 */
 	@Override
-	public int hashCode() {
-
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + m_alpha;
-		return result;
+	public boolean isImage() {
+		return true;
 	}
 }

@@ -8,7 +8,7 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.graphics.optimizer;
+package org.eclipse.draw3d.graphics.optimizer.primitive;
 
 import java.util.Arrays;
 
@@ -16,13 +16,17 @@ import org.eclipse.draw3d.graphics.GraphicsState;
 import org.eclipse.swt.graphics.Color;
 
 /**
- * OutlineAttributes There should really be more documentation here.
+ * OutlineRenderRule There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 09.12.2009
+ * @since 23.12.2009
  */
-public class OutlineAttributes extends Attributes {
+public class OutlineRenderRule extends AbstractRenderRule {
+
+	private int m_alpha;
+
+	private Color m_color;
 
 	private int m_lineCap;
 
@@ -34,24 +38,9 @@ public class OutlineAttributes extends Attributes {
 
 	private float m_lineWidth;
 
-	protected Color m_color;
+	public OutlineRenderRule(GraphicsState i_state) {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-
-		return "OutlinerAttributes [color=" + m_color + ", alpha=" + m_alpha
-			+ ", lineWidth=" + m_lineWidth + ", lineJoin=" + m_lineJoin
-			+ ", lineCap=" + m_lineCap + ", lineDash=" + m_lineDash + "]";
-	}
-
-	public OutlineAttributes(GraphicsState i_state) {
-
-		super(i_state);
+		m_alpha = i_state.getAlpha();
 		m_color = i_state.getForegroundColor();
 		m_lineCap = i_state.getLineCap();
 		m_lineDash = i_state.getLineDash();
@@ -63,70 +52,82 @@ public class OutlineAttributes extends Attributes {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
+	 * @see org.eclipse.draw3d.graphics.optimizer.primitive.AbstractRenderRule#asOutline()
 	 */
 	@Override
-	public boolean equals(Object i_obj) {
+	public OutlineRenderRule asOutline() {
+		return this;
+	}
 
-		if (!super.equals(i_obj))
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
 			return false;
-
-		OutlineAttributes other = (OutlineAttributes) i_obj;
-
+		if (getClass() != obj.getClass())
+			return false;
+		OutlineRenderRule other = (OutlineRenderRule) obj;
+		if (m_alpha != other.m_alpha)
+			return false;
 		if (m_color == null) {
 			if (other.m_color != null)
 				return false;
 		} else if (!m_color.equals(other.m_color))
 			return false;
-
 		if (m_lineCap != other.m_lineCap)
 			return false;
-
 		if (!Arrays.equals(m_lineDash, other.m_lineDash))
 			return false;
-
 		if (m_lineJoin != other.m_lineJoin)
 			return false;
-
 		if (m_lineStyle != other.m_lineStyle)
 			return false;
-
 		if (Float.floatToIntBits(m_lineWidth) != Float.floatToIntBits(other.m_lineWidth))
 			return false;
-
 		return true;
 	}
 
+	public int getAlpha() {
+
+		return m_alpha;
+	}
+
+	public Color getColor() {
+
+		return m_color;
+	}
+
 	public int getLineCap() {
+
 		return m_lineCap;
 	}
 
 	public int[] getLineDash() {
+
 		return m_lineDash;
 	}
 
 	public int getLineJoin() {
+
 		return m_lineJoin;
 	}
 
 	public int getLineStyle() {
+
 		return m_lineStyle;
 	}
 
 	public float getLineWidth() {
+
 		return m_lineWidth;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
-
 		final int prime = 31;
-		int result = super.hashCode();
+		int result = 1;
+		result = prime * result + m_alpha;
 		result = prime * result + ((m_color == null) ? 0 : m_color.hashCode());
 		result = prime * result + m_lineCap;
 		result = prime * result + Arrays.hashCode(m_lineDash);
@@ -136,8 +137,13 @@ public class OutlineAttributes extends Attributes {
 		return result;
 	}
 
-	public Color getColor() {
-		return m_color;
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics.optimizer.primitive.AbstractRenderRule#isOutline()
+	 */
+	@Override
+	public boolean isOutline() {
+		return true;
 	}
-
 }

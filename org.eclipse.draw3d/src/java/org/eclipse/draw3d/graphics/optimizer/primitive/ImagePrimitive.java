@@ -8,8 +8,10 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.graphics.optimizer;
+package org.eclipse.draw3d.graphics.optimizer.primitive;
 
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw3d.graphics.GraphicsState;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -17,59 +19,40 @@ import org.eclipse.swt.graphics.Image;
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 16.12.2009
+ * @since 23.12.2009
  */
 public class ImagePrimitive extends QuadPrimitive {
 
-	private Image m_sImg;
+	private Image m_image;
 
-	private int m_sX;
+	private Rectangle m_source;
 
-	private int m_sY;
+	private Rectangle m_target;
 
-	private int m_sW;
+	public ImagePrimitive(GraphicsState i_state, Image i_image,
+			Rectangle i_source, Rectangle i_target) {
 
-	private int m_sH;
+		super(i_state.getTransformation(), new ImageRenderRule(i_state),
+			getVertices(i_target.x, i_target.y, i_target.width,
+				i_target.height, false));
+
+		m_image = i_image;
+		m_source = i_source;
+		m_target = i_target;
+	}
 
 	public Image getImage() {
 
-		return m_sImg;
+		return m_image;
 	}
 
-	public int getSourceX() {
+	public Rectangle getSource() {
 
-		return m_sX;
+		return m_source;
 	}
 
-	public int getSourceY() {
+	public Rectangle getTarget() {
 
-		return m_sY;
+		return m_target;
 	}
-
-	public int getSourceWidth() {
-
-		return m_sW;
-	}
-
-	public int getSourceHeight() {
-
-		return m_sH;
-	}
-
-	/**
-	 * @param i_points
-	 * @param i_filled
-	 */
-	public ImagePrimitive(float[] i_points, Image i_sImg, int i_sX, int i_sY,
-			int i_sW, int i_sH) {
-
-		super(i_points, PrimitiveType.IMAGE);
-
-		m_sImg = i_sImg;
-		m_sX = i_sX;
-		m_sY = i_sY;
-		m_sW = i_sW;
-		m_sH = i_sH;
-	}
-
 }

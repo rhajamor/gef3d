@@ -13,10 +13,10 @@ package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import org.eclipse.draw3d.graphics.optimizer.GradientQuadPrimitive;
-import org.eclipse.draw3d.graphics.optimizer.Primitive;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
-import org.eclipse.draw3d.graphics.optimizer.PrimitiveType;
+import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
+import org.eclipse.draw3d.graphics.optimizer.primitive.GradientRenderRule;
+import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.draw3d.util.Draw3DCache;
@@ -42,10 +42,10 @@ public class LwjglExecutableGradientQuads extends LwjglExecutableVBO {
 
 	public LwjglExecutableGradientQuads(PrimitiveSet i_primitives) {
 
-		super(i_primitives.getVertexBuffer());
+		super(i_primitives);
 
-		PrimitiveType type = i_primitives.getType();
-		if (!type.isGradientQuad())
+		PrimitiveClass primitiveClass = i_primitives.getPrimitiveClass();
+		if (!primitiveClass.isGradient() || !primitiveClass.isQuad())
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain gradient quads");
 
@@ -54,11 +54,13 @@ public class LwjglExecutableGradientQuads extends LwjglExecutableVBO {
 
 		float[] c = new float[4];
 		for (Primitive primitive : i_primitives.getPrimitives()) {
-			GradientQuadPrimitive gradient = (GradientQuadPrimitive) primitive;
 
-			int alpha = i_primitives.getAttributes().getAlpha();
-			Color fromColor = gradient.getFromColor();
-			Color toColor = gradient.getToColor();
+			GradientRenderRule renderRule =
+				primitive.getRenderRule().asGradient();
+
+			int alpha = renderRule.getAlpha();
+			Color fromColor = renderRule.getFromColor();
+			Color toColor = renderRule.getToColor();
 
 			ColorConverter.toFloatArray(fromColor, alpha, c);
 			m_colorBuffer.put(c);

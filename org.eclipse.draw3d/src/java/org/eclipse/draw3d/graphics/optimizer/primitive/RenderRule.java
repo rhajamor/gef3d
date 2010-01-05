@@ -8,23 +8,34 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.graphics.optimizer;
+package org.eclipse.draw3d.graphics.optimizer.primitive;
 
 /**
- * LinePrimitive There should really be more documentation here.
+ * RenderRule There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 18.11.2009
+ * @since 23.12.2009
  */
-public class LinePrimitive extends PolylinePrimitive {
+public interface RenderRule {
 
-	public LinePrimitive(float[] i_points) {
+	public boolean isOutline();
 
-		super(i_points, PrimitiveType.LINE);
+	public boolean isSolid();
 
-		if (i_points.length != 4)
-			throw new IllegalArgumentException(
-				"a point must contain exactly two vertices");
-	}
+	public boolean isText();
+
+	public boolean isGradient();
+
+	public boolean isImage();
+
+	public OutlineRenderRule asOutline();
+
+	public SolidRenderRule asSolid();
+
+	public TextRenderRule asText();
+
+	public ImageRenderRule asImage();
+
+	public GradientRenderRule asGradient();
 }

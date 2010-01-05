@@ -17,16 +17,24 @@ import java.util.List;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw3d.geometry.IMatrix4f;
-import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Matrix4f;
-import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics.StatefulGraphics;
+import org.eclipse.draw3d.graphics.optimizer.classification.DefaultPrimitiveClassifier;
+import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
+import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClassifier;
+import org.eclipse.draw3d.graphics.optimizer.primitive.ImagePrimitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.LinePrimitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.PolygonPrimitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.PolylinePrimitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.QuadPrimitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.TextPrimitive;
 import org.eclipse.draw3d.util.ArcHelper;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
@@ -49,23 +57,22 @@ public class OptimizingGraphics extends StatefulGraphics {
 
 	private PrimitiveSet m_primitives;
 
+	private PrimitiveClassifier m_classifier = new DefaultPrimitiveClassifier();
+
 	private void addPrimitive(Primitive i_primitive) {
 
-		addPrimitive(i_primitive, getAttributes(i_primitive.getType()));
+		if (m_primitives == null) {
+			PrimitiveClass primitiveClass = m_classifier.classify(i_primitive);
+			m_primitives = new PrimitiveSet(primitiveClass);
+		}
 
-	}
-
-	private void addPrimitive(Primitive i_primitive, Attributes i_attributes) {
-
-		PrimitiveType type = i_primitive.getType();
-		if (m_primitives == null)
-			m_primitives = new PrimitiveSet(type, i_attributes);
-
-		if (!m_primitives.add(i_primitive, i_attributes)) {
-			m_primitives = new PrimitiveSet(m_primitives, type, i_attributes);
-			if (!m_primitives.add(i_primitive, i_attributes))
+		if (!m_primitives.add(i_primitive)) {
+			PrimitiveClass primitiveClass = m_classifier.classify(i_primitive);
+			m_primitives = new PrimitiveSet(m_primitives, primitiveClass);
+			if (!m_primitives.add(i_primitive))
 				throw new AssertionError("cannot add primitive " + i_primitive);
 		}
+
 	}
 
 	/**
@@ -84,9 +91,7 @@ public class OptimizingGraphics extends StatefulGraphics {
 			new ArcHelper(ARC_PREC, i_x, i_y, i_w, i_h, rOffset, rLength, false);
 
 		float[] vertices = helper.getArray();
-		transform(vertices);
-
-		addPrimitive(new PolylinePrimitive(vertices));
+		addPrimitive(new PolylinePrimitive(getState(), vertices));
 	}
 
 	/**
@@ -117,11 +122,11 @@ public class OptimizingGraphics extends StatefulGraphics {
 	 *      int, int)
 	 */
 	@Override
-	public void drawImage(Image i_srcImage, int i_x, int i_y) {
+	public void drawImage(Image i_image, int i_x, int i_y) {
 
-		int w = i_srcImage.getBounds().width;
-		int h = i_srcImage.getBounds().height;
-		drawImage(i_srcImage, 0, 0, w, h, i_x, i_y, w, h);
+		int w = i_image.getBounds().width;
+		int h = i_image.getBounds().height;
+		drawImage(i_image, 0, 0, w, h, i_x, i_y, w, h);
 	}
 
 	/**
@@ -131,16 +136,13 @@ public class OptimizingGraphics extends StatefulGraphics {
 	 *      int, int, int, int, int, int, int, int)
 	 */
 	@Override
-	public void drawImage(Image i_srcImage, int i_x1, int i_y1, int i_w1,
+	public void drawImage(Image i_image, int i_x1, int i_y1, int i_w1,
 		int i_h1, int i_x2, int i_y2, int i_w2, int i_h2) {
 
-		float[] vertices =
-			new float[] { i_x2, i_y2, i_x2, i_y2 + i_h2, i_x2 + i_w2,
-				i_y2 + i_h2, i_x2 + i_w2, i_y2 };
-		transform(vertices);
+		Rectangle source = new Rectangle(i_x1, i_y1, i_w1, i_h1);
+		Rectangle target = new Rectangle(i_x2, i_y2, i_w2, i_h2);
 
-		addPrimitive(new ImagePrimitive(vertices, i_srcImage, i_x1, i_y1, i_w1,
-			i_h1));
+		addPrimitive(new ImagePrimitive(getState(), i_image, source, target));
 	}
 
 	/**
@@ -151,10 +153,7 @@ public class OptimizingGraphics extends StatefulGraphics {
 	@Override
 	public void drawLine(int i_x1, int i_y1, int i_x2, int i_y2) {
 
-		float[] vertices = new float[] { i_x1, i_y1, i_x2, i_y2 };
-		transform(vertices);
-
-		addPrimitive(new LinePrimitive(vertices));
+		addPrimitive(new LinePrimitive(getState(), i_x1, i_y1, i_x2, i_y2));
 	}
 
 	/**
@@ -176,7 +175,7 @@ public class OptimizingGraphics extends StatefulGraphics {
 	@Override
 	public void drawPolygon(PointList i_points) {
 
-		polygon(i_points, false);
+		addPrimitive(new PolygonPrimitive(getState(), i_points, false));
 	}
 
 	/**
@@ -187,23 +186,23 @@ public class OptimizingGraphics extends StatefulGraphics {
 	@Override
 	public void drawPolyline(PointList i_points) {
 
-		Point p = Draw3DCache.getPoint();
-		try {
-			float[] vertices = new float[2 * i_points.size()];
-			for (int i = 0; i < i_points.size(); i++) {
-				i_points.getPoint(p, i);
-				vertices[2 * i] = p.x;
-				vertices[2 * i + 1] = p.y;
+		if (i_points.size() == 2) {
+			Point p = Draw3DCache.getPoint();
+			try {
+				i_points.getPoint(p, 0);
+				int x1 = p.x;
+				int y1 = p.y;
+
+				i_points.getPoint(p, 1);
+				int x2 = p.x;
+				int y2 = p.y;
+
+				drawLine(x1, y1, x2, y2);
+			} finally {
+				Draw3DCache.returnPoint(p);
 			}
-
-			transform(vertices);
-			if (i_points.size() == 2)
-				addPrimitive(new LinePrimitive(vertices));
-			else
-				addPrimitive(new PolylinePrimitive(vertices));
-
-		} finally {
-			Draw3DCache.returnPoint(p);
+		} else {
+			addPrimitive(new PolylinePrimitive(getState(), i_points));
 		}
 	}
 
@@ -215,7 +214,8 @@ public class OptimizingGraphics extends StatefulGraphics {
 	@Override
 	public void drawRectangle(int i_x, int i_y, int i_width, int i_height) {
 
-		rectangle(i_x, i_y, i_width, i_height, DrawType.OUTLINE);
+		addPrimitive(QuadPrimitive.createOutlineQuad(getState(), i_x, i_y,
+			i_width, i_height));
 	}
 
 	/**
@@ -231,6 +231,31 @@ public class OptimizingGraphics extends StatefulGraphics {
 		roundRectangle(i_r, i_arcWidth, i_arcHeight, false);
 	}
 
+	private Image m_fontImage;
+
+	private GC m_fontGC;
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics.StatefulGraphics#dispose()
+	 */
+	@Override
+	public void dispose() {
+
+		if (m_fontGC != null) {
+			m_fontGC.dispose();
+			m_fontGC = null;
+		}
+
+		if (m_fontImage != null) {
+			m_fontImage.dispose();
+			m_fontImage = null;
+		}
+
+		super.dispose();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -238,8 +263,9 @@ public class OptimizingGraphics extends StatefulGraphics {
 	 */
 	@Override
 	public void drawString(String i_s, int i_x, int i_y) {
-		// TODO implement method OptimizingGraphics.drawString
 
+		addPrimitive(new TextPrimitive(getState(), i_s, false, new Point(i_x,
+			i_y)));
 	}
 
 	/**
@@ -249,8 +275,9 @@ public class OptimizingGraphics extends StatefulGraphics {
 	 */
 	@Override
 	public void drawText(String i_s, int i_x, int i_y) {
-		// TODO implement method OptimizingGraphics.drawText
 
+		addPrimitive(new TextPrimitive(getState(), i_s, true, new Point(i_x,
+			i_y)));
 	}
 
 	/**
@@ -272,8 +299,7 @@ public class OptimizingGraphics extends StatefulGraphics {
 		vertices[vertices.length - 2] = i_x + i_w;
 		vertices[vertices.length - 1] = i_y + i_h;
 
-		transform(vertices);
-		addPrimitive(new PolygonPrimitive(vertices, true));
+		addPrimitive(new PolygonPrimitive(getState(), vertices, true));
 	}
 
 	/**
@@ -286,8 +312,8 @@ public class OptimizingGraphics extends StatefulGraphics {
 	public void fillGradient(int i_x, int i_y, int i_w, int i_h,
 		boolean i_vertical) {
 
-		rectangle(i_x, i_y, i_w, i_h, i_vertical ? DrawType.VGRADIENT
-			: DrawType.HGRADIENT);
+		addPrimitive(QuadPrimitive.createGradientQuad(getState(), i_x, i_y,
+			i_w, i_h, i_vertical));
 	}
 
 	/**
@@ -303,9 +329,7 @@ public class OptimizingGraphics extends StatefulGraphics {
 				-2 * (float) Math.PI, true);
 
 		float[] vertices = helper.getArray();
-
-		transform(vertices);
-		addPrimitive(new PolygonPrimitive(vertices, true));
+		addPrimitive(new PolygonPrimitive(getState(), vertices, true));
 	}
 
 	/**
@@ -316,7 +340,7 @@ public class OptimizingGraphics extends StatefulGraphics {
 	@Override
 	public void fillPolygon(PointList i_points) {
 
-		polygon(i_points, true);
+		addPrimitive(new PolygonPrimitive(getState(), i_points, true));
 	}
 
 	/**
@@ -327,7 +351,8 @@ public class OptimizingGraphics extends StatefulGraphics {
 	@Override
 	public void fillRectangle(int i_x, int i_y, int i_width, int i_height) {
 
-		rectangle(i_x, i_y, i_width, i_height, DrawType.FILL);
+		addPrimitive(QuadPrimitive.createSolidQuad(getState(), i_x, i_y,
+			i_width, i_height));
 	}
 
 	/**
@@ -365,74 +390,6 @@ public class OptimizingGraphics extends StatefulGraphics {
 
 	}
 
-	private Attributes getAttributes(PrimitiveType i_type) {
-
-		switch (i_type) {
-		case SOLID_POLYGON:
-		case SOLID_QUAD:
-			return new SolidAttributes(getState());
-		case GRADIENT_QUAD:
-			return new GradientAttributes(getState());
-		case OUTLINE_POLYGON:
-		case OUTLINE_QUAD:
-		case POLYLINE:
-		case LINE:
-			return new OutlineAttributes(getState());
-		case IMAGE:
-			return new ImageAttributes(getState());
-		default:
-			throw new AssertionError("unknown primitive type: " + i_type);
-		}
-	}
-
-	private void polygon(PointList i_points, boolean i_fill) {
-
-		Point p = Draw3DCache.getPoint();
-		try {
-			float[] vertices = new float[2 * i_points.size()];
-			for (int i = 0; i < i_points.size(); i++) {
-				i_points.getPoint(p, i);
-				vertices[2 * i] = p.x;
-				vertices[2 * i + 1] = p.y;
-			}
-
-			transform(vertices);
-			addPrimitive(new PolygonPrimitive(vertices, i_fill));
-		} finally {
-			Draw3DCache.returnPoint(p);
-		}
-	}
-
-	private void rectangle(int i_x, int i_y, int i_width, int i_height,
-		DrawType i_drawType) {
-
-		int x2 = i_x + i_width;
-		int y2 = i_y + i_height;
-
-		float[] vertices;
-		if (i_drawType == DrawType.VGRADIENT)
-			vertices = new float[] { x2, i_y, i_x, i_y, i_x, y2, x2, y2 };
-		else
-			vertices = new float[] { i_x, i_y, i_x, y2, x2, y2, x2, i_y };
-
-		transform(vertices);
-		switch (i_drawType) {
-		case OUTLINE:
-			addPrimitive(new QuadPrimitive(vertices, false));
-			break;
-		case FILL:
-			addPrimitive(new QuadPrimitive(vertices, true));
-			break;
-		case HGRADIENT:
-		case VGRADIENT:
-			addPrimitive(new GradientQuadPrimitive(vertices,
-				getForegroundColor(), getBackgroundColor()));
-			break;
-		default:
-			throw new AssertionError();
-		}
-	}
-
 	private void roundRectangle(Rectangle i_r, int i_arcWidth, int i_arcHeight,
 		boolean i_fill) {
 
@@ -467,36 +424,9 @@ public class OptimizingGraphics extends StatefulGraphics {
 		helper = new ArcHelper(ARC_PREC, x2 - w, y1, w, h, 0, -PI_4, false);
 		helper.getArray(vertices, offset);
 
-		transform(vertices);
-		addPrimitive(new PolygonPrimitive(vertices, i_fill));
+		addPrimitive(new PolygonPrimitive(getState(), vertices, i_fill));
 	}
 
-	private void transform(float[] i_vertices) {
-
-		Matrix4f t = getState().getTransformation();
-		if (t == null || IMatrix4f.IDENTITY.equals(t))
-			return;
-
-		Vector3f v = Draw3DCache.getVector3f();
-		Vector3f r = Draw3DCache.getVector3f();
-		try {
-			for (int i = 0; i < i_vertices.length / 2; i++) {
-				v.setX(i_vertices[2 * i]);
-				v.setY(i_vertices[2 * i + 1]);
-
-				Math3D.transform(v, t, r);
-
-				i_vertices[2 * i] = r.getX();
-				i_vertices[2 * i + 1] = r.getY();
-			}
-		} finally {
-			Draw3DCache.returnVector3f(v, r);
-		}
-	}
-
-	/**
-	 * @return
-	 */
 	public List<PrimitiveSet> getPrimiveSets() {
 
 		if (m_primitives == null)
