@@ -240,7 +240,7 @@ public class Vector3fTest extends TestCase {
 
 	/**
 	 * Test method for
-	 * {@link org.eclipse.draw3d.geometryext.Vector3fImpl#equals(org.eclipse.draw3d.geometryext.IVector3f)}
+	 * {@link org.eclipse.draw3d.geometryext.Vector3fImpl#ruleEquals(org.eclipse.draw3d.geometryext.IVector3f)}
 	 */
 	public void testEqualsIVector3f() {
 		float x = GeometryTests.getRandomFloat();

@@ -146,4 +146,13 @@ public class OutlineRenderRule extends AbstractRenderRule {
 	public boolean isOutline() {
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "OutlineRenderRule [m_alpha=" + m_alpha + ", m_color=" + m_color
+			+ ", m_lineCap=" + m_lineCap + ", m_lineDash="
+			+ Arrays.toString(m_lineDash) + ", m_lineJoin=" + m_lineJoin
+			+ ", m_lineStyle=" + m_lineStyle + ", m_lineWidth=" + m_lineWidth
+			+ "]";
+	}
 }

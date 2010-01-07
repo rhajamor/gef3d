@@ -11,6 +11,12 @@
 
 package org.eclipse.draw3d.graphics3d.lwjgl.font;
 
+import java.nio.FloatBuffer;
+
+import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -79,12 +85,80 @@ public class LwjglFontChar {
 	}
 
 	/**
-	 * Renders this character.
+	 * Renders this character at the given coordinates by adding the vertices
+	 * and texture coordinates to the given buffers.
 	 * 
-	 * @param i_width the width of the character texture
-	 * @param i_height the height of the character texture
+	 * @param i_transformation the transformation to apply to the vertices - can
+	 *            be <code>null</code>
+	 * @param i_x the X coordinate
+	 * @param i_y the Y coordinate
+	 * @param i_vertexBuffer the vertex buffer
+	 * @param i_coordBuffer the texture coordinate buffer
 	 */
-	public void render(int i_width, int i_height) {
+	public void render(IMatrix4f i_transformation, float i_x, float i_y,
+		FloatBuffer i_vertexBuffer, FloatBuffer i_coordBuffer) {
+
+		if (i_transformation == null
+			|| IMatrix4f.IDENTITY.equals(i_transformation)) {
+			i_vertexBuffer.put(i_x);
+			i_vertexBuffer.put(i_y);
+			i_coordBuffer.put(m_s1);
+			i_coordBuffer.put(m_t1);
+
+			i_vertexBuffer.put(i_x);
+			i_vertexBuffer.put(i_y + m_height);
+			i_coordBuffer.put(m_s1);
+			i_coordBuffer.put(m_t2);
+
+			i_vertexBuffer.put(i_x + m_width);
+			i_vertexBuffer.put(i_y + m_height);
+			i_coordBuffer.put(m_s2);
+			i_coordBuffer.put(m_t2);
+
+			i_vertexBuffer.put(i_x + m_width);
+			i_vertexBuffer.put(i_y);
+			i_coordBuffer.put(m_s2);
+			i_coordBuffer.put(m_t1);
+		} else {
+			Vector3f v = Draw3DCache.getVector3f();
+			try {
+				v.set(i_x, i_y, 0);
+				Math3D.transform(v, i_transformation, v);
+				i_vertexBuffer.put(v.getX());
+				i_vertexBuffer.put(v.getY());
+				i_coordBuffer.put(m_s1);
+				i_coordBuffer.put(m_t1);
+
+				v.set(i_x, i_y + m_height, 0);
+				Math3D.transform(v, i_transformation, v);
+				i_vertexBuffer.put(v.getX());
+				i_vertexBuffer.put(v.getY());
+				i_coordBuffer.put(m_s1);
+				i_coordBuffer.put(m_t2);
+
+				v.set(i_x + m_width, i_y + m_height, 0);
+				Math3D.transform(v, i_transformation, v);
+				i_vertexBuffer.put(v.getX());
+				i_vertexBuffer.put(v.getY());
+				i_coordBuffer.put(m_s2);
+				i_coordBuffer.put(m_t2);
+
+				v.set(i_x + m_width, i_y, 0);
+				Math3D.transform(v, i_transformation, v);
+				i_vertexBuffer.put(v.getX());
+				i_vertexBuffer.put(v.getY());
+				i_coordBuffer.put(m_s2);
+				i_coordBuffer.put(m_t1);
+			} finally {
+				Draw3DCache.returnVector3f(v);
+			}
+		}
+	}
+
+	/**
+	 * Renders this character directly in immediate mode.
+	 */
+	public void render() {
 
 		GL11.glBegin(GL11.GL_QUADS);
 

@@ -116,4 +116,10 @@ public class PrimitiveBounds {
 
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "PrimitiveBounds [m_x=" + m_x + ", m_y=" + m_y + ", m_width="
+			+ m_width + ", m_height=" + m_height + "]";
+	}
 }

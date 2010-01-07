@@ -500,7 +500,10 @@ public class GraphicsState {
 	 */
 	public Matrix4f getTransformation() {
 
-		return m_transformation;
+		if (m_transformation != null)
+			return m_transformation;
+
+		return m_parentState.getTransformation();
 	}
 
 	/**

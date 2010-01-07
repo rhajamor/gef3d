@@ -473,7 +473,7 @@ public class Figure3DHelper {
 			final IFigure3D figure = m_figuresFriend.figure;
 			final ISurface surface = figure.getSurface();
 
-			RenderContext renderContext = figure.getRenderContext();
+			final RenderContext renderContext = figure.getRenderContext();
 			final Graphics3D g3d = renderContext.getGraphics3D();
 
 			if (surface != null && surface.is2DHost()) {
@@ -500,7 +500,33 @@ public class Figure3DHelper {
 				}
 
 				if (m_executable != null)
-					m_executable.execute(g3d);
+					renderContext.addRenderFragment(new RenderFragment() {
+
+						public float getDistanceMeasure(
+							RenderContext i_renderContext) {
+
+							Vector3f v = Draw3DCache.getVector3f();
+							try {
+								getCenter3D(figure, v);
+								return renderContext.getScene().getCamera().getDistance(
+									v);
+							} finally {
+								Draw3DCache.returnVector3f(v);
+							}
+						}
+
+						public RenderType getRenderType() {
+
+							return RenderType.getRenderType(figure.getAlpha(),
+								false);
+						}
+
+						public void render(RenderContext i_renderContext) {
+
+							m_executable.execute(g3d);
+						}
+
+					});
 			} else {
 				Graphics graphics = i_graphics;
 				graphics.setFont(i_graphics.getFont());

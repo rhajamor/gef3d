@@ -11,7 +11,9 @@
 package org.eclipse.draw3d.graphics.optimizer.primitive;
 
 import org.eclipse.draw3d.graphics.GraphicsState;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 
 /**
  * TextRenderRule There should really be more documentation here.
@@ -24,12 +26,18 @@ public class TextRenderRule extends AbstractRenderRule {
 
 	private int m_alpha;
 
+	private Font m_font;
+
+	private boolean m_fontAntialias;
+
 	private Color m_textColor;
 
 	public TextRenderRule(GraphicsState i_state) {
 
+		m_font = i_state.getFont();
 		m_textColor = i_state.getForegroundColor();
 		m_alpha = i_state.getAlpha();
+		m_fontAntialias = i_state.getAntialias() == SWT.ON;
 	}
 
 	/**
@@ -51,18 +59,23 @@ public class TextRenderRule extends AbstractRenderRule {
 		if (getClass() != obj.getClass())
 			return false;
 		TextRenderRule other = (TextRenderRule) obj;
-		if (m_alpha != other.m_alpha)
-			return false;
-		if (m_textColor == null) {
-			if (other.m_textColor != null)
+		if (m_font == null) {
+			if (other.m_font != null)
 				return false;
-		} else if (!m_textColor.equals(other.m_textColor))
+		} else if (!m_font.equals(other.m_font))
+			return false;
+		if (m_fontAntialias != other.m_fontAntialias)
 			return false;
 		return true;
 	}
 
 	public int getAlpha() {
 		return m_alpha;
+	}
+
+	public Font getFont() {
+
+		return m_font;
 	}
 
 	public Color getTextColor() {
@@ -73,11 +86,14 @@ public class TextRenderRule extends AbstractRenderRule {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + m_alpha;
-		result =
-			prime * result
-				+ ((m_textColor == null) ? 0 : m_textColor.hashCode());
+		result = prime * result + ((m_font == null) ? 0 : m_font.hashCode());
+		result = prime * result + (m_fontAntialias ? 1231 : 1237);
 		return result;
+	}
+
+	public boolean isFontAntialias() {
+
+		return m_fontAntialias;
 	}
 
 	/**
@@ -88,5 +104,12 @@ public class TextRenderRule extends AbstractRenderRule {
 	@Override
 	public boolean isText() {
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "TextRenderRule [m_alpha=" + m_alpha + ", m_font=" + m_font
+			+ ", m_fontAntialias=" + m_fontAntialias + ", m_textColor="
+			+ m_textColor + "]";
 	}
 }

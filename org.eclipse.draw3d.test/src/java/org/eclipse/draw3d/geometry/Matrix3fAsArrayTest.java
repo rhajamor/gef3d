@@ -335,7 +335,7 @@ public class Matrix3fAsArrayTest extends TestCase {
 
 	/**
 	 * Test method for
-	 * {@link org.eclipse.draw3d.geometryext.Matrix3fAsArray#equals(org.eclipse.draw3d.geometryext.IMatrix3f)}
+	 * {@link org.eclipse.draw3d.geometryext.Matrix3fAsArray#ruleEquals(org.eclipse.draw3d.geometryext.IMatrix3f)}
 	 * .
 	 */
 	public void testEqualsIMatrix3f() {

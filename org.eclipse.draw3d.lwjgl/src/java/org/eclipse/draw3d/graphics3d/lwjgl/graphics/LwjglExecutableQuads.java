@@ -25,13 +25,13 @@ import org.lwjgl.opengl.GL11;
  * @version $Revision$
  * @since 21.12.2009
  */
-public class LwjglExecutableQuads extends LwjglExecutableVBO {
+public class LwjglExecutableQuads extends LwjglExecutableVertexBuffer {
 
 	private boolean m_solid;
 
 	private float[] m_color = new float[4];
 
-	private int m_numQuads;
+	private int m_vertexCount;
 
 	public LwjglExecutableQuads(PrimitiveSet i_primitives) {
 
@@ -42,8 +42,9 @@ public class LwjglExecutableQuads extends LwjglExecutableVBO {
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain quads");
 
-		m_numQuads = i_primitives.getSize();
+		m_vertexCount = i_primitives.getVertexCount();
 		m_solid = clazz.isSolid();
+
 		if (m_solid) {
 			SolidRenderRule rule = clazz.getRenderRule().asSolid();
 			ColorConverter.toFloatArray(rule.getColor(), rule.getAlpha(),
@@ -70,6 +71,6 @@ public class LwjglExecutableQuads extends LwjglExecutableVBO {
 		else
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
 
-		GL11.glDrawArrays(GL11.GL_QUADS, 0, 4 * m_numQuads);
+		GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
 	}
 }

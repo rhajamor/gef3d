@@ -15,7 +15,6 @@ import org.eclipse.draw3d.graphics.GraphicsState;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveBounds;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Device;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 
@@ -30,8 +29,6 @@ public class TextPrimitive extends AbstractPrimitive {
 
 	private boolean m_expand;
 
-	private Font m_font;
-
 	private Point m_position;
 
 	private String m_text;
@@ -41,7 +38,6 @@ public class TextPrimitive extends AbstractPrimitive {
 
 		super(i_state.getTransformation(), new TextRenderRule(i_state));
 
-		m_font = i_state.getFont();
 		m_text = i_text;
 		m_expand = i_expand;
 		m_position = i_position;
@@ -55,7 +51,8 @@ public class TextPrimitive extends AbstractPrimitive {
 	@Override
 	protected PrimitiveBounds calculateBounds() {
 
-		Device device = m_font.getDevice();
+		Device device =
+			((TextRenderRule) getRenderRule()).getFont().getDevice();
 		Image image = new Image(device, 1, 1);
 		GC gc = new GC(image);
 
@@ -84,6 +81,12 @@ public class TextPrimitive extends AbstractPrimitive {
 
 	public boolean isExpand() {
 		return m_expand;
+	}
+
+	@Override
+	public String toString() {
+		return "TextPrimitive [m_expand=" + m_expand + ", m_position="
+			+ m_position + ", m_text=" + m_text + "]";
 	}
 
 }

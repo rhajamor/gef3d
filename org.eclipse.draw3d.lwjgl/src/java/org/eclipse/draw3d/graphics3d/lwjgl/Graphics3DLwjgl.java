@@ -40,6 +40,7 @@ import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableLines;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutablePolygons;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutablePolylines;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableQuads;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableText;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBackBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
@@ -89,10 +90,14 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	/** Cashed hash code */
 	final int hashCode;
 
+	private Graphics m_activeGraphics;
+
 	/**
 	 * The GL context of this instance.
 	 */
 	public GLCanvas m_context = null;
+
+	private DisplayListManager m_displayListManager = null;
 
 	private LwjglFontManager m_fontManager;
 
@@ -104,8 +109,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * {@link #activateGraphics2D(Object, int, int, int, Color)}.
 	 */
 	private LwjglTextureManager m_textureManager = null;
-
-	private DisplayListManager m_displayListManager = null;
 
 	Properties properties = new Properties();
 
@@ -121,8 +124,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			log.info("Graphics3DLwjgl constructor called"); //$NON-NLS-1$
 		}
 	}
-
-	private Graphics m_activeGraphics;
 
 	/**
 	 * {@inheritDoc}
@@ -208,7 +209,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 				} else if (clazz.isLine()) {
 					executables.add(new LwjglExecutableLines(set));
 				} else if (clazz.isText()) {
-
+					executables.add(new LwjglExecutableText(set,
+						getFontManager()));
 				} else {
 					throw new AssertionError("unknown primitive class: "
 						+ clazz);
@@ -261,6 +263,19 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 */
 	public Graphics3DDescriptor getDescriptor() {
 		return descriptor;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getDisplayListManager()
+	 */
+	public DisplayListManager getDisplayListManager() {
+
+		if (m_displayListManager == null)
+			m_displayListManager = new DisplayListManager(this);
+
+		return m_displayListManager;
 	}
 
 	private LwjglFontManager getFontManager() {
@@ -348,19 +363,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			throw new IllegalStateException("TextureManager is disposed");
 
 		return m_textureManager;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getDisplayListManager()
-	 */
-	public DisplayListManager getDisplayListManager() {
-
-		if (m_displayListManager == null)
-			m_displayListManager = new DisplayListManager(this);
-
-		return m_displayListManager;
 	}
 
 	/**

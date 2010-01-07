@@ -11,15 +11,14 @@
 package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.GradientRenderRule;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.QuadPrimitive;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.ColorConverter;
-import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.graphics.Color;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -34,62 +33,85 @@ import org.lwjgl.opengl.GL15;
  */
 public class LwjglExecutableGradientQuads extends LwjglExecutableVBO {
 
-	private FloatBuffer m_colorBuffer;
+	private static final int VERTEX_SIZE = (2 + 4) * 4;
 
-	private int m_colorBufferId;
+	private int m_vertexCount;
 
-	private int m_numQuads;
+	private PrimitiveSet m_primitives;
 
 	public LwjglExecutableGradientQuads(PrimitiveSet i_primitives) {
 
-		super(i_primitives);
+		if (i_primitives == null)
+			throw new NullPointerException("i_primitives must not be null");
+
+		if (i_primitives.getSize() == 0)
+			throw new IllegalArgumentException(i_primitives + " is empty");
 
 		PrimitiveClass primitiveClass = i_primitives.getPrimitiveClass();
 		if (!primitiveClass.isGradient() || !primitiveClass.isQuad())
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain gradient quads");
 
-		m_numQuads = i_primitives.getSize();
-		m_colorBuffer = BufferUtils.createFloatBuffer(4 * 4 * m_numQuads);
-
-		float[] c = new float[4];
-		for (Primitive primitive : i_primitives.getPrimitives()) {
-
-			GradientRenderRule renderRule =
-				primitive.getRenderRule().asGradient();
-
-			int alpha = renderRule.getAlpha();
-			Color fromColor = renderRule.getFromColor();
-			Color toColor = renderRule.getToColor();
-
-			ColorConverter.toFloatArray(fromColor, alpha, c);
-			m_colorBuffer.put(c);
-			m_colorBuffer.put(c);
-
-			ColorConverter.toFloatArray(toColor, alpha, c);
-			m_colorBuffer.put(c);
-			m_colorBuffer.put(c);
-		}
+		m_primitives = i_primitives;
+		m_vertexCount = i_primitives.getVertexCount();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#dispose(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
-	public void dispose(Graphics3D i_g3d) {
+	protected void cleanup(Graphics3D i_g3d) {
 
-		IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
-		try {
-			idBuffer.put(0, m_colorBufferId);
-			idBuffer.rewind();
-			GL15.glDeleteBuffers(idBuffer);
-		} finally {
-			Draw3DCache.returnIntBuffer(idBuffer);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+		GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
+
+		GL11.glPopAttrib();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#createVertexBuffer
+	 */
+	@Override
+	protected FloatBuffer createVertexBuffer() {
+
+		FloatBuffer buffer =
+			BufferUtils.createFloatBuffer(VERTEX_SIZE
+				* m_primitives.getVertexCount());
+
+		float[] c = new float[4];
+		for (Primitive primitive : m_primitives.getPrimitives()) {
+			QuadPrimitive quad = (QuadPrimitive) primitive;
+			float[] vertices = quad.getTransformedVertices();
+
+			GradientRenderRule renderRule = quad.getRenderRule().asGradient();
+			Color fromColor = renderRule.getFromColor();
+			Color toColor = renderRule.getToColor();
+			int alpha = renderRule.getAlpha();
+
+			buffer.put(vertices[0]);
+			buffer.put(vertices[1]);
+			buffer.put(ColorConverter.toFloatArray(fromColor, alpha, c));
+
+			buffer.put(vertices[2]);
+			buffer.put(vertices[3]);
+			buffer.put(ColorConverter.toFloatArray(fromColor, alpha, c));
+
+			buffer.put(vertices[4]);
+			buffer.put(vertices[5]);
+			buffer.put(ColorConverter.toFloatArray(toColor, alpha, c));
+
+			buffer.put(vertices[6]);
+			buffer.put(vertices[7]);
+			buffer.put(ColorConverter.toFloatArray(toColor, alpha, c));
 		}
 
-		super.dispose(i_g3d);
+		m_primitives = null;
+		return buffer;
 	}
 
 	/**
@@ -100,63 +122,26 @@ public class LwjglExecutableGradientQuads extends LwjglExecutableVBO {
 	@Override
 	protected void doExecute(Graphics3D i_g3d) {
 
-		GL11.glDrawArrays(GL11.GL_QUADS, 0, 4 * m_numQuads);
+		GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#initialize(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
-	public void initialize(Graphics3D i_g3d) {
-
-		super.initialize(i_g3d);
-
-		IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
-		try {
-			idBuffer.rewind();
-			GL15.glGenBuffers(idBuffer);
-			m_colorBufferId = idBuffer.get(0);
-
-			m_colorBuffer.rewind();
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_colorBufferId);
-			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, m_colorBuffer,
-				GL15.GL_STATIC_DRAW);
-
-			m_colorBuffer = null;
-		} finally {
-			Draw3DCache.returnIntBuffer(idBuffer);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#postExecute(org.eclipse.draw3d.graphics3d.Graphics3D)
-	 */
-	@Override
-	protected void postExecute(Graphics3D i_g3d) {
-
-		GL15.glBindBuffer(GL11.GL_COLOR_ARRAY, 0);
-		GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
-
-		GL11.glPopAttrib();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#preExecute(org.eclipse.draw3d.graphics3d.Graphics3D)
-	 */
-	@Override
-	protected void preExecute(Graphics3D i_g3d) {
+	protected void prepare(Graphics3D i_g3d) {
 
 		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 		GL11.glShadeModel(GL11.GL_SMOOTH);
 
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, getBufferId());
+
+		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+		GL11.glVertexPointer(2, GL11.GL_FLOAT, VERTEX_SIZE, 0);
+
 		GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_colorBufferId);
-		GL11.glColorPointer(4, GL11.GL_FLOAT, 0, 0);
+		GL11.glColorPointer(4, GL11.GL_FLOAT, VERTEX_SIZE, 2 * 4);
 	}
 }

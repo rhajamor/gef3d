@@ -541,7 +541,7 @@ public class Vector4fTest extends TestCase {
 
 	/**
 	 * Test method for
-	 * {@link org.eclipse.draw3d.geometryext.Vector4fImpl#equals(org.eclipse.draw3d.geometryext.IVector4f)}
+	 * {@link org.eclipse.draw3d.geometryext.Vector4fImpl#ruleEquals(org.eclipse.draw3d.geometryext.IVector4f)}
 	 * .
 	 */
 	public void testEqualsIVector4f() {

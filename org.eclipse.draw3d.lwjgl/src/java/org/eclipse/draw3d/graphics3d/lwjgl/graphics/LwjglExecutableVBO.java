@@ -13,18 +13,14 @@ package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
-import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
-import org.eclipse.draw3d.graphics.optimizer.primitive.VertexPrimitive;
 import org.eclipse.draw3d.graphics3d.ExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.Draw3DCache;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 /**
- * LwjglExecutableVBO2 There should really be more documentation here.
+ * Abstract base class for executable graphics objects that use a vertex buffer
+ * object.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -32,34 +28,26 @@ import org.lwjgl.opengl.GL15;
  */
 public abstract class LwjglExecutableVBO implements ExecutableGraphics2D {
 
-	private FloatBuffer m_vertexBuffer;
+	private int m_bufferId;
 
-	private int m_vertexBufferId;
+	/**
+	 * Called after this object was executed.
+	 * 
+	 * @param i_g3d the Graphics3D instance
+	 */
+	protected abstract void cleanup(Graphics3D i_g3d);
 
-	protected void setVertexBuffer(FloatBuffer i_vertexBuffer) {
+	/**
+	 * Creates the vertex buffer.
+	 * 
+	 * @return a float buffer containing the vertex data of the given primitives
+	 * @throws NullPointerException if the given primitive set is
+	 *             <code>null</code>
+	 */
+	protected FloatBuffer createVertexBuffer() {
 
-		m_vertexBuffer = i_vertexBuffer;
-	}
-
-	protected LwjglExecutableVBO() {
-
-		// nothing to initialize
-	}
-
-	protected LwjglExecutableVBO(PrimitiveSet i_primitives) {
-
-		if (i_primitives.getSize() == 0)
-			throw new IllegalArgumentException(i_primitives + " is empty");
-
-		FloatBuffer vertexBuffer =
-			BufferUtils.createFloatBuffer(2 * i_primitives.getNumVertices());
-
-		for (Primitive primitive : i_primitives.getPrimitives()) {
-			VertexPrimitive vertexPrimitive = (VertexPrimitive) primitive;
-			vertexBuffer.put(vertexPrimitive.getTransformedVertices());
-		}
-
-		setVertexBuffer(vertexBuffer);
+		throw new AssertionError(
+			"createVertexBuffer() was called, but not implemented");
 	}
 
 	/**
@@ -69,9 +57,23 @@ public abstract class LwjglExecutableVBO implements ExecutableGraphics2D {
 	 */
 	public void dispose(Graphics3D i_g3d) {
 
+		if (m_bufferId != 0) {
+			disposeBuffer(m_bufferId);
+			m_bufferId = 0;
+		}
+	}
+
+	/**
+	 * Dispose the buffer with the given ID.
+	 * 
+	 * @param id the ID of the buffer to dispose
+	 */
+	protected void disposeBuffer(int id) {
+
 		IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
 		try {
-			idBuffer.put(0, m_vertexBufferId);
+			idBuffer.rewind();
+			idBuffer.put(id);
 			idBuffer.rewind();
 			GL15.glDeleteBuffers(idBuffer);
 		} finally {
@@ -79,6 +81,11 @@ public abstract class LwjglExecutableVBO implements ExecutableGraphics2D {
 		}
 	}
 
+	/**
+	 * Executes the drawing code for this executable.
+	 * 
+	 * @param i_g3d the Graphics3D instance
+	 */
 	protected abstract void doExecute(Graphics3D i_g3d);
 
 	/**
@@ -88,21 +95,17 @@ public abstract class LwjglExecutableVBO implements ExecutableGraphics2D {
 	 */
 	public void execute(Graphics3D i_g3d) {
 
-		preExecute(i_g3d);
+		prepare(i_g3d);
 		try {
-			GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_vertexBufferId);
-			GL11.glVertexPointer(2, GL11.GL_FLOAT, 0, 0);
-
-			try {
-				doExecute(i_g3d);
-			} finally {
-				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-				GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-			}
+			doExecute(i_g3d);
 		} finally {
-			postExecute(i_g3d);
+			cleanup(i_g3d);
 		}
+	}
+
+	protected int getBufferId() {
+
+		return m_bufferId;
 	}
 
 	/**
@@ -112,31 +115,31 @@ public abstract class LwjglExecutableVBO implements ExecutableGraphics2D {
 	 */
 	public void initialize(Graphics3D i_g3d) {
 
-		if (m_vertexBuffer == null)
-			throw new IllegalStateException("vertex buffer not initialized");
+		FloatBuffer vertexBuffer = createVertexBuffer();
+		uploadBuffer(vertexBuffer);
+	}
+
+	/**
+	 * Called before this object was executed.
+	 * 
+	 * @param i_g3d
+	 */
+	protected abstract void prepare(Graphics3D i_g3d);
+
+	protected void uploadBuffer(FloatBuffer i_buffer) {
 
 		IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
 		try {
 			idBuffer.rewind();
 			GL15.glGenBuffers(idBuffer);
-			m_vertexBufferId = idBuffer.get(0);
+			m_bufferId = idBuffer.get(0);
 
-			m_vertexBuffer.rewind();
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_vertexBufferId);
-			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, m_vertexBuffer,
+			i_buffer.rewind();
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_bufferId);
+			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, i_buffer,
 				GL15.GL_STATIC_DRAW);
-
-			m_vertexBuffer = null;
 		} finally {
 			Draw3DCache.returnIntBuffer(idBuffer);
 		}
-	}
-
-	protected void postExecute(Graphics3D i_g3d) {
-
-	}
-
-	protected void preExecute(Graphics3D i_g3d) {
-
 	}
 }

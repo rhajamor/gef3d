@@ -12,12 +12,15 @@
 package org.eclipse.draw3d.graphics3d.lwjgl.font;
 
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.util.Draw3DCache;
@@ -234,7 +237,7 @@ public class LwjglFont {
 						for (final LwjglFontChar c : m_chars) {
 							requests.put(c, new Runnable() {
 								public void run() {
-									c.render(m_width, m_height);
+									c.render();
 								}
 							});
 						}
@@ -358,6 +361,19 @@ public class LwjglFont {
 	}
 
 	/**
+	 * Returns the texture ID of this font.
+	 * 
+	 * @return the texture ID
+	 */
+	public int getTextureId() {
+
+		if (m_disposed)
+			throw new IllegalStateException("font is disposed");
+
+		return m_textureId;
+	}
+
+	/**
 	 * Returns the font metrics of this font.
 	 * 
 	 * @return the font metrics
@@ -369,6 +385,94 @@ public class LwjglFont {
 			throw new IllegalStateException("font is disposed");
 
 		return m_fontMetrics;
+	}
+
+	/**
+	 * Returns the number characters that are actually rendered in the given
+	 * string.
+	 * 
+	 * @param i_string the string to measure
+	 * @return the length of the string
+	 * @throws NullPointerException if the given string is <code>null</code>
+	 */
+	public int getLength(String i_string) {
+
+		if (i_string == null)
+			throw new NullPointerException("i_string must not be null");
+
+		int length = 0;
+		for (int i = 0; i < i_string.length(); i++) {
+			char c = i_string.charAt(i);
+
+			int index = c - m_startChar;
+			if (index >= 0 && index < m_chars.length)
+				length++;
+		}
+
+		return length;
+	}
+
+	/**
+	 * Render the given string at the given coordinates. The characters are not
+	 * rendered directly, but their vertex and texture coordinates are put into
+	 * the given buffers.
+	 * 
+	 * @param i_string the string to render
+	 * @param i_transformation the transformation to apply to the vertices, can
+	 *            be <code>null</code>
+	 * @param i_x the X coordinate
+	 * @param i_y the Y coordinate
+	 * @param i_expand specifies whether newline and tab characters should be
+	 *            expanded
+	 * @param i_vertexBuffer the vertex buffer
+	 * @param i_coordBuffer the texture coordinate buffer
+	 * @throws IllegalStateException if this GL font is disposed
+	 * @throws NullPointerException if the given string is <code>null</code>
+	 */
+	public void renderString(String i_string, IMatrix4f i_transformation,
+		int i_x, int i_y, boolean i_expand, FloatBuffer i_vertexBuffer,
+		FloatBuffer i_coordBuffer) {
+
+		if (m_disposed)
+			throw new IllegalStateException("font is disposed");
+
+		if (i_string == null)
+			throw new NullPointerException("i_string must not be null");
+
+		Vector3f p = Draw3DCache.getVector3f();
+		try {
+			int x = i_x, y = i_y;
+			int height = m_fontMetrics.getHeight();
+
+			int line = 0;
+			for (int i = 0; i < i_string.length(); i++) {
+				char c = i_string.charAt(i);
+
+				switch (c) {
+				case '\t':
+					if (i_expand)
+						x += m_tabWidth;
+					break;
+
+				case '\n':
+					if (i_expand)
+						y += ++line * height;
+					break;
+				default:
+					int index = c - m_startChar;
+					if (index >= 0 && index < m_chars.length) {
+						LwjglFontChar fontChar = m_chars[index];
+						fontChar.render(i_transformation, x, y, i_vertexBuffer,
+							i_coordBuffer);
+
+						x += fontChar.getWidth();
+					}
+					break;
+				}
+			}
+		} finally {
+			Draw3DCache.returnVector3f(p);
+		}
 	}
 
 	/**

@@ -31,13 +31,11 @@ import org.lwjgl.opengl.GL14;
  * @version $Revision$
  * @since 21.12.2009
  */
-public class LwjglExecutablePolygons extends LwjglExecutableVBO {
+public class LwjglExecutablePolygons extends LwjglExecutableVertexBuffer {
 
 	private boolean m_solid;
 
 	private float[] m_color = new float[4];
-
-	private int m_numPolys;
 
 	private IntBuffer m_firstBuffer;
 
@@ -66,9 +64,9 @@ public class LwjglExecutablePolygons extends LwjglExecutableVBO {
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain polygons");
 
-		m_numPolys = i_primitives.getSize();
-		m_firstBuffer = BufferUtils.createIntBuffer(m_numPolys);
-		m_numBuffer = BufferUtils.createIntBuffer(m_numPolys);
+		int count = i_primitives.getSize();
+		m_firstBuffer = BufferUtils.createIntBuffer(count);
+		m_numBuffer = BufferUtils.createIntBuffer(count);
 
 		int index = 0;
 		for (Primitive primitive : i_primitives.getPrimitives()) {

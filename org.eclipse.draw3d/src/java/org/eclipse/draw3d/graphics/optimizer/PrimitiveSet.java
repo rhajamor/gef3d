@@ -75,7 +75,7 @@ public class PrimitiveSet {
 		return true;
 	}
 
-	public int getNumVertices() {
+	public int getVertexCount() {
 
 		return m_vertexCount;
 	}

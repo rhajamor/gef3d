@@ -73,4 +73,9 @@ public class ImageRenderRule extends AbstractRenderRule {
 	public boolean isImage() {
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "ImageRenderRule [m_alpha=" + m_alpha + "]";
+	}
 }

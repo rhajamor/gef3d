@@ -123,4 +123,11 @@ public class GradientRenderRule extends AbstractRenderRule {
 	public boolean isXorMode() {
 		return m_xorMode;
 	}
+
+	@Override
+	public String toString() {
+		return "GradientRenderRule [m_alpha=" + m_alpha + ", m_fillRule="
+			+ m_fillRule + ", m_fromColor=" + m_fromColor + ", m_toColor="
+			+ m_toColor + ", m_xorMode=" + m_xorMode + "]";
+	}
 }

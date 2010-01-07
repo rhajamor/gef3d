@@ -55,4 +55,10 @@ public class ImagePrimitive extends QuadPrimitive {
 
 		return m_target;
 	}
+
+	@Override
+	public String toString() {
+		return "ImagePrimitive [m_image=" + m_image + ", m_source=" + m_source
+			+ ", m_target=" + m_target + "]";
+	}
 }

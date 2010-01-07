@@ -83,29 +83,28 @@ public abstract class AbstractPrimitive implements Primitive {
 
 		if (t != null && !IMatrix4f.IDENTITY.equals(t)) {
 			Vector3f v = Draw3DCache.getVector3f();
-			Vector3f r = Draw3DCache.getVector3f();
 			try {
 				v.set(i_x, i_y, 0);
-				Math3D.transform(v, t, r);
+				Math3D.transform(v, t, v);
 				vertices[0] = v.getX();
 				vertices[1] = v.getY();
 
 				v.set(i_x, i_y + i_h, 0);
-				Math3D.transform(v, t, r);
+				Math3D.transform(v, t, v);
 				vertices[2] = v.getX();
 				vertices[3] = v.getY();
 
 				v.set(i_x + i_w, i_y + i_h, 0);
-				Math3D.transform(v, t, r);
+				Math3D.transform(v, t, v);
 				vertices[4] = v.getX();
 				vertices[5] = v.getY();
 
 				v.set(i_x + i_w, i_y, 0);
-				Math3D.transform(v, t, r);
+				Math3D.transform(v, t, v);
 				vertices[6] = v.getX();
 				vertices[7] = v.getY();
 			} finally {
-				Draw3DCache.returnVector3f(v, r);
+				Draw3DCache.returnVector3f(v);
 			}
 		} else {
 			vertices[0] = i_x;

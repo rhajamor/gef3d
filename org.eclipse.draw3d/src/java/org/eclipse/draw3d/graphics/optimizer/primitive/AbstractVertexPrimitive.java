@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics.optimizer.primitive;
 
+import java.util.Arrays;
+
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw3d.geometry.IMatrix4f;
@@ -123,5 +125,12 @@ public abstract class AbstractVertexPrimitive extends AbstractPrimitive
 	public float[] getVertices() {
 
 		return m_vertices;
+	}
+
+	@Override
+	public String toString() {
+		return "AbstractVertexPrimitive [m_transformedVertices="
+			+ Arrays.toString(m_transformedVertices) + ", m_vertices="
+			+ Arrays.toString(m_vertices) + "]";
 	}
 }

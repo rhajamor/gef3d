@@ -24,11 +24,11 @@ import org.lwjgl.opengl.GL11;
  * @version $Revision$
  * @since 21.12.2009
  */
-public class LwjglExecutableLines extends LwjglExecutableVBO {
+public class LwjglExecutableLines extends LwjglExecutableVertexBuffer {
 
 	private float[] m_color = new float[4];
 
-	private int m_numLines;
+	private int m_vertexCount;
 
 	public LwjglExecutableLines(PrimitiveSet i_primitives) {
 
@@ -39,7 +39,7 @@ public class LwjglExecutableLines extends LwjglExecutableVBO {
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain lines");
 
-		m_numLines = i_primitives.getSize();
+		m_vertexCount = i_primitives.getVertexCount();
 
 		OutlineRenderRule renderRule =
 			primitiveClass.getRenderRule().asOutline();
@@ -59,6 +59,6 @@ public class LwjglExecutableLines extends LwjglExecutableVBO {
 		i_g3d.glColor4f(m_color);
 
 		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-		GL11.glDrawArrays(GL11.GL_LINES, 0, 2 * m_numLines);
+		GL11.glDrawArrays(GL11.GL_LINES, 0, m_vertexCount);
 	}
 }

@@ -107,4 +107,10 @@ public class SolidRenderRule extends AbstractRenderRule {
 	public boolean isXorMode() {
 		return m_xorMode;
 	}
+
+	@Override
+	public String toString() {
+		return "SolidRenderRule [m_alpha=" + m_alpha + ", m_color=" + m_color
+			+ ", m_fillRule=" + m_fillRule + ", m_xorMode=" + m_xorMode + "]";
+	}
 }
