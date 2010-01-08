@@ -71,7 +71,8 @@ public class LwjglFontManager {
 					37 * result
 						+ new Integer(fontData[i].getHeight()).hashCode();
 				result =
-					37 * result + new Integer(fontData[i].style).hashCode();
+					37 * result
+						+ new Integer(fontData[i].getStyle()).hashCode();
 			}
 
 			return result;
