@@ -30,6 +30,8 @@ import org.eclipse.draw3d.util.Draw3DCache;
 public abstract class AbstractVertexPrimitive extends AbstractPrimitive
 		implements VertexPrimitive {
 
+
+
 	private static float[] getVertices(PointList i_points) {
 
 		Point p = Draw3DCache.getPoint();

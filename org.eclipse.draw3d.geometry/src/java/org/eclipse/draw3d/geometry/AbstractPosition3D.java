@@ -129,8 +129,6 @@ public abstract class AbstractPosition3D implements Position3D {
 		} else {
 			Vector3f location = Math3DCache.getVector3f();
 			Vector3f rotation = Math3DCache.getVector3f();
-			Vector3f halfSize = Math3DCache.getVector3f();
-			// Vector3f center = Math3DCache.getVector3f();
 			try {
 				Math3D.transform(IVector3f.NULLVEC3f,
 					getRotationLocationMatrix(), location);
@@ -149,8 +147,7 @@ public abstract class AbstractPosition3D implements Position3D {
 
 				return result;
 			} finally {
-				// Math3DCache
-				// .returnVector3f(location, rotation, halfSize, center);
+				Math3DCache.returnVector3f(location, rotation);
 			}
 		}
 
@@ -408,8 +405,7 @@ public abstract class AbstractPosition3D implements Position3D {
 			if (parent != null) {
 				Math3D.translate(parent.getRotationLocationMatrix(),
 					getLocation3D(), m_rotationLocationMatrix);
-				m_absoluteRotationMatrix
-					.set(parent.getAbsoluteRotationMatrix());
+				m_absoluteRotationMatrix.set(parent.getAbsoluteRotationMatrix());
 			} else {
 				Math3D.translate(IMatrix4f.IDENTITY, getLocation3D(),
 					m_rotationLocationMatrix);

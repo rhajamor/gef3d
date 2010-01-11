@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.VertexPrimitive;

@@ -214,7 +214,7 @@ public class OptimizingGraphics extends StatefulGraphics {
 	public void drawRectangle(int i_x, int i_y, int i_width, int i_height) {
 
 		addPrimitive(QuadPrimitive.createOutlineQuad(getState(), i_x, i_y,
-			i_width + 1, i_height + 1));
+			i_width, i_height));
 	}
 
 	/**

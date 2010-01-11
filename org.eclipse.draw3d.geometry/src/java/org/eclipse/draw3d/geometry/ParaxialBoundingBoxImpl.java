@@ -326,7 +326,8 @@ public class ParaxialBoundingBoxImpl extends BoundingBoxImpl implements
 
 			return (!(myPos.equals(m_position) && myOldEnd.equals(myEnd)));
 		} finally {
-			Math3DCache.returnVector3f(myPos, theirPos, myEnd, theirEnd);
+			Math3DCache.returnVector3f(myPos, myEnd, myOldEnd, theirPos,
+				theirEnd);
 		}
 	}
 

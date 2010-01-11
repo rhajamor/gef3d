@@ -443,6 +443,61 @@ public class Figure3DHelper {
 
 	private ExecutableGraphics2D m_executable;
 
+	private static class ExecutableRenderFragment implements RenderFragment {
+
+		private IFigure3D m_figure;
+
+		public ExecutableRenderFragment(IFigure3D i_figure) {
+
+			m_figure = i_figure;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.RenderFragment#getDistanceMeasure(org.eclipse.draw3d.RenderContext)
+		 */
+		public float getDistanceMeasure(RenderContext i_renderContext) {
+
+			Vector3f v = Draw3DCache.getVector3f();
+			try {
+				getCenter3D(m_figure, v);
+				return i_renderContext.getScene().getCamera().getDistance(v);
+			} finally {
+				Draw3DCache.returnVector3f(v);
+			}
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
+		 */
+		public RenderType getRenderType() {
+
+			return RenderType.getRenderType(m_figure.getAlpha(), false);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.RenderFragment#render(org.eclipse.draw3d.RenderContext)
+		 */
+		public void render(RenderContext i_renderContext) {
+
+			m_executable.execute(i_renderContext.getGraphics3D());
+		}
+
+		private ExecutableGraphics2D m_executable;
+
+		public void setExecutable(ExecutableGraphics2D i_executable) {
+
+			m_executable = i_executable;
+		}
+	}
+
+	private ExecutableRenderFragment m_fragment;
+
 	/**
 	 * Paints the given 2D figures. This method was extracted from
 	 * {@link #paintChildren(Graphics)} to make that method easier to read and
@@ -496,37 +551,17 @@ public class Figure3DHelper {
 						m_executable = surface.deactivate(g3d);
 						m_executable.initialize(g3d);
 						log.info(StopWatch.stop());
+
+						if (m_fragment == null)
+							m_fragment = new ExecutableRenderFragment(figure);
+
+						m_fragment.setExecutable(m_executable);
 					}
 				}
 
-				if (m_executable != null)
-					renderContext.addRenderFragment(new RenderFragment() {
+				if (m_fragment != null)
+					renderContext.addRenderFragment(m_fragment);
 
-						public float getDistanceMeasure(
-							RenderContext i_renderContext) {
-
-							Vector3f v = Draw3DCache.getVector3f();
-							try {
-								getCenter3D(figure, v);
-								return renderContext.getScene().getCamera().getDistance(
-									v);
-							} finally {
-								Draw3DCache.returnVector3f(v);
-							}
-						}
-
-						public RenderType getRenderType() {
-
-							return RenderType.getRenderType(figure.getAlpha(),
-								false);
-						}
-
-						public void render(RenderContext i_renderContext) {
-
-							m_executable.execute(g3d);
-						}
-
-					});
 			} else {
 				Graphics graphics = i_graphics;
 				graphics.setFont(i_graphics.getFont());

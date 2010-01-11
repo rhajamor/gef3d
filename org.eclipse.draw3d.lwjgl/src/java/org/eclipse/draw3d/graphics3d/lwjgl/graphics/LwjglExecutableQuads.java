@@ -15,6 +15,7 @@ import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.OutlineRenderRule;
 import org.eclipse.draw3d.graphics.optimizer.primitive.SolidRenderRule;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.lwjgl.Graphics3DLwjgl;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.lwjgl.opengl.GL11;
 
@@ -68,8 +69,11 @@ public class LwjglExecutableQuads extends LwjglExecutableVertexBuffer {
 
 		if (m_solid)
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-		else
+		else {
+			GL11.glTranslatef(Graphics3DLwjgl.RASTER_OFFSET,
+				Graphics3DLwjgl.RASTER_OFFSET, 0);
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+		}
 
 		GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
 	}
