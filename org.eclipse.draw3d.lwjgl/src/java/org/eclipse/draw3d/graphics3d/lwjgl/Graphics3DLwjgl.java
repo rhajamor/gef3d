@@ -21,26 +21,27 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
-import org.eclipse.draw3d.graphics.optimizer.OptimizingGraphics;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
+import org.eclipse.draw3d.graphics.optimizer.RecordingGraphics;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics3d.AbstractGraphics3DDraw;
-import org.eclipse.draw3d.graphics3d.CompoundExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
-import org.eclipse.draw3d.graphics3d.ExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
+import org.eclipse.draw3d.graphics3d.RenderImage;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableGradientQuads;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableImages;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableLines;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutablePolygons;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutablePolylines;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableQuads;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableText;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGradientQuadVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglImageVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglLineVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPolygonVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPolylineVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPrimitiveClassifier;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglQuadVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglTextVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBackBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
@@ -136,12 +137,14 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#activateGraphics2D(Object,
 	 *      int, int)
 	 */
-	public Graphics activateGraphics2D(Object i_key, IPosition3D i_position,
+	public Graphics begin2DRendering(Object i_key, IPosition3D i_position,
 		int i_width, int i_height) {
 
 		log.info("activating 2D graphics");
 
-		m_activeGraphics = new OptimizingGraphics();
+		m_activeGraphics =
+			new RecordingGraphics(new LwjglPrimitiveClassifier());
+
 		// graphics.disableClipping();
 		//
 		// String fontAntialias = getProperty(PROP_FONT_AA);
@@ -188,51 +191,61 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#deactivateGraphics2D()
 	 */
-	public ExecutableGraphics2D deactivateGraphics2D() {
+	public RenderImage deactivateGraphics2D() {
 
 		log.info("deactivating 2D graphics");
 
-		if (m_activeGraphics instanceof OptimizingGraphics) {
-			OptimizingGraphics og = (OptimizingGraphics) m_activeGraphics;
+		if (m_activeGraphics instanceof RecordingGraphics) {
+			RecordingGraphics og = (RecordingGraphics) m_activeGraphics;
 			List<PrimitiveSet> primiveSets = og.getPrimiveSets();
-			List<ExecutableGraphics2D> executables =
-				new LinkedList<ExecutableGraphics2D>();
+			final List<LwjglVBO> vbos = new LinkedList<LwjglVBO>();
 
 			for (PrimitiveSet set : primiveSets) {
 				PrimitiveClass clazz = set.getPrimitiveClass();
 				if (clazz.isPolygon()) {
-					executables.add(new LwjglExecutablePolygons(set));
+					vbos.add(new LwjglPolygonVBO(set));
 				} else if (clazz.isQuad()) {
 					if (clazz.isGradient())
-						executables.add(new LwjglExecutableGradientQuads(set));
+						vbos.add(new LwjglGradientQuadVBO(set));
 					else if (clazz.isImage())
-						executables.add(new LwjglExecutableImages(set));
+						vbos.add(new LwjglImageVBO(set));
 					else
-						executables.add(new LwjglExecutableQuads(set));
+						vbos.add(new LwjglQuadVBO(set));
 				} else if (clazz.isPolyline()) {
-					executables.add(new LwjglExecutablePolylines(set));
+					vbos.add(new LwjglPolylineVBO(set));
 				} else if (clazz.isLine()) {
-					executables.add(new LwjglExecutableLines(set));
+					vbos.add(new LwjglLineVBO(set));
 				} else if (clazz.isText()) {
-					executables.add(new LwjglExecutableText(set,
-						getFontManager()));
+					vbos.add(new LwjglTextVBO(set, getFontManager()));
 				} else {
 					throw new AssertionError("unknown primitive class: "
 						+ clazz);
 				}
 			}
 
-			return new CompoundExecutableGraphics2D(executables) {
-				/**
-				 * {@inheritDoc}
-				 * 
-				 * @see org.eclipse.draw3d.graphics3d.CompoundExecutableGraphics2D#execute(org.eclipse.draw3d.graphics3d.Graphics3D)
-				 */
-				@Override
-				public void execute(Graphics3D i_g3d) {
+			return new RenderImage() {
+
+				public void dispose() {
+
+					for (LwjglVBO vbo : vbos)
+						vbo.dispose();
+				}
+
+				public void initialize(Graphics3D i_g3d) {
+
+					for (LwjglVBO vbo : vbos)
+						vbo.initialize(i_g3d);
+				}
+
+				public void render(Graphics3D i_g3d) {
+
 					GL11.glDisable(GL11.GL_DEPTH_TEST);
-					super.execute(i_g3d);
-					GL11.glEnable(GL11.GL_DEPTH_TEST);
+					try {
+						for (LwjglVBO vbo : vbos)
+							vbo.render(i_g3d);
+					} finally {
+						GL11.glEnable(GL11.GL_DEPTH_TEST);
+					}
 				}
 			};
 		}

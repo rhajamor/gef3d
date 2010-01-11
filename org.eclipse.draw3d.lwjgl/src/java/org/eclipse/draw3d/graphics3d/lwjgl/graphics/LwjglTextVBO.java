@@ -30,13 +30,13 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 /**
- * LwjglExecutableImages There should really be more documentation here.
+ * Vertex buffer object that renders text primitives.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 05.01.2010
  */
-public class LwjglExecutableText extends LwjglExecutableVBO {
+public class LwjglTextVBO extends LwjglVBO {
 
 	private float[] m_color;
 
@@ -50,17 +50,41 @@ public class LwjglExecutableText extends LwjglExecutableVBO {
 
 	private int m_vertexSize;
 
-	public LwjglExecutableText(PrimitiveSet i_primitives,
+	/**
+	 * Creates a new VBO that renders the given text primitives.
+	 * 
+	 * @param i_primitives the primitives to render
+	 * @param i_fontManager the font manager to use
+	 * @throws NullPointerException if any of the given arguments is
+	 *             <code>null</code>
+	 * @throws IllegalArgumentException if the given primitive set is empty or
+	 *             does not contain text primitives
+	 */
+	public LwjglTextVBO(PrimitiveSet i_primitives,
 			LwjglFontManager i_fontManager) {
 
-		m_fontManager = i_fontManager;
+		if (i_primitives == null)
+			throw new NullPointerException("i_primitives must not be null");
+
+		if (i_fontManager == null)
+			throw new NullPointerException("i_fontManager must not be null");
+
+		if (i_primitives.getSize() == 0)
+			throw new IllegalArgumentException(i_primitives + " is empty");
+
+		PrimitiveClass primitiveClass = i_primitives.getPrimitiveClass();
+		if (!primitiveClass.isText())
+			throw new IllegalArgumentException(i_primitives
+				+ " does not contain text primitives");
+
 		m_primitives = i_primitives;
+		m_fontManager = i_fontManager;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
 	protected void cleanup(Graphics3D i_g3d) {
@@ -80,10 +104,10 @@ public class LwjglExecutableText extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#doExecute(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
-	protected void doExecute(Graphics3D i_g3d) {
+	protected void doRender(Graphics3D i_g3d) {
 
 		if (m_color != null)
 			i_g3d.glColor4f(m_color);
@@ -95,7 +119,7 @@ public class LwjglExecutableText extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVertexBuffer#createVertexBuffer()
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVertexPrimitiveVBO#createVertexBuffer()
 	 */
 	@Override
 	protected FloatBuffer createVertexBuffer() {
@@ -176,7 +200,7 @@ public class LwjglExecutableText extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
 	protected void prepare(Graphics3D i_g3d) {

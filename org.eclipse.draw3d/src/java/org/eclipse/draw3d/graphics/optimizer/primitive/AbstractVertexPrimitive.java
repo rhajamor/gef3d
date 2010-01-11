@@ -21,7 +21,7 @@ import org.eclipse.draw3d.graphics.optimizer.PrimitiveBounds;
 import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
- * AbstractVertexPrimitive There should really be more documentation here.
+ * Abstract base implementation for {@link VertexPrimitive vertex primitives}.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -30,9 +30,10 @@ import org.eclipse.draw3d.util.Draw3DCache;
 public abstract class AbstractVertexPrimitive extends AbstractPrimitive
 		implements VertexPrimitive {
 
-
-
 	private static float[] getVertices(PointList i_points) {
+
+		if (i_points == null)
+			throw new NullPointerException("i_points must not be null");
 
 		Point p = Draw3DCache.getPoint();
 		try {
@@ -51,37 +52,67 @@ public abstract class AbstractVertexPrimitive extends AbstractPrimitive
 		}
 	}
 
-	protected float[] m_transformedVertices;
+	private float[] m_vertices;
 
-	protected float[] m_vertices;
-
+	/**
+	 * Creates a new primitve with the given transformation, render rule and
+	 * vertices.
+	 * 
+	 * @param i_transformation the transformation, may be <code>null</code>
+	 * @param i_renderRule the render rule
+	 * @param i_vertices the vertex data
+	 * @throws IllegalArgumentException if the given vertex array contains an
+	 *             uneven number of elements or less than two vertices
+	 * @throws NullPointerException if the given render rule or the given vertex
+	 *             data array is <code>null</code>
+	 */
 	protected AbstractVertexPrimitive(IMatrix4f i_transformation,
 			RenderRule i_renderRule, float[] i_vertices) {
 
 		super(i_transformation, i_renderRule);
 
-		m_vertices = i_vertices;
+		if (i_vertices == null)
+			throw new NullPointerException("i_vertices must not be null");
+
+		if (i_vertices.length % 2 != 0)
+			throw new IllegalArgumentException(
+				"i_vertices must contain an even number of elements");
+
+		if (i_vertices.length < 4)
+			throw new IllegalArgumentException(
+				"i_vertices must contain at least two vertices");
+
 		if (i_transformation != null
 			&& !IMatrix4f.IDENTITY.equals(i_transformation)) {
 
 			Vector3f v = Draw3DCache.getVector3f();
 			try {
-				int s = m_vertices.length / 2;
-				m_transformedVertices = new float[2 * s];
+				int s = i_vertices.length / 2;
+				m_vertices = new float[2 * s];
 
 				for (int i = 0; i < s; i++) {
-					v.set(m_vertices[2 * i], m_vertices[2 * i + 1], 0);
+					v.set(i_vertices[2 * i], i_vertices[2 * i + 1], 0);
 					Math3D.transform(v, i_transformation, v);
-					m_transformedVertices[2 * i] = v.getX();
-					m_transformedVertices[2 * i + 1] = v.getY();
+					m_vertices[2 * i] = v.getX();
+					m_vertices[2 * i + 1] = v.getY();
 				}
 			} finally {
 				Draw3DCache.returnVector3f(v);
 			}
 		} else
-			m_transformedVertices = i_vertices;
+			m_vertices = i_vertices;
 	}
 
+	/**
+	 * Creates a new primitve with the given transformation, render rule and
+	 * vertices.
+	 * 
+	 * @param i_transformation the transformation, may be <code>null</code>
+	 * @param i_renderRule the render rule
+	 * @param i_vertices the vertex data
+	 * @throws NullPointerException if the given render rule or the given point
+	 *             list is <code>null</code>
+	 */
 	protected AbstractVertexPrimitive(IMatrix4f i_transformation,
 			RenderRule i_renderRule, PointList i_vertices) {
 
@@ -96,17 +127,7 @@ public abstract class AbstractVertexPrimitive extends AbstractPrimitive
 	@Override
 	protected PrimitiveBounds calculateBounds() {
 
-		return new PrimitiveBounds(m_transformedVertices);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics.optimizer.primitive.VertexPrimitive#getTransformedVertices()
-	 */
-	public float[] getTransformedVertices() {
-
-		return m_transformedVertices;
+		return new PrimitiveBounds(m_vertices);
 	}
 
 	/**
@@ -131,8 +152,7 @@ public abstract class AbstractVertexPrimitive extends AbstractPrimitive
 
 	@Override
 	public String toString() {
-		return "AbstractVertexPrimitive [m_transformedVertices="
-			+ Arrays.toString(m_transformedVertices) + ", m_vertices="
+		return "AbstractVertexPrimitive [m_vertices="
 			+ Arrays.toString(m_vertices) + "]";
 	}
 }

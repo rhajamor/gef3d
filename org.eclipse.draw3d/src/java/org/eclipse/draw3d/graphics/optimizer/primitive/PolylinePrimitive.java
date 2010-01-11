@@ -14,7 +14,7 @@ import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw3d.graphics.GraphicsState;
 
 /**
- * PolylinePrimitive There should really be more documentation here.
+ * A primitive that represents a polyline (a line with at least three vertices).
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -22,6 +22,14 @@ import org.eclipse.draw3d.graphics.GraphicsState;
  */
 public class PolylinePrimitive extends AbstractVertexPrimitive {
 
+	/**
+	 * Creates a new polyline with the given vertex data.
+	 * 
+	 * @param i_state the current graphics state
+	 * @param i_vertices the vertex data as a point list
+	 * @throws IllegalArgumentException if the given point list contains less
+	 *             than three vertices
+	 */
 	public PolylinePrimitive(GraphicsState i_state, PointList i_vertices) {
 
 		super(i_state.getTransformation(), new OutlineRenderRule(i_state),
@@ -32,6 +40,14 @@ public class PolylinePrimitive extends AbstractVertexPrimitive {
 				"a polyline must contain at least three vertices");
 	}
 
+	/**
+	 * Creates a new polyline with the given vertex data.
+	 * 
+	 * @param i_state the current graphics state
+	 * @param i_vertices the vertex data as a float array
+	 * @throws IllegalArgumentException if the given array contains an uneven
+	 *             number of elements or less than three vertices
+	 */
 	public PolylinePrimitive(GraphicsState i_state, float[] i_vertices) {
 
 		super(i_state.getTransformation(), new OutlineRenderRule(i_state),

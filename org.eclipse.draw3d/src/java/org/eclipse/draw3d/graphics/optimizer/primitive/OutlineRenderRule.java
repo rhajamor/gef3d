@@ -12,11 +12,12 @@ package org.eclipse.draw3d.graphics.optimizer.primitive;
 
 import java.util.Arrays;
 
+import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.graphics.GraphicsState;
 import org.eclipse.swt.graphics.Color;
 
 /**
- * OutlineRenderRule There should really be more documentation here.
+ * A render rule that contains the properties of a line or outline primitive.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -38,6 +39,12 @@ public class OutlineRenderRule extends AbstractRenderRule {
 
 	private float m_lineWidth;
 
+	/**
+	 * Creates a new outline render rule using the given graphics state.
+	 * 
+	 * @param i_state the graphics state from which to obtain the properties of
+	 *            this render rule
+	 */
 	public OutlineRenderRule(GraphicsState i_state) {
 
 		m_alpha = i_state.getAlpha();
@@ -56,85 +63,82 @@ public class OutlineRenderRule extends AbstractRenderRule {
 	 */
 	@Override
 	public OutlineRenderRule asOutline() {
+
 		return this;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		OutlineRenderRule other = (OutlineRenderRule) obj;
-		if (m_alpha != other.m_alpha)
-			return false;
-		if (m_color == null) {
-			if (other.m_color != null)
-				return false;
-		} else if (!m_color.equals(other.m_color))
-			return false;
-		if (m_lineCap != other.m_lineCap)
-			return false;
-		if (!Arrays.equals(m_lineDash, other.m_lineDash))
-			return false;
-		if (m_lineJoin != other.m_lineJoin)
-			return false;
-		if (m_lineStyle != other.m_lineStyle)
-			return false;
-		if (Float.floatToIntBits(m_lineWidth) != Float.floatToIntBits(other.m_lineWidth))
-			return false;
-		return true;
-	}
-
+	/**
+	 * Returns the alpha value.
+	 * 
+	 * @return the alpha value
+	 */
 	public int getAlpha() {
 
 		return m_alpha;
 	}
 
+	/**
+	 * Returns the color.
+	 * 
+	 * @return the color
+	 */
 	public Color getColor() {
 
 		return m_color;
 	}
 
+	/**
+	 * Returns the line cap setting.
+	 * 
+	 * @return the line cap setting
+	 * @see Graphics#setLineCap(int)
+	 */
 	public int getLineCap() {
 
 		return m_lineCap;
 	}
 
+	/**
+	 * Returns the line dash pattern.
+	 * 
+	 * @return the line dash pattern or <code>null</code> if there is no dash
+	 *         pattern
+	 */
 	public int[] getLineDash() {
 
 		return m_lineDash;
 	}
 
+	/**
+	 * Returns the line join setting.
+	 * 
+	 * @return the line join setting
+	 * @see Graphics#setLineJoin(int)
+	 */
 	public int getLineJoin() {
 
 		return m_lineJoin;
 	}
 
+	/**
+	 * Returns the line style.
+	 * 
+	 * @return the line style
+	 * @see Graphics#setLineStyle(int)
+	 */
 	public int getLineStyle() {
 
 		return m_lineStyle;
 	}
 
+	/**
+	 * Returns the line width.
+	 * 
+	 * @return the line width
+	 */
 	public float getLineWidth() {
 
 		return m_lineWidth;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + m_alpha;
-		result = prime * result + ((m_color == null) ? 0 : m_color.hashCode());
-		result = prime * result + m_lineCap;
-		result = prime * result + Arrays.hashCode(m_lineDash);
-		result = prime * result + m_lineJoin;
-		result = prime * result + m_lineStyle;
-		result = prime * result + Float.floatToIntBits(m_lineWidth);
-		return result;
 	}
 
 	/**
@@ -144,11 +148,13 @@ public class OutlineRenderRule extends AbstractRenderRule {
 	 */
 	@Override
 	public boolean isOutline() {
+
 		return true;
 	}
 
 	@Override
 	public String toString() {
+
 		return "OutlineRenderRule [m_alpha=" + m_alpha + ", m_color=" + m_color
 			+ ", m_lineCap=" + m_lineCap + ", m_lineDash="
 			+ Arrays.toString(m_lineDash) + ", m_lineJoin=" + m_lineJoin

@@ -33,12 +33,11 @@ import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.graphics3d.ExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.RenderImage;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
 import org.eclipse.draw3d.util.Draw3DCache;
-import org.eclipse.draw3d.util.StopWatch;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 
@@ -83,6 +82,68 @@ import org.eclipse.swt.graphics.Font;
  * @since 21.11.2007
  */
 public class Figure3DHelper {
+
+	/**
+	 * A render fragment that renders the {@link RenderImage} that belongs to a
+	 * figure.
+	 * 
+	 * @author Kristian Duske
+	 * @version $Revision$
+	 * @since 11.01.2010
+	 */
+	private static class ImageRenderFragment implements RenderFragment {
+
+		private IFigure3D m_figure;
+
+		private RenderImage m_image;
+
+		public ImageRenderFragment(IFigure3D i_figure) {
+
+			m_figure = i_figure;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.RenderFragment#getDistanceMeasure(org.eclipse.draw3d.RenderContext)
+		 */
+		public float getDistanceMeasure(RenderContext i_renderContext) {
+
+			Vector3f v = Draw3DCache.getVector3f();
+			try {
+				getCenter3D(m_figure, v);
+				return i_renderContext.getScene().getCamera().getDistance(v);
+			} finally {
+				Draw3DCache.returnVector3f(v);
+			}
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
+		 */
+		public RenderType getRenderType() {
+
+			// TODO: what if the figure is superimposed?
+			return RenderType.getRenderType(m_figure.getAlpha(), false);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.eclipse.draw3d.RenderFragment#render(org.eclipse.draw3d.RenderContext)
+		 */
+		public void render(RenderContext i_renderContext) {
+
+			m_image.render(i_renderContext.getGraphics3D());
+		}
+
+		public void setImage(RenderImage i_image) {
+
+			m_image = i_image;
+		}
+	}
 
 	/**
 	 * Logger for this class
@@ -235,6 +296,11 @@ public class Figure3DHelper {
 	 */
 	protected final Figure3DFriend m_figuresFriend;
 
+	private ImageRenderFragment m_fragment;
+
+	// TODO: dispose render image when figure is deleted
+	private RenderImage m_image;
+
 	/**
 	 * Creates a new helper. The given friend provides access to the figure.
 	 * 
@@ -284,6 +350,33 @@ public class Figure3DHelper {
 				o_list.add((IFigure3D) child);
 			else
 				doGetDescendants3D(o_list, (IFigure) child);
+		}
+	}
+
+	/**
+	 * @param children2D
+	 * @param host
+	 * @param graphics
+	 */
+	private void doPaintChildren2D(Collection<IFigure> children2D,
+		IFigure3D host, Graphics graphics) {
+		graphics.pushState();
+		try {
+			for (IFigure child2D : children2D) {
+				graphics.clipRect(child2D.getBounds());
+				child2D.paint(graphics);
+				graphics.restoreState();
+			}
+
+			ConnectionLayer connectionLayer = host.getConnectionLayer(null);
+
+			// paint the connections
+			if (connectionLayer != null) {
+				connectionLayer.paint(graphics);
+				graphics.restoreState();
+			}
+		} finally {
+			graphics.popState();
 		}
 	}
 
@@ -372,30 +465,6 @@ public class Figure3DHelper {
 	}
 
 	/**
-	 * Unites the given paraxial bounding box with the paraxial bounding boxes
-	 * of all 3D descendents of this figure.
-	 * 
-	 * @param i_figureBounds the paraxial bounding box of this figure
-	 */
-	@SuppressWarnings("unchecked")
-	public void unionWithChildParaxialBounds(ParaxialBoundingBox i_figureBounds) {
-
-		ParaxialBoundingBox tmp = Draw3DCache.getParaxialBoundingBox();
-		try {
-			List<IFigure3D> descendants3D = getDescendants3D();
-			for (IFigure3D descendant3D : descendants3D) {
-				ParaxialBoundingBox descBounds =
-					descendant3D.getParaxialBoundingBox(tmp);
-				if (descBounds != null)
-					i_figureBounds.union(descBounds);
-
-			}
-		} finally {
-			Draw3DCache.returnParaxialBoundingBox(tmp);
-		}
-	}
-
-	/**
 	 * Returns the color picker.
 	 * 
 	 * @return the color picker.
@@ -441,63 +510,6 @@ public class Figure3DHelper {
 		paintChildren3D(i_graphics);
 	}
 
-	private ExecutableGraphics2D m_executable;
-
-	private static class ExecutableRenderFragment implements RenderFragment {
-
-		private IFigure3D m_figure;
-
-		public ExecutableRenderFragment(IFigure3D i_figure) {
-
-			m_figure = i_figure;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.eclipse.draw3d.RenderFragment#getDistanceMeasure(org.eclipse.draw3d.RenderContext)
-		 */
-		public float getDistanceMeasure(RenderContext i_renderContext) {
-
-			Vector3f v = Draw3DCache.getVector3f();
-			try {
-				getCenter3D(m_figure, v);
-				return i_renderContext.getScene().getCamera().getDistance(v);
-			} finally {
-				Draw3DCache.returnVector3f(v);
-			}
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
-		 */
-		public RenderType getRenderType() {
-
-			return RenderType.getRenderType(m_figure.getAlpha(), false);
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.eclipse.draw3d.RenderFragment#render(org.eclipse.draw3d.RenderContext)
-		 */
-		public void render(RenderContext i_renderContext) {
-
-			m_executable.execute(i_renderContext.getGraphics3D());
-		}
-
-		private ExecutableGraphics2D m_executable;
-
-		public void setExecutable(ExecutableGraphics2D i_executable) {
-
-			m_executable = i_executable;
-		}
-	}
-
-	private ExecutableRenderFragment m_fragment;
-
 	/**
 	 * Paints the given 2D figures. This method was extracted from
 	 * {@link #paintChildren(Graphics)} to make that method easier to read and
@@ -523,78 +535,50 @@ public class Figure3DHelper {
 	 */
 	private void paintChildren2D(final Graphics i_graphics) {
 
-		final Collection<IFigure> children2D = getChildren2D();
+		Collection<IFigure> children2D = getChildren2D();
 		if (!children2D.isEmpty()) {
-			final IFigure3D figure = m_figuresFriend.figure;
-			final ISurface surface = figure.getSurface();
+			IFigure3D figure = m_figuresFriend.figure;
+			ISurface surface = figure.getSurface();
 
-			final RenderContext renderContext = figure.getRenderContext();
-			final Graphics3D g3d = renderContext.getGraphics3D();
+			RenderContext renderContext = figure.getRenderContext();
+			Graphics3D g3d = renderContext.getGraphics3D();
 
 			if (surface != null && surface.is2DHost()) {
 				if ((renderContext.isRedraw2DContent() || m_figuresFriend.is2DContentDirty())) {
 
-					if (m_executable != null) {
-						m_executable.dispose(g3d);
-						m_executable = null;
+					if (m_image != null) {
+						m_image.dispose();
+						m_image = null;
 					}
 
-					Graphics graphics = surface.activate(g3d);
+					Rectangle bounds = figure.getBounds();
+					Graphics graphics =
+						g3d.begin2DRendering(figure, figure.getPosition3D(),
+							bounds.width, bounds.height);
+
 					try {
-						StopWatch.start("paint 2d");
 						graphics.setFont(i_graphics.getFont());
 						configureGraphics(graphics);
 						doPaintChildren2D(children2D, figure, graphics);
-						log.info(StopWatch.stop());
 					} finally {
-						StopWatch.start("init buffers");
-						m_executable = surface.deactivate(g3d);
-						m_executable.initialize(g3d);
-						log.info(StopWatch.stop());
+						m_image = g3d.deactivateGraphics2D();
+						m_image.initialize(g3d);
 
 						if (m_fragment == null)
-							m_fragment = new ExecutableRenderFragment(figure);
+							m_fragment = new ImageRenderFragment(figure);
 
-						m_fragment.setExecutable(m_executable);
+						m_fragment.setImage(m_image);
 					}
 				}
 
 				if (m_fragment != null)
 					renderContext.addRenderFragment(m_fragment);
-
 			} else {
 				Graphics graphics = i_graphics;
 				graphics.setFont(i_graphics.getFont());
 				configureGraphics(graphics);
 				doPaintChildren2D(children2D, figure, i_graphics);
 			}
-		}
-	}
-
-	/**
-	 * @param children2D
-	 * @param host
-	 * @param graphics
-	 */
-	private void doPaintChildren2D(Collection<IFigure> children2D,
-		IFigure3D host, Graphics graphics) {
-		graphics.pushState();
-		try {
-			for (IFigure child2D : children2D) {
-				graphics.clipRect(child2D.getBounds());
-				child2D.paint(graphics);
-				graphics.restoreState();
-			}
-
-			ConnectionLayer connectionLayer = host.getConnectionLayer(null);
-
-			// paint the connections
-			if (connectionLayer != null) {
-				connectionLayer.paint(graphics);
-				graphics.restoreState();
-			}
-		} finally {
-			graphics.popState();
 		}
 	}
 
@@ -625,9 +609,6 @@ public class Figure3DHelper {
 		IFigure3D figure = m_figuresFriend.figure;
 		RenderContext renderContext = figure.getRenderContext();
 
-		// Graphics3D g3d = renderContext.getGraphics3D();
-		// g3d.deactivateGraphics2D();
-
 		figure.collectRenderFragments(renderContext);
 
 		IScene scene = renderContext.getScene();
@@ -654,6 +635,30 @@ public class Figure3DHelper {
 	public String toString() {
 
 		return super.toString() + " with " + this.m_figuresFriend;
+	}
+
+	/**
+	 * Unites the given paraxial bounding box with the paraxial bounding boxes
+	 * of all 3D descendents of this figure.
+	 * 
+	 * @param i_figureBounds the paraxial bounding box of this figure
+	 */
+	@SuppressWarnings("unchecked")
+	public void unionWithChildParaxialBounds(ParaxialBoundingBox i_figureBounds) {
+
+		ParaxialBoundingBox tmp = Draw3DCache.getParaxialBoundingBox();
+		try {
+			List<IFigure3D> descendants3D = getDescendants3D();
+			for (IFigure3D descendant3D : descendants3D) {
+				ParaxialBoundingBox descBounds =
+					descendant3D.getParaxialBoundingBox(tmp);
+				if (descBounds != null)
+					i_figureBounds.union(descBounds);
+
+			}
+		} finally {
+			Draw3DCache.returnParaxialBoundingBox(tmp);
+		}
 	}
 
 }

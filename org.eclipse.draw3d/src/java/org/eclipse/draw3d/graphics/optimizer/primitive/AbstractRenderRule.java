@@ -11,7 +11,7 @@
 package org.eclipse.draw3d.graphics.optimizer.primitive;
 
 /**
- * AbstractRenderRule There should really be more documentation here.
+ * Abstract base implementation of the {@link RenderRule} interface.
  * 
  * @author Kristian Duske
  * @version $Revision$

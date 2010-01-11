@@ -49,24 +49,30 @@ public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 	public static final String PROP_FONT_AA = "fontAntialias";
 
 	/**
-	 * Activates a graphics object which will receive all following draw
-	 * operations. If a graphics object was already created for the given key
-	 * object (which can e.g. be a figure), it will be re-used.
+	 * Activates a 2D graphics object that can be used to render 2D content. If
+	 * a graphics object was already created for the given key object (which can
+	 * e.g. be a figure), it may be re-used. Call
+	 * {@link #deactivateGraphics2D()} to finish the 2D rendering and to obtain
+	 * an instanceof {@link RenderImage}-
 	 * 
 	 * @param i_key Object associated respective to associate with the activated
 	 *            graphics objects.
 	 * @param i_position the position to use for setting up the transformation
-	 * @param i_width Desired width of the graphics object.
-	 * @param i_height Desired height of the graphics object.
-	 * @return The activated graphics object.
+	 * @param i_width desired width of the graphics object.
+	 * @param i_height desired height of the graphics object.
+	 * @return the activated graphics object.
 	 */
-	public Graphics activateGraphics2D(Object i_key, IPosition3D i_position,
+	public Graphics begin2DRendering(Object i_key, IPosition3D i_position,
 		int i_width, int i_height);
 
 	/**
-	 * Deactivates the active graphics object.
+	 * Deactivates the currently active graphics object. The returned instance
+	 * of {@link RenderImage} can be used to render the 2D image that was
+	 * created using the active graphics object.
+	 * 
+	 * @return the image created by the active graphics object
 	 */
-	public ExecutableGraphics2D deactivateGraphics2D();
+	public RenderImage deactivateGraphics2D();
 
 	/**
 	 * Cleans up the ressources, instance is not usable afterwards any more.

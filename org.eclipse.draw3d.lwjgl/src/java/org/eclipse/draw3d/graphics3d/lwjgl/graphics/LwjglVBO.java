@@ -13,25 +13,23 @@ package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import org.eclipse.draw3d.graphics3d.ExecutableGraphics2D;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.lwjgl.opengl.GL15;
 
 /**
- * Abstract base class for executable graphics objects that use a vertex buffer
- * object.
+ * Abstract base class for vertex buffer objects.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 21.12.2009
  */
-public abstract class LwjglExecutableVBO implements ExecutableGraphics2D {
+public abstract class LwjglVBO {
 
 	private int m_bufferId;
 
 	/**
-	 * Called after this object was executed.
+	 * Called after this VBO was executed.
 	 * 
 	 * @param i_g3d the Graphics3D instance
 	 */
@@ -51,11 +49,9 @@ public abstract class LwjglExecutableVBO implements ExecutableGraphics2D {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.ExecutableGraphics2D#dispose(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * Disposes the ressources associated with this VBO.
 	 */
-	public void dispose(Graphics3D i_g3d) {
+	public void dispose() {
 
 		if (m_bufferId != 0) {
 			disposeBuffer(m_bufferId);
@@ -82,36 +78,26 @@ public abstract class LwjglExecutableVBO implements ExecutableGraphics2D {
 	}
 
 	/**
-	 * Executes the drawing code for this executable.
+	 * Executes the drawing code for this VBO.
 	 * 
 	 * @param i_g3d the Graphics3D instance
 	 */
-	protected abstract void doExecute(Graphics3D i_g3d);
+	protected abstract void doRender(Graphics3D i_g3d);
 
 	/**
-	 * {@inheritDoc}
+	 * Returns the ID of the OpenGL VBO.
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.ExecutableGraphics2D#execute(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @return the ID
 	 */
-	public void execute(Graphics3D i_g3d) {
-
-		prepare(i_g3d);
-		try {
-			doExecute(i_g3d);
-		} finally {
-			cleanup(i_g3d);
-		}
-	}
-
 	protected int getBufferId() {
 
 		return m_bufferId;
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Initializes this VBO.
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.ExecutableGraphics2D#initialize(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @param i_g3d the Graphics3D instance
 	 */
 	public void initialize(Graphics3D i_g3d) {
 
@@ -120,12 +106,32 @@ public abstract class LwjglExecutableVBO implements ExecutableGraphics2D {
 	}
 
 	/**
-	 * Called before this object was executed.
+	 * Called before this VBO is rendered.
 	 * 
-	 * @param i_g3d
+	 * @param i_g3d the Graphics3D instance.
 	 */
 	protected abstract void prepare(Graphics3D i_g3d);
 
+	/**
+	 * Renders this VBO.
+	 * 
+	 * @param i_g3d the Graphics3D instance
+	 */
+	public void render(Graphics3D i_g3d) {
+
+		prepare(i_g3d);
+		try {
+			doRender(i_g3d);
+		} finally {
+			cleanup(i_g3d);
+		}
+	}
+
+	/**
+	 * Uploads the given buffer and sets the buffer ID.
+	 * 
+	 * @param i_buffer the buffer to upload
+	 */
 	protected void uploadBuffer(FloatBuffer i_buffer) {
 
 		IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);

@@ -14,7 +14,7 @@ import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw3d.graphics.GraphicsState;
 
 /**
- * PolylinePrimitive There should really be more documentation here.
+ * A primitive that represents a polygon. Polygons can be solid or outlined.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -22,6 +22,16 @@ import org.eclipse.draw3d.graphics.GraphicsState;
  */
 public class PolygonPrimitive extends AbstractVertexPrimitive {
 
+	/**
+	 * Creates a new polygon with the given vertex data.
+	 * 
+	 * @param i_state the current graphics state
+	 * @param i_vertices the vertex data as a point list
+	 * @param i_solid <code>true</code> if the polygon is solid and
+	 *            <code>false</code> if it is outlined
+	 * @throws IllegalArgumentException if the given point list contains less
+	 *             than three vertices
+	 */
 	public PolygonPrimitive(GraphicsState i_state, PointList i_vertices,
 			boolean i_solid) {
 
@@ -33,6 +43,16 @@ public class PolygonPrimitive extends AbstractVertexPrimitive {
 				"a polygon must contain at least three vertices");
 	}
 
+	/**
+	 * Creates a new polygon with the given vertex data.
+	 * 
+	 * @param i_state the current graphics state
+	 * @param i_vertices the vertex data as a float array
+	 * @param i_solid <code>true</code> if the polygon is solid and
+	 *            <code>false</code> if it is outlined
+	 * @throws IllegalArgumentException if the given array contains an uneven
+	 *             number of elements or less than three vertices
+	 */
 	public PolygonPrimitive(GraphicsState i_state, float[] i_vertices,
 			boolean i_solid) {
 

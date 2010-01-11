@@ -10,20 +10,27 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics.optimizer.primitive;
 
-
 /**
- * VertexPrimitive
- * There should really be more documentation here.
- *
- * @author 	Kristian Duske
- * @version	$Revision$
- * @since 	23.12.2009
+ * A vertex primitive is a primitive that generates vertex data directly.
+ * 
+ * @author Kristian Duske
+ * @version $Revision$
+ * @since 23.12.2009
  */
 public interface VertexPrimitive extends Primitive {
 
-	public float[] getVertices();
-
-	public float[] getTransformedVertices();
-
+	/**
+	 * Returns the number of vertices of this primitive
+	 * 
+	 * @return the number of vertices
+	 */
 	public int getVertexCount();
+
+	/**
+	 * Returns the vertices of this primitive (after the transformation has been
+	 * applied).
+	 * 
+	 * @return the vertices
+	 */
+	public float[] getVertices();
 }

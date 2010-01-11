@@ -16,7 +16,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 
 /**
- * TextRenderRule There should really be more documentation here.
+ * A render rule that contains the properties of a text primitive.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -32,6 +32,12 @@ public class TextRenderRule extends AbstractRenderRule {
 
 	private Color m_textColor;
 
+	/**
+	 * Creates a new render rule using the given graphics state.
+	 * 
+	 * @param i_state the graphics state from which to obtain the properties of
+	 *            this render rule
+	 */
 	public TextRenderRule(GraphicsState i_state) {
 
 		m_font = i_state.getFont();
@@ -47,50 +53,46 @@ public class TextRenderRule extends AbstractRenderRule {
 	 */
 	@Override
 	public TextRenderRule asText() {
+
 		return this;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		TextRenderRule other = (TextRenderRule) obj;
-		if (m_font == null) {
-			if (other.m_font != null)
-				return false;
-		} else if (!m_font.equals(other.m_font))
-			return false;
-		if (m_fontAntialias != other.m_fontAntialias)
-			return false;
-		return true;
-	}
-
+	/**
+	 * Returns the alpha value.
+	 * 
+	 * @return the alpha value
+	 */
 	public int getAlpha() {
+
 		return m_alpha;
 	}
 
+	/**
+	 * Returns the font.
+	 * 
+	 * @return the font
+	 */
 	public Font getFont() {
 
 		return m_font;
 	}
 
+	/**
+	 * Returns the color.
+	 * 
+	 * @return the color
+	 */
 	public Color getTextColor() {
+
 		return m_textColor;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((m_font == null) ? 0 : m_font.hashCode());
-		result = prime * result + (m_fontAntialias ? 1231 : 1237);
-		return result;
-	}
-
+	/**
+	 * Indicates whether font antialiasing is enabled.
+	 * 
+	 * @return <code>true</code> if font antialiasing is enabled and
+	 *         <code>false</code> otherwise
+	 */
 	public boolean isFontAntialias() {
 
 		return m_fontAntialias;
@@ -103,6 +105,7 @@ public class TextRenderRule extends AbstractRenderRule {
 	 */
 	@Override
 	public boolean isText() {
+
 		return true;
 	}
 

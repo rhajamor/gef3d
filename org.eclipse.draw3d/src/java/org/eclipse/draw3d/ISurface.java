@@ -10,15 +10,12 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
-import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.graphics3d.ExecutableGraphics2D;
-import org.eclipse.draw3d.graphics3d.Graphics3D;
 
 /**
  * A surface is a 2D plane that belongs to a figure and has 2D children of that
@@ -31,31 +28,6 @@ import org.eclipse.draw3d.graphics3d.Graphics3D;
  * @since 08.07.2009
  */
 public interface ISurface {
-
-	/**
-	 * Activates this surface for 2D rendering. The returned graphics instance
-	 * can be used to render 2D content on this surface.
-	 * 
-	 * @param i_g3d the graphics 3D instance
-	 * @return the graphics instance to be used for rendering 2D content on this
-	 *         surface
-	 * @throws IllegalStateException if this surface is currently active for 2D
-	 *             rendering
-	 * @throws UnsupportedOperationException if this surface cannot host 2D
-	 *             content
-	 */
-	public Graphics activate(Graphics3D i_g3d);
-
-	/**
-	 * Deactivates this surface for 2D rendering.
-	 * 
-	 * @param i_g3d the graphics 3D instance
-	 * @throws IllegalStateException if this surface is currently not active for
-	 *             2D rendering
-	 * @throws UnsupportedOperationException if this surface cannot host 2D
-	 *             content
-	 */
-	public ExecutableGraphics2D deactivate(Graphics3D i_g3d);
 
 	/**
 	 * Returns the child figure at the given surface coordinates or

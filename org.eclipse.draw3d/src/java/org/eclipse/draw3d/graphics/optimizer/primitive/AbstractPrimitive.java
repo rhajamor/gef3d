@@ -11,14 +11,13 @@
 package org.eclipse.draw3d.graphics.optimizer.primitive;
 
 import org.eclipse.draw3d.geometry.IMatrix4f;
-import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Matrix4fImpl;
-import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveBounds;
-import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
- * AbstractPrimitve There should really be more documentation here.
+ * Abstract base implementation for {@link Primitive primitives}. This class
+ * implements the {@link #intersects(Primitive)} method by checking the bounding
+ * boxes against each other.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -32,8 +31,19 @@ public abstract class AbstractPrimitive implements Primitive {
 
 	private IMatrix4f m_transformation;
 
+	/**
+	 * Creates a new primitive with the given transformation and render rule.
+	 * 
+	 * @param i_transformation the transformation, may be <code>null</code>
+	 * @param i_renderRule the render rule
+	 * @throws NullPointerException if the given render rule is
+	 *             <code>null</code>
+	 */
 	protected AbstractPrimitive(IMatrix4f i_transformation,
 			RenderRule i_renderRule) {
+
+		if (i_renderRule == null)
+			throw new NullPointerException("i_renderRule must not be null");
 
 		if (i_transformation != null)
 			m_transformation = new Matrix4fImpl(i_transformation);
@@ -41,6 +51,12 @@ public abstract class AbstractPrimitive implements Primitive {
 		m_renderRule = i_renderRule;
 	}
 
+	/**
+	 * Calculates the bounding box of this primitive (after the transformation
+	 * has been applied).
+	 * 
+	 * @return the bounding box
+	 */
 	protected abstract PrimitiveBounds calculateBounds();
 
 	/**
@@ -74,50 +90,6 @@ public abstract class AbstractPrimitive implements Primitive {
 	public IMatrix4f getTransformation() {
 
 		return m_transformation;
-	}
-
-	protected float[] getTransformedVertices(int i_x, int i_y, int i_w, int i_h) {
-
-		IMatrix4f t = getTransformation();
-		float[] vertices = new float[8];
-
-		if (t != null && !IMatrix4f.IDENTITY.equals(t)) {
-			Vector3f v = Draw3DCache.getVector3f();
-			try {
-				v.set(i_x, i_y, 0);
-				Math3D.transform(v, t, v);
-				vertices[0] = v.getX();
-				vertices[1] = v.getY();
-
-				v.set(i_x, i_y + i_h, 0);
-				Math3D.transform(v, t, v);
-				vertices[2] = v.getX();
-				vertices[3] = v.getY();
-
-				v.set(i_x + i_w, i_y + i_h, 0);
-				Math3D.transform(v, t, v);
-				vertices[4] = v.getX();
-				vertices[5] = v.getY();
-
-				v.set(i_x + i_w, i_y, 0);
-				Math3D.transform(v, t, v);
-				vertices[6] = v.getX();
-				vertices[7] = v.getY();
-			} finally {
-				Draw3DCache.returnVector3f(v);
-			}
-		} else {
-			vertices[0] = i_x;
-			vertices[1] = i_y;
-			vertices[2] = i_x;
-			vertices[3] = i_y + i_h;
-			vertices[4] = i_x + i_w;
-			vertices[5] = i_y + i_h;
-			vertices[6] = i_x + i_h;
-			vertices[7] = i_y;
-		}
-
-		return vertices;
 	}
 
 	/**

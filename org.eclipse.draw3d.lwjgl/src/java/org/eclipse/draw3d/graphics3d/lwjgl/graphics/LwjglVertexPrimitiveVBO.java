@@ -21,23 +21,33 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 /**
- * LwjglExecutableVertexBuffer There should really be more documentation here.
+ * Abstract base class for VBOs that obtain their vertex data from a
+ * {@link PrimitiveSet set} of {@link VertexPrimitive vertex primitives}.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 06.01.2010
  */
-public abstract class LwjglExecutableVertexBuffer extends LwjglExecutableVBO {
+public abstract class LwjglVertexPrimitiveVBO extends LwjglVBO {
 
 	private PrimitiveSet m_primitives;
 
-	protected LwjglExecutableVertexBuffer(PrimitiveSet i_primitives) {
+	/**
+	 * Creates a new vertex buffer using the given primitive set.
+	 * 
+	 * @param i_primitives the primitive set
+	 * @throws NullPointerException if the given primitive set is
+	 *             <code>null</code>
+	 * @throws IllegalArgumentException if the given primitive set is empty
+	 */
+	protected LwjglVertexPrimitiveVBO(PrimitiveSet i_primitives) {
 
 		if (i_primitives == null)
 			throw new NullPointerException("i_primitives must not be null");
 
 		if (i_primitives.getSize() == 0)
-			throw new IllegalArgumentException(i_primitives + " is empty");
+			throw new IllegalArgumentException(i_primitives
+				+ " must not be empty");
 
 		m_primitives = i_primitives;
 	}
@@ -45,7 +55,7 @@ public abstract class LwjglExecutableVertexBuffer extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
 	protected void cleanup(Graphics3D i_g3d) {
@@ -57,7 +67,7 @@ public abstract class LwjglExecutableVertexBuffer extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#createVertexBuffer
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#createVertexBuffer
 	 */
 	@Override
 	protected FloatBuffer createVertexBuffer() {
@@ -67,7 +77,7 @@ public abstract class LwjglExecutableVertexBuffer extends LwjglExecutableVBO {
 
 		for (Primitive primitive : m_primitives.getPrimitives()) {
 			VertexPrimitive vertexPrimitive = (VertexPrimitive) primitive;
-			vertexBuffer.put(vertexPrimitive.getTransformedVertices());
+			vertexBuffer.put(vertexPrimitive.getVertices());
 		}
 
 		m_primitives = null;
@@ -77,15 +87,15 @@ public abstract class LwjglExecutableVertexBuffer extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#doExecute(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
-	protected abstract void doExecute(Graphics3D i_g3d);
+	protected abstract void doRender(Graphics3D i_g3d);
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
 	protected void prepare(Graphics3D i_g3d) {

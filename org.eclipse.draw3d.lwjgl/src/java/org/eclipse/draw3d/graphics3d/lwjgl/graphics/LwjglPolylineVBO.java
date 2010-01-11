@@ -15,9 +15,8 @@ import java.nio.IntBuffer;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.OutlineRenderRule;
-import org.eclipse.draw3d.graphics.optimizer.primitive.PolygonPrimitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.PolylinePrimitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
-import org.eclipse.draw3d.graphics.optimizer.primitive.SolidRenderRule;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.lwjgl.BufferUtils;
@@ -25,15 +24,13 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 
 /**
- * LwjglExecutableQuads There should really be more documentation here.
+ * Vertex buffer object that renders polylines.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 21.12.2009
  */
-public class LwjglExecutablePolygons extends LwjglExecutableVertexBuffer {
-
-	private boolean m_solid;
+public class LwjglPolylineVBO extends LwjglVertexPrimitiveVBO {
 
 	private float[] m_color = new float[4];
 
@@ -42,27 +39,22 @@ public class LwjglExecutablePolygons extends LwjglExecutableVertexBuffer {
 	private IntBuffer m_numBuffer;
 
 	/**
-	 * {@inheritDoc}
+	 * Creates a new VBO that renders the given polyline primitives.
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#dispose(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @param i_primitives the primitives to render
+	 * @throws NullPointerException if the given primitive set is
+	 *             <code>null</code>
+	 * @throws IllegalArgumentException if the given primitive set is empty or
+	 *             if it does not contain polyline primitives
 	 */
-	@Override
-	public void dispose(Graphics3D i_g3d) {
-
-		m_firstBuffer = null;
-		m_numBuffer = null;
-
-		super.dispose(i_g3d);
-	}
-
-	public LwjglExecutablePolygons(PrimitiveSet i_primitives) {
+	public LwjglPolylineVBO(PrimitiveSet i_primitives) {
 
 		super(i_primitives);
 
 		PrimitiveClass clazz = i_primitives.getPrimitiveClass();
-		if (!clazz.isPolygon())
+		if (!clazz.isPolyline())
 			throw new IllegalArgumentException(i_primitives
-				+ " does not contain polygons");
+				+ " does not contain polylines");
 
 		int count = i_primitives.getSize();
 		m_firstBuffer = BufferUtils.createIntBuffer(count);
@@ -70,41 +62,43 @@ public class LwjglExecutablePolygons extends LwjglExecutableVertexBuffer {
 
 		int index = 0;
 		for (Primitive primitive : i_primitives.getPrimitives()) {
-			PolygonPrimitive polygon = (PolygonPrimitive) primitive;
+			PolylinePrimitive polyline = (PolylinePrimitive) primitive;
 
-			int numVertices = polygon.getVertexCount();
+			int numVertices = polyline.getVertexCount();
 			m_numBuffer.put(numVertices);
 			m_firstBuffer.put(index);
 			index += numVertices;
 		}
 
-		m_solid = clazz.isSolid();
-		if (m_solid) {
-			SolidRenderRule rule = clazz.getRenderRule().asSolid();
-			ColorConverter.toFloatArray(rule.getColor(), rule.getAlpha(),
-				m_color);
-		} else {
-			OutlineRenderRule rule = clazz.getRenderRule().asOutline();
-			ColorConverter.toFloatArray(rule.getColor(), rule.getAlpha(),
-				m_color);
-		}
+		OutlineRenderRule rule = clazz.getRenderRule().asOutline();
+		ColorConverter.toFloatArray(rule.getColor(), rule.getAlpha(), m_color);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#doExecute(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#dispose()
 	 */
 	@Override
-	protected void doExecute(Graphics3D i_g3d) {
+	public void dispose() {
+
+		m_firstBuffer = null;
+		m_numBuffer = null;
+
+		super.dispose();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 */
+	@Override
+	protected void doRender(Graphics3D i_g3d) {
 
 		i_g3d.glColor4f(m_color);
 
-		if (m_solid)
-			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-		else
-			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-
-		GL14.glMultiDrawArrays(GL11.GL_POLYGON, m_firstBuffer, m_numBuffer);
+		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+		GL14.glMultiDrawArrays(GL11.GL_LINE_STRIP, m_firstBuffer, m_numBuffer);
 	}
 }

@@ -10,11 +10,12 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics.optimizer.primitive;
 
+import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.graphics.GraphicsState;
 import org.eclipse.swt.graphics.Color;
 
 /**
- * SolidRenderRule There should really be more documentation here.
+ * A render rule that contains the primitives of a solid primitive.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -30,6 +31,12 @@ public class SolidRenderRule extends AbstractRenderRule {
 
 	private boolean m_xorMode;
 
+	/**
+	 * Creates a new solid render rule using the given graphics state.
+	 * 
+	 * @param i_state the graphics state from which to obtain the properties of
+	 *            this render rule
+	 */
 	public SolidRenderRule(GraphicsState i_state) {
 
 		m_alpha = i_state.getAlpha();
@@ -45,53 +52,39 @@ public class SolidRenderRule extends AbstractRenderRule {
 	 */
 	@Override
 	public SolidRenderRule asSolid() {
+
 		return this;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		SolidRenderRule other = (SolidRenderRule) obj;
-		if (m_alpha != other.m_alpha)
-			return false;
-		if (m_color == null) {
-			if (other.m_color != null)
-				return false;
-		} else if (!m_color.equals(other.m_color))
-			return false;
-		if (m_fillRule != other.m_fillRule)
-			return false;
-		if (m_xorMode != other.m_xorMode)
-			return false;
-		return true;
-	}
-
+	/**
+	 * Returns the alpha value.
+	 * 
+	 * @return the alpha value
+	 */
 	public int getAlpha() {
+
 		return m_alpha;
 	}
 
+	/**
+	 * Returns the fill color.
+	 * 
+	 * @return the fill color
+	 */
 	public Color getColor() {
+
 		return m_color;
 	}
 
+	/**
+	 * Returns the fill rule.
+	 * 
+	 * @return the fill rule
+	 * @see Graphics#setFillRule(int)
+	 */
 	public int getFillRule() {
-		return m_fillRule;
-	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + m_alpha;
-		result = prime * result + ((m_color == null) ? 0 : m_color.hashCode());
-		result = prime * result + m_fillRule;
-		result = prime * result + (m_xorMode ? 1231 : 1237);
-		return result;
+		return m_fillRule;
 	}
 
 	/**
@@ -101,10 +94,18 @@ public class SolidRenderRule extends AbstractRenderRule {
 	 */
 	@Override
 	public boolean isSolid() {
+
 		return true;
 	}
 
+	/**
+	 * Indicates whether XOR mode painting is enabled.
+	 * 
+	 * @return <code>true</code> if XOR mode painting is enabled and
+	 *         <code>false</code> otherwise
+	 */
 	public boolean isXorMode() {
+
 		return m_xorMode;
 	}
 

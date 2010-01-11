@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
-import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.geometry.Point;
@@ -19,8 +18,6 @@ import org.eclipse.draw3d.camera.ICameraListener;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.graphics3d.ExecutableGraphics2D;
-import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.picking.Hit;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.util.Draw3DCache;
@@ -75,17 +72,6 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.ISurface#activate(org.eclipse.draw3d.graphics3d.Graphics3D)
-	 */
-	public Graphics activate(Graphics3D i_g3d) {
-
-		throw new UnsupportedOperationException(
-			"void surface cannot host 2D content");
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.draw3d.ISceneListener#cameraChanged(org.eclipse.draw3d.camera.ICamera,
 	 *      org.eclipse.draw3d.camera.ICamera)
 	 */
@@ -95,17 +81,6 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 		i_newCamera.addCameraListener(m_cameraListener);
 
 		coordinateSystemChanged();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.ISurface#deactivate(Graphics3D)
-	 */
-	public ExecutableGraphics2D deactivate(Graphics3D i_g3d) {
-		
-		throw new UnsupportedOperationException(
-			"void surface cannot host 2D content");
 	}
 
 	/**

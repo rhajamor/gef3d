@@ -15,7 +15,7 @@ import org.eclipse.draw3d.graphics.GraphicsState;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * ImagePrimitive There should really be more documentation here.
+ * A primitive that represents a single image.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -29,6 +29,14 @@ public class ImagePrimitive extends QuadPrimitive {
 
 	private Rectangle m_target;
 
+	/**
+	 * Creates a new image primitive.
+	 * 
+	 * @param i_state the current graphics state
+	 * @param i_image the image to render
+	 * @param i_source the source rectangle
+	 * @param i_target the target rectangle
+	 */
 	public ImagePrimitive(GraphicsState i_state, Image i_image,
 			Rectangle i_source, Rectangle i_target) {
 
@@ -41,16 +49,31 @@ public class ImagePrimitive extends QuadPrimitive {
 		m_target = i_target;
 	}
 
+	/**
+	 * Returns the image.
+	 * 
+	 * @return the image
+	 */
 	public Image getImage() {
 
 		return m_image;
 	}
 
+	/**
+	 * Returns the source rectangle.
+	 * 
+	 * @return the source rectangle
+	 */
 	public Rectangle getSource() {
 
 		return m_source;
 	}
 
+	/**
+	 * Returns the target rectangle.
+	 * 
+	 * @return the target rectangle
+	 */
 	public Rectangle getTarget() {
 
 		return m_target;

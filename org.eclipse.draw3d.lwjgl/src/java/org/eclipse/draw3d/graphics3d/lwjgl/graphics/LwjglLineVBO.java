@@ -13,68 +13,61 @@ package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.OutlineRenderRule;
-import org.eclipse.draw3d.graphics.optimizer.primitive.SolidRenderRule;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
-import org.eclipse.draw3d.graphics3d.lwjgl.Graphics3DLwjgl;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.lwjgl.opengl.GL11;
 
 /**
- * LwjglExecutableQuads There should really be more documentation here.
+ * Vertex buffer object that renders individual lines.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 21.12.2009
  */
-public class LwjglExecutableQuads extends LwjglExecutableVertexBuffer {
-
-	private boolean m_solid;
+public class LwjglLineVBO extends LwjglVertexPrimitiveVBO {
 
 	private float[] m_color = new float[4];
 
 	private int m_vertexCount;
 
-	public LwjglExecutableQuads(PrimitiveSet i_primitives) {
+	/**
+	 * Creates a new VBO that renders the given line primitives.
+	 * 
+	 * @param i_primitives the primitives to render
+	 * @throws NullPointerException if the given primitive set is
+	 *             <code>null</code>
+	 * @throws IllegalArgumentException if the given primitive set is empty or
+	 *             does not contain line primitives
+	 */
+	public LwjglLineVBO(PrimitiveSet i_primitives) {
 
 		super(i_primitives);
 
-		PrimitiveClass clazz = i_primitives.getPrimitiveClass();
-		if (!clazz.isQuad())
+		PrimitiveClass primitiveClass = i_primitives.getPrimitiveClass();
+		if (!primitiveClass.isLine() || !primitiveClass.isOutline())
 			throw new IllegalArgumentException(i_primitives
-				+ " does not contain quads");
+				+ " does not contain lines");
 
 		m_vertexCount = i_primitives.getVertexCount();
-		m_solid = clazz.isSolid();
 
-		if (m_solid) {
-			SolidRenderRule rule = clazz.getRenderRule().asSolid();
-			ColorConverter.toFloatArray(rule.getColor(), rule.getAlpha(),
-				m_color);
-		} else {
-			OutlineRenderRule rule = clazz.getRenderRule().asOutline();
-			ColorConverter.toFloatArray(rule.getColor(), rule.getAlpha(),
-				m_color);
-		}
+		OutlineRenderRule renderRule =
+			primitiveClass.getRenderRule().asOutline();
+
+		ColorConverter.toFloatArray(renderRule.getColor(),
+			renderRule.getAlpha(), m_color);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#doExecute(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
-	protected void doExecute(Graphics3D i_g3d) {
+	protected void doRender(Graphics3D i_g3d) {
 
 		i_g3d.glColor4f(m_color);
 
-		if (m_solid)
-			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-		else {
-			GL11.glTranslatef(Graphics3DLwjgl.RASTER_OFFSET,
-				Graphics3DLwjgl.RASTER_OFFSET, 0);
-			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-		}
-
-		GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
+		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+		GL11.glDrawArrays(GL11.GL_LINES, 0, m_vertexCount);
 	}
 }

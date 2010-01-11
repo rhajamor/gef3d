@@ -13,14 +13,19 @@ package org.eclipse.draw3d.graphics.optimizer.classification;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 
 /**
- * PrimitiveClassifier
- * There should really be more documentation here.
- *
- * @author 	Kristian Duske
- * @version	$Revision$
- * @since 	27.12.2009
+ * Classifies primitives according to some rule.
+ * 
+ * @author Kristian Duske
+ * @version $Revision$
+ * @since 27.12.2009
  */
 public interface PrimitiveClassifier {
 
+	/**
+	 * Classifies the given polygon.
+	 * 
+	 * @param i_primitive the primitive to classify
+	 * @return the class that contains the given primitive
+	 */
 	public PrimitiveClass classify(Primitive i_primitive);
 }

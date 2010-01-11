@@ -14,11 +14,12 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.graphics.StatefulGraphics;
-import org.eclipse.draw3d.graphics.optimizer.classification.DefaultPrimitiveClassifier;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClassifier;
 import org.eclipse.draw3d.graphics.optimizer.primitive.ImagePrimitive;
@@ -38,25 +39,40 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
 /**
- * OptimizingGraphics There should really be more documentation here.
+ * An implementation of {@link Graphics} that collects {@link Primitive
+ * primitives} and organizes them in {@link PrimitiveSet primitive sets}.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 18.11.2009
  */
-public class OptimizingGraphics extends StatefulGraphics {
-
-	private static enum DrawType {
-		FILL, HGRADIENT, OUTLINE, VGRADIENT
-	}
+public class RecordingGraphics extends StatefulGraphics {
 
 	private static final float ARC_PREC = 0.5f;
 
 	private static final float PI_4 = (float) Math.PI / 4;
 
+	private PrimitiveClassifier m_classifier;
+
+	private GC m_fontGC;
+
+	private Image m_fontImage;
+
 	private PrimitiveSet m_primitives;
 
-	private PrimitiveClassifier m_classifier = new DefaultPrimitiveClassifier();
+	/**
+	 * Creates a new instance that uses the given classifier.
+	 * 
+	 * @param i_classifier the classifier to use
+	 * @throws NullPointerException if the given classifier is <code>null</code>
+	 */
+	public RecordingGraphics(PrimitiveClassifier i_classifier) {
+
+		if (i_classifier == null)
+			throw new NullPointerException("i_classifier must not be null");
+
+		m_classifier = i_classifier;
+	}
 
 	private void addPrimitive(Primitive i_primitive) {
 
@@ -72,6 +88,27 @@ public class OptimizingGraphics extends StatefulGraphics {
 				throw new AssertionError("cannot add primitive " + i_primitive);
 		}
 
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics.StatefulGraphics#dispose()
+	 */
+	@Override
+	public void dispose() {
+
+		if (m_fontGC != null) {
+			m_fontGC.dispose();
+			m_fontGC = null;
+		}
+
+		if (m_fontImage != null) {
+			m_fontImage.dispose();
+			m_fontImage = null;
+		}
+
+		super.dispose();
 	}
 
 	/**
@@ -230,31 +267,6 @@ public class OptimizingGraphics extends StatefulGraphics {
 		roundRectangle(i_r, i_arcWidth, i_arcHeight, false);
 	}
 
-	private Image m_fontImage;
-
-	private GC m_fontGC;
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics.StatefulGraphics#dispose()
-	 */
-	@Override
-	public void dispose() {
-
-		if (m_fontGC != null) {
-			m_fontGC.dispose();
-			m_fontGC = null;
-		}
-
-		if (m_fontImage != null) {
-			m_fontImage.dispose();
-			m_fontImage = null;
-		}
-
-		super.dispose();
-	}
-
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -374,8 +386,21 @@ public class OptimizingGraphics extends StatefulGraphics {
 	 */
 	@Override
 	public void fillString(String i_s, int i_x, int i_y) {
-		// TODO implement method OptimizingGraphics.fillString
 
+		fillText(i_s, false, i_x, i_y);
+	}
+
+	private void fillText(String i_s, boolean expand, int i_x, int i_y) {
+		TextPrimitive textPrimitive =
+			new TextPrimitive(getState(), i_s, expand, new Point(i_x, i_y));
+
+		Dimension extent = textPrimitive.getExtent();
+		QuadPrimitive quadPrimitive =
+			QuadPrimitive.createSolidQuad(getState(), i_x, i_y, extent.width,
+				extent.height);
+
+		addPrimitive(quadPrimitive);
+		addPrimitive(textPrimitive);
 	}
 
 	/**
@@ -385,8 +410,24 @@ public class OptimizingGraphics extends StatefulGraphics {
 	 */
 	@Override
 	public void fillText(String i_s, int i_x, int i_y) {
-		// TODO implement method OptimizingGraphics.fillText
 
+		fillText(i_s, true, i_x, i_y);
+	}
+
+	/**
+	 * Returns the primitive sets created by this recorder.
+	 * 
+	 * @return the primitive sets
+	 */
+	public List<PrimitiveSet> getPrimiveSets() {
+
+		if (m_primitives == null)
+			return Collections.emptyList();
+
+		List<PrimitiveSet> result = new LinkedList<PrimitiveSet>();
+		m_primitives.getSets(result);
+
+		return result;
 	}
 
 	private void roundRectangle(Rectangle i_r, int i_arcWidth, int i_arcHeight,
@@ -424,16 +465,5 @@ public class OptimizingGraphics extends StatefulGraphics {
 		helper.getArray(vertices, offset);
 
 		addPrimitive(new PolygonPrimitive(getState(), vertices, i_fill));
-	}
-
-	public List<PrimitiveSet> getPrimiveSets() {
-
-		if (m_primitives == null)
-			return Collections.emptyList();
-
-		List<PrimitiveSet> result = new LinkedList<PrimitiveSet>();
-		m_primitives.getSets(result);
-
-		return result;
 	}
 }

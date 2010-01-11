@@ -17,6 +17,7 @@ import java.nio.IntBuffer;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
+import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.ImagePrimitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
@@ -36,13 +37,14 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 /**
- * LwjglExecutableImages There should really be more documentation here.
+ * Vertex buffer object that renders images as textures. The images are combined
+ * into a single texture.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 05.01.2010
  */
-public class LwjglExecutableImages extends LwjglExecutableVBO {
+public class LwjglImageVBO extends LwjglVBO {
 
 	private static final int VERTEX_SIZE = (2 + 2) * 4;
 
@@ -52,11 +54,28 @@ public class LwjglExecutableImages extends LwjglExecutableVBO {
 
 	private int m_vertexCount;
 
-	public LwjglExecutableImages(PrimitiveSet i_primitives) {
+	/**
+	 * Creates a new VBO that renders the given image primites.
+	 * 
+	 * @param i_primitives the image primitives to render
+	 */
+	public LwjglImageVBO(PrimitiveSet i_primitives) {
 
-		m_vertexCount = i_primitives.getVertexCount();
+		if (i_primitives == null)
+			throw new NullPointerException("i_primitives must not be null");
+
+		if (i_primitives.getSize() == 0)
+			throw new IllegalArgumentException(i_primitives
+				+ " must not be empty");
+
+		PrimitiveClass clazz = i_primitives.getPrimitiveClass();
+		if (!clazz.isImage())
+			throw new IllegalArgumentException(
+i_primitives
+				+ " does not contain images");
 
 		m_primitives = i_primitives;
+		m_vertexCount = m_primitives.getVertexCount();
 	}
 
 	private void addTextureCoordinates(FloatBuffer i_buffer, int i_tw,
@@ -72,7 +91,7 @@ public class LwjglExecutableImages extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
 	protected void cleanup(Graphics3D i_g3d) {
@@ -87,10 +106,10 @@ public class LwjglExecutableImages extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#dispose(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#dispose()
 	 */
 	@Override
-	public void dispose(Graphics3D i_g3d) {
+	public void dispose() {
 
 		if (m_textureId != 0) {
 			IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
@@ -105,16 +124,16 @@ public class LwjglExecutableImages extends LwjglExecutableVBO {
 			}
 		}
 
-		super.dispose(i_g3d);
+		super.dispose();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#doExecute(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
-	protected void doExecute(Graphics3D i_g3d) {
+	protected void doRender(Graphics3D i_g3d) {
 
 		i_g3d.glColor4f(1, 1, 1, 1);
 
@@ -145,7 +164,7 @@ public class LwjglExecutableImages extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#initialize(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#initialize(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
 	public void initialize(Graphics3D i_g3d) {
@@ -182,7 +201,7 @@ public class LwjglExecutableImages extends LwjglExecutableVBO {
 				packer.getPosition(imagePrimitive, p);
 				drawImage(image, source, textureData, p);
 
-				float[] vertices = imagePrimitive.getTransformedVertices();
+				float[] vertices = imagePrimitive.getVertices();
 				buffer.put(vertices[0]);
 				buffer.put(vertices[1]);
 				addTextureCoordinates(buffer, tw, th, p.x, p.y);
@@ -266,7 +285,7 @@ public class LwjglExecutableImages extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
 	protected void prepare(Graphics3D i_g3d) {

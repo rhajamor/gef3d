@@ -13,7 +13,7 @@ package org.eclipse.draw3d.graphics.optimizer.primitive;
 import org.eclipse.draw3d.graphics.GraphicsState;
 
 /**
- * ImageRenderRule There should really be more documentation here.
+ * A render rule that defines the properties of an image.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -23,6 +23,12 @@ public class ImageRenderRule extends AbstractRenderRule {
 
 	private int m_alpha;
 
+	/**
+	 * Creates a new instance using the given graphics state.
+	 * 
+	 * @param i_state the graphics state from which to obtain the properties of
+	 *            this render rule
+	 */
 	public ImageRenderRule(GraphicsState i_state) {
 
 		m_alpha = i_state.getAlpha();
@@ -35,33 +41,18 @@ public class ImageRenderRule extends AbstractRenderRule {
 	 */
 	@Override
 	public ImageRenderRule asImage() {
+
 		return this;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ImageRenderRule other = (ImageRenderRule) obj;
-		if (m_alpha != other.m_alpha)
-			return false;
-		return true;
-	}
-
+	/**
+	 * The alpha value of this image.
+	 * 
+	 * @return the alpha value
+	 */
 	public int getAlpha() {
-		return m_alpha;
-	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + m_alpha;
-		return result;
+		return m_alpha;
 	}
 
 	/**
@@ -71,6 +62,7 @@ public class ImageRenderRule extends AbstractRenderRule {
 	 */
 	@Override
 	public boolean isImage() {
+
 		return true;
 	}
 

@@ -25,21 +25,32 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 /**
- * LwjglExecutableQuads There should really be more documentation here.
+ * Vertex Buffer Object that renders solid quadrilaterals with individual
+ * gradients.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 21.12.2009
  */
-public class LwjglExecutableGradientQuads extends LwjglExecutableVBO {
+public class LwjglGradientQuadVBO extends LwjglVBO {
 
 	private static final int VERTEX_SIZE = (2 + 4) * 4;
 
-	private int m_vertexCount;
-
 	private PrimitiveSet m_primitives;
 
-	public LwjglExecutableGradientQuads(PrimitiveSet i_primitives) {
+	private int m_vertexCount;
+
+	/**
+	 * Creates a new VBO that renders the given primitives.
+	 * 
+	 * @param i_primitives the primitives to render
+	 * @throws NullPointerException if the given primitive set is
+	 *             <code>null</code>
+	 * @throws IllegalArgumentException if the given primitive set is empty or
+	 *             if the given primitive set does not contain gradient
+	 *             quadrilaterals
+	 */
+	public LwjglGradientQuadVBO(PrimitiveSet i_primitives) {
 
 		if (i_primitives == null)
 			throw new NullPointerException("i_primitives must not be null");
@@ -59,7 +70,7 @@ public class LwjglExecutableGradientQuads extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
 	protected void cleanup(Graphics3D i_g3d) {
@@ -74,7 +85,7 @@ public class LwjglExecutableGradientQuads extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#createVertexBuffer
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#createVertexBuffer
 	 */
 	@Override
 	protected FloatBuffer createVertexBuffer() {
@@ -86,7 +97,7 @@ public class LwjglExecutableGradientQuads extends LwjglExecutableVBO {
 		float[] c = new float[4];
 		for (Primitive primitive : m_primitives.getPrimitives()) {
 			QuadPrimitive quad = (QuadPrimitive) primitive;
-			float[] vertices = quad.getTransformedVertices();
+			float[] vertices = quad.getVertices();
 
 			GradientRenderRule renderRule = quad.getRenderRule().asGradient();
 			Color fromColor = renderRule.getFromColor();
@@ -117,10 +128,10 @@ public class LwjglExecutableGradientQuads extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#doExecute(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
-	protected void doExecute(Graphics3D i_g3d) {
+	protected void doRender(Graphics3D i_g3d) {
 
 		GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
 	}
@@ -128,7 +139,7 @@ public class LwjglExecutableGradientQuads extends LwjglExecutableVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglExecutableVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
 	protected void prepare(Graphics3D i_g3d) {
