@@ -541,7 +541,7 @@ public class Vector4fTest extends TestCase {
 
 	/**
 	 * Test method for
-	 * {@link org.eclipse.draw3d.geometryext.Vector4fImpl#equals(org.eclipse.draw3d.geometryext.IVector4f)}
+	 * {@link org.eclipse.draw3d.geometryext.Vector4fImpl#ruleEquals(org.eclipse.draw3d.geometryext.IVector4f)}
 	 * .
 	 */
 	public void testEqualsIVector4f() {
@@ -770,7 +770,7 @@ public class Vector4fTest extends TestCase {
 		Vector4fImpl v1 = new Vector4fImpl(v0);
 
 		v0.transform(m0);
-		Math3D.transform(m0, v1, v1);
+		Math3D.transform(v1, m0, v1);
 
 		if (!v0.equals(v1)) {
 			fail("testTransform - Result not as expected: " + v0.toString()

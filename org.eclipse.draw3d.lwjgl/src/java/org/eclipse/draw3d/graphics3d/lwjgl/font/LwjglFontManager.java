@@ -13,8 +13,10 @@ package org.eclipse.draw3d.graphics3d.lwjgl.font;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.texture.LwjglTextureManager;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -28,14 +30,22 @@ import org.eclipse.swt.graphics.FontData;
  */
 public class LwjglFontManager {
 
+	private DisplayListManager m_displayListManager;
+
 	/**
 	 * The font manager is created by the texture manager (
 	 * {@link LwjglTextureManager}), this class should not be created by other
 	 * classes.
+	 * 
+	 * @param i_displayListManager the display list manager
 	 */
-	public LwjglFontManager() {
+	public LwjglFontManager(DisplayListManager i_displayListManager) {
 
-		// nothing to initliaze
+		if (i_displayListManager == null)
+			throw new NullPointerException(
+				"i_displayListManager must not be null");
+
+		m_displayListManager = i_displayListManager;
 	}
 
 	/**
@@ -49,6 +59,25 @@ public class LwjglFontManager {
 
 		private int m_hashCode;
 
+		private int getFontHashCode(Font i_font) {
+
+			int result = 17;
+
+			FontData[] fontData = i_font.getFontData();
+			for (int i = 0; i < fontData.length; i++) {
+				result = 37 * result + fontData[i].getName().hashCode();
+				result = 37 * result + fontData[i].getLocale().hashCode();
+				result =
+					37 * result
+						+ new Integer(fontData[i].getHeight()).hashCode();
+				result =
+					37 * result
+						+ new Integer(fontData[i].getStyle()).hashCode();
+			}
+
+			return result;
+		}
+
 		/**
 		 * Creates a new key for a given font and character range.
 		 * 
@@ -61,16 +90,12 @@ public class LwjglFontManager {
 				boolean i_antiAliased) {
 
 			m_hashCode = 17;
-			m_hashCode = 37 * m_hashCode + i_font.hashCode();
+			m_hashCode = 37 * getFontHashCode(i_font);
 			m_hashCode =
 				37 * m_hashCode + new Character(i_startChar).hashCode();
 			m_hashCode = 37 * m_hashCode + new Character(i_endChar).hashCode();
 			m_hashCode =
 				37 * m_hashCode + new Boolean(i_antiAliased).hashCode();
-
-			FontData[] fontDatas = i_font.getFontData();
-			for (FontData fontData : fontDatas)
-				m_hashCode = m_hashCode + 37 * fontData.hashCode();
 		}
 
 		/**
@@ -152,11 +177,16 @@ public class LwjglFontManager {
 
 		GLFontKey key =
 			new GLFontKey(i_font, i_startChar, i_endChar, i_antiAliased);
+
 		LwjglFont glFont = m_fonts.get(key);
 		if (glFont == null) {
 			glFont =
-				new LwjglFont(i_font, i_startChar, i_endChar, i_antiAliased);
+				new LwjglFont(i_font, i_startChar, i_endChar, i_antiAliased,
+					m_displayListManager);
 			m_fonts.put(key, glFont);
+
+			if (log.isLoggable(Level.FINE))
+				log.fine("loaded new GL raster font " + glFont);
 		}
 
 		return glFont;

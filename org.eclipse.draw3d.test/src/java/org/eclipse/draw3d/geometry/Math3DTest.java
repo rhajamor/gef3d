@@ -676,7 +676,7 @@ public class Math3DTest extends TestCase {
 
 	/**
 	 * Test method for
-	 * {@link org.eclipse.draw3d.geometryext.Math3D#transform(org.eclipse.draw3d.geometryext.IMatrix3f, org.eclipse.draw3d.geometryext.IVector3f, org.eclipse.draw3d.geometryext.Vector3f)}
+	 * {@link org.eclipse.draw3d.geometryext.Math3D#transform(org.eclipse.draw3d.geometryext.IVector3f, org.eclipse.draw3d.geometryext.IMatrix3f, org.eclipse.draw3d.geometryext.Vector3f)}
 	 * .
 	 */
 	public void testTransformIMatrix3fIVector3fVector3f() {
@@ -1022,7 +1022,7 @@ public class Math3DTest extends TestCase {
 
 	/**
 	 * Test method for
-	 * {@link org.eclipse.draw3d.geometryext.Math3D#transform(org.eclipse.draw3d.geometryext.IMatrix4f, org.eclipse.draw3d.geometryext.IVector4f, org.eclipse.draw3d.geometryext.Vector4f)}
+	 * {@link org.eclipse.draw3d.geometryext.Math3D#transform(org.eclipse.draw3d.geometryext.IVector4f, org.eclipse.draw3d.geometryext.IMatrix4f, org.eclipse.draw3d.geometryext.Vector4f)}
 	 * .
 	 */
 	public void testTransformIMatrix4fIVector4fVector4f() {
@@ -1036,20 +1036,20 @@ public class Math3DTest extends TestCase {
 
 		Vector4fImpl v1 = new Vector4fImpl(x, y, z, w);
 
-		Vector4f v2 = Math3D.transform(m0, v0, null);
+		Vector4f v2 = Math3D.transform(v0, m0, null);
 
 		if (!v1.equals(v2)) {
 			fail("testTransformIMatrix4fIVector4fVector4f - Expected values do not match: "
 				+ v1.toString() + " " + v2.toString());
 		}
 
-		Math3D.transform(m0, v0, v2);
+		Math3D.transform(v0, m0, v2);
 		if (!v1.equals(v2)) {
 			fail("testTransformIMatrix4fIVector4fVector4f - Expected values do not match: "
 				+ v1.toString() + " " + v2.toString());
 		}
 
-		v2 = Math3D.transform(m0, v0, v0);
+		v2 = Math3D.transform(v0, m0, v0);
 		if (!v1.equals(v2) || !v1.equals(v0)) {
 			fail("testTransformIMatrix4fIVector4fVector4f - Expected values do not match: "
 				+ v1.toString() + " " + v2.toString());

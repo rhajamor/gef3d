@@ -41,6 +41,7 @@ import org.eclipse.draw3d.geometry.Position3DImpl;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Picker;
@@ -128,7 +129,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 
 			final RenderContext renderContext = getRenderContext();
 			DisplayListManager displayListManager =
-				renderContext.getDisplayListManager();
+				renderContext.getGraphics3D().getDisplayListManager();
 
 			if (!displayListManager.isDisplayList(DL_AXES))
 				displayListManager.createDisplayList(DL_AXES, new Runnable() {
@@ -422,9 +423,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 		public void paint(Graphics i_graphics) {
 
 			RenderContext renderContext = getRenderContext();
-			// display list not set here, automatically created and set by
-			// render context
-			// renderContext.setDisplayListManager(m_displayListManager);
 			renderContext.setScene(LightweightSystem3D.this);
 
 			// ignore the incoming graphics object if it is not a dummy
@@ -442,8 +440,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 				paintClientArea(graphics);
 
 				renderContext.renderFragments();
-
-				// renderContext.getGraphics3D().glFlush();
 			} finally {
 				for (ISceneListener listener : m_listeners)
 					listener.renderPassFinished(getRenderContext());

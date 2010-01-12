@@ -140,6 +140,22 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.ISurface#getSurfaceRotation(org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	public Vector3f getSurfaceRotation(Vector3f o_result) {
+
+		Vector3f zAxis = Draw3DCache.getVector3f();
+		try {
+			getZAxis(zAxis);
+			return Math3D.eulerAngles(zAxis, IVector3f.Z_AXIS, o_result);
+		} finally {
+			Draw3DCache.returnVector3f(zAxis);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.AbstractSurface#getXAxis(org.eclipse.draw3d.geometry.Vector3f)
 	 */
 	@Override
@@ -182,6 +198,16 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.ISurface#is2DHost()
+	 */
+	public boolean is2DHost() {
+
+		return false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.ISceneListener#renderPassFinished(org.eclipse.draw3d.RenderContext)
 	 */
 	public void renderPassFinished(RenderContext i_renderContext) {
@@ -214,21 +240,5 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 		b.append(" and depth " + m_depth);
 
 		return b.toString();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.ISurface#getSurfaceRotation(org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	public Vector3f getSurfaceRotation(Vector3f o_result) {
-
-		Vector3f zAxis = Draw3DCache.getVector3f();
-		try {
-			getZAxis(zAxis);
-			return Math3D.eulerAngles(zAxis, IVector3f.Z_AXIS, o_result);
-		} finally {
-			Draw3DCache.returnVector3f(zAxis);
-		}
 	}
 }

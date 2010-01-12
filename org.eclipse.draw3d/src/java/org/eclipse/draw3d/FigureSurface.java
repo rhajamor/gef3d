@@ -243,4 +243,14 @@ public class FigureSurface extends AbstractSurface {
 
 		return b.toString();
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ISurface#is2DHost()
+	 */
+	public boolean is2DHost() {
+
+		return true;
+	}
 }

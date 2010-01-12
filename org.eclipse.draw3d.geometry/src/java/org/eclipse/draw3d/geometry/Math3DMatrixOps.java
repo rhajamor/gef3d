@@ -346,7 +346,7 @@ public class Math3DMatrixOps extends Math3DMatrix4f {
 	 * @return the result of the transformation
 	 * @see "http://en.wikipedia.org/wiki/Transformation_matrix"
 	 */
-	public static Vector4f transform(IMatrix4f i_matrix, IVector4f i_vector,
+	public static Vector4f transform(IVector4f i_vector, IMatrix4f i_matrix,
 		Vector4f o_result) {
 
 		Matrix4fImpl m = Matrix4fImpl.cast(i_matrix);

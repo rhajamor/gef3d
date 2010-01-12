@@ -11,6 +11,12 @@
 
 package org.eclipse.draw3d.graphics3d.lwjgl.font;
 
+import java.nio.FloatBuffer;
+
+import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -22,15 +28,12 @@ import org.lwjgl.opengl.GL11;
  */
 public class LwjglFontChar {
 
+	private char m_char;
+
 	/**
 	 * The font height.
 	 */
 	private final int m_height;
-
-	/**
-	 * The id of the display list that renders this character.
-	 */
-	private int m_listId = -1;
 
 	/**
 	 * The S texture coordinate of the upper left corner of this character.
@@ -60,25 +63,103 @@ public class LwjglFontChar {
 	/**
 	 * Creates a new character with the given width and height.
 	 * 
+	 * @param i_char the character
 	 * @param i_width the width of this character
 	 * @param i_height the height of the font this character belongs to
 	 */
-	public LwjglFontChar(int i_width, int i_height) {
+	public LwjglFontChar(char i_char, int i_width, int i_height) {
 
+		m_char = i_char;
 		m_width = i_width;
 		m_height = i_height;
 	}
 
 	/**
-	 * Builds a display list for this character.
+	 * Returns the width of this character.
 	 * 
-	 * @param i_listId the id of the display list to build
-	 * @param i_width the width of the character texture
-	 * @param i_height the height of the character texture
+	 * @return the width of this character
 	 */
-	public void buildList(int i_listId, int i_width, int i_height) {
+	public int getWidth() {
 
-		GL11.glNewList(i_listId, GL11.GL_COMPILE);
+		return m_width;
+	}
+
+	/**
+	 * Renders this character at the given coordinates by adding the vertices
+	 * and texture coordinates to the given buffers.
+	 * 
+	 * @param i_transformation the transformation to apply to the vertices - can
+	 *            be <code>null</code>
+	 * @param i_x the X coordinate
+	 * @param i_y the Y coordinate
+	 * @param i_vertexBuffer the vertex buffer
+	 * @param i_coordBuffer the texture coordinate buffer
+	 */
+	public void render(IMatrix4f i_transformation, float i_x, float i_y,
+		FloatBuffer i_vertexBuffer, FloatBuffer i_coordBuffer) {
+
+		if (i_transformation == null
+			|| IMatrix4f.IDENTITY.equals(i_transformation)) {
+			i_vertexBuffer.put(i_x);
+			i_vertexBuffer.put(i_y);
+			i_coordBuffer.put(m_s1);
+			i_coordBuffer.put(m_t1);
+
+			i_vertexBuffer.put(i_x);
+			i_vertexBuffer.put(i_y + m_height);
+			i_coordBuffer.put(m_s1);
+			i_coordBuffer.put(m_t2);
+
+			i_vertexBuffer.put(i_x + m_width);
+			i_vertexBuffer.put(i_y + m_height);
+			i_coordBuffer.put(m_s2);
+			i_coordBuffer.put(m_t2);
+
+			i_vertexBuffer.put(i_x + m_width);
+			i_vertexBuffer.put(i_y);
+			i_coordBuffer.put(m_s2);
+			i_coordBuffer.put(m_t1);
+		} else {
+			Vector3f v = Draw3DCache.getVector3f();
+			try {
+				v.set(i_x, i_y, 0);
+				Math3D.transform(v, i_transformation, v);
+				i_vertexBuffer.put(v.getX());
+				i_vertexBuffer.put(v.getY());
+				i_coordBuffer.put(m_s1);
+				i_coordBuffer.put(m_t1);
+
+				v.set(i_x, i_y + m_height, 0);
+				Math3D.transform(v, i_transformation, v);
+				i_vertexBuffer.put(v.getX());
+				i_vertexBuffer.put(v.getY());
+				i_coordBuffer.put(m_s1);
+				i_coordBuffer.put(m_t2);
+
+				v.set(i_x + m_width, i_y + m_height, 0);
+				Math3D.transform(v, i_transformation, v);
+				i_vertexBuffer.put(v.getX());
+				i_vertexBuffer.put(v.getY());
+				i_coordBuffer.put(m_s2);
+				i_coordBuffer.put(m_t2);
+
+				v.set(i_x + m_width, i_y, 0);
+				Math3D.transform(v, i_transformation, v);
+				i_vertexBuffer.put(v.getX());
+				i_vertexBuffer.put(v.getY());
+				i_coordBuffer.put(m_s2);
+				i_coordBuffer.put(m_t1);
+			} finally {
+				Draw3DCache.returnVector3f(v);
+			}
+		}
+	}
+
+	/**
+	 * Renders this character directly in immediate mode.
+	 */
+	public void render() {
+
 		GL11.glBegin(GL11.GL_QUADS);
 
 		GL11.glTexCoord2f(m_s1, m_t1);
@@ -91,29 +172,6 @@ public class LwjglFontChar {
 		GL11.glVertex2f(m_width, 0);
 
 		GL11.glEnd();
-		GL11.glEndList();
-
-		m_listId = i_listId;
-	}
-
-	/**
-	 * Returns the id of the display list that renders this character.
-	 * 
-	 * @return the list id
-	 */
-	public int getListId() {
-
-		return m_listId;
-	}
-
-	/**
-	 * Returns the width of this character.
-	 * 
-	 * @return the width of this character
-	 */
-	public int getWidth() {
-
-		return m_width;
 	}
 
 	/**
@@ -130,5 +188,16 @@ public class LwjglFontChar {
 		m_t1 = i_t1;
 		m_s2 = i_s2;
 		m_t2 = i_t2;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+
+		return Character.toString(m_char);
 	}
 }

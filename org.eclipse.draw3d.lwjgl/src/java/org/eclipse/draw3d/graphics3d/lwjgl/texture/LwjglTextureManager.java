@@ -12,9 +12,11 @@ package org.eclipse.draw3d.graphics3d.lwjgl.texture;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
@@ -54,32 +56,33 @@ public class LwjglTextureManager {
 	 */
 	private LwjglFontManager m_fontManager;
 
+	private DisplayListManager m_displayListManager;
+
 	/**
 	 * Creates a new texture manager. The main GL context is needed for pbuffer
 	 * textures.
 	 * 
 	 * @param i_context the main GL context
+	 * @param i_fontManager the font manager
 	 */
-	public LwjglTextureManager(GLCanvas i_context) {
+	public LwjglTextureManager(GLCanvas i_context,
+			DisplayListManager i_displayListManager,
+			LwjglFontManager i_fontManager) {
 
 		if (i_context == null)
 			throw new NullPointerException("i_context must not be null");
 
+		if (i_displayListManager == null)
+			throw new NullPointerException(
+				"i_displayListManager must not be null");
+
+		if (i_fontManager == null)
+			throw new NullPointerException("i_fontManager must not be null");
+
 		m_context = i_context;
 		m_textures = new HashMap<Object, LwjglTexture>();
-	}
-
-	/**
-	 * This method should not be called from outside, it is only defined public
-	 * here for tests.
-	 * 
-	 * @return the font manager
-	 */
-	public LwjglFontManager getFontManager() {
-		if (m_fontManager == null) { // lazy initialization
-			m_fontManager = new LwjglFontManager();
-		}
-		return m_fontManager;
+		m_displayListManager = i_displayListManager;
+		m_fontManager = i_fontManager;
 	}
 
 	/**
@@ -161,8 +164,7 @@ public class LwjglTextureManager {
 				log.fine("Pbuffer texture support detected");
 				m_textureSupport = TextureSupport.PBUFFER;
 			} else {
-				log
-					.fine("No hardware support for accelerated texture drawing detected, using SWT images");
+				log.fine("No hardware support for accelerated texture drawing detected, using SWT images");
 				m_textureSupport = TextureSupport.SWT;
 			}
 		}
@@ -199,12 +201,14 @@ public class LwjglTextureManager {
 
 		switch (getTextureSupport()) {
 		case FBO:
-			texture = new LwjglTextureFbo(i_width, i_height, getFontManager());
+			texture =
+				new LwjglTextureFbo(i_width, i_height, m_displayListManager,
+					m_fontManager);
 			break;
 		case PBUFFER:
 			texture =
 				new LwjglTexturePbuffer(m_context, i_width, i_height,
-					getFontManager());
+					m_displayListManager, m_fontManager);
 			break;
 		case SWT:
 			texture = new LwjglTextureSwt(i_width, i_height);
@@ -262,16 +266,15 @@ public class LwjglTextureManager {
 		if (m_disposed)
 			return;
 
+		if (log.isLoggable(Level.FINE))
+			log.fine("disposing texture manager " + this);
+
 		deactivateTexture();
 		for (LwjglTexture lwjglTexture : m_textures.values())
 			lwjglTexture.dispose();
 
 		m_textures = null;
-
-		if (m_fontManager != null) {
-			m_fontManager.dispose();
-			m_fontManager = null;
-		}
+		m_fontManager = null;
 
 		m_disposed = true;
 	}

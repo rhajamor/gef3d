@@ -13,7 +13,6 @@ package org.eclipse.draw3d.shapes;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.draw3d.DisplayListManager;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector3f;
@@ -21,6 +20,7 @@ import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Position3DImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.picking.Query;
@@ -303,7 +303,7 @@ public class SphereShape extends PositionableShape {
 
 		Graphics3D g3d = i_renderContext.getGraphics3D();
 		DisplayListManager displayListManager =
-			i_renderContext.getDisplayListManager();
+			i_renderContext.getGraphics3D().getDisplayListManager();
 
 		initDisplayLists(displayListManager, g3d);
 
@@ -331,38 +331,50 @@ public class SphereShape extends PositionableShape {
 	private void initDisplayLists(DisplayListManager i_manager,
 		final Graphics3D i_graphics3D) {
 
-		if (m_fill && !i_manager.isDisplayList(m_fillKey)) {
-			i_manager.createDisplayList(m_fillKey, new Runnable() {
-				public void run() {
-					i_graphics3D.glPushMatrix();
-					try {
-						renderFill(i_graphics3D);
-						for (int i = 0; i < 3; i++) {
-							i_graphics3D.setPosition(ROTATE_Z90);
-							renderFill(i_graphics3D);
-						}
-					} finally {
-						i_graphics3D.glPopMatrix();
-					}
-				}
-			});
-		}
+		boolean initFill = m_fill && !i_manager.isDisplayList(m_fillKey);
+		boolean initOutline =
+			m_outline && !i_manager.isDisplayList(m_outlineKey);
 
-		if (m_outline && !i_manager.isDisplayList(m_outlineKey)) {
-			i_manager.createDisplayList(m_outlineKey, new Runnable() {
-				public void run() {
-					i_graphics3D.glPushMatrix();
-					try {
-						renderOutline(i_graphics3D);
-						for (int i = 0; i < 3; i++) {
-							i_graphics3D.setPosition(ROTATE_Z90);
-							renderOutline(i_graphics3D);
+		if (!initFill && !initOutline)
+			return;
+
+		i_manager.interruptDisplayList();
+		try {
+			if (initFill) {
+				i_manager.createDisplayList(m_fillKey, new Runnable() {
+					public void run() {
+						i_graphics3D.glPushMatrix();
+						try {
+							renderFill(i_graphics3D);
+							for (int i = 0; i < 3; i++) {
+								i_graphics3D.setPosition(ROTATE_Z90);
+								renderFill(i_graphics3D);
+							}
+						} finally {
+							i_graphics3D.glPopMatrix();
 						}
-					} finally {
-						i_graphics3D.glPopMatrix();
 					}
-				}
-			});
+				});
+			}
+
+			if (initOutline) {
+				i_manager.createDisplayList(m_outlineKey, new Runnable() {
+					public void run() {
+						i_graphics3D.glPushMatrix();
+						try {
+							renderOutline(i_graphics3D);
+							for (int i = 0; i < 3; i++) {
+								i_graphics3D.setPosition(ROTATE_Z90);
+								renderOutline(i_graphics3D);
+							}
+						} finally {
+							i_graphics3D.glPopMatrix();
+						}
+					}
+				});
+			}
+		} finally {
+			i_manager.resumeDisplayList();
 		}
 	}
 

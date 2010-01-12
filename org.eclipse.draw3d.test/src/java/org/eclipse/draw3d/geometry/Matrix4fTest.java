@@ -450,7 +450,7 @@ public class Matrix4fTest extends TestCase {
 
 	/**
 	 * Test method for
-	 * {@link org.eclipse.draw3d.geometryext.Matrix4fImpl#equals(org.eclipse.draw3d.geometryext.IMatrix4f)}
+	 * {@link org.eclipse.draw3d.geometryext.Matrix4fImpl#ruleEquals(org.eclipse.draw3d.geometryext.IMatrix4f)}
 	 * .
 	 */
 	public void testEqualsIMatrix4f() {

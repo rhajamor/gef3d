@@ -14,8 +14,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw3d.ArrowDecoration3D;
-import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef3d.editparts.AbstractConnectionEditPart3D;
 import org.eclipse.gef3d.examples.graph.editor.figures.EdgeFigure3D;
 import org.eclipse.gef3d.examples.graph.model.Edge;
@@ -69,8 +67,8 @@ public class IntermodelEdgePart extends AbstractConnectionEditPart3D implements
 		Color color = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
 		edge.setForegroundColor(color);
 
-		edge.setTargetDecoration(new ArrowDecoration3D());
-		edge.setSourceDecoration(new ArrowDecoration3D());
+		// edge.setTargetDecoration(new ArrowDecoration3D());
+		// edge.setSourceDecoration(new ArrowDecoration3D());
 
 		return edge;
 	}

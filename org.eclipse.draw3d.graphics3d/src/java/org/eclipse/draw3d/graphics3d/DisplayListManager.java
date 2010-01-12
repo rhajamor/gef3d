@@ -8,18 +8,18 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d;
+package org.eclipse.draw3d.graphics3d;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.eclipse.draw3d.graphics3d.Graphics3D;
-import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 
 /**
  * Manages display lists during a render operation in the current GL context.
@@ -30,16 +30,50 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
  */
 public class DisplayListManager {
 
+	private class DisplayList {
+		private int m_id;
+
+		private int[] m_subIds;
+
+		public DisplayList(int i_id, Collection<Integer> i_subIds) {
+
+			m_id = i_id;
+
+			if (i_subIds != null && !i_subIds.isEmpty()) {
+				m_subIds = new int[i_subIds.size()];
+
+				int i = 0;
+				for (Integer subId : i_subIds)
+					m_subIds[i++] = subId;
+			}
+		}
+
+		public int getId() {
+
+			return m_id;
+		}
+
+		public int[] getSubIds() {
+
+			return m_subIds;
+		}
+	}
+
 	@SuppressWarnings("unused")
 	private static final Logger log =
 		Logger.getLogger(DisplayListManager.class.getName());
 
 	private static final int RANGE = 10;
 
+	private boolean m_active = false;
+
 	private List<Integer> m_baseIds = new ArrayList<Integer>();
 
-	private Map<Object, Integer> m_displayLists =
-		new HashMap<Object, Integer>();
+	private LinkedList<LinkedList<Integer>> m_creationStack =
+		new LinkedList<LinkedList<Integer>>();
+
+	private Map<Object, DisplayList> m_displayLists =
+		new HashMap<Object, DisplayList>();
 
 	private final boolean m_disposed = false;
 
@@ -79,6 +113,10 @@ public class DisplayListManager {
 		m_baseIds.clear();
 		m_displayLists.clear();
 		m_freeIds.clear();
+		m_creationStack.clear();
+		m_active = false;
+
+		log.fine("display list manager cleared");
 	}
 
 	/**
@@ -104,36 +142,38 @@ public class DisplayListManager {
 		if (i_runnable == null)
 			throw new NullPointerException("i_runnable must not be null");
 
-		Integer id = m_displayLists.get(i_key);
-		if (id == null)
-			id = getNewId();
+		if (m_active)
+			throw new IllegalStateException(
+				"cannot create a display list while another list is being created");
 
-		m_graphics3D.glNewList(id, Graphics3DDraw.GL_COMPILE);
-		i_runnable.run();
-		m_graphics3D.glEndList();
+		if (log.isLoggable(Level.FINE))
+			log.fine("creating display list with key '" + i_key + "'");
 
-		m_displayLists.put(i_key, id);
+		DisplayList list = doCreateDisplayList(i_key, i_runnable);
+
+		if (log.isLoggable(Level.FINE))
+			log.fine("display list with key '" + i_key + "' created under id "
+				+ list.getId());
 	}
 
-	/**
-	 * Deletes the display lists with the given keys. If any of the given keys
-	 * is not the key of a display list that was created with this manager, it
-	 * is ignored.
-	 * 
-	 * @param i_keys the keys of the display lists to delete
-	 * @throws IllegalStateException if this display list manager is disposed
-	 */
-	public void deleteDisplayLists(Object... i_keys) {
+	public void createDisplayLists(Map<Object, Runnable> i_requests) {
 
-		if (m_disposed)
-			throw new IllegalStateException("display list manager is disposed");
+		if (i_requests == null)
+			throw new NullPointerException("i_requests must not be null");
 
-		for (Object key : i_keys) {
-			int id = m_displayLists.get(key);
-			m_graphics3D.glDeleteLists(id, 1);
-			m_displayLists.remove(key);
-			m_freeIds.offer(id);
-		}
+		if (m_active)
+			throw new IllegalStateException(
+				"cannot create a display list while another list is being created");
+
+		if (log.isLoggable(Level.FINE))
+			log.fine("creating " + i_requests.size()
+				+ " display lists with keys '" + i_requests.keySet() + "'");
+
+		for (Entry<Object, Runnable> entry : i_requests.entrySet())
+			doCreateDisplayList(entry.getKey(), entry.getValue());
+
+		if (log.isLoggable(Level.FINE))
+			log.fine(i_requests.size() + " display lists created");
 	}
 
 	/**
@@ -144,9 +184,78 @@ public class DisplayListManager {
 		if (m_disposed)
 			return;
 
+		if (log.isLoggable(Level.FINE))
+			log.info("disposing display list manager " + this);
+
 		clear();
 		m_baseIds = null;
 		m_displayLists = null;
+		m_creationStack = null;
+	}
+
+	private DisplayList doCreateDisplayList(Object i_key, Runnable i_runnable) {
+
+		if (m_displayLists.containsKey(i_key))
+			deleteDisplayLists(i_key);
+
+		Integer id = getNewId();
+
+		LinkedList<Integer> subListIds = new LinkedList<Integer>();
+		subListIds.add(id);
+		m_creationStack.addLast(subListIds);
+
+		m_active = true;
+		m_graphics3D.glNewList(id, Graphics3DDraw.GL_COMPILE);
+		i_runnable.run();
+		m_graphics3D.glEndList();
+		m_active = false;
+
+		if (subListIds.size() > 1) {
+			id = getNewId();
+
+			if (log.isLoggable(Level.FINE))
+				log.fine("merging " + subListIds.size()
+					+ " display lists with ids " + subListIds
+					+ " into one list with key '" + i_key + "' and id " + id);
+
+			m_graphics3D.glNewList(id, Graphics3DDraw.GL_COMPILE);
+			for (Integer subListId : subListIds)
+				m_graphics3D.glCallList(subListId);
+			m_graphics3D.glEndList();
+		}
+
+		DisplayList list = new DisplayList(id, subListIds);
+		m_displayLists.put(i_key, list);
+		m_creationStack.removeLast();
+
+		return list;
+	}
+
+	private void deleteDisplayList(Integer id) {
+
+		m_graphics3D.glDeleteLists(id, 1);
+		m_freeIds.offer(id);
+	}
+
+	public void deleteDisplayLists(Object... i_keys) {
+
+		for (Object key : i_keys) {
+			DisplayList list = m_displayLists.get(key);
+			if (list == null)
+				throw new IllegalArgumentException("list with key '" + i_keys
+					+ "' does not exist");
+
+			if (log.isLoggable(Level.FINE))
+				log.fine("deleting display list with key '" + key + "'");
+
+			deleteDisplayList(list.getId());
+			int[] subIds = list.getSubIds();
+			if (subIds != null)
+				for (int i = 0; i < subIds.length; i++)
+					deleteDisplayList(subIds[i]);
+
+			m_displayLists.remove(key);
+		}
 	}
 
 	/**
@@ -168,11 +277,11 @@ public class DisplayListManager {
 		if (i_key == null)
 			throw new NullPointerException("i_key must not be null");
 
-		Integer id = m_displayLists.get(i_key);
-		if (id == null)
+		DisplayList list = m_displayLists.get(i_key);
+		if (list == null)
 			throw new IllegalArgumentException("unknown display list: " + i_key);
 
-		m_graphics3D.glCallList(id);
+		m_graphics3D.glCallList(list.getId());
 	}
 
 	/**
@@ -199,6 +308,18 @@ public class DisplayListManager {
 		return baseId + m_index++;
 	}
 
+	public void interruptDisplayList() {
+
+		if (!m_creationStack.isEmpty()) {
+			if (log.isLoggable(Level.FINE))
+				log.fine("interrupting creation of display list with id "
+					+ m_creationStack.getLast().getLast());
+			m_graphics3D.glEndList();
+
+			m_active = false;
+		}
+	}
+
 	/**
 	 * Indicates whether a number of display lists have been registered with
 	 * this manager.
@@ -219,6 +340,23 @@ public class DisplayListManager {
 					return false;
 
 		return true;
+	}
+
+	public void resumeDisplayList() {
+
+		if (!m_creationStack.isEmpty()) {
+			Integer id = getNewId();
+
+			if (log.isLoggable(Level.FINE))
+				log.fine("resuming creation of display list with id "
+					+ m_creationStack.getLast().getLast() + " under new id "
+					+ id);
+
+			m_creationStack.getLast().add(id);
+			m_graphics3D.glNewList(id, Graphics3DDraw.GL_COMPILE);
+
+			m_active = true;
+		}
 	}
 
 }

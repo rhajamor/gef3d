@@ -21,9 +21,11 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.logging.Logger;
 
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.geometry.Math3DCache;
 
 /**
@@ -37,105 +39,174 @@ import org.eclipse.draw3d.geometry.Math3DCache;
  */
 public class Draw3DCache extends Math3DCache {
 
-	/**
-	 * Holds a buffer and information about its capacity.
-	 * 
-	 * @author Kristian Duske
-	 * @version $Revision$
-	 * @since 05.08.2009
-	 */
-	private static class BufferHolder {
+	private static final Logger log =
+		Logger.getLogger(Draw3DCache.class.getName());
 
-		private Buffer m_buffer;
+	private static final Comparator<Object> m_bufferComparator =
+		new Comparator<Object>() {
+			public int compare(Object i_o1, Object i_o2) {
 
-		private int m_capacity;
+				int i1, i2;
 
-		public BufferHolder(Buffer i_buffer) {
+				if (i_o1 instanceof Integer)
+					i1 = (Integer) i_o1;
+				else
+					i1 = ((Buffer) i_o1).capacity();
 
-			m_buffer = i_buffer;
-			m_capacity = m_buffer.capacity();
-		}
+				if (i_o2 instanceof Integer)
+					i2 = (Integer) i_o2;
+				else
+					i2 = ((Buffer) i_o2).capacity();
 
-		public BufferHolder(int i_capacity) {
-
-			m_capacity = i_capacity;
-		}
-
-		public Buffer getBuffer() {
-
-			return m_buffer;
-		}
-
-		public int getCapacity() {
-
-			return m_capacity;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see java.lang.Object#toString()
-		 */
-		@Override
-		public String toString() {
-
-			return "BufferHolder [capacity=" + m_capacity + "]";
-		}
-	}
-
-	private static final Comparator<BufferHolder> m_bufferComparator =
-		new Comparator<BufferHolder>() {
-			public int compare(BufferHolder i_o1, BufferHolder i_o2) {
-				if (i_o1.getCapacity() < i_o2.getCapacity())
+				if (i1 < i2)
 					return -1;
+
 				return 0;
 			}
 		};
 
-	private static final List<BufferHolder> m_byteBuffer =
-		new ArrayList<BufferHolder>();
+	private static final List<ByteBuffer> m_byteBuffer =
+		new ArrayList<ByteBuffer>();
+
+	private static int m_byteBufferCounter;
 
 	private static final Queue<Dimension> m_dimension =
 		new LinkedList<Dimension>();
 
-	private static final List<BufferHolder> m_doubleBuffer =
-		new ArrayList<BufferHolder>();
+	private static int m_dimensionCounter;
 
-	private static final List<BufferHolder> m_floatBuffer =
-		new ArrayList<BufferHolder>();
+	private static final List<DoubleBuffer> m_doubleBuffer =
+		new ArrayList<DoubleBuffer>();
 
-	private static final List<BufferHolder> m_intBuffer =
-		new ArrayList<BufferHolder>();
+	private static int m_doubleBufferCounter;
+
+	private static final List<FloatBuffer> m_floatBuffer =
+		new ArrayList<FloatBuffer>();
+
+	private static int m_floatBufferCounter;
+
+	private static final List<IntBuffer> m_intBuffer =
+		new ArrayList<IntBuffer>();
+
+	private static int m_intBufferCounter;
 
 	private static final Queue<Point> m_point = new LinkedList<Point>();
 
-	private static Buffer doGetBuffer(List<BufferHolder> i_buffers,
-		BufferHolder i_holder) {
+	private static int m_pointCounter;
+
+	private static Queue<Rectangle> m_rectangle = new LinkedList<Rectangle>();
+
+	private static int m_rectangleCounter;
+
+	private static ByteBuffer createByteBuffer(int i_capacity) {
+
+		if (m_count) {
+			m_byteBufferCounter++;
+			if (m_byteBufferCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " byte buffers, are you properly returning them?");
+		}
+
+		return BufferUtils.createByteBuffer(i_capacity);
+	}
+
+	private static Dimension createDimension() {
+
+		if (m_count) {
+			m_dimensionCounter++;
+			if (m_dimensionCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " dimensions, are you properly returning them?");
+		}
+
+		return new Dimension();
+	}
+
+	private static DoubleBuffer createDoubleBuffer(int i_capacity) {
+
+		if (m_count) {
+			m_doubleBufferCounter++;
+			if (m_doubleBufferCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " double buffers, are you properly returning them?");
+		}
+
+		return BufferUtils.createDoubleBuffer(i_capacity);
+	}
+
+	private static FloatBuffer createFloatBuffer(int i_capacity) {
+
+		if (m_count) {
+			m_floatBufferCounter++;
+			if (m_floatBufferCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " float buffers, are you properly returning them?");
+		}
+
+		return BufferUtils.createFloatBuffer(i_capacity);
+	}
+
+	private static IntBuffer createIntBuffer(int i_capacity) {
+
+		if (m_count) {
+			m_intBufferCounter++;
+			if (m_intBufferCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " int buffers, are you properly returning them?");
+		}
+
+		return BufferUtils.createIntBuffer(i_capacity);
+	}
+
+	private static Point createPoint() {
+
+		if (m_count) {
+			m_pointCounter++;
+			if (m_pointCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " points, are you properly returning them?");
+		}
+
+		return new Point();
+	}
+
+	private static Rectangle createRectangle() {
+
+		if (m_count) {
+			m_rectangleCounter++;
+			if (m_rectangleCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " rectangles, are you properly returning them?");
+		}
+
+		return new Rectangle();
+	}
+
+	private static <T extends Buffer> T doGetBuffer(List<T> i_buffers,
+		int i_capacity) {
 
 		int index =
-			Collections.binarySearch(i_buffers, i_holder, m_bufferComparator);
+			Collections.binarySearch(i_buffers, i_capacity, m_bufferComparator);
 
 		if (index >= 0) {
-			BufferHolder holder = i_buffers.remove(index);
-			Buffer buffer = holder.getBuffer();
-			buffer.limit(i_holder.getCapacity());
+			T buffer = i_buffers.remove(index);
+			buffer.limit(i_capacity);
 			return buffer;
 		}
 
 		return null;
 	}
 
-	private static void doReturnBuffer(List<BufferHolder> i_buffers,
-		Buffer i_buffer) {
+	private static <T extends Buffer> void doReturnBuffer(List<T> i_buffers,
+		T i_buffer) {
 
-		BufferHolder holder = new BufferHolder(i_buffer);
 		int index =
-			Collections.binarySearch(i_buffers, holder, m_bufferComparator);
+			Collections.binarySearch(i_buffers, i_buffer, m_bufferComparator);
 
 		if (index < 0)
 			index = -index - 1;
 
-		i_buffers.add(index, holder);
+		i_buffers.add(index, i_buffer);
 	}
 
 	/**
@@ -147,17 +218,16 @@ public class Draw3DCache extends Math3DCache {
 	 */
 	public static ByteBuffer getByteBuffer(int i_capacity) {
 
-		BufferHolder holder = new BufferHolder(i_capacity);
 		ByteBuffer buffer;
 		if (m_synchronized)
 			synchronized (m_byteBuffer) {
-				buffer = (ByteBuffer) doGetBuffer(m_byteBuffer, holder);
+				buffer = doGetBuffer(m_byteBuffer, i_capacity);
 			}
 		else
-			buffer = (ByteBuffer) doGetBuffer(m_byteBuffer, holder);
+			buffer = doGetBuffer(m_byteBuffer, i_capacity);
 
 		if (buffer == null)
-			buffer = BufferUtils.createByteBuffer(i_capacity);
+			buffer = createByteBuffer(i_capacity);
 		else
 			buffer.limit(i_capacity);
 
@@ -174,13 +244,13 @@ public class Draw3DCache extends Math3DCache {
 		if (m_synchronized) {
 			synchronized (m_dimension) {
 				if (m_dimension.isEmpty())
-					return new Dimension();
+					return createDimension();
 				else
 					return m_dimension.remove();
 			}
 		} else {
 			if (m_dimension.isEmpty())
-				return new Dimension();
+				return createDimension();
 			else
 				return m_dimension.remove();
 		}
@@ -195,17 +265,16 @@ public class Draw3DCache extends Math3DCache {
 	 */
 	public static DoubleBuffer getDoubleBuffer(int i_capacity) {
 
-		BufferHolder holder = new BufferHolder(i_capacity);
 		DoubleBuffer buffer;
 		if (m_synchronized)
 			synchronized (m_doubleBuffer) {
-				buffer = (DoubleBuffer) doGetBuffer(m_doubleBuffer, holder);
+				buffer = doGetBuffer(m_doubleBuffer, i_capacity);
 			}
 		else
-			buffer = (DoubleBuffer) doGetBuffer(m_doubleBuffer, holder);
+			buffer = doGetBuffer(m_doubleBuffer, i_capacity);
 
 		if (buffer == null)
-			buffer = BufferUtils.createDoubleBuffer(i_capacity);
+			buffer = createDoubleBuffer(i_capacity);
 		else
 			buffer.limit(i_capacity);
 
@@ -221,17 +290,16 @@ public class Draw3DCache extends Math3DCache {
 	 */
 	public static FloatBuffer getFloatBuffer(int i_capacity) {
 
-		BufferHolder holder = new BufferHolder(i_capacity);
 		FloatBuffer buffer;
 		if (m_synchronized)
 			synchronized (m_floatBuffer) {
-				buffer = (FloatBuffer) doGetBuffer(m_floatBuffer, holder);
+				buffer = doGetBuffer(m_floatBuffer, i_capacity);
 			}
 		else
-			buffer = (FloatBuffer) doGetBuffer(m_floatBuffer, holder);
+			buffer = doGetBuffer(m_floatBuffer, i_capacity);
 
 		if (buffer == null)
-			buffer = BufferUtils.createFloatBuffer(i_capacity);
+			buffer = createFloatBuffer(i_capacity);
 		else
 			buffer.limit(i_capacity);
 
@@ -247,17 +315,16 @@ public class Draw3DCache extends Math3DCache {
 	 */
 	public static IntBuffer getIntBuffer(int i_capacity) {
 
-		BufferHolder holder = new BufferHolder(i_capacity);
 		IntBuffer buffer;
 		if (m_synchronized)
 			synchronized (m_intBuffer) {
-				buffer = (IntBuffer) doGetBuffer(m_intBuffer, holder);
+				buffer = doGetBuffer(m_intBuffer, i_capacity);
 			}
 		else
-			buffer = (IntBuffer) doGetBuffer(m_intBuffer, holder);
+			buffer = doGetBuffer(m_intBuffer, i_capacity);
 
 		if (buffer == null)
-			buffer = BufferUtils.createIntBuffer(i_capacity);
+			buffer = createIntBuffer(i_capacity);
 		else
 			buffer.limit(i_capacity);
 
@@ -274,15 +341,37 @@ public class Draw3DCache extends Math3DCache {
 		if (m_synchronized) {
 			synchronized (m_point) {
 				if (m_point.isEmpty())
-					return new Point();
+					return createPoint();
 				else
 					return m_point.remove();
 			}
 		} else {
 			if (m_point.isEmpty())
-				return new Point();
+				return createPoint();
 			else
 				return m_point.remove();
+		}
+	}
+
+	/**
+	 * Returns a cached {@link Rectangle}.
+	 * 
+	 * @return a cached rectangle
+	 */
+	public static Rectangle getRectangle() {
+
+		if (m_synchronized) {
+			synchronized (m_rectangle) {
+				if (m_rectangle.isEmpty())
+					return createRectangle();
+				else
+					return m_rectangle.remove();
+			}
+		} else {
+			if (m_rectangle.isEmpty())
+				return createRectangle();
+			else
+				return m_rectangle.remove();
 		}
 	}
 
@@ -305,6 +394,10 @@ public class Draw3DCache extends Math3DCache {
 				if (b != null)
 					doReturnBuffer(m_byteBuffer, b);
 		}
+
+		if (m_count && m_byteBuffer.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " byte buffers");
 	}
 
 	/**
@@ -325,6 +418,10 @@ public class Draw3DCache extends Math3DCache {
 			for (Dimension d : i_ds)
 				if (d != null)
 					m_dimension.offer(d);
+
+		if (m_count && m_dimension.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " dimensions");
 	}
 
 	/**
@@ -346,6 +443,11 @@ public class Draw3DCache extends Math3DCache {
 				if (b != null)
 					doReturnBuffer(m_doubleBuffer, b);
 		}
+
+		if (m_count && m_doubleBuffer.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " double buffers");
+
 	}
 
 	/**
@@ -367,6 +469,10 @@ public class Draw3DCache extends Math3DCache {
 				if (b != null)
 					doReturnBuffer(m_floatBuffer, b);
 		}
+
+		if (m_count && m_floatBuffer.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " float buffers");
 	}
 
 	/**
@@ -388,6 +494,10 @@ public class Draw3DCache extends Math3DCache {
 				if (b != null)
 					doReturnBuffer(m_intBuffer, b);
 		}
+
+		if (m_count && m_intBuffer.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " int buffers");
 	}
 
 	/**
@@ -408,5 +518,33 @@ public class Draw3DCache extends Math3DCache {
 			for (Point p : i_ps)
 				if (p != null)
 					m_point.offer(p);
+
+		if (m_count && m_point.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " points");
+	}
+
+	/**
+	 * Returns the given rectangles to the cache. If any of the given rectangles
+	 * is <code>null</code>, it is ignored.
+	 * 
+	 * @param i_rs the rectangles to return
+	 */
+	public static void returnRectangle(Rectangle... i_rs) {
+
+		if (m_synchronized)
+			synchronized (m_rectangle) {
+				for (Rectangle r : i_rs)
+					if (r != null)
+						m_rectangle.offer(r);
+			}
+		else
+			for (Rectangle r : i_rs)
+				if (r != null)
+					m_rectangle.offer(r);
+
+		if (m_count && m_rectangle.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " rectangles");
 	}
 }

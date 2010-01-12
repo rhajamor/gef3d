@@ -15,6 +15,7 @@ import java.nio.IntBuffer;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics;
 import org.eclipse.draw3d.util.BufferUtils;
@@ -219,18 +220,30 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 
 	private int m_width = -1;
 
+	private DisplayListManager m_displayListmanager;
+
 	/**
 	 * Creates a new texture with the given initial dimensions.
 	 * 
 	 * @param i_width the width of the texture
 	 * @param i_height the height of the texture
+	 * @param i_displayListmanager the display list manager
 	 * @param i_fontManager the font manager to use
 	 * @throws IllegalArgumentException if the given width or height is not
 	 *             positive
 	 */
 	public LwjglTextureFbo(int i_width, int i_height,
+			DisplayListManager i_displayListmanager,
 			LwjglFontManager i_fontManager) {
 
+		if (i_displayListmanager == null)
+			throw new NullPointerException(
+				"i_displayListmanager must not be null");
+
+		if (i_fontManager == null)
+			throw new NullPointerException("i_fontManager must not be null");
+
+		m_displayListmanager = i_displayListmanager;
 		m_fontManager = i_fontManager;
 		setDimensions(i_width, i_height);
 		m_glFrameBuffer = createFbo();
@@ -250,7 +263,9 @@ public class LwjglTextureFbo extends AbstractLwjglTexture {
 		EXTFramebufferObject.glBindFramebufferEXT(
 			EXTFramebufferObject.GL_FRAMEBUFFER_EXT, m_glFrameBuffer);
 		if (!m_valid) {
-			m_graphics = new LwjglGraphics(m_width, m_height, m_fontManager);
+			m_graphics =
+				new LwjglGraphics(m_width, m_height, m_displayListmanager,
+					m_fontManager);
 
 			deleteTexture(m_glTexture);
 			m_glTexture = createTexture(m_width, m_height);

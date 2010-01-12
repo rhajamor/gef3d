@@ -12,19 +12,36 @@ package org.eclipse.draw3d.graphics3d.lwjgl;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
+import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
+import org.eclipse.draw3d.graphics.optimizer.RecordingGraphics;
+import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics3d.AbstractGraphics3DDraw;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics;
+import org.eclipse.draw3d.graphics3d.RenderImage;
+import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGradientQuadVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglImageVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglLineVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPolygonVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPolylineVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPrimitiveClassifier;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglQuadVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglTextVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBackBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
@@ -35,6 +52,8 @@ import org.eclipse.draw3d.util.LogGraphics;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLContext;
 
 /**
@@ -49,10 +68,25 @@ import org.lwjgl.opengl.GLContext;
 public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		Graphics3D {
 	/**
+	 * Indicates which attribute groups must be saved prior to using this.
+	 */
+	private static final int ATTRIB_MASK =
+		GL11.GL_LIGHTING_BIT | GL11.GL_CURRENT_BIT | GL11.GL_TRANSFORM_BIT
+			| GL11.GL_LINE_BIT | GL11.GL_POLYGON_BIT | GL11.GL_TEXTURE_BIT
+			| GL11.GL_VIEWPORT_BIT | GL11.GL_DEPTH_BUFFER_BIT
+			| GL11.GL_COLOR_BUFFER_BIT | GL13.GL_MULTISAMPLE_BIT
+			| GL11.GL_ENABLE_BIT;
+
+	/**
 	 * Logger for this class
 	 */
 	private static final Logger log =
 		Logger.getLogger(Graphics3DLwjgl.class.getName());
+
+	/**
+	 * Translation offset for 2D rendering of non-polygon shapes.
+	 */
+	public static final float RASTER_OFFSET = 0.49f;
 
 	/**
 	 * Descriptor of this instance.
@@ -62,10 +96,16 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	/** Cashed hash code */
 	final int hashCode;
 
+	private Graphics m_activeGraphics;
+
 	/**
 	 * The GL context of this instance.
 	 */
 	public GLCanvas m_context = null;
+
+	private DisplayListManager m_displayListManager = null;
+
+	private LwjglFontManager m_fontManager;
 
 	private boolean m_log2D;
 
@@ -74,7 +114,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * content. It is lazily created in
 	 * {@link #activateGraphics2D(Object, int, int, int, Color)}.
 	 */
-	public LwjglTextureManager m_textureManager = null;
+	private LwjglTextureManager m_textureManager = null;
 
 	Properties properties = new Properties();
 
@@ -95,35 +135,55 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#activateGraphics2D(Object,
-	 *      int, int, int, Color)
+	 *      int, int)
 	 */
-	public Graphics activateGraphics2D(Object i_key, int i_width, int i_height,
-		int i_alpha, Color i_color) {
+	public Graphics begin2DRendering(Object i_key, IPosition3D i_position,
+		int i_width, int i_height) {
 
-		LwjglTextureManager textureManager = getTextureManager();
+		log.info("activating 2D graphics");
 
-		if (!textureManager.contains(i_key))
-			textureManager.createTexture(i_key, i_width, i_height);
-		else
-			textureManager.resizeTexture(i_key, i_width, i_height);
+		m_activeGraphics =
+			new RecordingGraphics(new LwjglPrimitiveClassifier());
 
-		textureManager.activateTexture(i_key);
-		textureManager.clearTexture(i_key, i_color, i_alpha);
-
-		Graphics graphics = textureManager.getGraphics();
-		if (graphics instanceof LwjglGraphics) {
-			LwjglGraphics lwjglGraphics = (LwjglGraphics) graphics;
-			String fontAntialias = getProperty(PROP_FONT_AA);
-			if (fontAntialias != null)
-				lwjglGraphics.setOverrideTextAntialias(Boolean.valueOf(fontAntialias));
-			else
-				lwjglGraphics.setOverrideTextAntialias(null);
-		}
+		// graphics.disableClipping();
+		//
+		// String fontAntialias = getProperty(PROP_FONT_AA);
+		// if (fontAntialias != null)
+		// graphics.setOverrideTextAntialias(Boolean.valueOf(fontAntialias));
+		// else
+		// graphics.setOverrideTextAntialias(null);
+		//
+		// // save all state variables that may be changed by the graphics
+		// object
+		// GL11.glPushAttrib(ATTRIB_MASK);
+		//
+		// GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		// GL11.glPushMatrix();
+		//
+		// Matrix4f m = Draw3DCache.getMatrix4f();
+		// Vector3f t = Draw3DCache.getVector3f();
+		// try {
+		// t.set(0, 0, 0.001f);
+		// m.set(i_position.getRotationLocationMatrix());
+		// Math3D.translate(m, t, m);
+		// setMatrix(m);
+		// } finally {
+		// Draw3DCache.returnVector3f(t);
+		// Draw3DCache.returnMatrix4f(m);
+		// }
+		//
+		// GL11.glShadeModel(GL11.GL_FLAT);
+		// GL11.glDisable(GL11.GL_DEPTH_TEST);
+		// // GL11.glDepthFunc(GL11.GL_LEQUAL);
+		// // GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ZERO);
+		// GL11.glDisable(GL11.GL_CULL_FACE);
+		// GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
+		// GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
 		if (m_log2D)
-			graphics = new LogGraphics(graphics);
+			return new LogGraphics(m_activeGraphics);
 
-		return graphics;
+		return m_activeGraphics;
 	}
 
 	/**
@@ -131,10 +191,69 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * 
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#deactivateGraphics2D()
 	 */
-	public void deactivateGraphics2D() {
+	public RenderImage deactivateGraphics2D() {
 
-		if (m_textureManager != null)
-			m_textureManager.deactivateTexture();
+		log.info("deactivating 2D graphics");
+
+		if (m_activeGraphics instanceof RecordingGraphics) {
+			RecordingGraphics og = (RecordingGraphics) m_activeGraphics;
+			List<PrimitiveSet> primiveSets = og.getPrimiveSets();
+			final List<LwjglVBO> vbos = new LinkedList<LwjglVBO>();
+
+			for (PrimitiveSet set : primiveSets) {
+				PrimitiveClass clazz = set.getPrimitiveClass();
+				if (clazz.isPolygon()) {
+					vbos.add(new LwjglPolygonVBO(set));
+				} else if (clazz.isQuad()) {
+					if (clazz.isGradient())
+						vbos.add(new LwjglGradientQuadVBO(set));
+					else if (clazz.isImage())
+						vbos.add(new LwjglImageVBO(set));
+					else
+						vbos.add(new LwjglQuadVBO(set));
+				} else if (clazz.isPolyline()) {
+					vbos.add(new LwjglPolylineVBO(set));
+				} else if (clazz.isLine()) {
+					vbos.add(new LwjglLineVBO(set));
+				} else if (clazz.isText()) {
+					vbos.add(new LwjglTextVBO(set, getFontManager()));
+				} else {
+					throw new AssertionError("unknown primitive class: "
+						+ clazz);
+				}
+			}
+
+			return new RenderImage() {
+
+				public void dispose() {
+
+					for (LwjglVBO vbo : vbos)
+						vbo.dispose();
+				}
+
+				public void initialize(Graphics3D i_g3d) {
+
+					for (LwjglVBO vbo : vbos)
+						vbo.initialize(i_g3d);
+				}
+
+				public void render(Graphics3D i_g3d) {
+
+					GL11.glDisable(GL11.GL_DEPTH_TEST);
+					try {
+						for (LwjglVBO vbo : vbos)
+							vbo.render(i_g3d);
+					} finally {
+						GL11.glEnable(GL11.GL_DEPTH_TEST);
+					}
+				}
+			};
+		}
+
+		return null;
+
+		// GL11.glPopMatrix();
+		// GL11.glPopAttrib();
 	}
 
 	/**
@@ -146,6 +265,10 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		try {
 			if (m_textureManager != null)
 				m_textureManager.dispose();
+			if (m_fontManager != null)
+				m_fontManager.dispose();
+			if (m_displayListManager != null)
+				m_displayListManager.dispose();
 		} catch (Exception ex) {
 			log.warning("Error disposing texture manager: " + ex);
 		}
@@ -158,6 +281,27 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 */
 	public Graphics3DDescriptor getDescriptor() {
 		return descriptor;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#getDisplayListManager()
+	 */
+	public DisplayListManager getDisplayListManager() {
+
+		if (m_displayListManager == null)
+			m_displayListManager = new DisplayListManager(this);
+
+		return m_displayListManager;
+	}
+
+	private LwjglFontManager getFontManager() {
+
+		if (m_fontManager == null)
+			m_fontManager = new LwjglFontManager(getDisplayListManager());
+
+		return m_fontManager;
 	}
 
 	/**
@@ -230,7 +374,9 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	private LwjglTextureManager getTextureManager() {
 
 		if (m_textureManager == null)
-			m_textureManager = new LwjglTextureManager(m_context);
+			m_textureManager =
+				new LwjglTextureManager(m_context, getDisplayListManager(),
+					getFontManager());
 		else if (m_textureManager.isDisposed())
 			throw new IllegalStateException("TextureManager is disposed");
 
@@ -722,6 +868,19 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		m_log2D = i_log2D;
 	}
 
+	private void setMatrix(IMatrix4f i_matrix) {
+
+		FloatBuffer buffer = Draw3DCache.getFloatBuffer(16);
+		try {
+			buffer.rewind();
+			i_matrix.toBufferRowMajor(buffer);
+			buffer.rewind();
+			org.lwjgl.opengl.GL11.glMultMatrix(buffer);
+		} finally {
+			Draw3DCache.returnFloatBuffer(buffer);
+		}
+	}
+
 	/**
 	 * Sets the position.
 	 * 
@@ -729,15 +888,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 */
 	public void setPosition(IPosition3D i_position) {
 
-		FloatBuffer buffer = Draw3DCache.getFloatBuffer(16);
-		try {
-			buffer.rewind();
-			i_position.getTransformationMatrix().toBufferRowMajor(buffer);
-			buffer.rewind();
-			org.lwjgl.opengl.GL11.glMultMatrix(buffer);
-		} finally {
-			Draw3DCache.returnFloatBuffer(buffer);
-		}
+		setMatrix(i_position.getTransformationMatrix());
 	}
 
 	/**

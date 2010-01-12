@@ -201,4 +201,12 @@ public interface ISurface {
 	 * @return the result vector
 	 */
 	public Vector3f getWorldLocation(Point i_surface, Vector3f o_result);
+
+	/**
+	 * Indicates whether this surface can host 2D content.
+	 * 
+	 * @return <code>true</code> if this surface can host 2D content and
+	 *         <code>false</code> otherwise
+	 */
+	public boolean is2DHost();
 }

@@ -369,7 +369,7 @@ public class BoundingBox3fTest extends TestCase {
 
 		Vector3f v0 = new Vector3fImpl(b0.getLocation(null));
 		Vector4f v1 = new Vector4fImpl(v0.getX(), v0.getY(), v0.getZ(), 1);
-		Math3D.transform(m0, v1, v1);
+		Math3D.transform(v1, m0, v1);
 
 		v0.setX(v1.getX() / v1.getW());
 		v0.setY(v1.getY() / v1.getW());

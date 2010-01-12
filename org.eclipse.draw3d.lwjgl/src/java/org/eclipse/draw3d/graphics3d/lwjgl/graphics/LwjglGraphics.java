@@ -16,23 +16,25 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
-import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.geometry.PointList;
-import org.eclipse.draw2d.geometry.PrecisionPoint;
 import org.eclipse.draw2d.geometry.PrecisionRectangle;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Matrix4f;
-import org.eclipse.draw3d.geometry.Matrix4fImpl;
-import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.graphics.GraphicsState;
+import org.eclipse.draw3d.graphics.StatefulGraphics;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFont;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
+import org.eclipse.draw3d.util.ArcHelper;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.ImageConverter.ConversionSpecs;
@@ -42,9 +44,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.LineAttributes;
 import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.graphics.TextLayout;
 import org.eclipse.swt.widgets.Display;
@@ -119,743 +119,11 @@ import org.lwjgl.opengl.GL11;
  *       arc, since it will work for small arcs, but it will draw too many
  *       segments for long arcs, resulting in a performance penalty
  * @todo implement the unsupported methods
+ * @todo tweak arc factors so that less segments are created
+ * @todo cache textures for images
  */
 @SuppressWarnings("unused")
-public class LwjglGraphics extends Graphics {
-
-	/**
-	 * A graphics state that forwards requests for not set values to its parent
-	 * state.
-	 * 
-	 * @author Kristian Duske
-	 * @version $Revision$
-	 * @since 08.03.2008
-	 */
-	private class GraphicsState {
-
-		private Boolean m_advanced;
-
-		private Integer m_alpha;
-
-		private Integer m_antialias;
-
-		private Color m_backgroundColor;
-
-		private Pattern m_backgroundPattern;
-
-		private PrecisionRectangle m_clip;
-
-		private Integer m_fillRule;
-
-		private Font m_font;
-
-		private Color m_foregroundColor;
-
-		private Pattern m_foregroundPattern;
-
-		private Integer m_interpolation;
-
-		private Integer m_lineCap;
-
-		private int[] m_lineDash;
-
-		private int m_lineDashLength;
-
-		private Integer m_lineJoin;
-
-		private Float m_lineMiterLimit;
-
-		private Integer m_lineStyle;
-
-		private Float m_lineWidth;
-
-		private final GraphicsState m_parentState;
-
-		private Integer m_textAntialias;
-
-		private Matrix4fImpl m_transformation;
-
-		private Boolean m_xorMode;
-
-		/**
-		 * Creates a new chained graphics state with the given parent.
-		 * 
-		 * @param i_parentState the parent of this state
-		 */
-		public GraphicsState(GraphicsState i_parentState) {
-
-			m_parentState = i_parentState;
-		}
-
-		/**
-		 * Intersects the current clipping rectangle with the given rectangle.
-		 * 
-		 * @param i_clip the rectangle to intersect with
-		 */
-		public void clipRect(Rectangle i_clip) {
-
-			if (i_clip == null)
-				return;
-
-			PrecisionRectangle currentClip = getClip();
-			if (currentClip != null && !currentClip.equals(i_clip)) {
-				if (m_clip == null)
-					m_clip = new PrecisionRectangle(currentClip);
-
-				// clipping in SWTGraphics is working slightly differently as
-				// Rectangle clipping, so we emulate the SWTClipping here:
-				double l = Math.max(m_clip.preciseX(), i_clip.preciseX());
-				double r =
-					Math.min(m_clip.preciseX() + m_clip.preciseWidth(),
-						i_clip.preciseX() + i_clip.preciseWidth());
-
-				double t = Math.max(m_clip.preciseY(), i_clip.preciseY());
-				double b =
-					Math.min(m_clip.preciseY() + m_clip.preciseHeight(),
-						i_clip.preciseY() + i_clip.preciseHeight());
-
-				if (r < l || b < t) {
-					// width and height of -1 to avoid ceiling function from
-					// re-adding a pixel.
-					r = l - 1;
-					b = t - 1;
-				}
-
-				m_clip.setX(l);
-				m_clip.setY(t);
-				m_clip.setWidth(r - l);
-				m_clip.setHeight(b - t);
-
-				// m_clip.intersect(i_clip);
-			} else
-				m_clip = new PrecisionRectangle(i_clip);
-		}
-
-		/**
-		 * Indicates whether the graphics system is in advanced graphics mode.
-		 * 
-		 * @return <code>true</code> if the graphics subsystem is in advanced
-		 *         graphics mode and <code>false</code> otherwise
-		 */
-		public boolean getAdvanced() {
-
-			if (m_advanced != null)
-				return m_advanced;
-
-			return m_parentState.getAdvanced();
-		}
-
-		/**
-		 * Returns the alpha value of this graphics state.
-		 * 
-		 * @return the alpha value of this graphics state
-		 */
-		public int getAlpha() {
-
-			if (m_alpha != null)
-				return m_alpha;
-
-			return m_parentState.getAlpha();
-		}
-
-		/**
-		 * Returns the antialias value for this graphics state.
-		 * 
-		 * @return the antialias value for this graphics state.
-		 */
-		public int getAntialias() {
-
-			if (m_antialias != null)
-				return m_antialias;
-
-			return m_parentState.getAntialias();
-		}
-
-		/**
-		 * Returns the background color of this graphics state.
-		 * 
-		 * @return the background color
-		 */
-		public Color getBackgroundColor() {
-
-			if (m_backgroundColor != null)
-				return m_backgroundColor;
-
-			return m_parentState.getBackgroundColor();
-		}
-
-		/**
-		 * Returns the background pattern of this graphics state.
-		 * 
-		 * @return the background pattern
-		 */
-		public Pattern getBackgroundPattern() {
-
-			if (m_backgroundPattern != null)
-				return m_backgroundPattern;
-
-			if (m_parentState != null)
-				return m_parentState.getBackgroundPattern();
-
-			return null;
-		}
-
-		/**
-		 * Returns the clip rectangle of this state.
-		 * 
-		 * @return the clip rectangle
-		 */
-		public PrecisionRectangle getClip() {
-
-			if (m_clip != null)
-				return m_clip;
-
-			return m_parentState.getClip();
-		}
-
-		/**
-		 * Returns the fill rule of this graphics state.
-		 * 
-		 * @return the fill rule of this graphics state
-		 */
-		public int getFillRule() {
-
-			if (m_fillRule != null)
-				return m_fillRule;
-
-			return m_parentState.getFillRule();
-		}
-
-		/**
-		 * Returns the font of this graphics state.
-		 * 
-		 * @return the font
-		 */
-		public Font getFont() {
-
-			if (m_font != null)
-				return m_font;
-
-			return m_parentState.getFont();
-		}
-
-		/**
-		 * Returns the foreground color of this graphics state.
-		 * 
-		 * @return the foreground color
-		 */
-		public Color getForegroundColor() {
-
-			if (m_foregroundColor != null)
-				return m_foregroundColor;
-
-			return m_parentState.getForegroundColor();
-		}
-
-		public Pattern getForegroundPattern() {
-
-			if (m_foregroundPattern != null)
-				return m_foregroundPattern;
-
-			if (m_parentState != null)
-				return m_parentState.getForegroundPattern();
-
-			return null;
-		}
-
-		/**
-		 * Returns the interpolation setting for this graphics state.
-		 * 
-		 * @return the interpolation setting
-		 */
-		public int getInterpolation() {
-
-			if (m_interpolation != null)
-				return m_interpolation;
-
-			return m_parentState.getInterpolation();
-		}
-
-		/**
-		 * Returns the line cap setting for this graphics state
-		 * 
-		 * @return the line cap setting
-		 */
-		public int getLineCap() {
-
-			if (m_lineCap != null)
-				return m_lineCap;
-
-			return m_parentState.getLineCap();
-		}
-
-		/**
-		 * Returns the custom line dash pattern.
-		 * 
-		 * @return the custom line dash pattern
-		 */
-		public int[] getLineDash() {
-
-			if (m_lineDash != null)
-				return m_lineDash;
-
-			if (m_parentState != null)
-				return m_parentState.getLineDash();
-
-			return null;
-		}
-
-		/**
-		 * Returns the total length of the line dash pattern. The total length
-		 * of a line dash pattern is the sum of all the elements of the pattern
-		 * array.
-		 * 
-		 * @return the total length of the line dash pattern
-		 */
-		public int getLineDashLength() {
-
-			if (m_lineDash != null)
-				return m_lineDashLength;
-
-			return m_parentState.getLineDashLength();
-		}
-
-		public int getLineJoin() {
-
-			if (m_lineJoin != null)
-				return m_lineJoin;
-
-			return m_parentState.getLineJoin();
-		}
-
-		/**
-		 * Returns the line miter limit of this graphics state.
-		 * 
-		 * @return the line miter limit of this graphics state
-		 */
-		public float getLineMiterLimit() {
-
-			if (m_lineMiterLimit != null)
-				return m_lineMiterLimit;
-
-			return m_parentState.getLineMiterLimit();
-		}
-
-		/**
-		 * Returns the line style of this graphics state.
-		 * 
-		 * @return the line style
-		 */
-		public int getLineStyle() {
-
-			if (m_lineStyle != null)
-				return m_lineStyle;
-
-			return m_parentState.getLineStyle();
-		}
-
-		/**
-		 * Returns the line width of this graphics state.
-		 * 
-		 * @return the line width
-		 */
-		public float getLineWidth() {
-
-			if (m_lineWidth != null)
-				return m_lineWidth;
-
-			return m_parentState.getLineWidth();
-		}
-
-		/**
-		 * Returns the parent graphics state.
-		 * 
-		 * @return the parent graphics state
-		 */
-		public GraphicsState getParent() {
-
-			return m_parentState;
-		}
-
-		/**
-		 * Returns the text antialias value of this graphics state.
-		 * 
-		 * @return the text antialias value
-		 */
-		public int getTextAntialias() {
-
-			if (m_textAntialias != null)
-				return m_textAntialias;
-
-			return m_parentState.getTextAntialias();
-		}
-
-		/**
-		 * Returns the transformation matrix of this graphics state.
-		 * 
-		 * @return the transformation matrix
-		 */
-		public Matrix4f getTransformation() {
-
-			return m_transformation;
-		}
-
-		/**
-		 * Indicates whether XOR mode drawing is enabled.
-		 * 
-		 * @return <code>true</code> if XOR drawing mode is enabled or
-		 *         <code>false</code> otherwise
-		 */
-		public boolean getXORMode() {
-
-			if (m_xorMode != null)
-				return m_xorMode;
-
-			return m_parentState.getXORMode();
-		}
-
-		/**
-		 * Rotates the coordinates system by the given angle counterclockwise.
-		 * 
-		 * @param i_degrees the rotation angle in degrees
-		 */
-		public void rotate(float i_degrees) {
-
-			if (m_transformation == null)
-				m_transformation = new Matrix4fImpl();
-
-			Matrix4f rot = Draw3DCache.getMatrix4f();
-			try {
-				// don't use Math3d.rotate() here because when rotating about
-				// the z axis, we can use a shorthand:
-				double radians = Math.toRadians(i_degrees);
-				float sin = (float) Math.sin(radians);
-				float cos = (float) Math.cos(radians);
-
-				rot.setIdentity();
-				rot.set(0, 0, cos);
-				rot.set(1, 0, sin);
-				rot.set(1, 1, cos);
-				rot.set(0, 1, -sin);
-
-				Math3D.mul(rot, m_transformation, m_transformation);
-			} finally {
-				Draw3DCache.returnMatrix4f(rot);
-			}
-		}
-
-		/**
-		 * Scales the current transformation and corrects the clipping rectangle
-		 * by the given factors.
-		 * 
-		 * @param i_horizontal the horizontal scaling factor
-		 * @param i_vertical the vertical scaling factor
-		 */
-		public void scale(float i_horizontal, float i_vertical) {
-
-			if (m_transformation == null)
-				m_transformation = new Matrix4fImpl();
-
-			Vector3f scale = Draw3DCache.getVector3f();
-			try {
-				scale.set(i_horizontal, i_vertical, 0);
-				Math3D.scale(scale, m_transformation, m_transformation);
-			} finally {
-				Draw3DCache.returnVector3f(scale);
-			}
-		}
-
-		/**
-		 * Specifies whether the graphics system is in advanced graphics mode.
-		 * 
-		 * @param i_advanced <code>true</code> if the graphics system is in
-		 *            advanced graphics mode and <code>false</code> otherwise
-		 */
-		public void setAdvanced(boolean i_advanced) {
-
-			m_advanced = i_advanced;
-		}
-
-		/**
-		 * Sets the alpha value of this graphics state.
-		 * 
-		 * @param i_alpha the alpha value
-		 */
-		public void setAlpha(int i_alpha) {
-
-			m_alpha = i_alpha;
-		}
-
-		/**
-		 * Sets the antialias value for this graphics state.
-		 * 
-		 * @param i_antialias the antialias value
-		 */
-		public void setAntialias(int i_antialias) {
-
-			m_antialias = i_antialias;
-		}
-
-		/**
-		 * Sets the background color of this graphics state.
-		 * 
-		 * @param i_backgroundColor the new background color
-		 */
-		public void setBackgroundColor(Color i_backgroundColor) {
-
-			m_backgroundColor = i_backgroundColor;
-		}
-
-		/**
-		 * Sets the background pattern of this graphics state.
-		 * 
-		 * @param i_backgroundPattern the background pattern
-		 */
-		public void setBackgroundPattern(Pattern i_backgroundPattern) {
-
-			m_backgroundPattern = i_backgroundPattern;
-		}
-
-		/**
-		 * Sets the clip rectangleof this state.
-		 * 
-		 * @param i_clip the clip rectangle
-		 */
-		public void setClip(Rectangle i_clip) {
-
-			if (i_clip == null) {
-				m_clip = null;
-				return;
-			}
-
-			if (m_clip == null) {
-				m_clip = new PrecisionRectangle(i_clip);
-				return;
-			}
-
-			m_clip.setX(i_clip.preciseX());
-			m_clip.setY(i_clip.preciseY());
-			m_clip.setWidth(i_clip.preciseWidth());
-			m_clip.setHeight(i_clip.preciseHeight());
-		}
-
-		/**
-		 * Sets the fill rule of this graphics state.
-		 * 
-		 * @param i_fillRule the fill rule of this graphics state
-		 */
-		public void setFillRule(int i_fillRule) {
-
-			m_fillRule = i_fillRule;
-		}
-
-		/**
-		 * Sets the font of this graphics state.
-		 * 
-		 * @param i_font the font
-		 */
-		public void setFont(Font i_font) {
-
-			m_font = i_font;
-		}
-
-		/**
-		 * Sets the foreground color of this graphics state.
-		 * 
-		 * @param i_foregroundColor the foreground color
-		 */
-		public void setForegroundColor(Color i_foregroundColor) {
-
-			m_foregroundColor = i_foregroundColor;
-		}
-
-		/**
-		 * Sets the foreground pattern of this graphics state.
-		 * 
-		 * @param i_foregroundPattern the foreground pattern
-		 */
-		public void setForegroundPattern(Pattern i_foregroundPattern) {
-
-			m_foregroundPattern = i_foregroundPattern;
-		}
-
-		/**
-		 * Sets the interpolation setting for this graphics state.
-		 * 
-		 * @param i_interpolation the interpolation setting
-		 */
-		public void setInterpolation(int i_interpolation) {
-
-			m_interpolation = i_interpolation;
-		}
-
-		/**
-		 * Sets the line cap value of this graphics state.
-		 * 
-		 * @param i_lineCap the line cap value
-		 */
-		public void setLineCap(int i_lineCap) {
-
-			m_lineCap = i_lineCap;
-		}
-
-		/**
-		 * Sets the custom line dash pattern.
-		 * 
-		 * @param i_lineDash the custom line dash pattern
-		 */
-		public void setLineDash(int[] i_lineDash) {
-
-			m_lineDash = i_lineDash;
-			m_lineDashLength = 0;
-
-			if (m_lineDash != null)
-				for (int i = 0; i < m_lineDash.length; i++)
-					m_lineDashLength += m_lineDash[i];
-		}
-
-		/**
-		 * Sets the line join value of this graphics state.
-		 * 
-		 * @param i_lineJoin the line join value
-		 */
-		public void setLineJoin(int i_lineJoin) {
-
-			m_lineJoin = i_lineJoin;
-		}
-
-		/**
-		 * Sets the line miter limit of this graphics state.
-		 * 
-		 * @param i_lineMiterLimit the new line miter limit
-		 */
-		public void setLineMiterLimit(float i_lineMiterLimit) {
-
-			m_lineMiterLimit = i_lineMiterLimit;
-		}
-
-		/**
-		 * Sets the line style of this graphics state.
-		 * 
-		 * @param i_lineStyle the line style
-		 */
-		public void setLineStyle(int i_lineStyle) {
-
-			m_lineStyle = i_lineStyle;
-		}
-
-		/**
-		 * Sets the line width of this graphics state.
-		 * 
-		 * @param i_lineWidth the line width
-		 */
-		public void setLineWidth(float i_lineWidth) {
-
-			m_lineWidth = i_lineWidth;
-		}
-
-		/**
-		 * Sets the text antialias value of this graphics state.
-		 * 
-		 * @param i_textAntialias the text antialias value
-		 */
-		public void setTextAntialias(int i_textAntialias) {
-
-			m_textAntialias = i_textAntialias;
-		}
-
-		/**
-		 * Sets the current transformation.
-		 * 
-		 * @param i_transformation the current transformation
-		 */
-		public void setTransformation(IMatrix4f i_transformation) {
-
-			if (m_transformation == null)
-				m_transformation = new Matrix4fImpl(i_transformation);
-			else
-				m_transformation.set(i_transformation);
-		}
-
-		/**
-		 * Specifies whether XOR mode drawing is enabled.
-		 * 
-		 * @param i_xorMode <code>true</code> if XOR mode should be enabled or
-		 *            <code>false</code> otherwise
-		 */
-		public void setXORMode(boolean i_xorMode) {
-
-			m_xorMode = i_xorMode;
-		}
-
-		/**
-		 * Shears the current transformation and corrects the clipping rectangle
-		 * by the given amounts.
-		 * 
-		 * @param i_horz the horizontal shearing amount
-		 * @param i_vert the vertical shearing amount
-		 */
-		public void shear(float i_horz, float i_vert) {
-
-			if (m_transformation == null)
-				m_transformation = new Matrix4fImpl();
-
-			Matrix4f shear = Draw3DCache.getMatrix4f();
-			try {
-				shear.setIdentity();
-				shear.set(1, 0, i_horz);
-				shear.set(0, 1, i_vert);
-
-				Math3D.mul(shear, m_transformation, m_transformation);
-			} finally {
-				Draw3DCache.returnMatrix4f(shear);
-			}
-		}
-
-		/**
-		 * Translates the current transformation and corrects the clipping
-		 * rectangle by the given amounts.
-		 * 
-		 * @param i_dX the X translation
-		 * @param i_dY the Y translation
-		 */
-		public void translate(float i_dX, float i_dY) {
-
-			if (m_transformation == null)
-				m_transformation = new Matrix4fImpl();
-
-			Vector3f trans = Draw3DCache.getVector3f();
-			try {
-				trans.set(i_dX, i_dY, 0);
-				Math3D.translate(m_transformation, trans, m_transformation);
-
-				if (m_clip == null)
-					m_clip = new PrecisionRectangle(m_parentState.getClip());
-
-				m_clip.translate(new PrecisionPoint(-i_dX, -i_dY));
-			} finally {
-				Draw3DCache.returnVector3f(trans);
-			}
-		}
-	}
-
-	private enum RasterOffset {
-
-		POLYGON, LINE, POINT;
-
-		public float getOffset() {
-
-			switch (this) {
-			case POLYGON:
-				return 0;
-			case LINE:
-			case POINT:
-				return 0.49f;
-			}
-
-			throw new AssertionError("unknown raster offset enum: " + this);
-		}
-	}
+public class LwjglGraphics extends StatefulGraphics {
 
 	private enum LastColor {
 
@@ -875,12 +143,34 @@ public class LwjglGraphics extends Graphics {
 		UNKNOWN
 	}
 
-	private static final double ARC_LENGTH_FACTOR = 4 * Math.PI * Math.PI;
+	private enum RasterOffset {
+
+		LINE, POINT, POLYGON;
+
+		public float getOffset() {
+
+			switch (this) {
+			case POLYGON:
+				return 0;
+			case LINE:
+			case POINT:
+				return 0;
+				// return 0.49f;
+			}
+
+			throw new AssertionError("unknown raster offset enum: " + this);
+		}
+	}
+
+	private static final float ARC_LENGTH_FACTOR =
+		4 * (float) Math.PI * (float) Math.PI;
+
+	private static final float ARC_PRECISION = 0.5f;
 
 	/**
 	 * Decrease this factor to get a larger number of segments and vice versa.
 	 */
-	private static final double ARC_SEGMENTS_FACTOR = 5 * Math.PI;
+	private static final float ARC_SEGMENTS_FACTOR = 5 * (float) Math.PI;
 
 	/**
 	 * This value is used as the base for clipping plane equations.
@@ -903,67 +193,57 @@ public class LwjglGraphics extends Graphics {
 
 	private LwjglLinePattern m_currentLinePattern;
 
-	private GraphicsState m_defaultState;
+	private DisplayListManager m_displayListManager;
 
 	private boolean m_disposed = false;
-
-	private boolean m_disposeFonts = false;
 
 	private LwjglFontManager m_fontManager;
 
 	private int m_height;
 
+	private Map<Image, Integer> m_images = new HashMap<Image, Integer>();
+
 	private LastColor m_lastColor = LastColor.UNKNOWN;
+
+	private RasterOffset m_lastOffset;
 
 	private Map<Object, LwjglLinePattern> m_linePatterns =
 		new HashMap<Object, LwjglLinePattern>();
 
-	private GraphicsState m_state;
-
-	private int m_width;
-
 	private Boolean m_overrideTextAntialias;
 
-	/**
-	 * Specifies whether the font antialiasing setting should be overridden.
-	 * 
-	 * @param i_overrideTextAntialias if <code>true</code>, font antialiasing is
-	 *            always enabled, if <code>false</code>, it's always disabled,
-	 *            if <code>null</code>, the value set by
-	 *            {@link #setTextAntialias(int)} is used.
-	 */
-	public void setOverrideTextAntialias(Boolean i_overrideTextAntialias) {
-
-		m_overrideTextAntialias = i_overrideTextAntialias;
-	}
+	private int m_width;
 
 	/**
 	 * Creates a new OpenGL graphics object with the given width and height;
 	 * 
 	 * @param i_width the width of this graphics object
 	 * @param i_height the height of this graphics object
+	 * @param i_displayListManager the display list manager
 	 * @param i_fontManager to the font manager to use
 	 */
 	public LwjglGraphics(int i_width, int i_height,
+			DisplayListManager i_displayListManager,
 			LwjglFontManager i_fontManager) {
+
+		super();
+
+		if (i_displayListManager == null)
+			throw new NullPointerException(
+				"i_displayListManager must not be null");
+
+		if (i_fontManager == null)
+			throw new NullPointerException("i_fontManager must not be null");
 
 		m_width = i_width;
 		m_height = i_height;
-
-		initDefaultGraphicsState();
 
 		glSetClip();
 		glSetLineWidth();
 		glSetLineStyle();
 		glSetXORMode();
 
-		setFontManager(i_fontManager);
-	}
-
-	private void checkDisposed() {
-
-		if (m_disposed)
-			throw new IllegalStateException("graphics is disposed");
+		m_fontManager = i_fontManager;
 	}
 
 	/**
@@ -976,7 +256,7 @@ public class LwjglGraphics extends Graphics {
 
 		checkDisposed();
 
-		m_state.clipRect(i_clipRect);
+		super.clipRect(i_clipRect);
 		glSetClip();
 	}
 
@@ -1004,14 +284,31 @@ public class LwjglGraphics extends Graphics {
 
 		checkDisposed();
 
-		if (m_disposeFonts)
-			m_fontManager.dispose();
+		if (log.isLoggable(Level.FINE))
+			log.fine("disposing graphics " + this);
 
-		for (LwjglLinePattern linePattern : m_linePatterns.values())
-			linePattern.dispose();
+		// for (LwjglLinePattern linePattern : m_linePatterns.values())
+		// linePattern.dispose();
+		//
+		// if (!m_images.isEmpty()) {
+		// IntBuffer textureNames = Draw3DCache.getIntBuffer(m_images.size());
+		// try {
+		// textureNames.rewind();
+		// for (Integer textureId : m_images.values())
+		// textureNames.put(textureId);
+		//
+		// textureNames.rewind();
+		// GL11.glDeleteTextures(textureNames);
+		// } finally {
+		// Draw3DCache.returnIntBuffer(textureNames);
+		// }
+		//
+		// m_images.clear();
+		// }
 
 		m_fontManager = null;
 		m_linePatterns = null;
+		m_images = null;
 
 		m_disposed = true;
 	}
@@ -1030,7 +327,7 @@ public class LwjglGraphics extends Graphics {
 		glSetForegroundColor();
 		glSetRasterOffset(RasterOffset.LINE);
 		try {
-			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+			if (getState().getLineStyle() == SWT.LINE_CUSTOM) {
 				m_currentLinePattern.activate();
 				try {
 					GL11.glBegin(GL11.GL_LINE_STRIP);
@@ -1108,56 +405,73 @@ public class LwjglGraphics extends Graphics {
 
 		glSetRasterOffset(RasterOffset.POLYGON);
 		try {
-			ConversionSpecs specs = new ConversionSpecs();
-			specs.foregroundAlpha = 255;
-			specs.textureWidth = i_w1;
-			specs.textureHeight = i_h1;
-			specs.clip =
-				new org.eclipse.swt.graphics.Rectangle(i_x1, i_y1, i_w1, i_h1);
-			BufferInfo info =
-				new BufferInfo(m_width, m_height, GL11.GL_RGBA,
-					GL11.GL_UNSIGNED_BYTE, 1);
-			ImageConverter converter = ImageConverter.getInstance();
-			ByteBuffer buffer =
-				converter.imageToBuffer(i_srcImage, info, null, false);
-			IntBuffer nameBuffer = IntBuffer.allocate(1);
-			GL11.glGenTextures(nameBuffer);
-			int textureId = nameBuffer.get(0);
+			GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 			try {
+				Integer textureId = m_images.get(i_srcImage);
+				if (textureId == null) {
+					ConversionSpecs specs = new ConversionSpecs();
+					specs.foregroundAlpha = 255;
+					specs.textureWidth = i_w1;
+					specs.textureHeight = i_h1;
+					specs.clip =
+						new org.eclipse.swt.graphics.Rectangle(i_x1, i_y1,
+							i_w1, i_h1);
 
-				GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
-				GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, i_w1,
-					i_h1, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+					BufferInfo info =
+						new BufferInfo(i_w1, i_h1, GL11.GL_RGBA,
+							GL11.GL_UNSIGNED_BYTE, 1);
 
-				GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
-				try {
-					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
-					GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-						GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
-					GL11.glTexEnvi(GL11.GL_TEXTURE_ENV,
-						GL11.GL_TEXTURE_ENV_MODE, GL11.GL_REPLACE);
+					ByteBuffer buffer =
+						Draw3DCache.getByteBuffer(info.getSize());
+					IntBuffer nameBuffer = Draw3DCache.getIntBuffer(1);
+					try {
+						ImageConverter converter = ImageConverter.getInstance();
+						buffer.rewind();
 
-					GL11.glBegin(GL11.GL_QUADS);
-					GL11.glTexCoord2f(0, 0);
-					GL11.glVertex2i(i_x2, i_y2);
+						buffer =
+							converter.imageToBuffer(i_srcImage, info, buffer,
+								false);
 
-					GL11.glTexCoord2f(1, 0);
-					GL11.glVertex2i(i_x2 + i_w2, i_y2);
+						nameBuffer.rewind();
+						GL11.glGenTextures(nameBuffer);
 
-					GL11.glTexCoord2f(1, 1);
-					GL11.glVertex2i(i_x2 + i_w2, i_y2 + i_h2);
+						textureId = nameBuffer.get(0);
+						GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
+						GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA,
+							i_w1, i_h1, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE,
+							buffer);
 
-					GL11.glTexCoord2f(0, 1);
-					GL11.glVertex2i(i_x2, i_y2 + i_h2);
-					GL11.glEnd();
-				} finally {
-					GL11.glPopAttrib();
+						GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+							GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+						GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+							GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
+						GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
+							GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
+						GL11.glTexEnvi(GL11.GL_TEXTURE_ENV,
+							GL11.GL_TEXTURE_ENV_MODE, GL11.GL_REPLACE);
+					} finally {
+						Draw3DCache.returnIntBuffer(nameBuffer);
+						Draw3DCache.returnByteBuffer(buffer);
+					}
+				} else {
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
 				}
+
+				GL11.glBegin(GL11.GL_QUADS);
+				GL11.glTexCoord2f(0, 0);
+				GL11.glVertex2i(i_x2, i_y2);
+
+				GL11.glTexCoord2f(1, 0);
+				GL11.glVertex2i(i_x2 + i_w2, i_y2);
+
+				GL11.glTexCoord2f(1, 1);
+				GL11.glVertex2i(i_x2 + i_w2, i_y2 + i_h2);
+
+				GL11.glTexCoord2f(0, 1);
+				GL11.glVertex2i(i_x2, i_y2 + i_h2);
+				GL11.glEnd();
 			} finally {
-				GL11.glDeleteTextures(nameBuffer);
+				GL11.glPopAttrib();
 			}
 		} finally {
 			glResetRasterOffset();
@@ -1177,11 +491,10 @@ public class LwjglGraphics extends Graphics {
 		glSetForegroundColor();
 		glSetRasterOffset(RasterOffset.LINE);
 		try {
-			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+			if (getState().getLineStyle() == SWT.LINE_CUSTOM) {
 				m_currentLinePattern.activate();
 				try {
-					double s =
-						m_currentLinePattern.getS(i_x1, i_y1, i_x2, i_y2);
+					float s = m_currentLinePattern.getS(i_x1, i_y1, i_x2, i_y2);
 
 					GL11.glBegin(GL11.GL_LINES);
 					GL11.glTexCoord1f(0);
@@ -1228,7 +541,7 @@ public class LwjglGraphics extends Graphics {
 		glSetRasterOffset(RasterOffset.LINE);
 		try {
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+			if (getState().getLineStyle() == SWT.LINE_CUSTOM) {
 				m_currentLinePattern.activate();
 				try {
 					GL11.glBegin(GL11.GL_LINE_LOOP);
@@ -1263,7 +576,7 @@ public class LwjglGraphics extends Graphics {
 		glSetForegroundColor();
 		glSetRasterOffset(RasterOffset.LINE);
 		try {
-			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+			if (getState().getLineStyle() == SWT.LINE_CUSTOM) {
 				m_currentLinePattern.activate();
 				try {
 					GL11.glBegin(GL11.GL_LINE_STRIP);
@@ -1296,7 +609,7 @@ public class LwjglGraphics extends Graphics {
 		glSetRasterOffset(RasterOffset.LINE);
 		try {
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+			if (getState().getLineStyle() == SWT.LINE_CUSTOM) {
 				m_currentLinePattern.activate();
 				try {
 					GL11.glBegin(GL11.GL_LINE_LOOP);
@@ -1340,7 +653,7 @@ public class LwjglGraphics extends Graphics {
 		glSetRasterOffset(RasterOffset.LINE);
 		try {
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-			if (m_state.getLineStyle() == SWT.LINE_CUSTOM) {
+			if (getState().getLineStyle() == SWT.LINE_CUSTOM) {
 				m_currentLinePattern.activate();
 				try {
 					GL11.glBegin(GL11.GL_LINE_LOOP);
@@ -1424,9 +737,20 @@ public class LwjglGraphics extends Graphics {
 	public void enableClipping() {
 
 		if (!m_clippingEnabled) {
-			glSetClip();
 			m_clippingEnabled = true;
+			glSetClip();
 		}
+	}
+
+	private boolean equals(Object i_o1, Object i_o2) {
+
+		if (i_o1 != null)
+			return i_o1.equals(i_o2);
+
+		if (i_o2 != null)
+			return i_o2.equals(i_o1);
+
+		return true;
 	}
 
 	/**
@@ -1467,12 +791,10 @@ public class LwjglGraphics extends Graphics {
 
 		glSetRasterOffset(RasterOffset.POLYGON);
 
-		IntBuffer shadeModel = Draw3DCache.getIntBuffer(16);
-		shadeModel.rewind();
-
-		GL11.glGetInteger(GL11.GL_SHADE_MODEL, shadeModel);
-		GL11.glShadeModel(GL11.GL_SMOOTH);
+		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 		try {
+			GL11.glShadeModel(GL11.GL_SMOOTH);
+
 			int x1 = i_x;
 			int y1 = i_y;
 			int x2 = i_x + i_width;
@@ -1499,8 +821,7 @@ public class LwjglGraphics extends Graphics {
 			GL11.glEnd();
 		} finally {
 			glResetRasterOffset();
-			GL11.glShadeModel(shadeModel.get(0));
-			Draw3DCache.returnIntBuffer(shadeModel);
+			GL11.glPopAttrib();
 		}
 	}
 
@@ -1620,296 +941,27 @@ public class LwjglGraphics extends Graphics {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw2d.Graphics#getAdvanced()
+	 * @see org.eclipse.draw2d.Graphics#getAbsoluteScale()
 	 */
 	@Override
-	public boolean getAdvanced() {
+	public double getAbsoluteScale() {
 
-		checkDisposed();
-
-		return m_state.getAdvanced();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getAlpha()
-	 */
-	@Override
-	public int getAlpha() {
-
-		checkDisposed();
-
-		return m_state.getAlpha();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getAntialias()
-	 */
-	@Override
-	public int getAntialias() {
-
-		checkDisposed();
-
-		return m_state.getAntialias();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getBackgroundColor()
-	 */
-	@Override
-	public Color getBackgroundColor() {
-
-		checkDisposed();
-
-		return m_state.getBackgroundColor();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getClip(org.eclipse.draw2d.geometry.Rectangle)
-	 */
-	@Override
-	public Rectangle getClip(Rectangle o_rect) {
-
-		checkDisposed();
-
-		Rectangle clip = m_state.getClip();
-		o_rect.setBounds(clip);
-
-		return o_rect;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getFillRule()
-	 */
-	@Override
-	public int getFillRule() {
-
-		checkDisposed();
-
-		return m_state.getFillRule();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getFont()
-	 */
-	@Override
-	public Font getFont() {
-
-		checkDisposed();
-
-		return m_state.getFont();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getFontMetrics()
-	 */
-	@Override
-	public FontMetrics getFontMetrics() {
-
-		checkDisposed();
-
-		LwjglFont glFont = glGetFont();
-		return glFont.getFontMetrics();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getForegroundColor()
-	 */
-	@Override
-	public Color getForegroundColor() {
-
-		checkDisposed();
-
-		return m_state.getForegroundColor();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getInterpolation()
-	 */
-	@Override
-	public int getInterpolation() {
-
-		checkDisposed();
-
-		return m_state.getInterpolation();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getLineAttributes()
-	 */
-	@Override
-	public LineAttributes getLineAttributes() {
-
-		checkDisposed();
-
-		LineAttributes attrs = new LineAttributes(m_state.getLineWidth());
-		attrs.cap = m_state.getLineCap();
-		attrs.dashOffset = 0;
-		attrs.join = m_state.getLineJoin();
-		attrs.miterLimit = m_state.getLineMiterLimit();
-		attrs.style = m_state.getLineStyle();
-
-		int[] lineDash = m_state.getLineDash();
-		if (lineDash == null)
-			attrs.dash = null;
-		else {
-			attrs.dash = new float[lineDash.length];
-			for (int i = 0; i < lineDash.length; i++)
-				attrs.dash[i] = lineDash[i];
-		}
-
-		return attrs;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getLineCap()
-	 */
-	@Override
-	public int getLineCap() {
-
-		checkDisposed();
-
-		return m_state.getLineCap();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getLineJoin()
-	 */
-	@Override
-	public int getLineJoin() {
-
-		checkDisposed();
-
-		return m_state.getLineJoin();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getLineMiterLimit()
-	 */
-	@Override
-	public float getLineMiterLimit() {
-
-		checkDisposed();
-
-		return m_state.getLineMiterLimit();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getLineStyle()
-	 */
-	@Override
-	public int getLineStyle() {
-
-		checkDisposed();
-
-		return m_state.getLineStyle();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getLineWidth()
-	 */
-	@Override
-	public int getLineWidth() {
-
-		checkDisposed();
-
-		return Math.round(m_state.getLineWidth());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getLineWidthFloat()
-	 */
-	@Override
-	public float getLineWidthFloat() {
-
-		checkDisposed();
-
-		return m_state.getLineWidth();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getTextAntialias()
-	 */
-	@Override
-	public int getTextAntialias() {
-
-		checkDisposed();
-
-		return m_state.getTextAntialias();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#getXORMode()
-	 */
-	@Override
-	public boolean getXORMode() {
-
-		checkDisposed();
-
-		return m_state.getXORMode();
+		// just return 1.0
+		return super.getAbsoluteScale();
 	}
 
 	private void glDrawArc(int i_x, int i_y, int i_w, int i_h, int i_offset,
 		int i_length) {
 
-		double start = Math.toRadians(i_offset);
-		double length = Math.toRadians(i_length);
+		float rOffset = (float) Math.toRadians(i_offset);
+		float rLength = (float) Math.toRadians(i_length);
 
-		double xFactor = i_w / 2;
-		double yFactor = i_h / 2;
+		ArcHelper helper =
+			new ArcHelper(ARC_PRECISION, i_x, i_y, i_w, i_h, rOffset + rLength,
+				-rLength, false);
 
-		double avgRadius = (xFactor + yFactor) / 2;
-		double arcLength = ARC_LENGTH_FACTOR * avgRadius / length;
-
-		double inc = ARC_SEGMENTS_FACTOR / arcLength;
-
-		double xOffset = i_x + i_w / 2;
-		double yOffset = i_y + i_h / 2;
-
-		for (double a = start; a < start + length; a += inc) {
-			double x = xOffset + Math.cos(a) * xFactor;
-			double y = yOffset - Math.sin(a) * yFactor;
-			GL11.glVertex2d(x, y);
-		}
-
-		double x = xOffset + Math.cos(start + length) * xFactor;
-		double y = yOffset - Math.sin(start + length) * yFactor;
-		GL11.glVertex2d(x, y);
+		for (IVector2f v : helper)
+			GL11.glVertex2f(v.getX(), v.getY());
 	}
 
 	private void glDrawPointList(PointList i_points) {
@@ -1945,33 +997,31 @@ public class LwjglGraphics extends Graphics {
 		int y2 = y1 + i_r.height;
 		int w = i_arcWidth;
 		int h = i_arcHeight;
-		int w2 = w / 2;
-		int h2 = h / 2;
 
 		// left
-		GL11.glVertex2i(x1, y1 + h2);
-		GL11.glVertex2i(x1, y2 - h2);
+		// GL11.glVertex2f(x1, y1 + h2);
+		// GL11.glVertex2f(x1, y2 - h2);
 
 		// bottom left corner
 		glDrawArc(x1, y2 - h, w, h, 180, 90);
 
 		// bottom
-		GL11.glVertex2i(x1 + w2, y2);
-		GL11.glVertex2i(x2 - w2, y2);
+		// GL11.glVertex2f(x1 + w2, y2);
+		// GL11.glVertex2f(x2 - w2, y2);
 
 		// bottom right corner
 		glDrawArc(x2 - w, y2 - h, w, h, 270, 90);
 
 		// right
-		GL11.glVertex2i(x2, y2 - h2);
-		GL11.glVertex2i(x2, y1 + h2);
+		// GL11.glVertex2f(x2, y2 - h2);
+		// GL11.glVertex2f(x2, y1 + h2);
 
 		// top right corner
 		glDrawArc(x2 - w, y1, w, h, 0, 90);
 
 		// top
-		GL11.glVertex2i(x2 - w2, y1);
-		GL11.glVertex2i(x1 + w2, y1);
+		// GL11.glVertex2f(x2 - w2, y1);
+		// GL11.glVertex2f(x1 + w2, y1);
 
 		// top left corner
 		glDrawArc(x1, y1, w, h, 90, 90);
@@ -1983,58 +1033,33 @@ public class LwjglGraphics extends Graphics {
 		glDrawTexturedArc(i_x, i_y, i_w, i_h, i_offset, i_length, 0);
 	}
 
-	private RasterOffset m_lastOffset;
+	private float glDrawTexturedArc(int i_x, int i_y, int i_w, int i_h,
+		int i_offset, int i_length, float i_s) {
 
-	private void glSetRasterOffset(RasterOffset i_offset) {
+		float start = (float) Math.toRadians(i_offset);
+		float length = (float) Math.toRadians(i_length);
 
-		if (m_lastOffset != null)
-			throw new IllegalStateException("raster offset was not reset");
+		float xFactor = i_w / 2;
+		float yFactor = i_h / 2;
 
-		if (i_offset.getOffset() != 0)
-			GL11.glTranslatef(i_offset.getOffset(), i_offset.getOffset(), 0);
+		float avgRadius = (xFactor + yFactor) / 2;
+		float arcLength = ARC_LENGTH_FACTOR * avgRadius / length;
 
-		m_lastOffset = i_offset;
-	}
+		float inc = ARC_SEGMENTS_FACTOR / arcLength;
 
-	private void glResetRasterOffset() {
+		float xOffset = i_x + i_w / 2;
+		float yOffset = i_y + i_h / 2;
 
-		if (m_lastOffset == null)
-			throw new IllegalStateException("raster offset was reset");
+		float lastX = xOffset + (float) Math.cos(start) * xFactor;
+		float lastY = yOffset - (float) Math.sin(start) * yFactor;
 
-		if (m_lastOffset.getOffset() != 0)
-			GL11.glTranslatef(-m_lastOffset.getOffset(),
-				-m_lastOffset.getOffset(), 0);
-
-		m_lastOffset = null;
-	}
-
-	private double glDrawTexturedArc(int i_x, int i_y, int i_w, int i_h,
-		int i_offset, int i_length, double i_s) {
-
-		double start = Math.toRadians(i_offset);
-		double length = Math.toRadians(i_length);
-
-		double xFactor = i_w / 2;
-		double yFactor = i_h / 2;
-
-		double avgRadius = (xFactor + yFactor) / 2;
-		double arcLength = ARC_LENGTH_FACTOR * avgRadius / length;
-
-		double inc = ARC_SEGMENTS_FACTOR / arcLength;
-
-		double xOffset = i_x + i_w / 2;
-		double yOffset = i_y + i_h / 2;
-
-		double lastX = xOffset + Math.cos(start) * xFactor;
-		double lastY = yOffset - Math.sin(start) * yFactor;
-
-		double s = i_s;
+		float s = i_s;
 		GL11.glTexCoord1d(s);
 		GL11.glVertex2d(lastX, lastY);
 
-		for (double a = start + inc; a < start + length; a += inc) {
-			double x = xOffset + Math.cos(a) * xFactor;
-			double y = yOffset - Math.sin(a) * yFactor;
+		for (float a = start + inc; a < start + length; a += inc) {
+			float x = xOffset + (float) Math.cos(a) * xFactor;
+			float y = yOffset - (float) Math.sin(a) * yFactor;
 			s += m_currentLinePattern.getS(lastX, lastY, x, y);
 
 			GL11.glTexCoord1d(s);
@@ -2044,8 +1069,8 @@ public class LwjglGraphics extends Graphics {
 			lastY = y;
 		}
 
-		double x = xOffset + Math.cos(start + length) * xFactor;
-		double y = yOffset - Math.sin(start + length) * yFactor;
+		float x = xOffset + (float) Math.cos(start + length) * xFactor;
+		float y = yOffset - (float) Math.sin(start + length) * yFactor;
 		s += m_currentLinePattern.getS(lastX, lastY, x, y);
 
 		GL11.glTexCoord1d(s);
@@ -2062,7 +1087,7 @@ public class LwjglGraphics extends Graphics {
 			int lastX = vertices[0];
 			int lastY = vertices[1];
 
-			double s = 0;
+			float s = 0;
 
 			GL11.glTexCoord1d(s);
 			GL11.glVertex2i(lastX, lastY);
@@ -2089,7 +1114,7 @@ public class LwjglGraphics extends Graphics {
 		int x2 = i_x + i_width;
 		int y2 = i_y;
 
-		double s = 0;
+		float s = 0;
 		GL11.glTexCoord1d(s);
 		GL11.glVertex2i(x1, y1);
 
@@ -2115,11 +1140,11 @@ public class LwjglGraphics extends Graphics {
 		int y2 = y1 + i_r.height;
 		int w = i_arcWidth;
 		int h = i_arcHeight;
-		double w2 = (double) w / 2;
-		double h2 = (double) h / 2;
+		float w2 = w / 2;
+		float h2 = h / 2;
 
 		// left
-		double s = 0;
+		float s = 0;
 		GL11.glTexCoord1d(s);
 		GL11.glVertex2i(x1, y1 + h / 2);
 		s += m_currentLinePattern.getS(x1, y1 + h2, x1, y2 - h2);
@@ -2159,11 +1184,6 @@ public class LwjglGraphics extends Graphics {
 
 	private LwjglFont glGetFont() {
 
-		if (m_fontManager == null) {
-			m_fontManager = new LwjglFontManager();
-			m_disposeFonts = true;
-		}
-
 		int antialias = getAntialias();
 		if (m_overrideTextAntialias != null) {
 			if (m_overrideTextAntialias)
@@ -2172,15 +1192,28 @@ public class LwjglGraphics extends Graphics {
 				antialias = SWT.OFF;
 		}
 
-		Font font = m_state.getFont();
+		Font font = getState().getFont();
 		return m_fontManager.getFont(font, (char) 32, (char) 127,
 			antialias == SWT.ON);
+	}
+
+	private void glResetRasterOffset() {
+
+		if (m_lastOffset == null)
+			throw new IllegalStateException("raster offset was reset");
+
+		if (m_lastOffset.getOffset() != 0)
+			GL11.glTranslatef(-m_lastOffset.getOffset(),
+				-m_lastOffset.getOffset(), 0);
+
+		m_lastOffset = null;
 	}
 
 	private void glRestoreState(GraphicsState i_previous) {
 
 		Matrix4f transformation = i_previous.getTransformation();
-		if (transformation != null) {
+		if (transformation != null
+			&& !IMatrix4f.IDENTITY.equals(transformation)) {
 			FloatBuffer buffer = Draw3DCache.getFloatBuffer(16);
 			Matrix4f inverse = Draw3DCache.getMatrix4f();
 			try {
@@ -2198,26 +1231,26 @@ public class LwjglGraphics extends Graphics {
 		}
 
 		if (i_previous.getClip() == null) {
-			if (m_state.getClip() != null)
+			if (getState().getClip() != null)
 				glSetClip();
 		} else {
-			if (!i_previous.getClip().equals(m_state.getClip()))
+			if (!i_previous.getClip().equals(getState().getClip()))
 				glSetClip();
 		}
 
-		if (i_previous.getLineWidth() != m_state.getLineWidth())
+		if (i_previous.getLineWidth() != getState().getLineWidth())
 			glSetLineWidth();
 
-		if (i_previous.getLineStyle() != m_state.getLineStyle()
+		if (i_previous.getLineStyle() != getState().getLineStyle()
 			|| (i_previous.getLineStyle() == SWT.LINE_CUSTOM
-				&& m_state.getLineStyle() == SWT.LINE_CUSTOM && !Arrays.equals(
-				i_previous.getLineDash(), m_state.getLineDash())))
+				&& getState().getLineStyle() == SWT.LINE_CUSTOM && !Arrays.equals(
+				i_previous.getLineDash(), getState().getLineDash())))
 			glSetLineStyle();
 
-		if (i_previous.getXORMode() != m_state.getXORMode())
+		if (i_previous.getXORMode() != getState().getXORMode())
 			glSetXORMode();
 
-		if (i_previous.getAntialias() != m_state.getAntialias())
+		if (i_previous.getAntialias() != getState().getAntialias())
 			glSetAntialias();
 
 		m_lastColor = LastColor.UNKNOWN;
@@ -2225,7 +1258,7 @@ public class LwjglGraphics extends Graphics {
 
 	private void glSetAntialias() {
 
-		if (m_state.getAntialias() == SWT.ON) {
+		if (getState().getAntialias() == SWT.ON) {
 			GL11.glEnable(GL11.GL_LINE_SMOOTH);
 			GL11.glEnable(GL11.GL_POINT_SMOOTH);
 			GL11.glEnable(GL11.GL_POLYGON_SMOOTH);
@@ -2241,8 +1274,8 @@ public class LwjglGraphics extends Graphics {
 		if (m_lastColor == LastColor.BACKGROUND)
 			return;
 
-		Color backgroundColor = m_state.getBackgroundColor();
-		int alpha = m_state.getAlpha();
+		Color backgroundColor = getState().getBackgroundColor();
+		int alpha = getState().getAlpha();
 
 		ColorConverter.toFloatArray(backgroundColor, alpha, TMP_F4);
 		GL11.glColor4f(TMP_F4[0], TMP_F4[1], TMP_F4[2], TMP_F4[3]);
@@ -2255,72 +1288,85 @@ public class LwjglGraphics extends Graphics {
 		if (!m_clippingEnabled)
 			return;
 
-		Rectangle clip = m_state.getClip();
-		if (!clip.equals(m_currentClip)) {
-			GL11.glMatrixMode(GL11.GL_MODELVIEW);
-			GL11.glPushMatrix();
-			try {
-				DoubleBuffer buffer = Draw3DCache.getDoubleBuffer(16);
-				try {
-					// left plane
-					if (clip.x > 0) {
-						double a = CLIP_BASE / clip.x;
-						buffer.put(0, a);
-						buffer.put(1, 0);
-						buffer.put(2, 0);
-						buffer.put(3, -CLIP_BASE);
-						GL11.glEnable(GL11.GL_CLIP_PLANE0);
-						GL11.glClipPlane(GL11.GL_CLIP_PLANE0, buffer);
-					} else {
-						GL11.glDisable(GL11.GL_CLIP_PLANE0);
-					}
-
-					// top plane
-					if (clip.y > 0) {
-						double b = CLIP_BASE / clip.y;
-						buffer.put(0, 0);
-						buffer.put(1, b);
-						buffer.put(2, 0);
-						buffer.put(3, -CLIP_BASE);
-						GL11.glEnable(GL11.GL_CLIP_PLANE1);
-						GL11.glClipPlane(GL11.GL_CLIP_PLANE1, buffer);
-					} else {
-						GL11.glDisable(GL11.GL_CLIP_PLANE1);
-					}
-
-					// right plane
-					if (clip.x + clip.width < m_width - 1) {
-						double a = -CLIP_BASE / (clip.x + clip.width);
-						buffer.put(0, a);
-						buffer.put(1, 0);
-						buffer.put(2, 0);
-						buffer.put(3, CLIP_BASE);
-						GL11.glEnable(GL11.GL_CLIP_PLANE2);
-						GL11.glClipPlane(GL11.GL_CLIP_PLANE2, buffer);
-					} else {
-						GL11.glDisable(GL11.GL_CLIP_PLANE2);
-					}
-
-					// bottom plane
-					if (clip.y + clip.height < m_height - 1) {
-						double b = -CLIP_BASE / (clip.y + clip.height);
-						buffer.put(0, 0);
-						buffer.put(1, b);
-						buffer.put(2, 0);
-						buffer.put(3, CLIP_BASE);
-						GL11.glEnable(GL11.GL_CLIP_PLANE3);
-						GL11.glClipPlane(GL11.GL_CLIP_PLANE3, buffer);
-					} else {
-						GL11.glDisable(GL11.GL_CLIP_PLANE3);
-					}
-
-					m_currentClip.setBounds(clip);
-				} finally {
-					Draw3DCache.returnDoubleBuffer(buffer);
-				}
-			} finally {
-				GL11.glPopMatrix();
+		Rectangle clip = getState().getClip();
+		if (clip == null) {
+			if (m_currentClip != null) {
+				GL11.glDisable(GL11.GL_CLIP_PLANE0);
+				GL11.glDisable(GL11.GL_CLIP_PLANE1);
+				GL11.glDisable(GL11.GL_CLIP_PLANE2);
+				GL11.glDisable(GL11.GL_CLIP_PLANE3);
+				m_currentClip = null;
 			}
+			return;
+		} else if (clip.equals(m_currentClip))
+			return;
+
+		if (m_currentClip == null)
+			m_currentClip = new Rectangle();
+
+		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		GL11.glPushMatrix();
+		try {
+			DoubleBuffer buffer = Draw3DCache.getDoubleBuffer(16);
+			try {
+				// left plane
+				if (clip.x > 0) {
+					double a = CLIP_BASE / clip.x;
+					buffer.put(0, a);
+					buffer.put(1, 0);
+					buffer.put(2, 0);
+					buffer.put(3, -CLIP_BASE);
+					GL11.glEnable(GL11.GL_CLIP_PLANE0);
+					GL11.glClipPlane(GL11.GL_CLIP_PLANE0, buffer);
+				} else {
+					GL11.glDisable(GL11.GL_CLIP_PLANE0);
+				}
+
+				// top plane
+				if (clip.y > 0) {
+					double b = CLIP_BASE / clip.y;
+					buffer.put(0, 0);
+					buffer.put(1, b);
+					buffer.put(2, 0);
+					buffer.put(3, -CLIP_BASE);
+					GL11.glEnable(GL11.GL_CLIP_PLANE1);
+					GL11.glClipPlane(GL11.GL_CLIP_PLANE1, buffer);
+				} else {
+					GL11.glDisable(GL11.GL_CLIP_PLANE1);
+				}
+
+				// right plane
+				if (clip.x + clip.width < m_width - 1) {
+					double a = -CLIP_BASE / (clip.x + clip.width);
+					buffer.put(0, a);
+					buffer.put(1, 0);
+					buffer.put(2, 0);
+					buffer.put(3, CLIP_BASE);
+					GL11.glEnable(GL11.GL_CLIP_PLANE2);
+					GL11.glClipPlane(GL11.GL_CLIP_PLANE2, buffer);
+				} else {
+					GL11.glDisable(GL11.GL_CLIP_PLANE2);
+				}
+
+				// bottom plane
+				if (clip.y + clip.height < m_height - 1) {
+					double b = -CLIP_BASE / (clip.y + clip.height);
+					buffer.put(0, 0);
+					buffer.put(1, b);
+					buffer.put(2, 0);
+					buffer.put(3, CLIP_BASE);
+					GL11.glEnable(GL11.GL_CLIP_PLANE3);
+					GL11.glClipPlane(GL11.GL_CLIP_PLANE3, buffer);
+				} else {
+					GL11.glDisable(GL11.GL_CLIP_PLANE3);
+				}
+
+				m_currentClip.setBounds(clip);
+			} finally {
+				Draw3DCache.returnDoubleBuffer(buffer);
+			}
+		} finally {
+			GL11.glPopMatrix();
 		}
 	}
 
@@ -2329,8 +1375,8 @@ public class LwjglGraphics extends Graphics {
 		if (m_lastColor == LastColor.FOREGROUND)
 			return;
 
-		Color foregroundColor = m_state.getForegroundColor();
-		int alpha = m_state.getAlpha();
+		Color foregroundColor = getState().getForegroundColor();
+		int alpha = getState().getAlpha();
 
 		ColorConverter.toFloatArray(foregroundColor, alpha, TMP_F4);
 		GL11.glColor4f(TMP_F4[0], TMP_F4[1], TMP_F4[2], TMP_F4[3]);
@@ -2340,7 +1386,7 @@ public class LwjglGraphics extends Graphics {
 
 	private void glSetLineStyle() {
 
-		int lineStyle = m_state.getLineStyle();
+		int lineStyle = getState().getLineStyle();
 		switch (lineStyle) {
 		case SWT.LINE_SOLID:
 			m_currentLinePattern = null;
@@ -2369,11 +1415,12 @@ public class LwjglGraphics extends Graphics {
 		case SWT.LINE_CUSTOM:
 			GL11.glDisable(GL11.GL_LINE_STIPPLE);
 
-			int[] dashPattern = m_state.getLineDash();
+			int[] dashPattern = getState().getLineDash();
 			Object key = LwjglLinePattern.getKey(dashPattern);
 			m_currentLinePattern = m_linePatterns.get(key);
 			if (m_currentLinePattern == null) {
-				m_currentLinePattern = new LwjglLinePattern(dashPattern);
+				m_currentLinePattern =
+					new LwjglLinePattern(dashPattern, m_displayListManager);
 				m_linePatterns.put(key, m_currentLinePattern);
 			}
 			break;
@@ -2385,56 +1432,29 @@ public class LwjglGraphics extends Graphics {
 
 	private void glSetLineWidth() {
 
-		float lineWidth = m_state.getLineWidth();
+		float lineWidth = getState().getLineWidth();
 		GL11.glLineWidth(lineWidth);
+	}
+
+	private void glSetRasterOffset(RasterOffset i_offset) {
+
+		if (m_lastOffset != null)
+			throw new IllegalStateException("raster offset was not reset");
+
+		if (i_offset.getOffset() != 0)
+			GL11.glTranslatef(i_offset.getOffset(), i_offset.getOffset(), 0);
+
+		m_lastOffset = i_offset;
 	}
 
 	private void glSetXORMode() {
 
-		if (m_state.getXORMode()) {
+		if (getState().getXORMode()) {
 			GL11.glEnable(GL11.GL_COLOR_LOGIC_OP);
 			GL11.glLogicOp(GL11.GL_XOR);
 		} else {
 			GL11.glDisable(GL11.GL_COLOR_LOGIC_OP);
 		}
-	}
-
-	private void initDefaultGraphicsState() {
-
-		Display display = Display.getDefault();
-
-		Color foregroundColor = display.getSystemColor(SWT.COLOR_BLACK);
-		Color backgroundColor = display.getSystemColor(SWT.COLOR_WHITE);
-
-		m_defaultState = new GraphicsState(null);
-
-		m_defaultState.setAdvanced(true);
-
-		m_defaultState.setForegroundColor(foregroundColor);
-		m_defaultState.setBackgroundColor(backgroundColor);
-		m_defaultState.setAlpha(255);
-
-		m_defaultState.setLineWidth(1);
-		m_defaultState.setLineStyle(SWT.LINE_SOLID);
-		m_defaultState.setLineCap(SWT.CAP_FLAT);
-		m_defaultState.setLineJoin(SWT.JOIN_MITER);
-		m_defaultState.setLineMiterLimit(11);
-
-		m_defaultState.setFont(display.getSystemFont());
-
-		m_currentClip = new Rectangle(0, 0, m_width, m_height);
-		m_defaultState.setClip(m_currentClip);
-
-		m_defaultState.setTransformation(Matrix4f.IDENTITY);
-		m_defaultState.setXORMode(false);
-
-		m_defaultState.setAntialias(SWT.ON);
-		m_defaultState.setInterpolation(SWT.NONE);
-		m_defaultState.setTextAntialias(SWT.ON);
-
-		m_defaultState.setFillRule(SWT.FILL_WINDING);
-
-		m_state = new GraphicsState(m_defaultState);
 	}
 
 	/**
@@ -2456,23 +1476,10 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void popState() {
 
-		if (m_state.getParent() == m_defaultState)
-			throw new EmptyStackException();
+		GraphicsState currentState = getState();
 
-		GraphicsState currentState = m_state;
-		m_state = m_state.getParent();
+		super.popState();
 		glRestoreState(currentState);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#pushState()
-	 */
-	@Override
-	public void pushState() {
-
-		m_state = new GraphicsState(m_state);
 	}
 
 	/**
@@ -2483,8 +1490,9 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void restoreState() {
 
-		GraphicsState currentState = m_state;
-		m_state = new GraphicsState(m_state.getParent());
+		GraphicsState currentState = getState();
+
+		super.restoreState();
 		glRestoreState(currentState);
 	}
 
@@ -2496,13 +1504,10 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void rotate(float i_degrees) {
 
-		checkDisposed();
+		super.rotate(i_degrees);
 
-		if (i_degrees == 0)
-			return;
-
-		m_state.rotate(i_degrees);
-		GL11.glRotatef(i_degrees, 0, 0, 1);
+		if (i_degrees != 0)
+			GL11.glRotatef(i_degrees, 0, 0, 1);
 	}
 
 	/**
@@ -2524,79 +1529,10 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void scale(float i_horizontal, float i_vertical) {
 
-		checkDisposed();
+		super.scale(i_horizontal, i_vertical);
 
-		if (i_horizontal == 0 && i_vertical == 0)
-			return;
-
-		m_state.scale(i_horizontal, i_vertical);
-		GL11.glScalef(i_horizontal, i_vertical, 0);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setAdvanced(boolean)
-	 */
-	@Override
-	public void setAdvanced(boolean i_advanced) {
-
-		checkDisposed();
-
-		m_state.setAdvanced(i_advanced);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setAlpha(int)
-	 */
-	@Override
-	public void setAlpha(int i_alpha) {
-
-		checkDisposed();
-
-		m_state.setAlpha(i_alpha);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setAntialias(int)
-	 */
-	@Override
-	public void setAntialias(int i_antialias) {
-
-		checkDisposed();
-
-		m_state.setAntialias(i_antialias);
-		glSetAntialias();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setBackgroundColor(org.eclipse.swt.graphics.Color)
-	 */
-	@Override
-	public void setBackgroundColor(Color i_backgroundColor) {
-
-		checkDisposed();
-
-		m_state.setBackgroundColor(i_backgroundColor);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setBackgroundPattern(org.eclipse.swt.graphics.Pattern)
-	 */
-	@Override
-	public void setBackgroundPattern(Pattern i_backgroundPattern) {
-
-		checkDisposed();
-
-		m_state.setBackgroundPattern(i_backgroundPattern);
+		if (i_horizontal != 0 || i_vertical != 0)
+			GL11.glScalef(i_horizontal, i_vertical, 0);
 	}
 
 	/**
@@ -2607,143 +1543,26 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void setClip(Rectangle i_clip) {
 
-		checkDisposed();
+		PrecisionRectangle previous = getState().getClip();
+		super.setClip(i_clip);
 
-		if (i_clip == null) {
-			if (m_state.getClip() == null)
-				return;
-		} else {
-			if (i_clip.equals(m_state.getClip()))
-				return;
-		}
-
-		m_state.setClip(i_clip);
-		glSetClip();
+		if (!equals(previous, getState().getClip()))
+			glSetClip();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw2d.Graphics#setFillRule(int)
-	 */
-	@Override
-	public void setFillRule(int i_fillRule) {
-
-		checkDisposed();
-
-		m_state.setFillRule(i_fillRule);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setFont(org.eclipse.swt.graphics.Font)
-	 */
-	@Override
-	public void setFont(Font i_font) {
-
-		checkDisposed();
-
-		m_state.setFont(i_font);
-	}
-
-	/**
-	 * Sets the font manager to be used by this graphics.
-	 * 
-	 * @param i_fontManager the font manager
-	 * @throws NullPointerException if the given font manager is
-	 *             <code>null</code>
-	 */
-	public void setFontManager(LwjglFontManager i_fontManager) {
-
-		if (i_fontManager == null)
-			throw new NullPointerException("i_fontManager must not be null");
-
-		if (m_fontManager != null && m_disposeFonts)
-			m_fontManager.dispose();
-
-		m_fontManager = i_fontManager;
-		m_disposeFonts = false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setForegroundColor(org.eclipse.swt.graphics.Color)
-	 */
-	@Override
-	public void setForegroundColor(Color i_foregroundColor) {
-
-		checkDisposed();
-
-		m_state.setForegroundColor(i_foregroundColor);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setInterpolation(int)
-	 */
-	@Override
-	public void setInterpolation(int i_interpolation) {
-
-		checkDisposed();
-
-		m_state.setInterpolation(i_interpolation);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setLineAttributes(org.eclipse.swt.graphics.LineAttributes)
-	 */
-	@Override
-	public void setLineAttributes(LineAttributes i_attributes) {
-
-		checkDisposed();
-
-		if (i_attributes == null)
-			return;
-
-		setLineCap(i_attributes.cap);
-		setLineJoin(i_attributes.join);
-		setLineMiterLimit(i_attributes.miterLimit);
-		setLineStyle(i_attributes.style);
-		setLineWidthFloat(i_attributes.width);
-		setLineDash(i_attributes.dash);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setLineCap(int)
-	 */
-	@Override
-	public void setLineCap(int i_cap) {
-
-		checkDisposed();
-
-		m_state.setLineCap(i_cap);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setLineDash(float[])
+	 * @see org.eclipse.draw3d.graphics.StatefulGraphics#setLineDash(float[])
 	 */
 	@Override
 	public void setLineDash(float[] i_dash) {
 
-		checkDisposed();
+		int[] previous = getState().getLineDash();
+		super.setLineDash(i_dash);
 
-		if (i_dash == null)
-			setLineDash((int[]) null);
-		else {
-			int[] newDash = new int[i_dash.length];
-			for (int i = 0; i < i_dash.length; i++)
-				newDash[i] = (int) i_dash[i];
-			setLineDash(newDash);
-		}
+		if (!Arrays.equals(previous, getState().getLineDash()))
+			glSetLineStyle();
 	}
 
 	/**
@@ -2754,48 +1573,11 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void setLineDash(int[] i_dash) {
 
-		if (i_dash != null) {
-			if (m_state.getLineStyle() == SWT.LINE_CUSTOM
-				&& Arrays.equals(i_dash, m_state.getLineDash()))
-				return;
+		int[] previous = getState().getLineDash();
+		super.setLineDash(i_dash);
 
-			m_state.setLineStyle(SWT.LINE_CUSTOM);
-		} else {
-			if (m_state.getLineStyle() != SWT.LINE_CUSTOM
-				&& m_state.getLineDash() == null)
-				return;
-
-			m_state.setLineStyle(SWT.LINE_SOLID);
-		}
-
-		m_state.setLineDash(i_dash);
-		glSetLineStyle();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setLineJoin(int)
-	 */
-	@Override
-	public void setLineJoin(int i_lineJoin) {
-
-		checkDisposed();
-
-		m_state.setLineJoin(i_lineJoin);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.Graphics#setLineMiterLimit(float)
-	 */
-	@Override
-	public void setLineMiterLimit(float i_lineMiterLimit) {
-
-		checkDisposed();
-
-		m_state.setLineMiterLimit(i_lineMiterLimit);
+		if (!Arrays.equals(previous, getState().getLineDash()))
+			glSetLineStyle();
 	}
 
 	/**
@@ -2806,17 +1588,15 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void setLineStyle(int i_lineStyle) {
 
-		checkDisposed();
-
 		if ((i_lineStyle & LINE_STYLES) == 0)
 			throw new IllegalArgumentException("unknown line style: "
 				+ i_lineStyle);
 
-		if (m_state.getLineStyle() == i_lineStyle)
-			return;
+		int previous = getState().getLineStyle();
+		super.setLineStyle(i_lineStyle);
 
-		m_state.setLineStyle(i_lineStyle);
-		glSetLineStyle();
+		if (previous != getLineStyle())
+			glSetLineStyle();
 	}
 
 	/**
@@ -2827,13 +1607,7 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void setLineWidth(int i_lineWidth) {
 
-		checkDisposed();
-
-		if (m_state.getLineWidth() == i_lineWidth)
-			return;
-
-		m_state.setLineWidth(i_lineWidth);
-		glSetLineWidth();
+		setLineWidthFloat(i_lineWidth);
 	}
 
 	/**
@@ -2844,22 +1618,24 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void setLineWidthFloat(float i_lineWidth) {
 
-		checkDisposed();
+		float previous = getLineWidthFloat();
+		super.setLineWidthFloat(i_lineWidth);
 
-		m_state.setLineWidth(i_lineWidth);
+		if (previous != getLineWidthFloat())
+			glSetLineWidth();
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Specifies whether the font antialiasing setting should be overridden.
 	 * 
-	 * @see org.eclipse.draw2d.Graphics#setTextAntialias(int)
+	 * @param i_overrideTextAntialias if <code>true</code>, font antialiasing is
+	 *            always enabled, if <code>false</code>, it's always disabled,
+	 *            if <code>null</code>, the value set by
+	 *            {@link #setTextAntialias(int)} is used.
 	 */
-	@Override
-	public void setTextAntialias(int i_textAntialias) {
+	public void setOverrideTextAntialias(Boolean i_overrideTextAntialias) {
 
-		checkDisposed();
-
-		m_state.setTextAntialias(i_textAntialias);
+		m_overrideTextAntialias = i_overrideTextAntialias;
 	}
 
 	/**
@@ -2870,13 +1646,11 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void setXORMode(boolean i_enabled) {
 
-		checkDisposed();
+		boolean previous = getXORMode();
+		super.setXORMode(i_enabled);
 
-		if (m_state.getXORMode() == i_enabled)
-			return;
-
-		m_state.setXORMode(i_enabled);
-		glSetXORMode();
+		if (previous != getXORMode())
+			glSetXORMode();
 	}
 
 	/**
@@ -2887,27 +1661,25 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void shear(float i_horz, float i_vert) {
 
-		checkDisposed();
+		super.shear(i_horz, i_vert);
 
-		if (i_horz == 0 && i_vert == 0)
-			return;
+		if (i_horz != 0 || i_vert != 0) {
+			FloatBuffer buffer = Draw3DCache.getFloatBuffer(16);
+			Matrix4f matrix = Draw3DCache.getMatrix4f();
+			try {
+				matrix.setIdentity();
+				matrix.set(1, 0, i_horz);
+				matrix.set(0, 1, i_vert);
 
-		FloatBuffer buffer = Draw3DCache.getFloatBuffer(16);
-		Matrix4f matrix = Draw3DCache.getMatrix4f();
-		try {
-			m_state.shear(i_horz, i_vert);
-			matrix.setIdentity();
-			matrix.set(1, 0, i_horz);
-			matrix.set(0, 1, i_vert);
+				buffer.rewind();
+				matrix.toBufferRowMajor(buffer);
+				buffer.rewind();
 
-			buffer.rewind();
-			matrix.toBufferRowMajor(buffer);
-			buffer.rewind();
-
-			GL11.glMultMatrix(buffer);
-		} finally {
-			Draw3DCache.returnFloatBuffer(buffer);
-			Draw3DCache.returnMatrix4f(matrix);
+				GL11.glMultMatrix(buffer);
+			} finally {
+				Draw3DCache.returnFloatBuffer(buffer);
+				Draw3DCache.returnMatrix4f(matrix);
+			}
 		}
 	}
 
@@ -2919,24 +1691,20 @@ public class LwjglGraphics extends Graphics {
 	@Override
 	public void translate(float i_dx, float i_dy) {
 
-		checkDisposed();
+		super.translate(i_dx, i_dy);
 
-		if (i_dx == 0 && i_dy == 0)
-			return;
-
-		m_state.translate(i_dx, i_dy);
-		GL11.glTranslatef(i_dx, i_dy, 0);
+		if (i_dx != 0 || i_dy != 0)
+			GL11.glTranslatef(i_dx, i_dy, 0);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw2d.Graphics#translate(int, int)
+	 * @see org.eclipse.draw3d.graphics.StatefulGraphics#translate(int, int)
 	 */
 	@Override
-	public void translate(int i_dX, int i_dY) {
+	public void translate(int i_dx, int i_dy) {
 
-		translate((float) i_dX, (float) i_dY);
+		translate((float) i_dx, (float) i_dy);
 	}
-
 }

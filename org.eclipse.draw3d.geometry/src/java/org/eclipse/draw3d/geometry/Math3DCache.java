@@ -12,6 +12,7 @@ package org.eclipse.draw3d.geometry;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.logging.Logger;
 
 /**
  * Caches objects that are often used as temporary variables during
@@ -23,23 +24,55 @@ import java.util.Queue;
  */
 public class Math3DCache {
 
+	private static final Logger log =
+		Logger.getLogger(Math3DCache.class.getName());
+
 	private static final Queue<BoundingBox> m_boundingBox =
 		new LinkedList<BoundingBox>();
+
+	private static int m_boundingBoxCounter = 0;
+
+	/**
+	 * Count instantiations and warn when they reach a threshold.
+	 */
+	protected static boolean m_count = true;
+
+	/**
+	 * If the number of instantiations for a specific class exceeds this number,
+	 * warnings are generated.
+	 */
+	protected static int m_counterThreshold = 100;
+
+	/**
+	 * If cache size for a specific class exceeds this number, warnings are
+	 * generated.
+	 */
+	protected static int m_instanceThreshold = 100;
 
 	private static final Queue<Matrix2f> m_matrix2f =
 		new LinkedList<Matrix2f>();
 
+	private static int m_matrix2fCounter = 0;
+
 	private static final Queue<Matrix3f> m_matrix3f =
 		new LinkedList<Matrix3f>();
+
+	private static int m_matrix3fCounter = 0;
 
 	private static final Queue<Matrix4f> m_matrix4f =
 		new LinkedList<Matrix4f>();
 
+	private static int m_matrix4fCounter = 0;
+
 	private static final Queue<ParaxialBoundingBox> m_paraxialBoundingBox =
 		new LinkedList<ParaxialBoundingBox>();
 
+	private static int m_paraxialBoundingBoxCounter = 0;
+
 	private static final Queue<Position3D> m_position3D =
 		new LinkedList<Position3D>();
+
+	private static int m_position3DCounter = 0;
 
 	/**
 	 * Synchronize access to the cache queues.
@@ -49,11 +82,126 @@ public class Math3DCache {
 	private static final Queue<Vector2f> m_vector2f =
 		new LinkedList<Vector2f>();
 
+	private static int m_vector2fCounter = 0;
+
 	private static final Queue<Vector3f> m_vector3f =
 		new LinkedList<Vector3f>();
 
+	private static int m_vector3fCounter = 0;
+
 	private static final Queue<Vector4f> m_vector4f =
 		new LinkedList<Vector4f>();
+
+	private static int m_vector4fCounter = 0;
+
+	private static BoundingBox createBoundingBox() {
+
+		if (m_count) {
+			m_boundingBoxCounter++;
+			if (m_boundingBoxCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " bounding boxes, are you properly returning them?");
+		}
+
+		return new BoundingBoxImpl();
+	}
+
+	private static Matrix2fImpl createMatrix2f() {
+
+		if (m_count) {
+			m_matrix2fCounter++;
+			if (m_matrix2fCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " 2f matrices, are you properly returning them?");
+		}
+
+		return new Matrix2fImpl();
+	}
+
+	private static Matrix3fImpl createMatrix3f() {
+
+		if (m_count) {
+			m_matrix3fCounter++;
+			if (m_matrix3fCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " 3f matrices, are you properly returning them?");
+		}
+
+		return new Matrix3fImpl();
+	}
+
+	private static Matrix4fImpl createMatrix4f() {
+
+		if (m_count) {
+			m_matrix4fCounter++;
+			if (m_matrix4fCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " 4f matrices, are you properly returning them?");
+		}
+
+		return new Matrix4fImpl();
+	}
+
+	private static ParaxialBoundingBoxImpl createParaxialBoundingBox() {
+
+		if (m_count) {
+			m_paraxialBoundingBoxCounter++;
+			if (m_paraxialBoundingBoxCounter > m_counterThreshold)
+				log.warning("created more than "
+					+ m_counterThreshold
+					+ " paraxial bounding boxes, are you properly returning them?");
+		}
+
+		return new ParaxialBoundingBoxImpl();
+	}
+
+	private static Position3D createPosition3D() {
+
+		if (m_count) {
+			m_position3DCounter++;
+			if (m_position3DCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " 3D positions, are you properly returning them?");
+		}
+
+		return Position3DUtil.createAbsolutePosition();
+	}
+
+	private static Vector2fImpl createVector2f() {
+
+		if (m_count) {
+			m_vector2fCounter++;
+			if (m_vector2fCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " 2f vectors, are you properly returning them?");
+		}
+
+		return new Vector2fImpl();
+	}
+
+	private static Vector3fImpl createVector3f() {
+
+		if (m_count) {
+			m_vector3fCounter++;
+			if (m_vector3fCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " 3f vectors, are you properly returning them?");
+		}
+
+		return new Vector3fImpl();
+	}
+
+	private static Vector4fImpl createVector4f() {
+
+		if (m_count) {
+			m_vector4fCounter++;
+			if (m_vector4fCounter > m_counterThreshold)
+				log.warning("created more than " + m_counterThreshold
+					+ " 4f vectors, are you properly returning them?");
+		}
+
+		return new Vector4fImpl();
+	}
 
 	/**
 	 * Returns a cached {@link BoundingBox}.
@@ -65,13 +213,13 @@ public class Math3DCache {
 		if (m_synchronized) {
 			synchronized (m_boundingBox) {
 				if (m_boundingBox.isEmpty())
-					return new BoundingBoxImpl();
+					return createBoundingBox();
 				else
 					return m_boundingBox.remove();
 			}
 		} else {
 			if (m_boundingBox.isEmpty())
-				return new BoundingBoxImpl();
+				return createBoundingBox();
 			else
 				return m_boundingBox.remove();
 		}
@@ -87,13 +235,13 @@ public class Math3DCache {
 		if (m_synchronized) {
 			synchronized (m_matrix2f) {
 				if (m_matrix2f.isEmpty())
-					return new Matrix2fImpl();
+					return createMatrix2f();
 				else
 					return m_matrix2f.remove();
 			}
 		} else {
 			if (m_matrix2f.isEmpty())
-				return new Matrix2fImpl();
+				return createMatrix2f();
 			else
 				return m_matrix2f.remove();
 		}
@@ -109,13 +257,13 @@ public class Math3DCache {
 		if (m_synchronized) {
 			synchronized (m_matrix3f) {
 				if (m_matrix3f.isEmpty())
-					return new Matrix3fImpl();
+					return createMatrix3f();
 				else
 					return m_matrix3f.remove();
 			}
 		} else {
 			if (m_matrix3f.isEmpty())
-				return new Matrix3fImpl();
+				return createMatrix3f();
 			else
 				return m_matrix3f.remove();
 		}
@@ -131,13 +279,13 @@ public class Math3DCache {
 		if (m_synchronized) {
 			synchronized (m_matrix4f) {
 				if (m_matrix4f.isEmpty())
-					return new Matrix4fImpl();
+					return createMatrix4f();
 				else
 					return m_matrix4f.remove();
 			}
 		} else {
 			if (m_matrix4f.isEmpty())
-				return new Matrix4fImpl();
+				return createMatrix4f();
 			else
 				return m_matrix4f.remove();
 		}
@@ -153,13 +301,13 @@ public class Math3DCache {
 		if (m_synchronized) {
 			synchronized (m_paraxialBoundingBox) {
 				if (m_paraxialBoundingBox.isEmpty())
-					return new ParaxialBoundingBoxImpl();
+					return createParaxialBoundingBox();
 				else
 					return m_paraxialBoundingBox.remove();
 			}
 		} else {
 			if (m_paraxialBoundingBox.isEmpty())
-				return new ParaxialBoundingBoxImpl();
+				return createParaxialBoundingBox();
 			else
 				return m_paraxialBoundingBox.remove();
 		}
@@ -175,13 +323,13 @@ public class Math3DCache {
 		if (m_synchronized) {
 			synchronized (m_position3D) {
 				if (m_position3D.isEmpty())
-					return Position3DUtil.createAbsolutePosition();
+					return createPosition3D();
 				else
 					return m_position3D.remove();
 			}
 		} else {
 			if (m_position3D.isEmpty())
-				return Position3DUtil.createAbsolutePosition();
+				return createPosition3D();
 			else
 				return m_position3D.remove();
 		}
@@ -197,13 +345,13 @@ public class Math3DCache {
 		if (m_synchronized) {
 			synchronized (m_vector2f) {
 				if (m_vector2f.isEmpty())
-					return new Vector2fImpl();
+					return createVector2f();
 				else
 					return m_vector2f.remove();
 			}
 		} else {
 			if (m_vector2f.isEmpty())
-				return new Vector2fImpl();
+				return createVector2f();
 			else
 				return m_vector2f.remove();
 		}
@@ -219,13 +367,13 @@ public class Math3DCache {
 		if (m_synchronized) {
 			synchronized (m_vector3f) {
 				if (m_vector3f.isEmpty())
-					return new Vector3fImpl();
+					return createVector3f();
 				else
 					return m_vector3f.remove();
 			}
 		} else {
 			if (m_vector3f.isEmpty())
-				return new Vector3fImpl();
+				return createVector3f();
 			else
 				return m_vector3f.remove();
 		}
@@ -241,13 +389,13 @@ public class Math3DCache {
 		if (m_synchronized) {
 			synchronized (m_vector4f) {
 				if (m_vector4f.isEmpty())
-					return new Vector4fImpl();
+					return createVector4f();
 				else
 					return m_vector4f.remove();
 			}
 		} else {
 			if (m_vector4f.isEmpty())
-				return new Vector4fImpl();
+				return createVector4f();
 			else
 				return m_vector4f.remove();
 		}
@@ -271,6 +419,10 @@ public class Math3DCache {
 			for (BoundingBox b : i_bs)
 				if (b != null)
 					m_boundingBox.offer(b);
+
+		if (m_count && m_boundingBox.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " bounding boxes");
 	}
 
 	/**
@@ -291,6 +443,11 @@ public class Math3DCache {
 			for (Matrix2f m : i_ms)
 				if (m != null)
 					m_matrix2f.offer(m);
+
+		if (m_count && m_matrix2f.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " 2f matrices");
+
 	}
 
 	/**
@@ -311,6 +468,11 @@ public class Math3DCache {
 			for (Matrix3f m : i_ms)
 				if (m != null)
 					m_matrix3f.offer(m);
+
+		if (m_count && m_matrix3f.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " 3f matrices");
+
 	}
 
 	/**
@@ -331,6 +493,10 @@ public class Math3DCache {
 			for (Matrix4f m : i_ms)
 				if (m != null)
 					m_matrix4f.offer(m);
+
+		if (m_count && m_matrix4f.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " 4f matrices");
 	}
 
 	/**
@@ -351,6 +517,10 @@ public class Math3DCache {
 			for (ParaxialBoundingBox p : i_ps)
 				if (p != null)
 					m_paraxialBoundingBox.offer(p);
+
+		if (m_count && m_paraxialBoundingBox.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " paraxial bounding boxes");
 	}
 
 	/**
@@ -371,6 +541,10 @@ public class Math3DCache {
 			for (Position3D p : i_ps)
 				if (p != null)
 					m_position3D.offer(p);
+
+		if (m_count && m_position3D.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " 3D positions");
 	}
 
 	/**
@@ -391,6 +565,10 @@ public class Math3DCache {
 			for (Vector2f v : i_vs)
 				if (v != null)
 					m_vector2f.offer(v);
+
+		if (m_count && m_vector2f.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " 2f vectors");
 	}
 
 	/**
@@ -411,6 +589,10 @@ public class Math3DCache {
 			for (Vector3f v : i_vs)
 				if (v != null)
 					m_vector3f.offer(v);
+
+		if (m_count && m_vector3f.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " 3f vectors");
 	}
 
 	/**
@@ -431,5 +613,9 @@ public class Math3DCache {
 			for (Vector4f v : i_vs)
 				if (v != null)
 					m_vector4f.offer(v);
+
+		if (m_count && m_vector4f.size() > m_instanceThreshold)
+			log.warning("cache contains more than " + m_instanceThreshold
+				+ " 4f vectors");
 	}
 }

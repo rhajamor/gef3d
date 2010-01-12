@@ -13,6 +13,7 @@ package org.eclipse.draw3d.graphics3d.lwjgl.texture;
 import java.nio.IntBuffer;
 
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics;
 import org.eclipse.draw3d.util.ColorConverter;
@@ -131,6 +132,8 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 
 	private final GLCanvas m_context;
 
+	private DisplayListManager m_displayListManager;
+
 	private LwjglFontManager m_fontManager;
 
 	private int m_glTexture;
@@ -151,12 +154,14 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 	 *            deactivated
 	 * @param i_width the width of the texture
 	 * @param i_height the height of the texture
+	 * @param i_displayListManager the display list manager
 	 * @param i_fontManager the font manager
 	 * @throws IllegalArgumentException if the given width or height is not
 	 *             positive
 	 * @throws NullPointerException if the given context is <code>null</code>
 	 */
 	public LwjglTexturePbuffer(GLCanvas i_context, int i_width, int i_height,
+			DisplayListManager i_displayListManager,
 			LwjglFontManager i_fontManager) {
 
 		if (i_context == null) {
@@ -165,6 +170,7 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 
 		m_context = i_context;
 		setDimensions(i_width, i_height);
+		m_displayListManager = i_displayListManager;
 		m_fontManager = i_fontManager;
 	}
 
@@ -182,7 +188,8 @@ public class LwjglTexturePbuffer extends AbstractLwjglTexture {
 		try {
 			if (!m_valid || (m_pBuffer != null && m_pBuffer.isBufferLost())) {
 				m_graphics =
-					new LwjglGraphics(m_width, m_height, m_fontManager);
+					new LwjglGraphics(m_width, m_height, m_displayListManager,
+						m_fontManager);
 
 				deleteTexture(m_glTexture);
 				deletePBuffer(m_pBuffer);

@@ -11,7 +11,7 @@
 
 package org.eclipse.draw3d.geometry;
 
-import static org.eclipse.draw3d.geometry.IVector3f.NF;
+import static org.eclipse.draw3d.geometry.IVector3f.*;
 
 /**
  * Immutable matrix4f. <h3>Converting a Matrix</h4> There are two formats for
@@ -90,10 +90,21 @@ public interface IMatrix4f extends IMatrix {
 	/**
 	 * Format used in toString() methods
 	 */
-	public final static String TO_STRING_FORMAT = "%n(" + NF + ", " + NF + ", "
-			+ NF + ", " + NF + "%n " + NF + ", " + NF + ", " + NF + ", " + NF
-			+ "%n " + NF + ", " + NF + ", " + NF + ", " + NF + "%n " + NF
-			+ ", " + NF + ", " + NF + ", " + NF + ")%n";
+	public final static String TO_STRING_FORMAT =
+		"%n(" + NF + ", " + NF + ", " + NF + ", " + NF + "%n " + NF + ", " + NF
+			+ ", " + NF + ", " + NF + "%n " + NF + ", " + NF + ", " + NF + ", "
+			+ NF + "%n " + NF + ", " + NF + ", " + NF + ", " + NF + ")%n";
+
+	/**
+	 * Returns the value at the given row and column indices.
+	 * 
+	 * @param i_row the row index, 0-based
+	 * @param i_column the column index, 0-based
+	 * @return the value at the given indices
+	 * @throws IllegalArgumentException if any of the given arguments is out of
+	 *             bounds
+	 */
+	public float get(int i_row, int i_column);
 
 	/**
 	 * Compares two matrices. A matrix m0 is equals another matrix m1 if m0 and
