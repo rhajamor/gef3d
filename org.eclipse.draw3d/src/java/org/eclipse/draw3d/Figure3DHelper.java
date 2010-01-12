@@ -32,6 +32,7 @@ import org.eclipse.draw3d.geometry.BoundingBoxImpl;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.RenderImage;
@@ -136,7 +137,18 @@ public class Figure3DHelper {
 		 */
 		public void render(RenderContext i_renderContext) {
 
-			m_image.render(i_renderContext.getGraphics3D());
+			Position3D temp = Draw3DCache.getPosition3D();
+			try {
+				m_figure.getPosition3D().getAbsolute(temp);
+				temp.setSize3D(IVector3f.UNITVEC3f);
+
+				Graphics3D g3d = i_renderContext.getGraphics3D();
+				g3d.setPosition(temp);
+
+				m_image.render(g3d);
+			} finally {
+				Draw3DCache.returnPosition3D(temp);
+			}
 		}
 
 		public void setImage(RenderImage i_image) {
