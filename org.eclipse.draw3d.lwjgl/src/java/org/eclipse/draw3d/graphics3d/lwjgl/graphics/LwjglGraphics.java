@@ -201,6 +201,8 @@ public class LwjglGraphics extends StatefulGraphics {
 
 	private int m_height;
 
+	private Map<Image, Integer> m_images = new HashMap<Image, Integer>();
+
 	private LastColor m_lastColor = LastColor.UNKNOWN;
 
 	private RasterOffset m_lastOffset;
@@ -388,8 +390,6 @@ public class LwjglGraphics extends StatefulGraphics {
 
 		drawImage(i_srcImage, x1, y1, w, h, x2, y2, w, h);
 	}
-
-	private Map<Image, Integer> m_images = new HashMap<Image, Integer>();
 
 	/**
 	 * {@inheritDoc}
