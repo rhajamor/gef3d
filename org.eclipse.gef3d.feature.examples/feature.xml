@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.eclipse.gef3d.feature.examples"
-      label="GEF3D Examples (Graph Editor 2D, 2.5D, 3D, ME)"
+      label="GEF3D Examples"
       version="0.8.1"
       provider-name="Eclipse.org">
 
-   <description url="http://gef3d.org">
-      Gef3D is an Eclipse GEF extension bringing 3D to diagram editing. This feature contains some sample editors, such as a simple graph editor. This editor is implemented to display and edit a labeled graph in a simple 2D manner (using GEF), in a 2.5D mode (that is the 2D content is projected on a plane), real 3D, and a multi editor.
+   <description url="http://eclpise.org/gef3d">
+      GEF3D is an Eclipse GEF extension bringing 3D to diagram editing.
+This feature contains some sample editors:
+- a simple graph editor implemented to display and edit a labeled
+graph in a simple 2D manner (using GEF), in a 2.5D mode (that
+is the 2D content is projected on a plane), real 3D, and a multi
+editor.
+- a 3D version of the UML2 tools diagram editor
+- a 3D version of the Ecore tools diagram editor
    </description>
 
-   <copyright url="http://gef3d.org">
-      Copyright (c) 2008 Jens von Pilgrim and others.
+   <copyright url="http://www.eclipse.org/legal/epl-v10.html">
+      Copyright (c) 2009 Jens von Pilgrim and others.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License v1.0
@@ -18,7 +25,7 @@ which accompanies this distribution, and is available at
 http://www.eclipse.org/legal/epl-v10.html
    </copyright>
 
-   <license url="http://gef3d.org">
+   <license url="http://www.eclipse.org/legal/epl-v10.html">
       SOFTWARE USER AGREEMENT
 
 Usage Of Content
@@ -35,7 +42,7 @@ BELOW, THEN YOU MAY NOT USE THE CONTENT.
 
 Applicable Licenses
 
-Unless otherwise indicated, Gef3D (including Draw3D)
+Unless otherwise indicated, GEF3D (including Draw3D)
 is provided to you under the terms and conditions of the Eclipse Public
 License Version 1.0 (&quot;EPL&quot;). A copy of the EPL is provided with this
 Content and is also available at http://www.eclipse.org/legal/epl-v10.html.
@@ -113,7 +120,7 @@ Java and all Java-based trademarks are trademarks of Sun Microsystems, Inc. in t
    </license>
 
    <url>
-      <discovery label="GEF3D Project Site" url="http://gef3d.org"/>
+      <discovery label="GEF3D Project Site" url="http://eclipse.org/gef3d"/>
    </url>
 
    <plugin
@@ -122,7 +129,7 @@ Java and all Java-based trademarks are trademarks of Sun Microsystems, Inc. in t
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-         
+
    <plugin
          id="org.eclipse.gef3d.examples.ecore"
          download-size="0"
@@ -136,7 +143,5 @@ Java and all Java-based trademarks are trademarks of Sun Microsystems, Inc. in t
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-
-   
 
 </feature>

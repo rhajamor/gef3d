@@ -67,7 +67,7 @@ import org.eclipse.gef.EditPartFactory;
  * @version $Revision$
  * @since 14.01.2008
  */
-public class MultiEditorPartFactory implements EditPartFactory {
+public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPartFactory {
 
 	/**
 	 * The factory indicator strategy defines how the factory to be used for
@@ -90,9 +90,6 @@ public class MultiEditorPartFactory implements EditPartFactory {
 		FIND_BY_PARENT, POLICY_AT_CONNECTIONS, POLICY
 	}
 
-	public final static int LOWEST_PRIORITY = Integer.MIN_VALUE;
-
-	public final static int HIGHEST_PRIORITY = Integer.MAX_VALUE;
 
 	// protected EditPartFactory lastUsedFactory;
 
@@ -248,24 +245,17 @@ public class MultiEditorPartFactory implements EditPartFactory {
 
 	}
 
-	/**
-	 * Calls {@link #prepare(Object, EditPartFactory, int)} with
-	 * {@link #LOWEST_PRIORITY}
-	 * 
-	 * @param model
-	 * @param i_factory
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditorPartFactory#prepare(java.lang.Object, org.eclipse.gef.EditPartFactory)
 	 */
 	public void prepare(Object model, EditPartFactory i_factory) {
 		prepare(model, i_factory, LOWEST_PRIORITY);
 	}
 
-	/**
-	 * Prepares a factory for which no edit part was created yet. This is
-	 * usually necessary only for the root model elements, i.e. the
-	 * modelContainer.
-	 * 
-	 * @param model
-	 * @param i_factory
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditorPartFactory#prepare(java.lang.Object, org.eclipse.gef.EditPartFactory, int)
 	 */
 	public void prepare(Object model, EditPartFactory i_factory, int i_weight) {
 		if (i_factory == null) {
