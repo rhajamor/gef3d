@@ -316,7 +316,7 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	public List<IFigure3D> getDescendants3D() {
 
-		return helper.getDescendants3D();
+		return helper.getDescendants3D(true);
 	}
 
 	/**

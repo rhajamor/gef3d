@@ -275,7 +275,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 		 */
 		public List<IFigure3D> getDescendants3D() {
 
-			return helper.getDescendants3D();
+			return helper.getDescendants3D(true);
 		}
 
 		/**

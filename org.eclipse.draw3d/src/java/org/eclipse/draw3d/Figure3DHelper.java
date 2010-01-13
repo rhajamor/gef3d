@@ -11,7 +11,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -305,7 +304,7 @@ public class Figure3DHelper {
 	/**
 	 * Caches the 3D descendents of this figure.
 	 */
-	protected List<IFigure3D> m_decendants3DCache = null;
+	protected List<IFigure3D> m_decendants3DCache = new LinkedList<IFigure3D>();
 
 	/**
 	 * The figure's friend that is used to access certain protected and private
@@ -317,6 +316,8 @@ public class Figure3DHelper {
 
 	// TODO: dispose render image when figure is deleted
 	private RenderImage m_image;
+
+	private boolean m_decendants3DCacheValid;
 
 	/**
 	 * Creates a new helper. The given friend provides access to the figure.
@@ -471,12 +472,10 @@ public class Figure3DHelper {
 	 * @return a list containing the 3D descendents
 	 * @see org.eclipse.draw3d.IFigure3D#getSuccessor3D()
 	 */
-	public List<IFigure3D> getDescendants3D() {
+	public List<IFigure3D> getDescendants3D(boolean i_updateCache) {
 
-		if (m_decendants3DCache == null) {
-			m_decendants3DCache = new ArrayList<IFigure3D>(5);
+		if (!m_decendants3DCacheValid && i_updateCache)
 			doGetDescendants3D(m_decendants3DCache, m_figuresFriend.figure);
-		}
 
 		return m_decendants3DCache;
 	}
@@ -499,9 +498,9 @@ public class Figure3DHelper {
 	public void invalidateParaxialBoundsTree() {
 
 		m_figuresFriend.figure.invalidateParaxialBounds();
-		List<IFigure3D> descendants3D = getDescendants3D();
+		List<IFigure3D> descendants3D = getDescendants3D(false);
 		for (IFigure3D descendant3D : descendants3D)
-			descendant3D.invalidateParaxialBoundsTree();
+			descendant3D.invalidateParaxialBounds();
 	}
 
 	/**
@@ -640,7 +639,8 @@ public class Figure3DHelper {
 	 */
 	public void revalidate() {
 
-		m_decendants3DCache = null;
+		m_decendants3DCache.clear();
+		m_decendants3DCacheValid = false;
 	}
 
 	/**
@@ -665,7 +665,7 @@ public class Figure3DHelper {
 
 		ParaxialBoundingBox tmp = Draw3DCache.getParaxialBoundingBox();
 		try {
-			List<IFigure3D> descendants3D = getDescendants3D();
+			List<IFigure3D> descendants3D = getDescendants3D(true);
 			for (IFigure3D descendant3D : descendants3D) {
 				ParaxialBoundingBox descBounds =
 					descendant3D.getParaxialBoundingBox(tmp);

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Connection;
@@ -105,8 +106,7 @@ public class DispatchingConnectionLayerHelper {
 
 			if (distributedLayer != null) {
 				// if (distributedLayer.getConnectionRouter()==null) {
-				distributedLayer
-					.setConnectionRouter(host.getConnectionRouter());
+				distributedLayer.setConnectionRouter(host.getConnectionRouter());
 				// }
 				distributedLayer.add(i_figure, i_constraint, i_index);
 				// if it was added before:
@@ -133,15 +133,16 @@ public class DispatchingConnectionLayerHelper {
 
 			IFigure3D fig3DHost;
 			ConnectionLayer distributedLayer;
-			for (Connection connection : pendingConnections.keySet()) {
-				ConnectionConstraints cc = pendingConnections.get(connection);
+
+			for (Entry<Connection, ConnectionConstraints> entry : pendingConnections.entrySet()) {
+				Connection connection = entry.getKey();
+				ConnectionConstraints cc = entry.getValue();
 
 				fig3DHost = findConectionLayerHost(connection);
 				distributedLayer = getConnectionLayerOf3DHost(fig3DHost);
 
 				if (distributedLayer != null) {
-					distributedLayer.setConnectionRouter(host
-						.getConnectionRouter());
+					distributedLayer.setConnectionRouter(host.getConnectionRouter());
 					dispatchedConnections.add(connection);
 					distributedLayer.add(connection, cc.constaint, cc.index);
 					rewire(connection);
@@ -163,7 +164,7 @@ public class DispatchingConnectionLayerHelper {
 	 * 
 	 * @param i_connection
 	 * @return 3D figure hosting connection layer or null, if connection has no
-	 * 	3D ancestor
+	 *         3D ancestor
 	 * @throws IllegalArgumentException if connection has different 3D hosts
 	 */
 	protected IFigure3D findConectionLayerHost(Connection i_connection) {
@@ -180,8 +181,7 @@ public class DispatchingConnectionLayerHelper {
 		// a 2D connection can only be handled by a layer, if its source
 		// and target are on the same surface
 		if (sourceAncestor3D != targetAncestor3D) {
-			log
-				.severe("2D connections with different 3D ancestors");
+			log.severe("2D connections with different 3D ancestors");
 
 			throw new IllegalArgumentException(
 				"Connection's anchors have different 3D ancestors");
