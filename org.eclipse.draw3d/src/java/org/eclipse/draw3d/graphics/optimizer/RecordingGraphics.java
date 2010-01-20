@@ -340,8 +340,7 @@ public class RecordingGraphics extends StatefulGraphics {
 	public void fillOval(int i_x, int i_y, int i_w, int i_h) {
 
 		ArcHelper helper =
-			new ArcHelper(ARC_PREC, i_x, i_y, i_w, i_h, 0,
-				-2 * (float) Math.PI, true);
+			new ArcHelper(ARC_PREC, i_x, i_y, i_w, i_h, 0, 2 * PI, true);
 
 		float[] vertices = helper.getArray();
 		addPrimitive(new PolygonPrimitive(getState(), vertices, true));

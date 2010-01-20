@@ -76,7 +76,7 @@ public class LwjglPolygonVBO extends LwjglVertexPrimitiveVBO {
 				int vertexCount = polygon.getVertexCount();
 				m_countBuffer.put(vertexCount);
 				m_indexBuffer.put(index);
-				index += 2 * vertexCount;
+				index += vertexCount;
 			}
 
 			m_indexBuffer.rewind();

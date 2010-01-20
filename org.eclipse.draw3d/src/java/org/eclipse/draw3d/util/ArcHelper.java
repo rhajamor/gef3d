@@ -127,7 +127,7 @@ public class ArcHelper implements Iterable<IVector2f> {
 				"precision must be greater than 0 and less than or equal to 1");
 
 		float start = i_start % PI2;
-		float length = i_length % PI2;
+		float length = i_length;
 
 		m_axes = new Vector2fImpl(i_width / 2, i_height / 2);
 		m_center = new Vector2fImpl(i_x + m_axes.getX(), i_y + m_axes.getY());
