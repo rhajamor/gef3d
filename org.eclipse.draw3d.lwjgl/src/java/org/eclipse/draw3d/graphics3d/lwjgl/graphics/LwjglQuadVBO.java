@@ -76,14 +76,15 @@ public class LwjglQuadVBO extends LwjglVertexPrimitiveVBO {
 
 		i_g3d.glColor4f(m_color);
 
-		if (m_solid)
+		if (m_solid) {
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-		else {
+			GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
+		} else {
 			GL11.glTranslatef(Graphics3DLwjgl.RASTER_OFFSET,
 				Graphics3DLwjgl.RASTER_OFFSET, 0);
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+			GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
 		}
 
-		GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
 	}
 }

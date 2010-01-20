@@ -34,9 +34,11 @@ public class LwjglPolylineVBO extends LwjglVertexPrimitiveVBO {
 
 	private float[] m_color = new float[4];
 
-	private IntBuffer m_firstBuffer;
+	private IntBuffer m_indexBuffer;
 
-	private IntBuffer m_numBuffer;
+	private IntBuffer m_countBuffer;
+
+	private int m_vertexCount;
 
 	/**
 	 * Creates a new VBO that renders the given polyline primitives.
@@ -57,17 +59,24 @@ public class LwjglPolylineVBO extends LwjglVertexPrimitiveVBO {
 				+ " does not contain polylines");
 
 		int count = i_primitives.getSize();
-		m_firstBuffer = BufferUtils.createIntBuffer(count);
-		m_numBuffer = BufferUtils.createIntBuffer(count);
+		if (count == 1) {
+			m_vertexCount = i_primitives.getVertexCount();
+		} else {
+			m_indexBuffer = BufferUtils.createIntBuffer(count);
+			m_countBuffer = BufferUtils.createIntBuffer(count);
 
-		int index = 0;
-		for (Primitive primitive : i_primitives.getPrimitives()) {
-			PolylinePrimitive polyline = (PolylinePrimitive) primitive;
+			int index = 0;
+			for (Primitive primitive : i_primitives.getPrimitives()) {
+				PolylinePrimitive polyline = (PolylinePrimitive) primitive;
 
-			int numVertices = polyline.getVertexCount();
-			m_numBuffer.put(numVertices);
-			m_firstBuffer.put(index);
-			index += numVertices;
+				int vertexCount = polyline.getVertexCount();
+				m_countBuffer.put(vertexCount);
+				m_indexBuffer.put(index);
+				index += vertexCount;
+			}
+
+			m_indexBuffer.rewind();
+			m_countBuffer.rewind();
 		}
 
 		OutlineRenderRule rule = clazz.getRenderRule().asOutline();
@@ -82,8 +91,8 @@ public class LwjglPolylineVBO extends LwjglVertexPrimitiveVBO {
 	@Override
 	public void dispose() {
 
-		m_firstBuffer = null;
-		m_numBuffer = null;
+		m_indexBuffer = null;
+		m_countBuffer = null;
 
 		super.dispose();
 	}
@@ -99,6 +108,11 @@ public class LwjglPolylineVBO extends LwjglVertexPrimitiveVBO {
 		i_g3d.glColor4f(m_color);
 
 		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-		GL14.glMultiDrawArrays(GL11.GL_LINE_STRIP, m_firstBuffer, m_numBuffer);
+
+		if (m_indexBuffer != null && m_countBuffer != null)
+			GL14.glMultiDrawArrays(GL11.GL_LINE_STRIP, m_indexBuffer,
+				m_countBuffer);
+		else
+			GL11.glDrawArrays(GL11.GL_LINE_STRIP, 0, m_vertexCount);
 	}
 }

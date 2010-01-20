@@ -120,9 +120,10 @@ public class PrimitiveSet {
 	 * 
 	 * @return a list containing the primitives
 	 */
-	public List<Primitive> getPrimitives() {
+	@SuppressWarnings("unchecked")
+	public <T extends Primitive> List<T> getPrimitives() {
 
-		return Collections.unmodifiableList(m_primitives);
+		return (List<T>) Collections.unmodifiableList(m_primitives);
 	}
 
 	/**

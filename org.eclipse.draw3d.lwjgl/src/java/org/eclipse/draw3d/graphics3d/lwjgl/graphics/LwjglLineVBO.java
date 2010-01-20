@@ -66,8 +66,6 @@ public class LwjglLineVBO extends LwjglVertexPrimitiveVBO {
 	protected void doRender(Graphics3D i_g3d) {
 
 		i_g3d.glColor4f(m_color);
-
-		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
 		GL11.glDrawArrays(GL11.GL_LINES, 0, m_vertexCount);
 	}
 }

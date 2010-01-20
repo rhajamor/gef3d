@@ -23,7 +23,9 @@ import org.eclipse.draw2d.geometry.Rectangle;
 
 /**
  * An algorithm that attempts to pack rectangles as tightly as possible into a
- * square.
+ * square. This algorithm was based on ideas presented in &quot;Two-Dimensional
+ * Finite Bin-Packing Algorithms&quot; by J. 0. Berkey and P. Y. Wang (DUI
+ * 0160-5682/87).
  * 
  * @author Kristian Duske
  * @version $Revision$

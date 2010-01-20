@@ -50,7 +50,11 @@ public class RecordingGraphics extends StatefulGraphics {
 
 	private static final float ARC_PREC = 0.5f;
 
-	private static final float PI_4 = (float) Math.PI / 4;
+	private static final float PI = (float) Math.PI;
+
+	private static final float PI_2 = (float) (Math.PI / 2);
+
+	private static final float PI_32 = (float) (3 * Math.PI / 2);
 
 	private PrimitiveClassifier m_classifier;
 
@@ -437,32 +441,26 @@ public class RecordingGraphics extends StatefulGraphics {
 		float y1 = i_r.y;
 		float x2 = x1 + i_r.width;
 		float y2 = y1 + i_r.height;
-		float w = i_arcWidth;
-		float h = i_arcHeight;
+		float w = 2 * i_arcWidth;
+		float h = 2 * i_arcHeight;
 
-		ArcHelper helper =
-			new ArcHelper(ARC_PREC, x1, y1, w, h, PI_4, -PI_4, false);
+		ArcHelper h1, h2, h3, h4;
 
-		int offset = 0;
-		int n = helper.getNumVertices();
-		float[] vertices = new float[4 * 2 * n];
+		h1 = new ArcHelper(ARC_PREC, x1, y1, w, h, PI_2, PI_2, false);
+		h2 = new ArcHelper(ARC_PREC, x1, y2 - h, w, h, PI, PI_2, false);
+		h3 = new ArcHelper(ARC_PREC, x2 - w, y2 - h, w, h, PI_32, PI_2, false);
+		h4 = new ArcHelper(ARC_PREC, x2 - w, y1, w, h, 0, PI_2, false);
 
-		helper.getArray(vertices, offset);
-		offset += 2 * n;
+		int n1 = 2 * h1.getNumVertices();
+		int n2 = 2 * h2.getNumVertices();
+		int n3 = 2 * h3.getNumVertices();
+		int n4 = 2 * h4.getNumVertices();
 
-		helper =
-			new ArcHelper(ARC_PREC, x1, y2 - h, w, h, 2 * PI_4, -PI_4, false);
-		helper.getArray(vertices, offset);
-		offset += 2 * n;
-
-		helper =
-			new ArcHelper(ARC_PREC, x2 - w, y2 - h, w, h, 3 * PI_4, -PI_4,
-				false);
-		helper.getArray(vertices, offset);
-		offset += 2 * n;
-
-		helper = new ArcHelper(ARC_PREC, x2 - w, y1, w, h, 0, -PI_4, false);
-		helper.getArray(vertices, offset);
+		float[] vertices = new float[n1 + n2 + n3 + n4];
+		h1.getArray(vertices, 0);
+		h2.getArray(vertices, n1);
+		h3.getArray(vertices, n1 + n2);
+		h4.getArray(vertices, n1 + n2 + n3);
 
 		addPrimitive(new PolygonPrimitive(getState(), vertices, i_fill));
 	}

@@ -194,7 +194,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	public RenderImage deactivateGraphics2D() {
 
 		log.info("deactivating 2D graphics");
-
 		if (m_activeGraphics instanceof RecordingGraphics) {
 			RecordingGraphics og = (RecordingGraphics) m_activeGraphics;
 			List<PrimitiveSet> primiveSets = og.getPrimiveSets();

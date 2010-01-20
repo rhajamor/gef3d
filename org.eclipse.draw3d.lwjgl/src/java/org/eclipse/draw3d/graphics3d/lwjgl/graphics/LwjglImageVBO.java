@@ -70,8 +70,7 @@ public class LwjglImageVBO extends LwjglVBO {
 
 		PrimitiveClass clazz = i_primitives.getPrimitiveClass();
 		if (!clazz.isImage())
-			throw new IllegalArgumentException(
-i_primitives
+			throw new IllegalArgumentException(i_primitives
 				+ " does not contain images");
 
 		m_primitives = i_primitives;

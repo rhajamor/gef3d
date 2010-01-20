@@ -19,6 +19,7 @@ import org.eclipse.draw3d.graphics.optimizer.primitive.PolygonPrimitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.SolidRenderRule;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.lwjgl.Graphics3DLwjgl;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -35,9 +36,11 @@ public class LwjglPolygonVBO extends LwjglVertexPrimitiveVBO {
 
 	private float[] m_color = new float[4];
 
-	private IntBuffer m_firstBuffer;
+	private IntBuffer m_indexBuffer;
 
-	private IntBuffer m_numBuffer;
+	private IntBuffer m_countBuffer;
+
+	private int m_vertexCount;
 
 	private boolean m_solid;
 
@@ -60,17 +63,24 @@ public class LwjglPolygonVBO extends LwjglVertexPrimitiveVBO {
 				+ " does not contain polygons");
 
 		int count = i_primitives.getSize();
-		m_firstBuffer = BufferUtils.createIntBuffer(count);
-		m_numBuffer = BufferUtils.createIntBuffer(count);
+		if (count == 1) {
+			m_vertexCount = i_primitives.getVertexCount();
+		} else {
+			m_indexBuffer = BufferUtils.createIntBuffer(count);
+			m_countBuffer = BufferUtils.createIntBuffer(count);
 
-		int index = 0;
-		for (Primitive primitive : i_primitives.getPrimitives()) {
-			PolygonPrimitive polygon = (PolygonPrimitive) primitive;
+			int index = 0;
+			for (Primitive primitive : i_primitives.getPrimitives()) {
+				PolygonPrimitive polygon = (PolygonPrimitive) primitive;
 
-			int numVertices = polygon.getVertexCount();
-			m_numBuffer.put(numVertices);
-			m_firstBuffer.put(index);
-			index += numVertices;
+				int vertexCount = polygon.getVertexCount();
+				m_countBuffer.put(vertexCount);
+				m_indexBuffer.put(index);
+				index += 2 * vertexCount;
+			}
+
+			m_indexBuffer.rewind();
+			m_countBuffer.rewind();
 		}
 
 		m_solid = clazz.isSolid();
@@ -93,8 +103,8 @@ public class LwjglPolygonVBO extends LwjglVertexPrimitiveVBO {
 	@Override
 	public void dispose() {
 
-		m_firstBuffer = null;
-		m_numBuffer = null;
+		m_indexBuffer = null;
+		m_countBuffer = null;
 
 		super.dispose();
 	}
@@ -109,11 +119,23 @@ public class LwjglPolygonVBO extends LwjglVertexPrimitiveVBO {
 
 		i_g3d.glColor4f(m_color);
 
-		if (m_solid)
+		if (m_solid) {
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-		else
-			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
 
-		GL14.glMultiDrawArrays(GL11.GL_POLYGON, m_firstBuffer, m_numBuffer);
+			if ((m_indexBuffer != null && m_countBuffer != null))
+				GL14.glMultiDrawArrays(GL11.GL_POLYGON, m_indexBuffer,
+					m_countBuffer);
+			else
+				GL11.glDrawArrays(GL11.GL_POLYGON, 0, m_vertexCount);
+		} else {
+			GL11.glTranslatef(Graphics3DLwjgl.RASTER_OFFSET,
+				Graphics3DLwjgl.RASTER_OFFSET, 0);
+
+			if ((m_indexBuffer != null && m_countBuffer != null))
+				GL14.glMultiDrawArrays(GL11.GL_LINE_LOOP, m_indexBuffer,
+					m_countBuffer);
+			else
+				GL11.glDrawArrays(GL11.GL_LINE_LOOP, 0, m_vertexCount);
+		}
 	}
 }
