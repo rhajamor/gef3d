@@ -22,7 +22,8 @@ import java.nio.ByteBuffer;
  * @version $Revision$
  * @since 19.12.2008
  */
-public class BufferInfo {
+public class ColorBufferInfo {
+
 	private int m_alignment;
 
 	/**
@@ -69,12 +70,12 @@ public class BufferInfo {
 	 * @throws IllegalArgumentException if the given width, height or alignment
 	 *             is not positive
 	 */
-	public BufferInfo(int i_width, int i_height, int i_pixelFormat,
+	public ColorBufferInfo(int i_width, int i_height, int i_pixelFormat,
 			int i_dataType, int i_alignment) {
 
 		if (i_width <= 0 || i_height <= 0)
 			throw new IllegalArgumentException(
-					"width and height must be positive");
+				"width and height must be positive");
 
 		if (i_alignment <= 0)
 			throw new IllegalArgumentException("alignment must be positive");
@@ -87,8 +88,8 @@ public class BufferInfo {
 
 		m_bytesPerPixel = getColorBpp(m_pixelFormat, m_dataType);
 		m_bytesPerLine = m_width * m_bytesPerPixel;
-		m_bytesPerAlignedLine = ((m_bytesPerLine - 1) / m_alignment + 1)
-				* m_alignment;
+		m_bytesPerAlignedLine =
+			((m_bytesPerLine - 1) / m_alignment + 1) * m_alignment;
 		m_size = m_bytesPerAlignedLine * m_height;
 	}
 
@@ -159,7 +160,7 @@ public class BufferInfo {
 			break;
 		default:
 			throw new IllegalArgumentException("unuspported pixel format: "
-					+ i_pixelFormat);
+				+ i_pixelFormat);
 		}
 
 		switch (i_dataType) {
@@ -196,7 +197,7 @@ public class BufferInfo {
 			break;
 		default:
 			throw new IllegalArgumentException("unuspported data type: "
-					+ i_dataType);
+				+ i_dataType);
 		}
 
 		return bpp;

@@ -18,7 +18,7 @@ import java.util.Arrays;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.SWTGraphics;
 import org.eclipse.draw3d.util.Draw3DCache;
-import org.eclipse.draw3d.util.converter.BufferInfo;
+import org.eclipse.draw3d.util.converter.ColorBufferInfo;
 import org.eclipse.draw3d.util.converter.ImageConverter;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
@@ -48,7 +48,7 @@ public class LwjglTextureSwt extends AbstractLwjglTexture {
 
 	private Image m_image;
 
-	private BufferInfo m_info;
+	private ColorBufferInfo m_info;
 
 	private ByteBuffer m_textureBuffer;
 
@@ -66,7 +66,7 @@ public class LwjglTextureSwt extends AbstractLwjglTexture {
 	public LwjglTextureSwt(int i_width, int i_height) {
 
 		m_info =
-			new BufferInfo(i_width, i_height, GL11.GL_RGBA,
+			new ColorBufferInfo(i_width, i_height, GL11.GL_RGBA,
 				GL11.GL_UNSIGNED_BYTE, 1);
 	}
 
@@ -277,7 +277,7 @@ public class LwjglTextureSwt extends AbstractLwjglTexture {
 		if (m_info.getWidth() != i_width || m_info.getHeight() != i_height) {
 			m_valid = false;
 			m_info =
-				new BufferInfo(i_width, i_height, m_info.getPixelFormat(),
+				new ColorBufferInfo(i_width, i_height, m_info.getPixelFormat(),
 					m_info.getDataType(), m_info.getAlignment());
 		}
 	}

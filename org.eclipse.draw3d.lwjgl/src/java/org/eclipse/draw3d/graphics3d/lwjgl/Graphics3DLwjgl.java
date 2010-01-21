@@ -24,6 +24,7 @@ import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
 import org.eclipse.draw3d.graphics.optimizer.RecordingGraphics;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
+import org.eclipse.draw3d.graphics.optimizer.primitive.PolygonPrimitive;
 import org.eclipse.draw3d.graphics3d.AbstractGraphics3DDraw;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
@@ -55,6 +56,7 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLContext;
+import org.lwjgl.util.glu.GLUtessellatorCallback;
 
 /**
  * Graphics3DLwjgl is the implementor of the Graphics3D interface for the LWJGL
@@ -184,6 +186,153 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			return new LogGraphics(m_activeGraphics);
 
 		return m_activeGraphics;
+	}
+
+	private static class PolygonTesselator implements GLUtessellatorCallback {
+
+		private List<PolygonPrimitive> m_triangleFans;
+
+		private List<PolygonPrimitive> m_triangleSets;
+
+		private List<PolygonPrimitive> m_triangleStrips;
+
+		private List<PolygonPrimitive> m_outlines;
+
+		private int m_currentType;
+
+		private PolygonPrimitive m_currentPrimitive;
+
+		private List<Float> m_currentVertices = new LinkedList<Float>();
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#begin(int)
+		 */
+		public void begin(int i_type) {
+
+			throw new UnsupportedOperationException();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#beginData(int,
+		 *      java.lang.Object)
+		 */
+		public void beginData(int i_type, Object i_polygonData) {
+
+			m_currentType = i_type;
+			m_currentPrimitive = (PolygonPrimitive) i_polygonData;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#combine(double[],
+		 *      java.lang.Object[], float[], java.lang.Object[])
+		 */
+		public void combine(double[] i_coords, Object[] i_data,
+			float[] i_weight, Object[] i_outData) {
+			// TODO implement method GLUtessellatorCallback.combine
+
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#combineData(double[],
+		 *      java.lang.Object[], float[], java.lang.Object[],
+		 *      java.lang.Object)
+		 */
+		public void combineData(double[] i_coords, Object[] i_data,
+			float[] i_weight, Object[] i_outData, Object i_polygonData) {
+			// TODO implement method GLUtessellatorCallback.combineData
+
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#edgeFlag(boolean)
+		 */
+		public void edgeFlag(boolean i_boundaryEdge) {
+			// TODO implement method GLUtessellatorCallback.edgeFlag
+
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#edgeFlagData(boolean,
+		 *      java.lang.Object)
+		 */
+		public void edgeFlagData(boolean i_boundaryEdge, Object i_polygonData) {
+			// TODO implement method GLUtessellatorCallback.edgeFlagData
+
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#end()
+		 */
+		public void end() {
+
+			throw new UnsupportedOperationException();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#endData(java.lang.Object)
+		 */
+		public void endData(Object i_polygonData) {
+
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#error(int)
+		 */
+		public void error(int i_errnum) {
+			// TODO implement method GLUtessellatorCallback.error
+
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#errorData(int,
+		 *      java.lang.Object)
+		 */
+		public void errorData(int i_errnum, Object i_polygonData) {
+			// TODO implement method GLUtessellatorCallback.errorData
+
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#vertex(java.lang.Object)
+		 */
+		public void vertex(Object i_vertexData) {
+			// TODO implement method GLUtessellatorCallback.vertex
+
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#vertexData(java.lang.Object,
+		 *      java.lang.Object)
+		 */
+		public void vertexData(Object i_vertexData, Object i_polygonData) {
+			// TODO implement method GLUtessellatorCallback.vertexData
+
+		}
+
 	}
 
 	/**

@@ -52,7 +52,7 @@ public class ImageConverter {
 		registerPolicy(new ImageToLuminanceAlphaPolicy());
 	}
 
-	public Image bufferToImage(BufferInfo i_bufferInfo, ByteBuffer i_buffer,
+	public Image bufferToImage(ColorBufferInfo i_bufferInfo, ByteBuffer i_buffer,
 			ImageInfo i_imageInfo) {
 
 		if (i_bufferInfo == null)
@@ -147,7 +147,7 @@ public class ImageConverter {
 	 * @throws NullPointerException if the given image or buffer info is
 	 *             <code>null</code>
 	 */
-	public ByteBuffer imageToBuffer(Image i_image, BufferInfo i_info,
+	public ByteBuffer imageToBuffer(Image i_image, ColorBufferInfo i_info,
 			ByteBuffer io_buffer, boolean i_flip) {
 
 		if (i_image == null)

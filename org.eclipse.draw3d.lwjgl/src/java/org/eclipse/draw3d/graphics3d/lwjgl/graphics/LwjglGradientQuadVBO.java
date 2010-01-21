@@ -10,13 +10,13 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 
-import java.nio.FloatBuffer;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.GradientRenderRule;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
-import org.eclipse.draw3d.graphics.optimizer.primitive.QuadPrimitive;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.swt.graphics.Color;
@@ -32,13 +32,7 @@ import org.lwjgl.opengl.GL15;
  * @version $Revision$
  * @since 21.12.2009
  */
-public class LwjglGradientQuadVBO extends LwjglVBO {
-
-	private static final int VERTEX_SIZE = (2 + 4) * 4;
-
-	private PrimitiveSet m_primitives;
-
-	private int m_vertexCount;
+public class LwjglGradientQuadVBO extends LwjglVertexPrimitiveVBO {
 
 	/**
 	 * Creates a new VBO that renders the given primitives.
@@ -52,19 +46,12 @@ public class LwjglGradientQuadVBO extends LwjglVBO {
 	 */
 	public LwjglGradientQuadVBO(PrimitiveSet i_primitives) {
 
-		if (i_primitives == null)
-			throw new NullPointerException("i_primitives must not be null");
-
-		if (i_primitives.getSize() == 0)
-			throw new IllegalArgumentException(i_primitives + " is empty");
+		super(i_primitives);
 
 		PrimitiveClass primitiveClass = i_primitives.getPrimitiveClass();
 		if (!primitiveClass.isGradient() || !primitiveClass.isQuad())
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain gradient quads");
-
-		m_primitives = i_primitives;
-		m_vertexCount = i_primitives.getVertexCount();
 	}
 
 	/**
@@ -75,54 +62,8 @@ public class LwjglGradientQuadVBO extends LwjglVBO {
 	@Override
 	protected void cleanup(Graphics3D i_g3d) {
 
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-		GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
-
+		super.cleanup(i_g3d);
 		GL11.glPopAttrib();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#createVertexBuffer
-	 */
-	@Override
-	protected FloatBuffer createVertexBuffer() {
-
-		FloatBuffer buffer =
-			BufferUtils.createFloatBuffer(VERTEX_SIZE
-				* m_primitives.getVertexCount());
-
-		float[] c = new float[4];
-		for (Primitive primitive : m_primitives.getPrimitives()) {
-			QuadPrimitive quad = (QuadPrimitive) primitive;
-			float[] vertices = quad.getVertices();
-
-			GradientRenderRule renderRule = quad.getRenderRule().asGradient();
-			Color fromColor = renderRule.getFromColor();
-			Color toColor = renderRule.getToColor();
-			int alpha = renderRule.getAlpha();
-
-			buffer.put(vertices[0]);
-			buffer.put(vertices[1]);
-			buffer.put(ColorConverter.toFloatArray(fromColor, alpha, c));
-
-			buffer.put(vertices[2]);
-			buffer.put(vertices[3]);
-			buffer.put(ColorConverter.toFloatArray(fromColor, alpha, c));
-
-			buffer.put(vertices[4]);
-			buffer.put(vertices[5]);
-			buffer.put(ColorConverter.toFloatArray(toColor, alpha, c));
-
-			buffer.put(vertices[6]);
-			buffer.put(vertices[7]);
-			buffer.put(ColorConverter.toFloatArray(toColor, alpha, c));
-		}
-
-		m_primitives = null;
-		return buffer;
 	}
 
 	/**
@@ -133,7 +74,72 @@ public class LwjglGradientQuadVBO extends LwjglVBO {
 	@Override
 	protected void doRender(Graphics3D i_g3d) {
 
-		GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
+		GL11.glDrawArrays(GL11.GL_QUADS, 0, getVertexCount());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#getBuffer(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected Buffer getBuffer(BufferType i_type) {
+
+		if (i_type == BufferType.COLOR) {
+			ByteBuffer colorBuffer =
+				BufferUtils.createByteBuffer(getVertexCount() * 4);
+
+			byte[] c = new byte[4];
+			for (Primitive primitive : getPrimitives().getPrimitives()) {
+				GradientRenderRule renderRule =
+					primitive.getRenderRule().asGradient();
+
+				Color fromColor = renderRule.getFromColor();
+				Color toColor = renderRule.getToColor();
+				int alpha = renderRule.getAlpha();
+
+				ColorConverter.toByteArray(fromColor, alpha, c);
+				colorBuffer.put(c);
+				colorBuffer.put(c);
+
+				ColorConverter.toByteArray(toColor, alpha, c);
+				colorBuffer.put(c);
+				colorBuffer.put(c);
+			}
+
+			return colorBuffer;
+		}
+
+		return super.getBuffer(i_type);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#getBufferInfo(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected BufferInfo getBufferInfo(BufferType i_type) {
+
+		if (i_type == BufferType.COLOR)
+			return new BufferInfo(GL11.GL_UNSIGNED_BYTE, GL15.GL_STREAM_READ,
+				4, 0, 0);
+
+		return super.getBufferInfo(i_type);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#hasBuffer(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected boolean hasBuffer(BufferType i_type) {
+
+		if (i_type == BufferType.COLOR)
+			return true;
+
+		return super.hasBuffer(i_type);
 	}
 
 	/**
@@ -147,12 +153,6 @@ public class LwjglGradientQuadVBO extends LwjglVBO {
 		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 		GL11.glShadeModel(GL11.GL_SMOOTH);
 
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, getBufferId());
-
-		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-		GL11.glVertexPointer(2, GL11.GL_FLOAT, VERTEX_SIZE, 0);
-
-		GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
-		GL11.glColorPointer(4, GL11.GL_FLOAT, VERTEX_SIZE, 2 * 4);
+		super.prepare(i_g3d);
 	}
 }

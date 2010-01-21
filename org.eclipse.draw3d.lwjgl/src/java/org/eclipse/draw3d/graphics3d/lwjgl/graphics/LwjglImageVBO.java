@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -21,10 +22,11 @@ import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.ImagePrimitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.RectanglePacker;
 import org.eclipse.draw3d.util.ImageConverter.ConversionSpecs;
-import org.eclipse.draw3d.util.converter.BufferInfo;
+import org.eclipse.draw3d.util.converter.ColorBufferInfo;
 import org.eclipse.draw3d.util.converter.ImageConverter;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
@@ -32,7 +34,6 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
@@ -44,15 +45,11 @@ import org.lwjgl.opengl.GL15;
  * @version $Revision$
  * @since 05.01.2010
  */
-public class LwjglImageVBO extends LwjglVBO {
+public class LwjglImageVBO extends LwjglVertexPrimitiveVBO {
 
-	private static final int VERTEX_SIZE = (2 + 2) * 4;
-
-	private PrimitiveSet m_primitives;
+	private RectanglePacker<ImagePrimitive> m_packer;
 
 	private int m_textureId;
-
-	private int m_vertexCount;
 
 	/**
 	 * Creates a new VBO that renders the given image primites.
@@ -61,24 +58,16 @@ public class LwjglImageVBO extends LwjglVBO {
 	 */
 	public LwjglImageVBO(PrimitiveSet i_primitives) {
 
-		if (i_primitives == null)
-			throw new NullPointerException("i_primitives must not be null");
-
-		if (i_primitives.getSize() == 0)
-			throw new IllegalArgumentException(i_primitives
-				+ " must not be empty");
+		super(i_primitives);
 
 		PrimitiveClass clazz = i_primitives.getPrimitiveClass();
 		if (!clazz.isImage())
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain images");
-
-		m_primitives = i_primitives;
-		m_vertexCount = m_primitives.getVertexCount();
 	}
 
-	private void addTextureCoordinates(FloatBuffer i_buffer, int i_tw,
-		int i_th, int i_x, int i_y) {
+	private void addTexCoord(FloatBuffer i_buffer, int i_tw, int i_th, int i_x,
+		int i_y) {
 
 		float s = i_x / (float) i_tw;
 		float t = i_y / (float) i_th;
@@ -95,10 +84,7 @@ public class LwjglImageVBO extends LwjglVBO {
 	@Override
 	protected void cleanup(Graphics3D i_g3d) {
 
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-		GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-
+		super.cleanup(i_g3d);
 		GL11.glPopAttrib();
 	}
 
@@ -109,6 +95,8 @@ public class LwjglImageVBO extends LwjglVBO {
 	 */
 	@Override
 	public void dispose() {
+
+		super.dispose();
 
 		if (m_textureId != 0) {
 			IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
@@ -122,8 +110,6 @@ public class LwjglImageVBO extends LwjglVBO {
 				Draw3DCache.returnIntBuffer(idBuffer);
 			}
 		}
-
-		super.dispose();
 	}
 
 	/**
@@ -137,7 +123,7 @@ public class LwjglImageVBO extends LwjglVBO {
 		i_g3d.glColor4f(1, 1, 1, 1);
 
 		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-		GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
+		GL11.glDrawArrays(GL11.GL_QUADS, 0, getVertexCount());
 	}
 
 	private void drawImage(Image i_sourceImage, Rectangle i_sourceClip,
@@ -163,63 +149,106 @@ public class LwjglImageVBO extends LwjglVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#getBuffer(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected Buffer getBuffer(BufferType i_type) {
+
+		if (i_type == BufferType.TEXTURE_COORDINATES) {
+
+			FloatBuffer buffer =
+				BufferUtils.createFloatBuffer(2 * getVertexCount());
+
+			int tw = m_packer.getLength();
+			int th = m_packer.getLength();
+
+			Point p = Draw3DCache.getPoint();
+			try {
+				for (Primitive primitive : getPrimitives().getPrimitives()) {
+					ImagePrimitive imagePrimitive = (ImagePrimitive) primitive;
+					Rectangle s = imagePrimitive.getSource();
+
+					m_packer.getPosition(imagePrimitive, p);
+
+					addTexCoord(buffer, tw, th, p.x, p.y);
+					addTexCoord(buffer, tw, th, p.x, p.y + s.height);
+					addTexCoord(buffer, tw, th, p.x + s.width, p.y + s.height);
+					addTexCoord(buffer, tw, th, p.x + s.width, p.y);
+				}
+
+				return buffer;
+			} finally {
+				Draw3DCache.returnPoint(p);
+			}
+		}
+
+		return super.getBuffer(i_type);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#getBufferInfo(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected BufferInfo getBufferInfo(BufferType i_type) {
+
+		if (i_type == BufferType.TEXTURE_COORDINATES)
+			return new BufferInfo(GL11.GL_FLOAT, GL15.GL_STREAM_READ, 2, 0, 0);
+
+		return super.getBufferInfo(i_type);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#hasBuffer(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected boolean hasBuffer(BufferType i_type) {
+
+		if (i_type == BufferType.TEXTURE_COORDINATES)
+			return true;
+
+		return super.hasBuffer(i_type);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#initialize(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
 	public void initialize(Graphics3D i_g3d) {
 
-		RectanglePacker<ImagePrimitive> packer =
-			new RectanglePacker<ImagePrimitive>();
+		m_packer = new RectanglePacker<ImagePrimitive>();
 
-		for (Primitive primitive : m_primitives.getPrimitives()) {
+		for (Primitive primitive : getPrimitives().getPrimitives()) {
 			ImagePrimitive imagePrimitive = (ImagePrimitive) primitive;
 			Rectangle source = imagePrimitive.getSource();
 
-			packer.add(source.width, source.height, imagePrimitive);
+			m_packer.add(source.width, source.height, imagePrimitive);
 		}
 
-		packer.pack();
-
-		FloatBuffer buffer =
-			BufferUtils.createFloatBuffer(VERTEX_SIZE * m_vertexCount);
+		m_packer.pack();
 
 		Device device = Display.getCurrent();
-		int tw = packer.getLength();
-		int th = packer.getLength();
+		int tw = m_packer.getLength();
+		int th = m_packer.getLength();
 
 		ImageData textureData =
 			new ImageData(tw, th, 24, new PaletteData(0xFF, 0xFF00, 0xFF0000));
 
 		Point p = Draw3DCache.getPoint();
 		try {
-			for (Primitive primitive : m_primitives.getPrimitives()) {
+			for (Primitive primitive : getPrimitives().getPrimitives()) {
 				ImagePrimitive imagePrimitive = (ImagePrimitive) primitive;
 				Image image = imagePrimitive.getImage();
 				Rectangle source = imagePrimitive.getSource();
 
-				packer.getPosition(imagePrimitive, p);
+				m_packer.getPosition(imagePrimitive, p);
 				drawImage(image, source, textureData, p);
-
-				float[] vertices = imagePrimitive.getVertices();
-				buffer.put(vertices[0]);
-				buffer.put(vertices[1]);
-				addTextureCoordinates(buffer, tw, th, p.x, p.y);
-
-				buffer.put(vertices[2]);
-				buffer.put(vertices[3]);
-				addTextureCoordinates(buffer, tw, th, p.x, p.y + source.height);
-
-				buffer.put(vertices[4]);
-				buffer.put(vertices[5]);
-				addTextureCoordinates(buffer, tw, th, p.x + source.width, p.y
-					+ source.height);
-
-				buffer.put(vertices[6]);
-				buffer.put(vertices[7]);
-				addTextureCoordinates(buffer, tw, th, p.x + source.width, p.y);
 			}
-
-			uploadBuffer(buffer);
 
 			Image textureImage = new Image(device, textureData);
 			m_textureId = initializeTexture(textureImage);
@@ -227,6 +256,8 @@ public class LwjglImageVBO extends LwjglVBO {
 		} finally {
 			Draw3DCache.returnPoint(p);
 		}
+
+		super.initialize(i_g3d);
 	}
 
 	private int initializeTexture(Image i_texture) {
@@ -242,8 +273,9 @@ public class LwjglImageVBO extends LwjglVBO {
 			specs.textureHeight = h;
 			specs.clip = new org.eclipse.swt.graphics.Rectangle(0, 0, w, h);
 
-			BufferInfo info =
-				new BufferInfo(w, h, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, 1);
+			ColorBufferInfo info =
+				new ColorBufferInfo(w, h, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE,
+					1);
 
 			ByteBuffer buffer = Draw3DCache.getByteBuffer(info.getSize());
 			IntBuffer nameBuffer = Draw3DCache.getIntBuffer(1);
@@ -293,13 +325,19 @@ public class LwjglImageVBO extends LwjglVBO {
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_textureId);
 
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, getBufferId());
-
-		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-		GL11.glVertexPointer(2, GL11.GL_FLOAT, VERTEX_SIZE, 0);
-
-		GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-		GL11.glTexCoordPointer(2, GL11.GL_FLOAT, VERTEX_SIZE, 2 * 4);
+		super.prepare(i_g3d);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVertexPrimitiveVBO#stateChanged(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.State,
+	 *      org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.State)
+	 */
+	@Override
+	protected void stateChanged(State i_oldState, State i_newState) {
+
+		if (i_newState == State.READY)
+			m_packer = null;
+	}
 }

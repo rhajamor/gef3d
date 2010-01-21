@@ -93,7 +93,7 @@ public abstract class ConversionPolicy {
 		return (byte) 0xFF;
 	}
 
-	private ByteBuffer getByteBuffer(BufferInfo i_info, ByteBuffer io_buffer) {
+	private ByteBuffer getByteBuffer(ColorBufferInfo i_info, ByteBuffer io_buffer) {
 
 		ByteBuffer buf = io_buffer;
 
@@ -222,7 +222,7 @@ public abstract class ConversionPolicy {
 	 * @param i_flip specifies whether to flip the image vertically
 	 * @return the result buffer, need not be identical to io_buffer!
 	 */
-	public ByteBuffer toBuffer(BufferInfo i_info, ImageData i_imageData,
+	public ByteBuffer toBuffer(ColorBufferInfo i_info, ImageData i_imageData,
 			ByteBuffer io_buffer, boolean i_flip) {
 
 		ByteBuffer buf = getByteBuffer(i_info, io_buffer);
@@ -252,7 +252,7 @@ public abstract class ConversionPolicy {
 	protected abstract byte[] toBytes(int i_x, int i_y, ImageData i_imageData);
 
 	public Image toImage(ImageInfo i_imageInfo, ByteBuffer i_buffer,
-			BufferInfo i_bufferInfo) {
+			ColorBufferInfo i_bufferInfo) {
 
 		return null;
 	}

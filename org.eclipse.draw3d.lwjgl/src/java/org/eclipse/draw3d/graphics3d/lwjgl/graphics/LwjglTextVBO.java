@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import org.eclipse.draw2d.geometry.Point;
@@ -38,17 +40,21 @@ import org.lwjgl.opengl.GL15;
  */
 public class LwjglTextVBO extends LwjglVBO {
 
+	private boolean m_buffersInitialized = false;
+
 	private float[] m_color;
 
-	private LwjglFontManager m_fontManager;
+	private ByteBuffer m_colorBuffer;
+
+	private LwjglFont m_glFont;
 
 	private PrimitiveSet m_primitives;
 
-	private int m_textureId;
+	private FloatBuffer m_texCoordBuffer;
+
+	private FloatBuffer m_vertexBuffer;
 
 	private int m_vertexCount;
-
-	private int m_vertexSize;
 
 	/**
 	 * Creates a new VBO that renders the given text primitives.
@@ -78,51 +84,6 @@ public class LwjglTextVBO extends LwjglVBO {
 				+ " does not contain text primitives");
 
 		m_primitives = i_primitives;
-		m_fontManager = i_fontManager;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
-	 */
-	@Override
-	protected void cleanup(Graphics3D i_g3d) {
-
-		GL15.glBindBuffer(GL11.GL_TEXTURE_COORD_ARRAY, 0);
-		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-		GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-
-		if (m_color == null) {
-			GL15.glBindBuffer(GL11.GL_COLOR_ARRAY, 0);
-			GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
-		}
-
-		GL11.glPopAttrib();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
-	 */
-	@Override
-	protected void doRender(Graphics3D i_g3d) {
-
-		if (m_color != null)
-			i_g3d.glColor4f(m_color);
-
-		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-		GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVertexPrimitiveVBO#createVertexBuffer()
-	 */
-	@Override
-	protected FloatBuffer createVertexBuffer() {
 
 		PrimitiveClass clazz = m_primitives.getPrimitiveClass();
 		TextRenderRule renderRule = clazz.getRenderRule().asText();
@@ -130,10 +91,8 @@ public class LwjglTextVBO extends LwjglVBO {
 		Font font = renderRule.getFont();
 		boolean fontAntialias = renderRule.isFontAntialias();
 
-		LwjglFont glFont =
-			m_fontManager.getFont(font, (char) 32, (char) 127, fontAntialias);
-
-		m_textureId = glFont.getTextureId();
+		m_glFont =
+			i_fontManager.getFont(font, (char) 32, (char) 127, fontAntialias);
 
 		boolean first = true;
 		Color constColor = null;
@@ -159,17 +118,112 @@ public class LwjglTextVBO extends LwjglVBO {
 				constAlpha = -1;
 			}
 
-			m_vertexCount += 4 * glFont.getLength(text);
+			m_vertexCount += 4 * m_glFont.getLength(text);
 		}
 
 		if (constColor != null)
 			m_color = ColorConverter.toFloatArray(constColor, constAlpha, null);
-		m_vertexSize = (m_color == null ? 2 + 2 + 4 : 2 + 2) * 4;
+	}
 
-		FloatBuffer buffer =
-			BufferUtils.createFloatBuffer(m_vertexSize * m_vertexCount);
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 */
+	@Override
+	protected void cleanup(Graphics3D i_g3d) {
 
-		float[] c = new float[4];
+		GL11.glPopAttrib();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 */
+	@Override
+	protected void doRender(Graphics3D i_g3d) {
+
+		if (m_color != null)
+			i_g3d.glColor4f(m_color);
+
+		GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+		GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#getBuffer(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected Buffer getBuffer(BufferType i_type) {
+
+		initBuffers();
+
+		switch (i_type) {
+		case VERTEX:
+			return m_vertexBuffer;
+		case COLOR:
+			return m_colorBuffer;
+		case TEXTURE_COORDINATES:
+			return m_texCoordBuffer;
+		}
+
+		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#getBufferInfo(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected BufferInfo getBufferInfo(BufferType i_type) {
+
+		switch (i_type) {
+		case VERTEX:
+			return new BufferInfo(GL11.GL_FLOAT, GL15.GL_STREAM_READ, 2, 0, 0);
+		case COLOR:
+			return new BufferInfo(GL11.GL_BYTE, GL15.GL_STREAM_READ, 4, 0, 0);
+		case TEXTURE_COORDINATES:
+			return new BufferInfo(GL11.GL_FLOAT, GL15.GL_STREAM_READ, 2, 0, 0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#hasBuffer(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected boolean hasBuffer(BufferType i_type) {
+
+		switch (i_type) {
+		case VERTEX:
+		case TEXTURE_COORDINATES:
+			return true;
+		case COLOR:
+			return m_color == null;
+		}
+
+		return false;
+	}
+
+	private void initBuffers() {
+
+		if (m_buffersInitialized)
+			return;
+
+		m_vertexBuffer = BufferUtils.createFloatBuffer(2 * m_vertexCount);
+		m_texCoordBuffer = BufferUtils.createFloatBuffer(2 * m_vertexCount);
+
+		if (m_color == null)
+			m_colorBuffer = BufferUtils.createByteBuffer(4 * m_vertexCount);
+
+		byte[] c = new byte[4];
 		for (Primitive primitive : m_primitives.getPrimitives()) {
 			TextPrimitive textPrimitive = (TextPrimitive) primitive;
 			String text = textPrimitive.getText();
@@ -177,8 +231,8 @@ public class LwjglTextVBO extends LwjglVBO {
 			Point position = textPrimitive.getPosition();
 			IMatrix4f transformation = textPrimitive.getTransformation();
 
-			glFont.renderString(text, transformation, position.x, position.y,
-				expand, buffer, buffer);
+			m_glFont.renderString(text, transformation, position.x, position.y,
+				expand, m_vertexBuffer, m_texCoordBuffer);
 
 			if (m_color == null) {
 				TextRenderRule textRenderRule =
@@ -187,14 +241,11 @@ public class LwjglTextVBO extends LwjglVBO {
 				Color color = textRenderRule.getTextColor();
 				int alpha = textRenderRule.getAlpha();
 
-				buffer.put(ColorConverter.toFloatArray(color, alpha, c));
+				m_colorBuffer.put(ColorConverter.toByteArray(color, alpha, c));
 			}
 		}
 
-		m_primitives = null;
-		m_fontManager = null;
-
-		return buffer;
+		m_buffersInitialized = true;
 	}
 
 	/**
@@ -207,19 +258,25 @@ public class LwjglTextVBO extends LwjglVBO {
 
 		GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_textureId);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_glFont.getTextureId());
+	}
 
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, getBufferId());
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#stateChanged(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.State,
+	 *      org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.State)
+	 */
+	@Override
+	protected void stateChanged(State i_oldState, State i_newState) {
 
-		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-		GL11.glVertexPointer(2, GL11.GL_FLOAT, m_vertexSize, 0);
+		super.stateChanged(i_oldState, i_newState);
 
-		GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-		GL11.glTexCoordPointer(2, GL11.GL_FLOAT, m_vertexSize, 2 * 4);
-
-		if (m_color == null) {
-			GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
-			GL11.glColorPointer(4, GL11.GL_FLOAT, m_vertexSize, 4 * 4);
+		if (i_newState == State.READY) {
+			m_primitives = null;
+			m_vertexBuffer = null;
+			m_texCoordBuffer = null;
+			m_colorBuffer = null;
 		}
 	}
 }

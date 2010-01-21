@@ -16,7 +16,7 @@ import java.nio.IntBuffer;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.util.Draw3DCache;
-import org.eclipse.draw3d.util.converter.BufferInfo;
+import org.eclipse.draw3d.util.converter.ColorBufferInfo;
 import org.eclipse.draw3d.util.converter.ImageConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Device;
@@ -95,8 +95,8 @@ public class LwjglLinePattern {
 				gc.drawLine(0, 0, m_length, 0);
 
 				// create a luminance alpha buffer from the image
-				BufferInfo info =
-					new BufferInfo(m_length, 1, GL11.GL_LUMINANCE_ALPHA,
+				ColorBufferInfo info =
+					new ColorBufferInfo(m_length, 1, GL11.GL_LUMINANCE_ALPHA,
 						GL11.GL_UNSIGNED_BYTE, 1);
 
 				ImageConverter converter = ImageConverter.getInstance();

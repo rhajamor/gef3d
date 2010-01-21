@@ -32,8 +32,6 @@ public class LwjglQuadVBO extends LwjglVertexPrimitiveVBO {
 
 	private boolean m_solid;
 
-	private int m_vertexCount;
-
 	/**
 	 * Creates a new VBO that renders the given primitives.
 	 * 
@@ -52,7 +50,6 @@ public class LwjglQuadVBO extends LwjglVertexPrimitiveVBO {
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain quads");
 
-		m_vertexCount = i_primitives.getVertexCount();
 		m_solid = clazz.isSolid();
 
 		if (m_solid) {
@@ -78,12 +75,12 @@ public class LwjglQuadVBO extends LwjglVertexPrimitiveVBO {
 
 		if (m_solid) {
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-			GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
+			GL11.glDrawArrays(GL11.GL_QUADS, 0, getVertexCount());
 		} else {
 			GL11.glTranslatef(Graphics3DLwjgl.RASTER_OFFSET,
 				Graphics3DLwjgl.RASTER_OFFSET, 0);
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-			GL11.glDrawArrays(GL11.GL_QUADS, 0, m_vertexCount);
+			GL11.glDrawArrays(GL11.GL_QUADS, 0, getVertexCount());
 		}
 
 	}

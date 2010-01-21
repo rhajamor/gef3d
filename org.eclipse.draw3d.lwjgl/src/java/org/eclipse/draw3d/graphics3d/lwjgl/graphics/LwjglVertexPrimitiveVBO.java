@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 
+import java.nio.Buffer;
 import java.nio.FloatBuffer;
 
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
@@ -31,9 +32,21 @@ import org.lwjgl.opengl.GL15;
  */
 public abstract class LwjglVertexPrimitiveVBO extends LwjglVBO {
 
+	private LineHelper m_lineHelper;
+
 	private PrimitiveSet m_primitives;
 
-	protected LineHelper m_lineHelper;
+	private int m_vertexCount;
+
+	protected int getVertexCount() {
+
+		return m_vertexCount;
+	}
+
+	protected PrimitiveSet getPrimitives() {
+
+		return m_primitives;
+	}
 
 	/**
 	 * Creates a new vertex buffer using the given primitive set.
@@ -53,6 +66,7 @@ public abstract class LwjglVertexPrimitiveVBO extends LwjglVBO {
 				+ " must not be empty");
 
 		m_primitives = i_primitives;
+		m_vertexCount = i_primitives.getVertexCount();
 
 		RenderRule renderRule =
 			i_primitives.getPrimitiveClass().getRenderRule();
@@ -70,48 +84,81 @@ public abstract class LwjglVertexPrimitiveVBO extends LwjglVBO {
 
 		if (m_lineHelper != null)
 			m_lineHelper.cleanup(i_g3d);
-
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#createVertexBuffer
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
-	protected FloatBuffer createVertexBuffer() {
+	protected abstract void doRender(Graphics3D i_g3d);
 
-		FloatBuffer buf =
-			BufferUtils.createFloatBuffer(2 * m_primitives.getVertexCount());
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#getBuffer(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected Buffer getBuffer(BufferType i_type) {
 
-		for (Primitive primitive : m_primitives.getPrimitives()) {
-			VertexPrimitive vertexPrimitive = (VertexPrimitive) primitive;
+		if (i_type == BufferType.VERTEX) {
+			FloatBuffer buf =
+				BufferUtils.createFloatBuffer(2 * m_primitives.getVertexCount());
 
-			float[] vertices = vertexPrimitive.getVertices();
-			if (m_lineHelper != null && m_lineHelper.isTextured()) {
-				float lx = vertices[0];
-				float ly = vertices[1];
+			for (Primitive primitive : m_primitives.getPrimitives()) {
+				VertexPrimitive vertexPrimitive = (VertexPrimitive) primitive;
 
-				for (int i = 0; i < vertexPrimitive.getVertexCount(); i++) {
-					float x = vertices[2 * i];
-					float y = vertices[2 * i + 1];
+				float[] vertices = vertexPrimitive.getVertices();
+				if (m_lineHelper != null && m_lineHelper.isTextured()) {
+					float lx = vertices[0];
+					float ly = vertices[1];
 
-					buf.put(x);
-					buf.put(y);
-					m_lineHelper.addTextureCoordinate(lx, ly, x, y, buf);
-					lx = x;
-					ly = y;
+					for (int i = 0; i < vertexPrimitive.getVertexCount(); i++) {
+						float x = vertices[2 * i];
+						float y = vertices[2 * i + 1];
+
+						buf.put(x);
+						buf.put(y);
+						m_lineHelper.addTextureCoordinate(lx, ly, x, y, buf);
+						lx = x;
+						ly = y;
+					}
+				} else {
+					buf.put(vertices);
 				}
-			} else {
-				buf.put(vertices);
+
 			}
 
+			return buf;
 		}
 
-		m_primitives = null;
-		return buf;
+		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#getBufferInfo(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected BufferInfo getBufferInfo(BufferType i_type) {
+
+		if (i_type == BufferType.VERTEX)
+			return new BufferInfo(GL11.GL_FLOAT, GL15.GL_STREAM_READ, 2, 0, 0);
+
+		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#hasBuffer(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.BufferType)
+	 */
+	@Override
+	protected boolean hasBuffer(BufferType i_type) {
+
+		return i_type == BufferType.VERTEX;
 	}
 
 	/**
@@ -131,25 +178,27 @@ public abstract class LwjglVertexPrimitiveVBO extends LwjglVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
-	 */
-	@Override
-	protected abstract void doRender(Graphics3D i_g3d);
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
 	 */
 	@Override
 	protected void prepare(Graphics3D i_g3d) {
 
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, getBufferId());
-
-		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-		GL11.glVertexPointer(2, GL11.GL_FLOAT, 0, 0);
-
 		if (m_lineHelper != null)
 			m_lineHelper.prepare(i_g3d);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#stateChanged(org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.State,
+	 *      org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO.State)
+	 */
+	@Override
+	protected void stateChanged(State i_oldState, State i_newState) {
+
+		super.stateChanged(i_oldState, i_newState);
+
+		if (i_newState == State.READY)
+			m_primitives = null;
 	}
 }

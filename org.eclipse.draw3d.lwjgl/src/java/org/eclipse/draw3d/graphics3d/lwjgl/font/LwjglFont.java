@@ -24,7 +24,7 @@ import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.util.Draw3DCache;
-import org.eclipse.draw3d.util.converter.BufferInfo;
+import org.eclipse.draw3d.util.converter.ColorBufferInfo;
 import org.eclipse.draw3d.util.converter.ImageConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Device;
@@ -197,8 +197,8 @@ public class LwjglFont {
 				}
 
 				// create a luminance alpha texture from the image
-				BufferInfo info =
-					new BufferInfo(m_width, m_height, GL11.GL_LUMINANCE_ALPHA,
+				ColorBufferInfo info =
+					new ColorBufferInfo(m_width, m_height, GL11.GL_LUMINANCE_ALPHA,
 						GL11.GL_UNSIGNED_BYTE, 1);
 
 				ImageConverter converter = ImageConverter.getInstance();

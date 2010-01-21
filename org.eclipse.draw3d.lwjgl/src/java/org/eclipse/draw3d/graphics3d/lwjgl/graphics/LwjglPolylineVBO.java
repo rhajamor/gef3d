@@ -38,8 +38,6 @@ public class LwjglPolylineVBO extends LwjglVertexPrimitiveVBO {
 
 	private IntBuffer m_countBuffer;
 
-	private int m_vertexCount;
-
 	/**
 	 * Creates a new VBO that renders the given polyline primitives.
 	 * 
@@ -59,9 +57,7 @@ public class LwjglPolylineVBO extends LwjglVertexPrimitiveVBO {
 				+ " does not contain polylines");
 
 		int count = i_primitives.getSize();
-		if (count == 1) {
-			m_vertexCount = i_primitives.getVertexCount();
-		} else {
+		if (count > 1) {
 			m_indexBuffer = BufferUtils.createIntBuffer(count);
 			m_countBuffer = BufferUtils.createIntBuffer(count);
 
@@ -113,6 +109,6 @@ public class LwjglPolylineVBO extends LwjglVertexPrimitiveVBO {
 			GL14.glMultiDrawArrays(GL11.GL_LINE_STRIP, m_indexBuffer,
 				m_countBuffer);
 		else
-			GL11.glDrawArrays(GL11.GL_LINE_STRIP, 0, m_vertexCount);
+			GL11.glDrawArrays(GL11.GL_LINE_STRIP, 0, getVertexCount());
 	}
 }

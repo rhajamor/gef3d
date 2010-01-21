@@ -28,8 +28,6 @@ public class LwjglLineVBO extends LwjglVertexPrimitiveVBO {
 
 	private float[] m_color = new float[4];
 
-	private int m_vertexCount;
-
 	/**
 	 * Creates a new VBO that renders the given line primitives.
 	 * 
@@ -48,8 +46,6 @@ public class LwjglLineVBO extends LwjglVertexPrimitiveVBO {
 			throw new IllegalArgumentException(i_primitives
 				+ " does not contain lines");
 
-		m_vertexCount = i_primitives.getVertexCount();
-
 		OutlineRenderRule renderRule =
 			primitiveClass.getRenderRule().asOutline();
 
@@ -66,6 +62,6 @@ public class LwjglLineVBO extends LwjglVertexPrimitiveVBO {
 	protected void doRender(Graphics3D i_g3d) {
 
 		i_g3d.glColor4f(m_color);
-		GL11.glDrawArrays(GL11.GL_LINES, 0, m_vertexCount);
+		GL11.glDrawArrays(GL11.GL_LINES, 0, getVertexCount());
 	}
 }

@@ -10,11 +10,16 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.graphics;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.util.Draw3DCache;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 /**
@@ -26,7 +31,71 @@ import org.lwjgl.opengl.GL15;
  */
 public abstract class LwjglVBO {
 
-	private int m_bufferId;
+	protected static class BufferInfo {
+		private int m_dataType;
+
+		private int m_offset;
+
+		private int m_size;
+
+		private int m_stride;
+
+		private int m_usage;
+
+		public BufferInfo(int i_dataType, int i_usage, int i_size,
+				int i_stride, int i_offset) {
+			super();
+			m_dataType = i_dataType;
+			m_usage = i_usage;
+			m_size = i_size;
+			m_stride = i_stride;
+			m_offset = i_offset;
+		}
+
+		public int getDataType() {
+			return m_dataType;
+		}
+
+		public int getOffset() {
+			return m_offset;
+		}
+
+		public int getSize() {
+			return m_size;
+		}
+
+		public int getStride() {
+			return m_stride;
+		}
+
+		public int getUsage() {
+			return m_usage;
+		}
+	}
+
+	protected enum BufferType {
+		COLOR, TEXTURE_COORDINATES, VERTEX
+	}
+
+	protected enum State {
+		DISPOSED, INITIAL, READY
+	}
+
+	private int m_bufferCount;
+
+	private int m_colorBufferId;
+
+	private BufferInfo m_colorBufferInfo;
+
+	private State m_state = State.INITIAL;
+
+	private int m_texCoordBufferId;
+
+	private BufferInfo m_texCoordBufferInfo;
+
+	private int m_vertexBufferId;
+
+	private BufferInfo m_vertexBufferInfo;
 
 	/**
 	 * Called after this VBO was executed.
@@ -36,44 +105,36 @@ public abstract class LwjglVBO {
 	protected abstract void cleanup(Graphics3D i_g3d);
 
 	/**
-	 * Creates the vertex buffer.
-	 * 
-	 * @return a float buffer containing the vertex data of the given primitives
-	 * @throws NullPointerException if the given primitive set is
-	 *             <code>null</code>
-	 */
-	protected FloatBuffer createVertexBuffer() {
-
-		throw new AssertionError(
-			"createVertexBuffer() was called, but not implemented");
-	}
-
-	/**
 	 * Disposes the ressources associated with this VBO.
 	 */
 	public void dispose() {
 
-		if (m_bufferId != 0) {
-			disposeBuffer(m_bufferId);
-			m_bufferId = 0;
-		}
-	}
+		if (getState() == State.DISPOSED)
+			throw new IllegalStateException(this + " is already disposed");
 
-	/**
-	 * Dispose the buffer with the given ID.
-	 * 
-	 * @param id the ID of the buffer to dispose
-	 */
-	protected void disposeBuffer(int id) {
+		if (m_state == State.READY) {
+			IntBuffer idBuffer = Draw3DCache.getIntBuffer(m_bufferCount);
+			try {
+				idBuffer.rewind();
+				idBuffer.put(m_vertexBufferId);
 
-		IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
-		try {
-			idBuffer.rewind();
-			idBuffer.put(id);
-			idBuffer.rewind();
-			GL15.glDeleteBuffers(idBuffer);
-		} finally {
-			Draw3DCache.returnIntBuffer(idBuffer);
+				if (hasBuffer(BufferType.COLOR))
+					idBuffer.put(m_colorBufferId);
+
+				if (hasBuffer(BufferType.TEXTURE_COORDINATES))
+					idBuffer.put(m_texCoordBufferId);
+
+				idBuffer.rewind();
+				GL15.glDeleteBuffers(idBuffer);
+
+				m_vertexBufferId = 0;
+				m_colorBufferId = 0;
+				m_texCoordBufferId = 0;
+
+				setState(State.DISPOSED);
+			} finally {
+				Draw3DCache.returnIntBuffer(idBuffer);
+			}
 		}
 	}
 
@@ -84,15 +145,29 @@ public abstract class LwjglVBO {
 	 */
 	protected abstract void doRender(Graphics3D i_g3d);
 
-	/**
-	 * Returns the ID of the OpenGL VBO.
-	 * 
-	 * @return the ID
-	 */
-	protected int getBufferId() {
+	protected abstract Buffer getBuffer(BufferType i_type);
 
-		return m_bufferId;
+	protected abstract BufferInfo getBufferInfo(BufferType i_type);
+
+	protected State getState() {
+
+		return m_state;
 	}
+
+	protected void stateChanged(State i_oldState, State i_newState) {
+
+		// nothing to do
+	}
+
+	private void setState(State i_newState) {
+
+		State oldState = m_state;
+		m_state = i_newState;
+
+		stateChanged(oldState, i_newState);
+	}
+
+	protected abstract boolean hasBuffer(BufferType i_type);
 
 	/**
 	 * Initializes this VBO.
@@ -101,8 +176,57 @@ public abstract class LwjglVBO {
 	 */
 	public void initialize(Graphics3D i_g3d) {
 
-		FloatBuffer vertexBuffer = createVertexBuffer();
-		uploadBuffer(vertexBuffer);
+		if (getState() != State.INITIAL)
+			throw new IllegalStateException(this + " was already initialized");
+
+		Buffer vertexBuffer = getBuffer(BufferType.VERTEX);
+		m_vertexBufferInfo = getBufferInfo(BufferType.VERTEX);
+		m_bufferCount = 1;
+
+		if (hasBuffer(BufferType.COLOR))
+			m_bufferCount++;
+
+		if (hasBuffer(BufferType.TEXTURE_COORDINATES))
+			m_bufferCount++;
+
+		IntBuffer idBuffer = Draw3DCache.getIntBuffer(m_bufferCount);
+		try {
+			idBuffer.rewind();
+			GL15.glGenBuffers(idBuffer);
+
+			idBuffer.rewind();
+			m_vertexBufferId = idBuffer.get();
+
+			uploadBuffer(m_vertexBufferId, m_vertexBufferInfo, vertexBuffer);
+			vertexBuffer = null;
+
+			if (hasBuffer(BufferType.COLOR)) {
+				m_colorBufferId = idBuffer.get();
+
+				Buffer colorBuffer = getBuffer(BufferType.COLOR);
+				m_colorBufferInfo = getBufferInfo(BufferType.COLOR);
+
+				uploadBuffer(m_colorBufferId, m_colorBufferInfo, colorBuffer);
+				colorBuffer = null;
+			}
+
+			if (hasBuffer(BufferType.TEXTURE_COORDINATES)) {
+				m_texCoordBufferId = idBuffer.get();
+
+				Buffer texCoordBuffer =
+					getBuffer(BufferType.TEXTURE_COORDINATES);
+				m_texCoordBufferInfo =
+					getBufferInfo(BufferType.TEXTURE_COORDINATES);
+
+				uploadBuffer(m_texCoordBufferId, m_texCoordBufferInfo,
+					texCoordBuffer);
+				texCoordBuffer = null;
+			}
+
+			setState(State.READY);
+		} finally {
+			Draw3DCache.returnIntBuffer(idBuffer);
+		}
 	}
 
 	/**
@@ -119,33 +243,87 @@ public abstract class LwjglVBO {
 	 */
 	public void render(Graphics3D i_g3d) {
 
-		prepare(i_g3d);
+		if (getState() != State.READY)
+			throw new IllegalStateException(this + " is not ready");
+
+		if (hasBuffer(BufferType.COLOR)) {
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_colorBufferId);
+			GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
+
+			GL11.glColorPointer(m_colorBufferInfo.getSize(),
+				m_colorBufferInfo.getDataType(), m_colorBufferInfo.getStride(),
+				m_colorBufferInfo.getOffset());
+		}
+
+		if (hasBuffer(BufferType.TEXTURE_COORDINATES)) {
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_texCoordBufferId);
+			GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+
+			GL11.glTexCoordPointer(m_texCoordBufferInfo.getSize(),
+				m_texCoordBufferInfo.getDataType(),
+				m_texCoordBufferInfo.getStride(),
+				m_texCoordBufferInfo.getOffset());
+		}
+
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_vertexBufferId);
+		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+
+		GL11.glVertexPointer(m_vertexBufferInfo.getSize(),
+			m_vertexBufferInfo.getDataType(), m_vertexBufferInfo.getStride(),
+			m_vertexBufferInfo.getOffset());
+
 		try {
-			doRender(i_g3d);
+			prepare(i_g3d);
+			try {
+				doRender(i_g3d);
+			} finally {
+				cleanup(i_g3d);
+			}
 		} finally {
-			cleanup(i_g3d);
+			GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+
+			if (hasBuffer(BufferType.TEXTURE_COORDINATES))
+				GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+
+			if (hasBuffer(BufferType.COLOR))
+				GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
 		}
 	}
 
-	/**
-	 * Uploads the given buffer and sets the buffer ID.
-	 * 
-	 * @param i_buffer the buffer to upload
-	 */
-	protected void uploadBuffer(FloatBuffer i_buffer) {
+	private void uploadBuffer(int i_id, BufferInfo i_info, Buffer i_buffer) {
 
-		IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
-		try {
-			idBuffer.rewind();
-			GL15.glGenBuffers(idBuffer);
-			m_bufferId = idBuffer.get(0);
+		i_buffer.rewind();
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, i_id);
 
-			i_buffer.rewind();
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_bufferId);
-			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, i_buffer,
-				GL15.GL_STATIC_DRAW);
-		} finally {
-			Draw3DCache.returnIntBuffer(idBuffer);
+		switch (i_info.getDataType()) {
+		case GL11.GL_BYTE:
+		case GL11.GL_UNSIGNED_BYTE:
+			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (ByteBuffer) i_buffer,
+				i_info.getUsage());
+			break;
+		case GL11.GL_SHORT:
+		case GL11.GL_UNSIGNED_SHORT:
+			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (ShortBuffer) i_buffer,
+				i_info.getUsage());
+			break;
+		case GL11.GL_INT:
+		case GL11.GL_UNSIGNED_INT:
+			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (IntBuffer) i_buffer,
+				i_info.getUsage());
+			break;
+		case GL11.GL_FLOAT:
+			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (FloatBuffer) i_buffer,
+				i_info.getUsage());
+			break;
+		case GL11.GL_DOUBLE:
+			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (DoubleBuffer) i_buffer,
+				i_info.getUsage());
+			break;
+
+		default:
+			throw new IllegalArgumentException("unknown buffer data type: "
+				+ i_info.getDataType());
 		}
+
 	}
 }

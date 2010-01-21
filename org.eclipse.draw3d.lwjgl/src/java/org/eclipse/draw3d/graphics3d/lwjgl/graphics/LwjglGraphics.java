@@ -38,7 +38,7 @@ import org.eclipse.draw3d.util.ArcHelper;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.ImageConverter.ConversionSpecs;
-import org.eclipse.draw3d.util.converter.BufferInfo;
+import org.eclipse.draw3d.util.converter.ColorBufferInfo;
 import org.eclipse.draw3d.util.converter.ImageConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -417,8 +417,8 @@ public class LwjglGraphics extends StatefulGraphics {
 						new org.eclipse.swt.graphics.Rectangle(i_x1, i_y1,
 							i_w1, i_h1);
 
-					BufferInfo info =
-						new BufferInfo(i_w1, i_h1, GL11.GL_RGBA,
+					ColorBufferInfo info =
+						new ColorBufferInfo(i_w1, i_h1, GL11.GL_RGBA,
 							GL11.GL_UNSIGNED_BYTE, 1);
 
 					ByteBuffer buffer =

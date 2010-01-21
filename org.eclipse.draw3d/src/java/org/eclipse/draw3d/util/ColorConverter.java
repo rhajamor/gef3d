@@ -52,7 +52,7 @@ public class ColorConverter {
 		colors[0] = i_red;
 		colors[1] = i_green;
 		colors[2] = i_blue;
-		colors[3] = (byte) i_alpha;
+		colors[3] = (byte) (i_alpha & 0xFF);
 
 		return colors;
 	}
@@ -76,9 +76,9 @@ public class ColorConverter {
 		if (i_color == null)
 			throw new NullPointerException("i_color must not be null");
 
-		byte red = (byte) i_color.getRed();
-		byte green = (byte) i_color.getGreen();
-		byte blue = (byte) i_color.getBlue();
+		byte red = (byte) (i_color.getRed() & 0xFF);
+		byte green = (byte) (i_color.getGreen() & 0xFF);
+		byte blue = (byte) (i_color.getBlue() & 0xFF);
 
 		return toByteArray(red, green, blue, i_alpha, io_colors);
 	}
