@@ -21,10 +21,15 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
+import org.eclipse.draw3d.geometry.IVector2f;
+import org.eclipse.draw3d.geometry.Vector2fImpl;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
 import org.eclipse.draw3d.graphics.optimizer.RecordingGraphics;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.PolygonPrimitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.RenderRule;
+import org.eclipse.draw3d.graphics.optimizer.primitive.SolidRenderRule;
 import org.eclipse.draw3d.graphics3d.AbstractGraphics3DDraw;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
@@ -37,7 +42,7 @@ import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGradientQuadVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglImageVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglLineVBO;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPolygonVBO;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPolygonVBO2;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPolylineVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPrimitiveClassifier;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglQuadVBO;
@@ -50,12 +55,15 @@ import org.eclipse.draw3d.graphics3d.lwjgl.texture.LwjglTextureFbo;
 import org.eclipse.draw3d.graphics3d.lwjgl.texture.LwjglTextureManager;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.LogGraphics;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLContext;
+import org.lwjgl.util.glu.GLU;
+import org.lwjgl.util.glu.GLUtessellator;
 import org.lwjgl.util.glu.GLUtessellatorCallback;
 
 /**
@@ -69,6 +77,218 @@ import org.lwjgl.util.glu.GLUtessellatorCallback;
  */
 public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		Graphics3D {
+	private static class PolygonTesselator implements GLUtessellatorCallback {
+
+		private int m_currentType;
+
+		private List<IVector2f> m_currentVertices = new LinkedList<IVector2f>();
+
+		private LwjglPolygonVBO2 m_lineLoops;
+
+		private LwjglPolygonVBO2 m_triangleFans;
+
+		private LwjglPolygonVBO2 m_triangleSets;
+
+		private LwjglPolygonVBO2 m_triangleStrips;
+
+		private RenderRule m_renderRule;
+
+		public PolygonTesselator(RenderRule i_renderRule) {
+
+			if (i_renderRule == null)
+				throw new NullPointerException("i_renderRule must not be null");
+
+			m_renderRule = i_renderRule;
+		}
+
+		public void addVBOs(List<LwjglVBO> i_vbos) {
+
+			if (m_lineLoops != null)
+				i_vbos.add(m_lineLoops);
+
+			if (m_triangleFans != null)
+				i_vbos.add(m_triangleFans);
+
+			if (m_triangleSets != null)
+				i_vbos.add(m_triangleSets);
+
+			if (m_triangleStrips != null)
+				i_vbos.add(m_triangleStrips);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#begin(int)
+		 */
+		public void begin(int i_type) {
+
+			m_currentType = i_type;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#beginData(int,
+		 *      java.lang.Object)
+		 */
+		public void beginData(int i_type, Object i_polygonData) {
+
+			throw new UnsupportedOperationException();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#combine(double[],
+		 *      java.lang.Object[], float[], java.lang.Object[])
+		 */
+		public void combine(double[] i_coords, Object[] i_data,
+			float[] i_weight, Object[] i_outData) {
+
+			IVector2f v =
+				new Vector2fImpl((float) i_coords[0], (float) i_coords[1]);
+
+			i_outData[0] = v;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#combineData(double[],
+		 *      java.lang.Object[], float[], java.lang.Object[],
+		 *      java.lang.Object)
+		 */
+		public void combineData(double[] i_coords, Object[] i_data,
+			float[] i_weight, Object[] i_outData, Object i_polygonData) {
+
+			throw new UnsupportedOperationException();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#edgeFlag(boolean)
+		 */
+		public void edgeFlag(boolean i_boundaryEdge) {
+
+			throw new UnsupportedOperationException();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#edgeFlagData(boolean,
+		 *      java.lang.Object)
+		 */
+		public void edgeFlagData(boolean i_boundaryEdge, Object i_polygonData) {
+
+			throw new UnsupportedOperationException();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#end()
+		 */
+		public void end() {
+
+			switch (m_currentType) {
+			case GL11.GL_TRIANGLE_FAN:
+				if (m_triangleFans == null)
+					m_triangleFans =
+						new LwjglPolygonVBO2(m_currentType, m_renderRule);
+
+				m_triangleFans.addPolygon(m_currentVertices);
+				break;
+			case GL11.GL_TRIANGLE_STRIP:
+				if (m_triangleStrips == null)
+					m_triangleStrips =
+						new LwjglPolygonVBO2(m_currentType, m_renderRule);
+
+				m_triangleStrips.addPolygon(m_currentVertices);
+				break;
+			case GL11.GL_TRIANGLES:
+				if (m_triangleSets == null)
+					m_triangleSets =
+						new LwjglPolygonVBO2(m_currentType, m_renderRule);
+
+				m_triangleSets.addPolygon(m_currentVertices);
+				break;
+			case GL11.GL_LINE_LOOP:
+				if (m_lineLoops == null)
+					m_lineLoops =
+						new LwjglPolygonVBO2(m_currentType, m_renderRule);
+
+				m_lineLoops.addPolygon(m_currentVertices);
+				break;
+
+			default:
+				throw new IllegalStateException("unknown polygon type: "
+					+ m_currentType);
+			}
+
+			m_currentVertices.clear();
+			m_currentType = 0;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#endData(java.lang.Object)
+		 */
+		public void endData(Object i_polygonData) {
+
+			throw new UnsupportedOperationException();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#error(int)
+		 */
+		public void error(int i_errnum) {
+
+			throw new RuntimeException("error during polygon tesselation: "
+				+ i_errnum);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#errorData(int,
+		 *      java.lang.Object)
+		 */
+		public void errorData(int i_errnum, Object i_polygonData) {
+
+			throw new RuntimeException(
+				"error during polygon tesselation of polygon " + i_polygonData
+					+ ": " + i_errnum);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#vertex(java.lang.Object)
+		 */
+		public void vertex(Object i_vertexData) {
+
+			IVector2f v = (IVector2f) i_vertexData;
+			m_currentVertices.add(v);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#vertexData(java.lang.Object,
+		 *      java.lang.Object)
+		 */
+		public void vertexData(Object i_vertexData, Object i_polygonData) {
+
+			throw new UnsupportedOperationException();
+		}
+	}
+
 	/**
 	 * Indicates which attribute groups must be saved prior to using this.
 	 */
@@ -110,6 +330,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	private LwjglFontManager m_fontManager;
 
 	private boolean m_log2D;
+
+	private GLUtessellator m_tesselator;
 
 	/**
 	 * The texture manager handles OpenGL texture as GL's mechanism to render 2D
@@ -188,153 +410,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		return m_activeGraphics;
 	}
 
-	private static class PolygonTesselator implements GLUtessellatorCallback {
-
-		private List<PolygonPrimitive> m_triangleFans;
-
-		private List<PolygonPrimitive> m_triangleSets;
-
-		private List<PolygonPrimitive> m_triangleStrips;
-
-		private List<PolygonPrimitive> m_outlines;
-
-		private int m_currentType;
-
-		private PolygonPrimitive m_currentPrimitive;
-
-		private List<Float> m_currentVertices = new LinkedList<Float>();
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#begin(int)
-		 */
-		public void begin(int i_type) {
-
-			throw new UnsupportedOperationException();
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#beginData(int,
-		 *      java.lang.Object)
-		 */
-		public void beginData(int i_type, Object i_polygonData) {
-
-			m_currentType = i_type;
-			m_currentPrimitive = (PolygonPrimitive) i_polygonData;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#combine(double[],
-		 *      java.lang.Object[], float[], java.lang.Object[])
-		 */
-		public void combine(double[] i_coords, Object[] i_data,
-			float[] i_weight, Object[] i_outData) {
-			// TODO implement method GLUtessellatorCallback.combine
-
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#combineData(double[],
-		 *      java.lang.Object[], float[], java.lang.Object[],
-		 *      java.lang.Object)
-		 */
-		public void combineData(double[] i_coords, Object[] i_data,
-			float[] i_weight, Object[] i_outData, Object i_polygonData) {
-			// TODO implement method GLUtessellatorCallback.combineData
-
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#edgeFlag(boolean)
-		 */
-		public void edgeFlag(boolean i_boundaryEdge) {
-			// TODO implement method GLUtessellatorCallback.edgeFlag
-
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#edgeFlagData(boolean,
-		 *      java.lang.Object)
-		 */
-		public void edgeFlagData(boolean i_boundaryEdge, Object i_polygonData) {
-			// TODO implement method GLUtessellatorCallback.edgeFlagData
-
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#end()
-		 */
-		public void end() {
-
-			throw new UnsupportedOperationException();
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#endData(java.lang.Object)
-		 */
-		public void endData(Object i_polygonData) {
-
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#error(int)
-		 */
-		public void error(int i_errnum) {
-			// TODO implement method GLUtessellatorCallback.error
-
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#errorData(int,
-		 *      java.lang.Object)
-		 */
-		public void errorData(int i_errnum, Object i_polygonData) {
-			// TODO implement method GLUtessellatorCallback.errorData
-
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#vertex(java.lang.Object)
-		 */
-		public void vertex(Object i_vertexData) {
-			// TODO implement method GLUtessellatorCallback.vertex
-
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallback#vertexData(java.lang.Object,
-		 *      java.lang.Object)
-		 */
-		public void vertexData(Object i_vertexData, Object i_polygonData) {
-			// TODO implement method GLUtessellatorCallback.vertexData
-
-		}
-
-	}
-
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -351,7 +426,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			for (PrimitiveSet set : primiveSets) {
 				PrimitiveClass clazz = set.getPrimitiveClass();
 				if (clazz.isPolygon()) {
-					vbos.add(new LwjglPolygonVBO(set));
+					tesselate(set, vbos);
 				} else if (clazz.isQuad()) {
 					if (clazz.isGradient())
 						vbos.add(new LwjglGradientQuadVBO(set));
@@ -417,6 +492,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 				m_fontManager.dispose();
 			if (m_displayListManager != null)
 				m_displayListManager.dispose();
+			if (m_tesselator != null)
+				m_tesselator.gluDeleteTess();
 		} catch (Exception ex) {
 			log.warning("Error disposing texture manager: " + ex);
 		}
@@ -1051,6 +1128,79 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			properties.setProperty(key, value);
 		else
 			properties.remove(key);
+	}
+
+	/**
+	 * @param i_set
+	 * @param i_vbos
+	 */
+	private void tesselate(PrimitiveSet i_set, List<LwjglVBO> i_vbos) {
+
+		if (m_tesselator == null)
+			m_tesselator = GLU.gluNewTess();
+
+		RenderRule renderRule = i_set.getPrimitiveClass().getRenderRule();
+		PolygonTesselator callback = new PolygonTesselator(renderRule);
+
+		// bug in LWJGL, must set edge flag callback to null before setting
+		// begin callback
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN, callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX, callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE, callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_END, callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_END_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR_DATA, callback);
+
+		m_tesselator.gluTessProperty(GLU.GLU_TESS_TOLERANCE, 0);
+
+		if (renderRule.isOutline()) {
+			m_tesselator.gluTessProperty(GLU.GLU_TESS_BOUNDARY_ONLY, 1);
+			m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE,
+				GLU.GLU_TESS_WINDING_ODD);
+		} else if (renderRule.isSolid()) {
+			SolidRenderRule solid = renderRule.asSolid();
+
+			m_tesselator.gluTessProperty(GLU.GLU_TESS_BOUNDARY_ONLY, 0);
+			m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE,
+				solid.getFillRule() == SWT.FILL_EVEN_ODD
+					? GLU.GLU_TESS_WINDING_ODD : GLU.GLU_TESS_WINDING_NONZERO);
+		}
+
+		double[] coords = new double[3];
+		coords[2] = 0;
+
+		for (Primitive primitive : i_set.getPrimitives()) {
+			PolygonPrimitive polygon = (PolygonPrimitive) primitive;
+
+			m_tesselator.gluTessBeginPolygon(polygon);
+			m_tesselator.gluTessNormal(0, 0, -1);
+			m_tesselator.gluTessBeginContour();
+
+			float[] vertices = polygon.getVertices();
+			float x, y;
+
+			for (int i = 0; i < polygon.getVertexCount(); i++) {
+				x = vertices[2 * i];
+				y = vertices[2 * i + 1];
+
+				coords[0] = x;
+				coords[1] = y;
+
+				IVector2f v = new Vector2fImpl(x, y);
+				m_tesselator.gluTessVertex(coords, 0, v);
+			}
+
+			m_tesselator.gluTessEndContour();
+			m_tesselator.gluTessEndPolygon();
+		}
+
+		callback.addVBOs(i_vbos);
 	}
 
 	/**
