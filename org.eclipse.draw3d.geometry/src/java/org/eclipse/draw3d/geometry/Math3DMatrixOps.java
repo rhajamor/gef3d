@@ -25,6 +25,45 @@ package org.eclipse.draw3d.geometry;
 public class Math3DMatrixOps extends Math3DMatrix4f {
 
 	/**
+	 * Converts the given affine 2D transformation into an affine 3D
+	 * transformation that performs the same transformation on the X/Y plane.
+	 * 
+	 * @param i_source the source transformation
+	 * @param o_result the result matrix, if <code>null</code>, a new matrix
+	 *            will be created
+	 * @return the result matrix
+	 */
+	public static Matrix4f convert(IMatrix3f i_source, Matrix4f o_result) {
+
+		Matrix4fImpl result;
+		if (o_result != null)
+			result = Matrix4fImpl.cast(o_result);
+		else
+			result = new Matrix4fImpl();
+
+		Matrix3fImpl m = Matrix3fImpl.cast(i_source);
+
+		result.a11 = m.a11;
+		result.a12 = m.a12;
+		result.a13 = m.a13;
+		result.a14 = 0;
+		result.a21 = m.a21;
+		result.a22 = m.a22;
+		result.a23 = m.a23;
+		result.a24 = 0;
+		result.a31 = 0;
+		result.a32 = 0;
+		result.a33 = 1;
+		result.a34 = 0;
+		result.a41 = m.a31;
+		result.a42 = m.a32;
+		result.a43 = 0;
+		result.a44 = 1;
+
+		return result;
+	}
+
+	/**
 	 * Returns true if both matrices have the same number of elements and for
 	 * each pair of elements a and b (the elements are flattened in the same
 	 * format) <i>|a-b|<=epsilon</i> is true.
@@ -219,6 +258,46 @@ public class Math3DMatrixOps extends Math3DMatrix4f {
 	 * @param o_result
 	 * @return
 	 */
+	public static Matrix3f scale(IVector2f i_scaleVector2f, IMatrix3f i_matrix,
+		Matrix3f o_result) {
+
+		Matrix3fImpl m = Matrix3fImpl.cast(i_matrix);
+		Vector2fImpl v = Vector2fImpl.cast(i_scaleVector2f);
+
+		Matrix3fImpl result;
+		if (o_result == null) {
+			result = new Matrix3fImpl();
+			o_result = result;
+		} else {
+			result = Matrix3fImpl.cast(o_result);
+		}
+
+		result.a11 = m.a11 * v.x;
+		result.a12 = m.a12 * v.x;
+		result.a13 = m.a13 * v.x;
+		result.a21 = m.a21 * v.y;
+		result.a22 = m.a22 * v.y;
+		result.a23 = m.a23 * v.y;
+		result.a31 = m.a31;
+		result.a32 = m.a32;
+		result.a33 = m.a33;
+
+		if (o_result != result)
+			o_result.set(result);
+
+		return result;
+	}
+
+	/**
+	 * Scales the first three rows with the appropriate values of the scale
+	 * vector, i.e. row 1 with x, row 2 with y, and row 3 with z. Row 4 is not
+	 * changed.
+	 * 
+	 * @param i_scaleVector3f
+	 * @param i_matrix
+	 * @param o_result
+	 * @return
+	 */
 	public static Matrix4f scale(IVector3f i_scaleVector3f, IMatrix4f i_matrix,
 		Matrix4f o_result) {
 
@@ -254,6 +333,47 @@ public class Math3DMatrixOps extends Math3DMatrix4f {
 			o_result.set(result);
 
 		return result;
+	}
+
+	/**
+	 * Transforms the vector i_vector with the given matrix i_matrix, putting
+	 * the result in o_result: i_vector * i_matrix = o_result. The given matrix
+	 * is in homogeneous coordinates, while the given vector is transformed to
+	 * homogeneous coordinates by setting the W component to 1. The result
+	 * vector is transformed back from homogeneous coordinates by dividing the
+	 * X, Y and Z components by the W component.
+	 * 
+	 * @param i_vector the vector to transform, in cartesian coordinates
+	 * @param i_matrix the transformation matrix, in homogeneous coordinates
+	 * @param o_result the result vector, if <code>null</code>, a new vector
+	 *            will be returned
+	 * @return the result of the transformation, in cartesian coordinates
+	 * @see "http://en.wikipedia.org/wiki/Transformation_matrix"
+	 */
+	public static Vector2f transform(IVector2f i_vector, IMatrix3f i_matrix,
+		Vector2f o_result) {
+
+		Matrix3fImpl m = Matrix3fImpl.cast(i_matrix);
+		Vector2fImpl v = Vector2fImpl.cast(i_vector);
+
+		Vector2fImpl result;
+		if (o_result == v || o_result == null) {
+			result = new Vector2fImpl();
+			if (o_result == null)
+				o_result = result;
+		} else {
+			result = Vector2fImpl.cast(o_result);
+		}
+
+		float w = m.a13 * v.x + m.a23 * v.y + m.a33;
+		result.x = (m.a11 * v.x + m.a21 * v.y + m.a31) / w;
+		result.y = (m.a12 * v.x + m.a22 * v.y + m.a32) / w;
+
+		if (o_result != result) {
+			o_result.set(result);
+		}
+
+		return o_result;
 	}
 
 	/**
@@ -383,6 +503,40 @@ public class Math3DMatrixOps extends Math3DMatrix4f {
 	 * @return the translated matrix
 	 * @see "http://en.wikipedia.org/wiki/Translation_(geometry)"
 	 */
+	public static Matrix3f translate(IMatrix3f i_source, IVector2f i_vector,
+		Matrix3f o_result) {
+
+		Matrix3fImpl m = Matrix3fImpl.cast(i_source);
+		Vector2fImpl v = Vector2fImpl.cast(i_vector);
+
+		Matrix3fImpl result;
+		if (o_result == null) {
+			result = new Matrix3fImpl(m);
+			o_result = result;
+		} else {
+			result = Matrix3fImpl.cast(o_result);
+			result.set(m);
+		}
+
+		result.a31 += v.x;
+		result.a32 += v.y;
+
+		if (o_result != result)
+			o_result.set(result);
+
+		return result;
+	}
+
+	/**
+	 * Translates a matrix by a given vector.
+	 * 
+	 * @param i_source the matrix to be translated, in homogeneous coordinates
+	 * @param i_vector the translation vector
+	 * @param o_result the result matrix, if <code>null</code>, a new matrix
+	 *            will be returned
+	 * @return the translated matrix
+	 * @see "http://en.wikipedia.org/wiki/Translation_(geometry)"
+	 */
 	public static Matrix4f translate(IMatrix4f i_source, IVector3f i_vector,
 		Matrix4f o_result) {
 
@@ -398,10 +552,9 @@ public class Math3DMatrixOps extends Math3DMatrix4f {
 			result.set(m);
 		}
 
-		result.a41 += m.a11 * v.x + m.a21 * v.y + m.a31 * v.z;
-		result.a42 += m.a12 * v.x + m.a22 * v.y + m.a32 * v.z;
-		result.a43 += m.a13 * v.x + m.a23 * v.y + m.a33 * v.z;
-		result.a44 += m.a14 * v.x + m.a24 * v.y + m.a34 * v.z;
+		result.a41 += v.x;
+		result.a42 += v.y;
+		result.a43 += v.z;
 
 		if (o_result != result)
 			o_result.set(result);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 Jens von Pilgrim and others.
+ * Copyright (c) 2010 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,33 +10,17 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d;
 
+import org.eclipse.draw3d.geometry.IVector3f;
+
 /**
- * A 2D image that renders itself.
+ * LodContext There should really be more documentation here.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 10.12.2009
+ * @since 29.01.2010
  */
-public interface RenderImage {
+public interface ILodHelper {
 
-	/**
-	 * Disposes all ressources associated with this image.
-	 * 
-	 * @param i_g3d the current 3D graphics instance
-	 */
-	public void dispose();
-
-	/**
-	 * Initializes this image.
-	 * 
-	 * @param i_g3d the current 3D graphics instance
-	 */
-	public void initialize(Graphics3D i_g3d);
-
-	/**
-	 * Renders this image.
-	 * 
-	 * @param i_g3d the current 3D graphics instance
-	 */
-	public void render(Graphics3D i_g3d, ILodHelper i_lodHelper);
+	public float getNormalizedArea(IVector3f i_position, IVector3f i_normal,
+		float i_area);
 }

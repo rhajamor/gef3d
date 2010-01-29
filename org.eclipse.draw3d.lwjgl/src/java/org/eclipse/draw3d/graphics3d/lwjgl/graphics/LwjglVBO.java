@@ -18,6 +18,8 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.ILodHelper;
+import org.eclipse.draw3d.graphics3d.RenderImage;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -29,7 +31,7 @@ import org.lwjgl.opengl.GL15;
  * @version $Revision$
  * @since 21.12.2009
  */
-public abstract class LwjglVBO {
+public abstract class LwjglVBO implements RenderImage {
 
 	protected static class BufferInfo {
 		private int m_dataType;
@@ -102,7 +104,7 @@ public abstract class LwjglVBO {
 	 * 
 	 * @param i_g3d the Graphics3D instance
 	 */
-	protected abstract void cleanup(Graphics3D i_g3d);
+	protected abstract void cleanup(Graphics3D i_g3d, ILodHelper i_lodContext);
 
 	/**
 	 * Disposes the ressources associated with this VBO.
@@ -143,7 +145,7 @@ public abstract class LwjglVBO {
 	 * 
 	 * @param i_g3d the Graphics3D instance
 	 */
-	protected abstract void doRender(Graphics3D i_g3d);
+	protected abstract void doRender(Graphics3D i_g3d, ILodHelper i_lodContext);
 
 	protected abstract Buffer getBuffer(BufferType i_type);
 
@@ -234,14 +236,14 @@ public abstract class LwjglVBO {
 	 * 
 	 * @param i_g3d the Graphics3D instance.
 	 */
-	protected abstract void prepare(Graphics3D i_g3d);
+	protected abstract void prepare(Graphics3D i_g3d, ILodHelper i_lodContext);
 
 	/**
 	 * Renders this VBO.
 	 * 
 	 * @param i_g3d the Graphics3D instance
 	 */
-	public void render(Graphics3D i_g3d) {
+	public void render(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 		if (getState() != State.READY)
 			throw new IllegalStateException(this + " is not ready");
@@ -273,11 +275,11 @@ public abstract class LwjglVBO {
 			m_vertexBufferInfo.getOffset());
 
 		try {
-			prepare(i_g3d);
+			prepare(i_g3d, i_lodContext);
 			try {
-				doRender(i_g3d);
+				doRender(i_g3d, i_lodContext);
 			} finally {
-				cleanup(i_g3d);
+				cleanup(i_g3d, i_lodContext);
 			}
 		} finally {
 			GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);

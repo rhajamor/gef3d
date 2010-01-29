@@ -10,15 +10,27 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl;
 
+import static java.awt.geom.PathIterator.*;
+
+import java.awt.Font;
+import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.geometry.IMatrix3f;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector2f;
@@ -30,6 +42,8 @@ import org.eclipse.draw3d.graphics.optimizer.primitive.PolygonPrimitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.RenderRule;
 import org.eclipse.draw3d.graphics.optimizer.primitive.SolidRenderRule;
+import org.eclipse.draw3d.graphics.optimizer.primitive.TextPrimitive;
+import org.eclipse.draw3d.graphics.optimizer.primitive.TextRenderRule;
 import org.eclipse.draw3d.graphics3d.AbstractGraphics3DDraw;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
@@ -37,17 +51,19 @@ import org.eclipse.draw3d.graphics3d.Graphics3DDescriptor;
 import org.eclipse.draw3d.graphics3d.Graphics3DException;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
+import org.eclipse.draw3d.graphics3d.ILodHelper;
 import org.eclipse.draw3d.graphics3d.RenderImage;
+import org.eclipse.draw3d.graphics3d.lwjgl.font.GLFontKey;
+import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFont;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
+import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglVectorFont;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGradientQuadVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglImageVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglLineVBO;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPolygonVBO2;
+import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPolygonVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPolylineVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglPrimitiveClassifier;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglQuadVBO;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglTextVBO;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBackBuffers;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
@@ -57,6 +73,7 @@ import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.LogGraphics;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.GL11;
@@ -83,15 +100,15 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 		private List<IVector2f> m_currentVertices = new LinkedList<IVector2f>();
 
-		private LwjglPolygonVBO2 m_lineLoops;
-
-		private LwjglPolygonVBO2 m_triangleFans;
-
-		private LwjglPolygonVBO2 m_triangleSets;
-
-		private LwjglPolygonVBO2 m_triangleStrips;
+		private LwjglPolygonVBO m_lineLoops;
 
 		private RenderRule m_renderRule;
+
+		private LwjglPolygonVBO m_triangleFans;
+
+		private LwjglPolygonVBO m_triangleSets;
+
+		private LwjglPolygonVBO m_triangleStrips;
 
 		public PolygonTesselator(RenderRule i_renderRule) {
 
@@ -101,7 +118,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			m_renderRule = i_renderRule;
 		}
 
-		public void addVBOs(List<LwjglVBO> i_vbos) {
+		public void addVBOs(List<RenderImage> i_vbos) {
 
 			if (m_lineLoops != null)
 				i_vbos.add(m_lineLoops);
@@ -197,28 +214,28 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			case GL11.GL_TRIANGLE_FAN:
 				if (m_triangleFans == null)
 					m_triangleFans =
-						new LwjglPolygonVBO2(m_currentType, m_renderRule);
+						new LwjglPolygonVBO(m_currentType, m_renderRule);
 
 				m_triangleFans.addPolygon(m_currentVertices);
 				break;
 			case GL11.GL_TRIANGLE_STRIP:
 				if (m_triangleStrips == null)
 					m_triangleStrips =
-						new LwjglPolygonVBO2(m_currentType, m_renderRule);
+						new LwjglPolygonVBO(m_currentType, m_renderRule);
 
 				m_triangleStrips.addPolygon(m_currentVertices);
 				break;
 			case GL11.GL_TRIANGLES:
 				if (m_triangleSets == null)
 					m_triangleSets =
-						new LwjglPolygonVBO2(m_currentType, m_renderRule);
+						new LwjglPolygonVBO(m_currentType, m_renderRule);
 
 				m_triangleSets.addPolygon(m_currentVertices);
 				break;
 			case GL11.GL_LINE_LOOP:
 				if (m_lineLoops == null)
 					m_lineLoops =
-						new LwjglPolygonVBO2(m_currentType, m_renderRule);
+						new LwjglPolygonVBO(m_currentType, m_renderRule);
 
 				m_lineLoops.addPolygon(m_currentVertices);
 				break;
@@ -340,6 +357,9 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 */
 	private LwjglTextureManager m_textureManager = null;
 
+	private Map<GLFontKey, LwjglVectorFont> m_vectorFonts =
+		new HashMap<GLFontKey, LwjglVectorFont>();
+
 	Properties properties = new Properties();
 
 	/**
@@ -355,6 +375,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		}
 	}
 
+	private IPosition3D m_current2DPosition;
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -368,6 +390,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 		m_activeGraphics =
 			new RecordingGraphics(new LwjglPrimitiveClassifier());
+
+		m_current2DPosition = i_position;
 
 		// graphics.disableClipping();
 		//
@@ -410,6 +434,24 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		return m_activeGraphics;
 	}
 
+	private LwjglVectorFont getVectorFont(
+		org.eclipse.swt.graphics.Font i_swtFont, char i_startChar,
+		char i_endChar, boolean i_antialias) {
+
+		GLFontKey key =
+			new GLFontKey(i_swtFont, i_startChar, i_endChar, i_antialias);
+		LwjglVectorFont vectorFont = m_vectorFonts.get(key);
+		if (vectorFont == null) {
+			vectorFont =
+				new LwjglVectorFont(i_swtFont, i_startChar, i_endChar,
+					i_antialias);
+			vectorFont.initialize();
+			m_vectorFonts.put(key, vectorFont);
+		}
+
+		return vectorFont;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -417,11 +459,13 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 */
 	public RenderImage deactivateGraphics2D() {
 
+		final IPosition3D pos2d = m_current2DPosition;
+
 		log.info("deactivating 2D graphics");
 		if (m_activeGraphics instanceof RecordingGraphics) {
 			RecordingGraphics og = (RecordingGraphics) m_activeGraphics;
 			List<PrimitiveSet> primiveSets = og.getPrimiveSets();
-			final List<LwjglVBO> vbos = new LinkedList<LwjglVBO>();
+			final List<RenderImage> vbos = new LinkedList<RenderImage>();
 
 			for (PrimitiveSet set : primiveSets) {
 				PrimitiveClass clazz = set.getPrimitiveClass();
@@ -439,33 +483,50 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 				} else if (clazz.isLine()) {
 					vbos.add(new LwjglLineVBO(set));
 				} else if (clazz.isText()) {
-					vbos.add(new LwjglTextVBO(set, getFontManager()));
+					TextRenderRule textRule = clazz.getRenderRule().asText();
+					LwjglVectorFont vectorFont =
+						getVectorFont(textRule.getFont(), (char) 32,
+							(char) 127, true);
+					LwjglFont textureFont =
+						getFontManager().getFont(textRule.getFont(), (char) 32,
+							(char) 127, true);
+
+					for (Primitive primitive : set.getPrimitives()) {
+						TextPrimitive text = (TextPrimitive) primitive;
+						vbos.add(new TextRenderImage(text, vectorFont,
+							textureFont, m_current2DPosition));
+					}
+
+					// vbos.add(new LwjglTextVBO(set, getFontManager()));
+					// generateVectorText(set, vbos);
 				} else {
 					throw new AssertionError("unknown primitive class: "
 						+ clazz);
 				}
 			}
 
+			m_current2DPosition = null;
+
 			return new RenderImage() {
 
 				public void dispose() {
 
-					for (LwjglVBO vbo : vbos)
+					for (RenderImage vbo : vbos)
 						vbo.dispose();
 				}
 
 				public void initialize(Graphics3D i_g3d) {
 
-					for (LwjglVBO vbo : vbos)
+					for (RenderImage vbo : vbos)
 						vbo.initialize(i_g3d);
 				}
 
-				public void render(Graphics3D i_g3d) {
+				public void render(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 					GL11.glDisable(GL11.GL_DEPTH_TEST);
 					try {
-						for (LwjglVBO vbo : vbos)
-							vbo.render(i_g3d);
+						for (RenderImage vbo : vbos)
+							vbo.render(i_g3d, i_lodContext);
 					} finally {
 						GL11.glEnable(GL11.GL_DEPTH_TEST);
 					}
@@ -494,9 +555,114 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 				m_displayListManager.dispose();
 			if (m_tesselator != null)
 				m_tesselator.gluDeleteTess();
+			if (m_vectorFonts != null) {
+				for (LwjglVectorFont font : m_vectorFonts.values())
+					font.dispose();
+				m_vectorFonts.clear();
+				m_vectorFonts = null;
+			}
 		} catch (Exception ex) {
 			log.warning("Error disposing texture manager: " + ex);
 		}
+	}
+
+	private void generateVectorText(PrimitiveSet i_set, List<RenderImage> i_vbos) {
+
+		if (m_tesselator == null)
+			m_tesselator = GLU.gluNewTess();
+
+		PolygonTesselator callback =
+			new PolygonTesselator(i_set.getPrimitiveClass().getRenderRule());
+
+		// bug in LWJGL, must set edge flag callback to null before setting
+		// begin callback
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN, callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX, callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE, callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_END, callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_END_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR_DATA, callback);
+
+		m_tesselator.gluTessProperty(GLU.GLU_TESS_TOLERANCE, 0);
+
+		m_tesselator.gluTessProperty(GLU.GLU_TESS_BOUNDARY_ONLY, 0);
+
+		for (Primitive primitive : i_set.getPrimitives()) {
+			TextPrimitive textPrimitive = (TextPrimitive) primitive;
+			TextRenderRule textRule = textPrimitive.getRenderRule().asText();
+
+			org.eclipse.swt.graphics.Font swtFont = textRule.getFont();
+			FontData fontData = swtFont.getFontData()[0];
+
+			String name = fontData.getName();
+			int size = fontData.getHeight();
+
+			int style = 0;
+			if ((fontData.getStyle() & SWT.BOLD) != 0)
+				style |= Font.BOLD;
+			if ((fontData.getStyle() & SWT.ITALIC) != 0)
+				style |= Font.ITALIC;
+
+			Font awtFont = new Font(name, style, size);
+
+			IMatrix3f t = textPrimitive.getTransformation();
+			AffineTransform af =
+				new AffineTransform(t.get(0, 0), t.get(0, 1), t.get(1, 0),
+					t.get(1, 1), t.get(2, 0), t.get(2, 1));
+
+			Point p = textPrimitive.getPosition();
+			af.translate(p.x, p.y + size);
+
+			String text = textPrimitive.getText();
+
+			FontRenderContext rc = new FontRenderContext(null, true, true);
+			GlyphVector glyphs = awtFont.createGlyphVector(rc, text);
+
+			Shape outline = glyphs.getOutline();
+			PathIterator path = outline.getPathIterator(af, 0.1d);
+
+			if (path.getWindingRule() == PathIterator.WIND_EVEN_ODD)
+				m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE,
+					GLU.GLU_TESS_WINDING_ODD);
+			else if (path.getWindingRule() == PathIterator.WIND_NON_ZERO)
+				m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE,
+					GLU.GLU_TESS_WINDING_NONZERO);
+
+			double[] coords = new double[3];
+			coords[2] = 0;
+
+			m_tesselator.gluTessBeginPolygon(glyphs);
+			m_tesselator.gluTessNormal(0, 0, -1);
+
+			while (!path.isDone()) {
+				int type = path.currentSegment(coords);
+				switch (type) {
+				case SEG_MOVETO:
+					m_tesselator.gluTessBeginContour();
+					m_tesselator.gluTessVertex(coords, 0, new Vector2fImpl(
+						(float) coords[0], (float) coords[1]));
+					break;
+				case SEG_CLOSE:
+					m_tesselator.gluTessEndContour();
+					break;
+				case SEG_LINETO:
+					m_tesselator.gluTessVertex(coords, 0, new Vector2fImpl(
+						(float) coords[0], (float) coords[1]));
+					break;
+				}
+				path.next();
+			}
+
+			m_tesselator.gluTessEndPolygon();
+		}
+
+		callback.addVBOs(i_vbos);
 	}
 
 	/**
@@ -1130,11 +1296,37 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			properties.remove(key);
 	}
 
+	private void tesselate(float[] i_vertices) {
+
+		m_tesselator.gluTessBeginPolygon(i_vertices);
+		m_tesselator.gluTessNormal(0, 0, -1);
+		m_tesselator.gluTessBeginContour();
+
+		double[] coords = new double[3];
+		coords[2] = 0;
+
+		float x, y;
+
+		for (int i = 0; i < i_vertices.length / 2; i++) {
+			x = i_vertices[2 * i];
+			y = i_vertices[2 * i + 1];
+
+			coords[0] = x;
+			coords[1] = y;
+
+			IVector2f v = new Vector2fImpl(x, y);
+			m_tesselator.gluTessVertex(coords, 0, v);
+		}
+
+		m_tesselator.gluTessEndContour();
+		m_tesselator.gluTessEndPolygon();
+	}
+
 	/**
 	 * @param i_set
 	 * @param i_vbos
 	 */
-	private void tesselate(PrimitiveSet i_set, List<LwjglVBO> i_vbos) {
+	private void tesselate(PrimitiveSet i_set, List<RenderImage> i_vbos) {
 
 		if (m_tesselator == null)
 			m_tesselator = GLU.gluNewTess();
@@ -1172,32 +1364,9 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 					? GLU.GLU_TESS_WINDING_ODD : GLU.GLU_TESS_WINDING_NONZERO);
 		}
 
-		double[] coords = new double[3];
-		coords[2] = 0;
-
 		for (Primitive primitive : i_set.getPrimitives()) {
 			PolygonPrimitive polygon = (PolygonPrimitive) primitive;
-
-			m_tesselator.gluTessBeginPolygon(polygon);
-			m_tesselator.gluTessNormal(0, 0, -1);
-			m_tesselator.gluTessBeginContour();
-
-			float[] vertices = polygon.getVertices();
-			float x, y;
-
-			for (int i = 0; i < polygon.getVertexCount(); i++) {
-				x = vertices[2 * i];
-				y = vertices[2 * i + 1];
-
-				coords[0] = x;
-				coords[1] = y;
-
-				IVector2f v = new Vector2fImpl(x, y);
-				m_tesselator.gluTessVertex(coords, 0, v);
-			}
-
-			m_tesselator.gluTessEndContour();
-			m_tesselator.gluTessEndPolygon();
+			tesselate(polygon.getVertices());
 		}
 
 		callback.addVBOs(i_vbos);

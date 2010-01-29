@@ -14,9 +14,9 @@ import java.util.Arrays;
 
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
-import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IMatrix3f;
 import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.geometry.Vector2f;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveBounds;
 import org.eclipse.draw3d.util.Draw3DCache;
 
@@ -66,7 +66,7 @@ public abstract class AbstractVertexPrimitive extends AbstractPrimitive
 	 * @throws NullPointerException if the given render rule or the given vertex
 	 *             data array is <code>null</code>
 	 */
-	protected AbstractVertexPrimitive(IMatrix4f i_transformation,
+	protected AbstractVertexPrimitive(IMatrix3f i_transformation,
 			RenderRule i_renderRule, float[] i_vertices) {
 
 		super(i_transformation, i_renderRule);
@@ -83,21 +83,21 @@ public abstract class AbstractVertexPrimitive extends AbstractPrimitive
 				"i_vertices must contain at least two vertices");
 
 		if (i_transformation != null
-			&& !IMatrix4f.IDENTITY.equals(i_transformation)) {
+			&& !IMatrix3f.IDENTITY.equals(i_transformation)) {
 
-			Vector3f v = Draw3DCache.getVector3f();
+			Vector2f v = Draw3DCache.getVector2f();
 			try {
 				int s = i_vertices.length / 2;
 				m_vertices = new float[2 * s];
 
 				for (int i = 0; i < s; i++) {
-					v.set(i_vertices[2 * i], i_vertices[2 * i + 1], 0);
+					v.set(i_vertices[2 * i], i_vertices[2 * i + 1]);
 					Math3D.transform(v, i_transformation, v);
 					m_vertices[2 * i] = v.getX();
 					m_vertices[2 * i + 1] = v.getY();
 				}
 			} finally {
-				Draw3DCache.returnVector3f(v);
+				Draw3DCache.returnVector2f(v);
 			}
 		} else
 			m_vertices = i_vertices;
@@ -113,7 +113,7 @@ public abstract class AbstractVertexPrimitive extends AbstractPrimitive
 	 * @throws NullPointerException if the given render rule or the given point
 	 *             list is <code>null</code>
 	 */
-	protected AbstractVertexPrimitive(IMatrix4f i_transformation,
+	protected AbstractVertexPrimitive(IMatrix3f i_transformation,
 			RenderRule i_renderRule, PointList i_vertices) {
 
 		this(i_transformation, i_renderRule, getVertices(i_vertices));

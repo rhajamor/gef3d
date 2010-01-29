@@ -15,13 +15,14 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IMatrix3f;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.TextPrimitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.TextRenderRule;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.ILodHelper;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFont;
 import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
 import org.eclipse.draw3d.util.ColorConverter;
@@ -128,10 +129,11 @@ public class LwjglTextVBO extends LwjglVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(Graphics3D,
+	 *      org.eclipse.draw3d.graphics3d.ILodHelper)
 	 */
 	@Override
-	protected void cleanup(Graphics3D i_g3d) {
+	protected void cleanup(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 		GL11.glPopAttrib();
 	}
@@ -139,10 +141,11 @@ public class LwjglTextVBO extends LwjglVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(Graphics3D,
+	 *      ILodHelper)
 	 */
 	@Override
-	protected void doRender(Graphics3D i_g3d) {
+	protected void doRender(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 		if (m_color != null)
 			i_g3d.glColor4f(m_color);
@@ -229,10 +232,11 @@ public class LwjglTextVBO extends LwjglVBO {
 			String text = textPrimitive.getText();
 			boolean expand = textPrimitive.isExpand();
 			Point position = textPrimitive.getPosition();
-			IMatrix4f transformation = textPrimitive.getTransformation();
+			IMatrix3f transformation = textPrimitive.getTransformation();
 
-			m_glFont.renderString(text, transformation, position.x, position.y,
-				expand, m_vertexBuffer, m_texCoordBuffer);
+			// m_glFont.renderString(text, transformation, position.x,
+			// position.y,
+			// expand, m_vertexBuffer, m_texCoordBuffer);
 
 			if (m_color == null) {
 				TextRenderRule textRenderRule =
@@ -251,10 +255,11 @@ public class LwjglTextVBO extends LwjglVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(Graphics3D,
+	 *      ILodHelper)
 	 */
 	@Override
-	protected void prepare(Graphics3D i_g3d) {
+	protected void prepare(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 		GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);

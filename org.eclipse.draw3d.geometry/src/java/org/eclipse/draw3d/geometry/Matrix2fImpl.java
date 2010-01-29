@@ -48,428 +48,450 @@ import java.util.Arrays;
  * @since Dec 15, 2008
  */
 public class Matrix2fImpl implements Matrix2f, Serializable, Cloneable {
+	/**
+	 * @see java.io.Serializable
+	 */
+	private static final long serialVersionUID = 1L;
 
-    public float a11;
+	/**
+	 * Casts any {@link IMatrix2f} matrix into a {@link Matrix2fImpl},# either
+	 * by casting or copying. The returned object is of type
+	 * {@link Matrix2fImpl} and thus it is mutable. Since the object may be
+	 * identical to the given, immutable one, the client of this method must
+	 * ensure not to modify the returned object. This method is heavily used in
+	 * {@link Math3D} for performance issues.
+	 * 
+	 * @param i_sourceMatrix2f The source matrix.
+	 * @return Matrix2fImpl which is equals to given IMatrix4f
+	 */
+	static Matrix2fImpl cast(IMatrix2f i_sourceMatrix2f) {
 
-    public float a12;
+		if (i_sourceMatrix2f instanceof Matrix2fImpl) {
+			return (Matrix2fImpl) i_sourceMatrix2f;
+		} else {
+			return new Matrix2fImpl(i_sourceMatrix2f);
+		}
+	}
 
-    public float a21;
+	public float a11;
 
-    public float a22;
+	public float a12;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.Matrix#set(int, int, float)
-     */
-    public void set(int i_row, int i_column, float i_value) {
+	public float a21;
 
-        if (i_row < 0 || i_row >= 2)
-            throw new IllegalArgumentException("row index out of bounds: "
-                    + i_row);
+	public float a22;
 
-        if (i_column < 0 || i_column >= 2)
-            throw new IllegalArgumentException("column index out of bounds: "
-                    + i_column);
+	/**
+	 * Empty constructor, creates this matrix as an identity matrix. This
+	 * constructor is pretty fast.
+	 */
+	public Matrix2fImpl() {
 
-        if (i_row == 0) {
-            if (i_column == 0)
-                a11 = i_value;
-            else
-                a12 = i_value;
-        } else {
-            if (i_column == 0)
-                a21 = i_value;
-            else
-                a22 = i_value;
-        }
-    }
+		// all values are initialized with 0f, see Java Spec
+		a11 = 1;
+		a22 = 1;
+	}
 
-    /**
-     * @see java.io.Serializable
-     */
-    private static final long serialVersionUID = 1L;
+	/**
+	 * Creates this matrix and sets its values. The values are read in row-major
+	 * or column-major (OpenGL) format, depending on parameter
+	 * <code>i_bColumnMajor</code>.
+	 * 
+	 * @param i_floats , i_floats.size() >= 9 must be true
+	 * @param i_bColumnMajor the matrix is stored in column major (OpenGL)
+	 *            format
+	 */
+	public Matrix2fImpl(final float a, final float b, final float c,
+			final float d, boolean i_bColumnMajor) {
 
-    /**
-     * Casts any {@link IMatrix2f} matrix into a {@link Matrix2fImpl},# either
-     * by casting or copying. The returned object is of type
-     * {@link Matrix2fImpl} and thus it is mutable. Since the object may be
-     * identical to the given, immutable one, the client of this method must
-     * ensure not to modify the returned object. This method is heavily used in
-     * {@link Math3D} for performance issues.
-     * 
-     * @param i_sourceMatrix2f
-     *            The source matrix.
-     * @return Matrix2fImpl which is equals to given IMatrix4f
-     */
-    static Matrix2fImpl cast(IMatrix2f i_sourceMatrix2f) {
+		if (!i_bColumnMajor) {
+			a11 = a;
+			a12 = b;
+			a21 = c;
+			a22 = d;
+		} else {
+			a11 = a;
+			a21 = b;
+			a12 = c;
+			a22 = d;
+		}
+	}
 
-        if (i_sourceMatrix2f instanceof Matrix2fImpl) {
-            return (Matrix2fImpl) i_sourceMatrix2f;
-        } else {
-            return new Matrix2fImpl(i_sourceMatrix2f);
-        }
-    }
+	/**
+	 * Creates this matrix and sets its values. The values are read in row-major
+	 * or column-major (OpenGL) format, depending on parameter
+	 * <code>i_bColumnMajor</code>.
+	 * 
+	 * @param i_floats , i_floats.size() >= 9 must be true
+	 * @param i_bColumnMajor the matrix is stored in column major (OpenGL)
+	 *            format
+	 */
+	public Matrix2fImpl(final float[] i_floats, boolean i_bColumnMajor) {
 
-    /**
-     * Empty constructor, creates this matrix as an identity matrix. This
-     * constructor is pretty fast.
-     */
-    public Matrix2fImpl() {
+		if (!i_bColumnMajor) {
+			a11 = i_floats[0];
+			a12 = i_floats[1];
+			a21 = i_floats[2];
+			a22 = i_floats[3];
+		} else {
+			a11 = i_floats[0];
+			a21 = i_floats[1];
+			a12 = i_floats[2];
+			a22 = i_floats[3];
+		}
+	}
 
-        // all values are initialized with 0f, see Java Spec
-        a11 = 1;
-        a22 = 1;
-    }
+	/**
+	 * Creates this matrix and sets its values. The values are read in row-major
+	 * or column-major (OpenGL) format, depending on parameter
+	 * <code>i_bColumnMajor</code>.
+	 * 
+	 * @param i_floats , not null and i_floats.size()+i_iOffset >= 4 must be
+	 *            true
+	 * @param i_bColumnMajor the matrix is stored in column major (OpenGL)
+	 *            format
+	 * @param i_iOffset the first index to be used in array
+	 */
+	public Matrix2fImpl(final float[] i_floats, boolean i_bColumnMajor,
+			int i_iOffset) {
 
-    /**
-     * Creates this matrix and sets its values to the given matrix.
-     */
-    public Matrix2fImpl(final IMatrix2f src) {
+		if (!i_bColumnMajor) { // as we learned it in school:
+			a11 = i_floats[i_iOffset++];
+			a12 = i_floats[i_iOffset++];
+			a21 = i_floats[i_iOffset++];
+			a22 = i_floats[i_iOffset];
+		} else { // OpenGL:
+			a11 = i_floats[i_iOffset++];
+			a21 = i_floats[i_iOffset++];
+			a12 = i_floats[i_iOffset++];
+			a22 = i_floats[i_iOffset];
+		}
+	}
 
-        set(src);
-    }
+	/**
+	 * Creates this matrix and sets its values. The values are read in row-major
+	 * or column-major (OpenGL) format, depending on parameter
+	 * <code>i_bColumnMajor</code>.
+	 * 
+	 * @param i_buffer the buffer with the source values
+	 * @param i_bColumnMajor the matrix is stored in column major (OpenGL)
+	 *            format
+	 */
+	public Matrix2fImpl(final FloatBuffer i_buffer, boolean i_bColumnMajor) {
 
-    /**
-     * Creates this matrix and sets its values. The values are read in row-major
-     * or column-major (OpenGL) format, depending on parameter
-     * <code>i_bColumnMajor</code>.
-     * 
-     * @param i_floats
-     *            , i_floats.size() >= 9 must be true
-     * @param i_bColumnMajor
-     *            the matrix is stored in column major (OpenGL) format
-     */
-    public Matrix2fImpl(final float a, final float b, final float c,
-            final float d, boolean i_bColumnMajor) {
+		if (!i_bColumnMajor) {
+			setRowMajor(i_buffer);
+		} else {
+			setColumnMajor(i_buffer);
+		}
+	}
 
-        if (!i_bColumnMajor) {
-            a11 = a;
-            a12 = b;
-            a21 = c;
-            a22 = d;
-        } else {
-            a11 = a;
-            a21 = b;
-            a12 = c;
-            a22 = d;
-        }
-    }
+	/**
+	 * Creates this matrix and sets its values to the given matrix.
+	 */
+	public Matrix2fImpl(final IMatrix2f src) {
 
-    /**
-     * Creates this matrix and sets its values to the given matrix.
-     */
-    public Matrix2fImpl(final Matrix2fImpl src) {
+		set(src);
+	}
 
-        a11 = src.a11;
-        a12 = src.a12;
-        a21 = src.a21;
-        a22 = src.a22;
-    }
+	/**
+	 * Creates this matrix and sets its values to the given matrix.
+	 */
+	public Matrix2fImpl(final Matrix2fImpl src) {
 
-    /**
-     * Creates this matrix and sets its values. The values are read in row-major
-     * or column-major (OpenGL) format, depending on parameter
-     * <code>i_bColumnMajor</code>.
-     * 
-     * @param i_buffer
-     *            the buffer with the source values
-     * @param i_bColumnMajor
-     *            the matrix is stored in column major (OpenGL) format
-     */
-    public Matrix2fImpl(final FloatBuffer i_buffer, boolean i_bColumnMajor) {
+		a11 = src.a11;
+		a12 = src.a12;
+		a21 = src.a21;
+		a22 = src.a22;
+	}
 
-        if (!i_bColumnMajor) {
-            setRowMajor(i_buffer);
-        } else {
-            setColumnMajor(i_buffer);
-        }
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#clone()
+	 */
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
 
-    /**
-     * Creates this matrix and sets its values. The values are read in row-major
-     * or column-major (OpenGL) format, depending on parameter
-     * <code>i_bColumnMajor</code>.
-     * 
-     * @param i_floats
-     *            , i_floats.size() >= 9 must be true
-     * @param i_bColumnMajor
-     *            the matrix is stored in column major (OpenGL) format
-     */
-    public Matrix2fImpl(final float[] i_floats, boolean i_bColumnMajor) {
+		return new Matrix2fImpl(this);
+	}
 
-        if (!i_bColumnMajor) {
-            a11 = i_floats[0];
-            a12 = i_floats[1];
-            a21 = i_floats[2];
-            a22 = i_floats[3];
-        } else {
-            a11 = i_floats[0];
-            a21 = i_floats[1];
-            a12 = i_floats[2];
-            a22 = i_floats[3];
-        }
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IMatrix2f#equals(org.eclipse.draw3d.geometry.IMatrix2f)
+	 */
+	public boolean equals(final IMatrix2f i_anotherMatrix2f) {
 
-    /**
-     * Creates this matrix and sets its values. The values are read in row-major
-     * or column-major (OpenGL) format, depending on parameter
-     * <code>i_bColumnMajor</code>.
-     * 
-     * @param i_floats
-     *            , not null and i_floats.size()+i_iOffset >= 4 must be true
-     * @param i_bColumnMajor
-     *            the matrix is stored in column major (OpenGL) format
-     * @param i_iOffset
-     *            the first index to be used in array
-     */
-    public Matrix2fImpl(final float[] i_floats, boolean i_bColumnMajor,
-            int i_iOffset) {
+		if (this == i_anotherMatrix2f)
+			return true;
+		if (i_anotherMatrix2f == null)
+			return false;
+		Matrix2fImpl sm = cast(i_anotherMatrix2f);
+		return a11 == sm.a11 && a12 == sm.a12 && a21 == sm.a21 && a22 == sm.a22;
+	}
 
-        if (!i_bColumnMajor) { // as we learned it in school:
-            a11 = i_floats[i_iOffset++];
-            a12 = i_floats[i_iOffset++];
-            a21 = i_floats[i_iOffset++];
-            a22 = i_floats[i_iOffset];
-        } else { // OpenGL:
-            a11 = i_floats[i_iOffset++];
-            a21 = i_floats[i_iOffset++];
-            a12 = i_floats[i_iOffset++];
-            a22 = i_floats[i_iOffset];
-        }
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IMatrix#get(int, int)
+	 */
+	public float get(int i_row, int i_column) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.Matrix2f#set(org.eclipse.draw3d.geometry.IMatrix2f)
-     */
-    public void set(final IMatrix2f i_sourceMatrix2f) {
+		if (i_row < 0 || i_row >= 2)
+			throw new IllegalArgumentException("row index out of bounds: "
+				+ i_row);
 
-        Matrix2fImpl sm = cast(i_sourceMatrix2f);
-        a11 = sm.a11;
-        a12 = sm.a12;
-        a21 = sm.a21;
-        a22 = sm.a22;
-    }
+		if (i_column < 0 || i_column >= 2)
+			throw new IllegalArgumentException("column index out of bounds: "
+				+ i_column);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.Matrix2f#setRowMajor(java.nio.FloatBuffer)
-     */
-    public void setRowMajor(FloatBuffer i_floatBuffer) {
+		if (i_row == 0) {
+			if (i_column == 0)
+				return a11;
+			else
+				return a12;
+		} else {
+			if (i_column == 0)
+				return a21;
+			else
+				return a22;
+		}
+	}
 
-        a11 = i_floatBuffer.get();
-        a12 = i_floatBuffer.get();
-        a21 = i_floatBuffer.get();
-        a22 = i_floatBuffer.get();
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.Matrix#setRowMajor(float[])
-     */
-    public void setRowMajor(float[] i_arrayOfFloat) {
+		float[] af = new float[9];
+		toArrayRowMajor(af);
+		return Arrays.hashCode(af);
+	}
 
-        a11 = i_arrayOfFloat[0];
-        a12 = i_arrayOfFloat[1];
-        a21 = i_arrayOfFloat[2];
-        a22 = i_arrayOfFloat[3];
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.Matrix2f#set(org.eclipse.draw3d.geometry.IMatrix2f)
+	 */
+	public void set(final IMatrix2f i_sourceMatrix2f) {
 
-    }
+		Matrix2fImpl sm = cast(i_sourceMatrix2f);
+		a11 = sm.a11;
+		a12 = sm.a12;
+		a21 = sm.a21;
+		a22 = sm.a22;
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.Matrix2f#setColumnMajor(java.nio.FloatBuffer)
-     */
-    public void setColumnMajor(FloatBuffer i_floatBuffer) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.Matrix#set(int, int, float)
+	 */
+	public void set(int i_row, int i_column, float i_value) {
 
-        a11 = i_floatBuffer.get();
-        a21 = i_floatBuffer.get();
-        a12 = i_floatBuffer.get();
-        a22 = i_floatBuffer.get();
-    }
+		if (i_row < 0 || i_row >= 2)
+			throw new IllegalArgumentException("row index out of bounds: "
+				+ i_row);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.Matrix#setColumnMajor(float[])
-     */
-    public void setColumnMajor(float[] i_arrayOfFloat) {
+		if (i_column < 0 || i_column >= 2)
+			throw new IllegalArgumentException("column index out of bounds: "
+				+ i_column);
 
-        a11 = i_arrayOfFloat[0];
-        a21 = i_arrayOfFloat[1];
-        a12 = i_arrayOfFloat[2];
-        a22 = i_arrayOfFloat[3];
-    }
+		if (i_row == 0) {
+			if (i_column == 0)
+				a11 = i_value;
+			else
+				a12 = i_value;
+		} else {
+			if (i_column == 0)
+				a21 = i_value;
+			else
+				a22 = i_value;
+		}
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.Matrix2f#setIdentity()
-     */
-    public void setIdentity() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.Matrix#setColumnMajor(float[])
+	 */
+	public void setColumnMajor(float[] i_arrayOfFloat) {
 
-        a11 = 1;
-        a12 = 0;
-        a21 = 0;
-        a22 = 1;
-    }
+		a11 = i_arrayOfFloat[0];
+		a21 = i_arrayOfFloat[1];
+		a12 = i_arrayOfFloat[2];
+		a22 = i_arrayOfFloat[3];
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.Matrix2f#setZero()
-     */
-    public void setZero() {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.Matrix2f#setColumnMajor(java.nio.FloatBuffer)
+	 */
+	public void setColumnMajor(FloatBuffer i_floatBuffer) {
 
-        a11 = 0;
-        a12 = 0;
-        a21 = 0;
-        a22 = 0;
-    }
+		a11 = i_floatBuffer.get();
+		a21 = i_floatBuffer.get();
+		a12 = i_floatBuffer.get();
+		a22 = i_floatBuffer.get();
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.IMatrix2f#equals(org.eclipse.draw3d.geometry.IMatrix2f)
-     */
-    public boolean equals(final IMatrix2f i_anotherMatrix2f) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.Matrix2f#setIdentity()
+	 */
+	public void setIdentity() {
 
-        if (this == i_anotherMatrix2f)
-            return true;
-        if (i_anotherMatrix2f == null)
-            return false;
-        Matrix2fImpl sm = cast(i_anotherMatrix2f);
-        return a11 == sm.a11 && a12 == sm.a12 && a21 == sm.a21 && a22 == sm.a22;
-    }
+		a11 = 1;
+		a12 = 0;
+		a21 = 0;
+		a22 = 1;
+	}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.IMatrix2f#toArrayRowMajor(float[])
-     */
-    public void toArrayRowMajor(final float[] o_arrayOfFloat) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.Matrix#setRowMajor(float[])
+	 */
+	public void setRowMajor(float[] i_arrayOfFloat) {
 
-        o_arrayOfFloat[0] = a11;
-        o_arrayOfFloat[1] = a12;
-        o_arrayOfFloat[2] = a21;
-        o_arrayOfFloat[3] = a22;
-    }
+		a11 = i_arrayOfFloat[0];
+		a12 = i_arrayOfFloat[1];
+		a21 = i_arrayOfFloat[2];
+		a22 = i_arrayOfFloat[3];
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.IMatrix2f#toArrayRowMajor(float[], int)
-     */
-    public void toArrayRowMajor(final float[] o_arrayOfFloat, int i_iOffset) {
+	}
 
-        o_arrayOfFloat[i_iOffset++] = a11;
-        o_arrayOfFloat[i_iOffset++] = a12;
-        o_arrayOfFloat[i_iOffset++] = a21;
-        o_arrayOfFloat[i_iOffset] = a22;
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.Matrix2f#setRowMajor(java.nio.FloatBuffer)
+	 */
+	public void setRowMajor(FloatBuffer i_floatBuffer) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.IMatrix2f#toArrayColumnMajor(float[])
-     */
-    public void toArrayColumnMajor(final float[] o_arrayOfFloat) {
+		a11 = i_floatBuffer.get();
+		a12 = i_floatBuffer.get();
+		a21 = i_floatBuffer.get();
+		a22 = i_floatBuffer.get();
+	}
 
-        o_arrayOfFloat[0] = a11;
-        o_arrayOfFloat[1] = a21;
-        o_arrayOfFloat[2] = a12;
-        o_arrayOfFloat[3] = a22;
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.Matrix2f#setZero()
+	 */
+	public void setZero() {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.IMatrix2f#toArrayColumnMajor(float[],
-     *      int)
-     */
-    public void toArrayColumnMajor(final float[] o_arrayOfFloat, int i_iOffset) {
+		a11 = 0;
+		a12 = 0;
+		a21 = 0;
+		a22 = 0;
+	}
 
-        o_arrayOfFloat[i_iOffset++] = a11;
-        o_arrayOfFloat[i_iOffset++] = a21;
-        o_arrayOfFloat[i_iOffset++] = a12;
-        o_arrayOfFloat[i_iOffset] = a22;
-    }
+	/**
+	 * {@inheritDoc} Returns 4.
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IMatrix#size()
+	 */
+	public int size() {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.IMatrix2f#toBufferRowMajor(java.nio.FloatBuffer)
-     */
-    public void toBufferRowMajor(final FloatBuffer o_buffer) {
+		return 4;
+	}
 
-        o_buffer.put(a11);
-        o_buffer.put(a12);
-        o_buffer.put(a21);
-        o_buffer.put(a22);
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IMatrix2f#toArrayColumnMajor(float[])
+	 */
+	public void toArrayColumnMajor(final float[] o_arrayOfFloat) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.eclipse.draw3d.geometry.IMatrix2f#toBufferColumnMajor(java.nio.FloatBuffer)
-     */
-    public void toBufferColumnMajor(final FloatBuffer o_buffer) {
+		o_arrayOfFloat[0] = a11;
+		o_arrayOfFloat[1] = a21;
+		o_arrayOfFloat[2] = a12;
+		o_arrayOfFloat[3] = a22;
+	}
 
-        o_buffer.put(a11);
-        o_buffer.put(a21);
-        o_buffer.put(a12);
-        o_buffer.put(a22);
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IMatrix2f#toArrayColumnMajor(float[],
+	 *      int)
+	 */
+	public void toArrayColumnMajor(final float[] o_arrayOfFloat, int i_iOffset) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
+		o_arrayOfFloat[i_iOffset++] = a11;
+		o_arrayOfFloat[i_iOffset++] = a21;
+		o_arrayOfFloat[i_iOffset++] = a12;
+		o_arrayOfFloat[i_iOffset] = a22;
+	}
 
-        return new Matrix2fImpl(this);
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IMatrix2f#toArrayRowMajor(float[])
+	 */
+	public void toArrayRowMajor(final float[] o_arrayOfFloat) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
+		o_arrayOfFloat[0] = a11;
+		o_arrayOfFloat[1] = a12;
+		o_arrayOfFloat[2] = a21;
+		o_arrayOfFloat[3] = a22;
+	}
 
-        return String.format(TO_STRING_FORMAT, String.valueOf(a11),
-            String.valueOf(a12), String.valueOf(a21), String.valueOf(a22));
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IMatrix2f#toArrayRowMajor(float[], int)
+	 */
+	public void toArrayRowMajor(final float[] o_arrayOfFloat, int i_iOffset) {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
+		o_arrayOfFloat[i_iOffset++] = a11;
+		o_arrayOfFloat[i_iOffset++] = a12;
+		o_arrayOfFloat[i_iOffset++] = a21;
+		o_arrayOfFloat[i_iOffset] = a22;
+	}
 
-        float[] af = new float[9];
-        toArrayRowMajor(af);
-        return Arrays.hashCode(af);
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IMatrix2f#toBufferColumnMajor(java.nio.FloatBuffer)
+	 */
+	public void toBufferColumnMajor(final FloatBuffer o_buffer) {
 
-    /**
-     * {@inheritDoc} Returns 4.
-     * 
-     * @see org.eclipse.draw3d.geometry.IMatrix#size()
-     */
-    public int size() {
+		o_buffer.put(a11);
+		o_buffer.put(a21);
+		o_buffer.put(a12);
+		o_buffer.put(a22);
+	}
 
-        return 4;
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.geometry.IMatrix2f#toBufferRowMajor(java.nio.FloatBuffer)
+	 */
+	public void toBufferRowMajor(final FloatBuffer o_buffer) {
+
+		o_buffer.put(a11);
+		o_buffer.put(a12);
+		o_buffer.put(a21);
+		o_buffer.put(a22);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+
+		return String.format(TO_STRING_FORMAT, String.valueOf(a11),
+			String.valueOf(a12), String.valueOf(a21), String.valueOf(a22));
+	}
 
 }

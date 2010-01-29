@@ -96,17 +96,6 @@ public interface IMatrix4f extends IMatrix {
 			+ NF + "%n " + NF + ", " + NF + ", " + NF + ", " + NF + ")%n";
 
 	/**
-	 * Returns the value at the given row and column indices.
-	 * 
-	 * @param i_row the row index, 0-based
-	 * @param i_column the column index, 0-based
-	 * @return the value at the given indices
-	 * @throws IllegalArgumentException if any of the given arguments is out of
-	 *             bounds
-	 */
-	public float get(int i_row, int i_column);
-
-	/**
 	 * Compares two matrices. A matrix m0 is equals another matrix m1 if m0 and
 	 * m1 are the same instance (m0==m1) or if all their components are equal.
 	 * 

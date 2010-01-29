@@ -18,6 +18,7 @@ import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.RenderRule;
 import org.eclipse.draw3d.graphics.optimizer.primitive.VertexPrimitive;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.ILodHelper;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -77,10 +78,11 @@ public abstract class LwjglVertexPrimitiveVBO extends LwjglVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(Graphics3D,
+	 *      ILodHelper)
 	 */
 	@Override
-	protected void cleanup(Graphics3D i_g3d) {
+	protected void cleanup(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 		if (m_lineHelper != null)
 			m_lineHelper.cleanup(i_g3d);
@@ -89,10 +91,11 @@ public abstract class LwjglVertexPrimitiveVBO extends LwjglVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(Graphics3D,
+	 *      ILodHelper)
 	 */
 	@Override
-	protected abstract void doRender(Graphics3D i_g3d);
+	protected abstract void doRender(Graphics3D i_g3d, ILodHelper i_lodContext);
 
 	/**
 	 * {@inheritDoc}
@@ -178,10 +181,11 @@ public abstract class LwjglVertexPrimitiveVBO extends LwjglVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(Graphics3D,
+	 *      ILodHelper)
 	 */
 	@Override
-	protected void prepare(Graphics3D i_g3d) {
+	protected void prepare(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 		if (m_lineHelper != null)
 			m_lineHelper.prepare(i_g3d);

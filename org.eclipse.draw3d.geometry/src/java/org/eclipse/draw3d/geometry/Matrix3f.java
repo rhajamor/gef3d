@@ -24,6 +24,7 @@ package org.eclipse.draw3d.geometry;
  * @since Dec 16, 2008
  */
 public interface Matrix3f extends IMatrix3f, Matrix {
+
 	/**
 	 * Sets the component's values of this matrix to the values of the given
 	 * matrix.
@@ -31,7 +32,4 @@ public interface Matrix3f extends IMatrix3f, Matrix {
 	 * @param i_sourceMatrix3f must not be null
 	 */
 	public void set(IMatrix3f i_sourceMatrix3f);
-
-		
-	
 }

@@ -10,7 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics.optimizer.primitive;
 
-import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IMatrix3f;
 import org.eclipse.draw3d.graphics.GraphicsState;
 
 /**
@@ -117,7 +117,7 @@ public class QuadPrimitive extends AbstractVertexPrimitive {
 	 * @throws IllegalArgumentException if the given array does not contain
 	 *             exactly 8 elements
 	 */
-	protected QuadPrimitive(IMatrix4f i_transformation,
+	protected QuadPrimitive(IMatrix3f i_transformation,
 			RenderRule i_renderRule, float[] i_vertices) {
 
 		super(i_transformation, i_renderRule, i_vertices);

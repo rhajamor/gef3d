@@ -12,9 +12,9 @@ package org.eclipse.draw3d.graphics.optimizer.primitive;
 
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IMatrix3f;
 import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.geometry.Vector2f;
 import org.eclipse.draw3d.graphics.GraphicsState;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveBounds;
 import org.eclipse.draw3d.util.Draw3DCache;
@@ -136,33 +136,33 @@ public class TextPrimitive extends AbstractPrimitive {
 
 	private float[] getTransformedVertices(int i_x, int i_y, int i_w, int i_h) {
 
-		IMatrix4f t = getTransformation();
+		IMatrix3f t = getTransformation();
 		float[] vertices = new float[8];
 
-		if (t != null && !IMatrix4f.IDENTITY.equals(t)) {
-			Vector3f v = Draw3DCache.getVector3f();
+		if (t != null && !IMatrix3f.IDENTITY.equals(t)) {
+			Vector2f v = Draw3DCache.getVector2f();
 			try {
-				v.set(i_x, i_y, 0);
+				v.set(i_x, i_y);
 				Math3D.transform(v, t, v);
 				vertices[0] = v.getX();
 				vertices[1] = v.getY();
 
-				v.set(i_x, i_y + i_h, 0);
+				v.set(i_x, i_y + i_h);
 				Math3D.transform(v, t, v);
 				vertices[2] = v.getX();
 				vertices[3] = v.getY();
 
-				v.set(i_x + i_w, i_y + i_h, 0);
+				v.set(i_x + i_w, i_y + i_h);
 				Math3D.transform(v, t, v);
 				vertices[4] = v.getX();
 				vertices[5] = v.getY();
 
-				v.set(i_x + i_w, i_y, 0);
+				v.set(i_x + i_w, i_y);
 				Math3D.transform(v, t, v);
 				vertices[6] = v.getX();
 				vertices[7] = v.getY();
 			} finally {
-				Draw3DCache.returnVector3f(v);
+				Draw3DCache.returnVector2f(v);
 			}
 		} else {
 			vertices[0] = i_x;

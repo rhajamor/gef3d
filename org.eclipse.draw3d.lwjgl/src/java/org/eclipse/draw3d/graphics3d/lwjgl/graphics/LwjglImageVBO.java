@@ -22,6 +22,7 @@ import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.ImagePrimitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.ILodHelper;
 import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.RectanglePacker;
@@ -79,12 +80,13 @@ public class LwjglImageVBO extends LwjglVertexPrimitiveVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(Graphics3D,
+	 *      ILodHelper)
 	 */
 	@Override
-	protected void cleanup(Graphics3D i_g3d) {
+	protected void cleanup(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
-		super.cleanup(i_g3d);
+		super.cleanup(i_g3d, i_lodContext);
 		GL11.glPopAttrib();
 	}
 
@@ -115,10 +117,11 @@ public class LwjglImageVBO extends LwjglVertexPrimitiveVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(Graphics3D,
+	 *      ILodHelper)
 	 */
 	@Override
-	protected void doRender(Graphics3D i_g3d) {
+	protected void doRender(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 		i_g3d.glColor4f(1, 1, 1, 1);
 
@@ -316,16 +319,17 @@ public class LwjglImageVBO extends LwjglVertexPrimitiveVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(Graphics3D,
+	 *      org.eclipse.draw3d.graphics3d.ILodHelper)
 	 */
 	@Override
-	protected void prepare(Graphics3D i_g3d) {
+	protected void prepare(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 		GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_textureId);
 
-		super.prepare(i_g3d);
+		super.prepare(i_g3d, i_lodContext);
 	}
 
 	/**

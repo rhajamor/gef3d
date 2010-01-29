@@ -18,6 +18,7 @@ import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.GradientRenderRule;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.ILodHelper;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.swt.graphics.Color;
 import org.lwjgl.BufferUtils;
@@ -57,22 +58,24 @@ public class LwjglGradientQuadVBO extends LwjglVertexPrimitiveVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#cleanup(Graphics3D,
+	 *      ILodHelper)
 	 */
 	@Override
-	protected void cleanup(Graphics3D i_g3d) {
+	protected void cleanup(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
-		super.cleanup(i_g3d);
+		super.cleanup(i_g3d, i_lodContext);
 		GL11.glPopAttrib();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(Graphics3D,
+	 *      ILodHelper)
 	 */
 	@Override
-	protected void doRender(Graphics3D i_g3d) {
+	protected void doRender(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 		GL11.glDrawArrays(GL11.GL_QUADS, 0, getVertexCount());
 	}
@@ -145,14 +148,15 @@ public class LwjglGradientQuadVBO extends LwjglVertexPrimitiveVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#prepare(Graphics3D,
+	 *      org.eclipse.draw3d.graphics3d.ILodHelper)
 	 */
 	@Override
-	protected void prepare(Graphics3D i_g3d) {
+	protected void prepare(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 		GL11.glShadeModel(GL11.GL_SMOOTH);
 
-		super.prepare(i_g3d);
+		super.prepare(i_g3d, i_lodContext);
 	}
 }

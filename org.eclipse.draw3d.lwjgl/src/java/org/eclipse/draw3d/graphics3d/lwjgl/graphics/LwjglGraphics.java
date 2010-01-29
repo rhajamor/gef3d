@@ -25,9 +25,10 @@ import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.PrecisionRectangle;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IMatrix3f;
 import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Matrix3f;
 import org.eclipse.draw3d.geometry.Matrix4f;
 import org.eclipse.draw3d.graphics.GraphicsState;
 import org.eclipse.draw3d.graphics.StatefulGraphics;
@@ -1211,11 +1212,11 @@ public class LwjglGraphics extends StatefulGraphics {
 
 	private void glRestoreState(GraphicsState i_previous) {
 
-		Matrix4f transformation = i_previous.getTransformation();
+		Matrix3f transformation = i_previous.getTransformation();
 		if (transformation != null
-			&& !IMatrix4f.IDENTITY.equals(transformation)) {
-			FloatBuffer buffer = Draw3DCache.getFloatBuffer(16);
-			Matrix4f inverse = Draw3DCache.getMatrix4f();
+			&& !IMatrix3f.IDENTITY.equals(transformation)) {
+			FloatBuffer buffer = Draw3DCache.getFloatBuffer(9);
+			Matrix3f inverse = Draw3DCache.getMatrix3f();
 			try {
 				Math3D.invert(transformation, inverse);
 				buffer.rewind();
@@ -1226,7 +1227,7 @@ public class LwjglGraphics extends StatefulGraphics {
 				GL11.glMultMatrix(buffer);
 			} finally {
 				Draw3DCache.returnFloatBuffer(buffer);
-				Draw3DCache.returnMatrix4f(inverse);
+				Draw3DCache.returnMatrix3f(inverse);
 			}
 		}
 

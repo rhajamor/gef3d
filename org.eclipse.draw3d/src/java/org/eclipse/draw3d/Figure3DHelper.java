@@ -26,6 +26,8 @@ import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.UpdateManager;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw3d.camera.CameraLodHelper;
+import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.geometry.BoundingBox;
 import org.eclipse.draw3d.geometry.BoundingBoxImpl;
 import org.eclipse.draw3d.geometry.IBoundingBox;
@@ -34,6 +36,7 @@ import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.ILodHelper;
 import org.eclipse.draw3d.graphics3d.RenderImage;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.shapes.ParaxialBoundsFigureShape;
@@ -143,10 +146,12 @@ public class Figure3DHelper {
 
 				Graphics3D g3d = i_renderContext.getGraphics3D();
 				g3d.glPushMatrix();
-
 				try {
+					ICamera camera = i_renderContext.getScene().getCamera();
+					ILodHelper lodHelper = new CameraLodHelper(camera);
+
 					g3d.setPosition(temp);
-					m_image.render(g3d);
+					m_image.render(g3d, lodHelper);
 				} finally {
 					g3d.glPopMatrix();
 				}

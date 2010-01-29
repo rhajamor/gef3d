@@ -46,8 +46,8 @@ public class CompoundRenderImage implements RenderImage {
 	 */
 	public void dispose() {
 
-		for (RenderImage executable : m_images)
-			executable.dispose();
+		for (RenderImage image : m_images)
+			image.dispose();
 	}
 
 	/**
@@ -57,18 +57,19 @@ public class CompoundRenderImage implements RenderImage {
 	 */
 	public void initialize(Graphics3D i_g3d) {
 
-		for (RenderImage executable : m_images)
-			executable.initialize(i_g3d);
+		for (RenderImage image : m_images)
+			image.initialize(i_g3d);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.RenderImage#render(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.RenderImage#render(org.eclipse.draw3d.graphics3d.Graphics3D,
+	 *      org.eclipse.draw3d.graphics3d.ILodHelper)
 	 */
-	public void render(Graphics3D i_g3d) {
+	public void render(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
-		for (RenderImage executable : m_images)
-			executable.render(i_g3d);
+		for (RenderImage image : m_images)
+			image.render(i_g3d, i_lodContext);
 	}
 }

@@ -3,11 +3,11 @@ package org.eclipse.draw3d.graphics;
 import org.eclipse.draw2d.geometry.PrecisionPoint;
 import org.eclipse.draw2d.geometry.PrecisionRectangle;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw3d.geometry.IMatrix4f;
+import org.eclipse.draw3d.geometry.IMatrix3f;
 import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Matrix4f;
-import org.eclipse.draw3d.geometry.Matrix4fImpl;
-import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.geometry.Matrix3f;
+import org.eclipse.draw3d.geometry.Matrix3fImpl;
+import org.eclipse.draw3d.geometry.Vector2f;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -60,7 +60,7 @@ public class GraphicsState {
 
 		state.setFont(display.getSystemFont());
 
-		state.setTransformation(Matrix4f.IDENTITY);
+		state.setTransformation(Matrix3f.IDENTITY);
 		state.setXORMode(false);
 
 		state.setAntialias(SWT.ON);
@@ -114,7 +114,7 @@ public class GraphicsState {
 
 	private Integer m_textAntialias;
 
-	private Matrix4fImpl m_transformation;
+	private Matrix3fImpl m_transformation;
 
 	private Boolean m_xorMode;
 
@@ -498,7 +498,7 @@ public class GraphicsState {
 	 * 
 	 * @return the transformation matrix
 	 */
-	public Matrix4f getTransformation() {
+	public Matrix3f getTransformation() {
 
 		if (m_transformation != null)
 			return m_transformation;
@@ -528,9 +528,9 @@ public class GraphicsState {
 	public void rotate(float i_degrees) {
 
 		if (m_transformation == null)
-			m_transformation = new Matrix4fImpl();
+			m_transformation = new Matrix3fImpl();
 
-		Matrix4f rot = Draw3DCache.getMatrix4f();
+		Matrix3f rot = Draw3DCache.getMatrix3f();
 		try {
 			// don't use Math3d.rotate() here because when rotating about
 			// the z axis, we can use a shorthand:
@@ -546,7 +546,7 @@ public class GraphicsState {
 
 			Math3D.mul(rot, m_transformation, m_transformation);
 		} finally {
-			Draw3DCache.returnMatrix4f(rot);
+			Draw3DCache.returnMatrix3f(rot);
 		}
 	}
 
@@ -560,14 +560,14 @@ public class GraphicsState {
 	public void scale(float i_horizontal, float i_vertical) {
 
 		if (m_transformation == null)
-			m_transformation = new Matrix4fImpl();
+			m_transformation = new Matrix3fImpl();
 
-		Vector3f scale = Draw3DCache.getVector3f();
+		Vector2f scale = Draw3DCache.getVector2f();
 		try {
-			scale.set(i_horizontal, i_vertical, 0);
+			scale.set(i_horizontal, i_vertical);
 			Math3D.scale(scale, m_transformation, m_transformation);
 		} finally {
-			Draw3DCache.returnVector3f(scale);
+			Draw3DCache.returnVector2f(scale);
 		}
 	}
 
@@ -778,10 +778,10 @@ public class GraphicsState {
 	 * 
 	 * @param i_transformation the current transformation
 	 */
-	public void setTransformation(IMatrix4f i_transformation) {
+	public void setTransformation(IMatrix3f i_transformation) {
 
 		if (m_transformation == null)
-			m_transformation = new Matrix4fImpl(i_transformation);
+			m_transformation = new Matrix3fImpl(i_transformation);
 		else
 			m_transformation.set(i_transformation);
 	}
@@ -807,9 +807,9 @@ public class GraphicsState {
 	public void shear(float i_horz, float i_vert) {
 
 		if (m_transformation == null)
-			m_transformation = new Matrix4fImpl();
+			m_transformation = new Matrix3fImpl();
 
-		Matrix4f shear = Draw3DCache.getMatrix4f();
+		Matrix3f shear = Draw3DCache.getMatrix3f();
 		try {
 			shear.setIdentity();
 			shear.set(1, 0, i_horz);
@@ -817,7 +817,7 @@ public class GraphicsState {
 
 			Math3D.mul(shear, m_transformation, m_transformation);
 		} finally {
-			Draw3DCache.returnMatrix4f(shear);
+			Draw3DCache.returnMatrix3f(shear);
 		}
 	}
 
@@ -831,11 +831,11 @@ public class GraphicsState {
 	public void translate(float i_dX, float i_dY) {
 
 		if (m_transformation == null)
-			m_transformation = new Matrix4fImpl();
+			m_transformation = new Matrix3fImpl();
 
-		Vector3f trans = Draw3DCache.getVector3f();
+		Vector2f trans = Draw3DCache.getVector2f();
 		try {
-			trans.set(i_dX, i_dY, 0);
+			trans.set(i_dX, i_dY);
 			Math3D.translate(m_transformation, trans, m_transformation);
 
 			if (m_clip == null)
@@ -843,7 +843,7 @@ public class GraphicsState {
 
 			m_clip.translate(new PrecisionPoint(-i_dX, -i_dY));
 		} finally {
-			Draw3DCache.returnVector3f(trans);
+			Draw3DCache.returnVector2f(trans);
 		}
 	}
 }

@@ -10,8 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics.optimizer.primitive;
 
-import org.eclipse.draw3d.geometry.IMatrix4f;
-import org.eclipse.draw3d.geometry.Matrix4fImpl;
+import org.eclipse.draw3d.geometry.IMatrix3f;
+import org.eclipse.draw3d.geometry.Matrix3fImpl;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveBounds;
 
 /**
@@ -29,7 +29,7 @@ public abstract class AbstractPrimitive implements Primitive {
 
 	private RenderRule m_renderRule;
 
-	private IMatrix4f m_transformation;
+	private IMatrix3f m_transformation;
 
 	/**
 	 * Creates a new primitive with the given transformation and render rule.
@@ -39,14 +39,14 @@ public abstract class AbstractPrimitive implements Primitive {
 	 * @throws NullPointerException if the given render rule is
 	 *             <code>null</code>
 	 */
-	protected AbstractPrimitive(IMatrix4f i_transformation,
+	protected AbstractPrimitive(IMatrix3f i_transformation,
 			RenderRule i_renderRule) {
 
 		if (i_renderRule == null)
 			throw new NullPointerException("i_renderRule must not be null");
 
 		if (i_transformation != null)
-			m_transformation = new Matrix4fImpl(i_transformation);
+			m_transformation = new Matrix3fImpl(i_transformation);
 
 		m_renderRule = i_renderRule;
 	}
@@ -87,7 +87,7 @@ public abstract class AbstractPrimitive implements Primitive {
 	 * 
 	 * @see org.eclipse.draw3d.graphics.optimizer.primitive.Primitive#getTransformation()
 	 */
-	public IMatrix4f getTransformation() {
+	public IMatrix3f getTransformation() {
 
 		return m_transformation;
 	}

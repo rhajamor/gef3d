@@ -18,6 +18,7 @@ import org.eclipse.draw3d.graphics.optimizer.primitive.OutlineRenderRule;
 import org.eclipse.draw3d.graphics.optimizer.primitive.PolylinePrimitive;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.ILodHelper;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -96,10 +97,11 @@ public class LwjglPolylineVBO extends LwjglVertexPrimitiveVBO {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(org.eclipse.draw3d.graphics3d.Graphics3D)
+	 * @see org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglVBO#doRender(Graphics3D,
+	 *      org.eclipse.draw3d.graphics3d.ILodHelper)
 	 */
 	@Override
-	protected void doRender(Graphics3D i_g3d) {
+	protected void doRender(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
 		i_g3d.glColor4f(m_color);
 
