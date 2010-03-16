@@ -142,10 +142,12 @@ public class RenderContext {
 	 */
 	public void renderFragments() {
 
+		Graphics3D g3d = getGraphics3D();
+
+		g3d.glEnable(Graphics3DDraw.GL_DEPTH_TEST);
 		renderFragments(RenderType.OPAQUE);
 		renderFragments(RenderType.TRANSPARENT);
 
-		Graphics3D g3d = getGraphics3D();
 		g3d.glDisable(Graphics3DDraw.GL_DEPTH_TEST);
 		try {
 			renderFragments(RenderType.SUPERIMPOSED);

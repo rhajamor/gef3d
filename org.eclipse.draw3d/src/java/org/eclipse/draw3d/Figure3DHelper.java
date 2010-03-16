@@ -32,6 +32,7 @@ import org.eclipse.draw3d.geometry.BoundingBox;
 import org.eclipse.draw3d.geometry.BoundingBoxImpl;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -112,12 +113,16 @@ public class Figure3DHelper {
 		 */
 		public float getDistanceMeasure(RenderContext i_renderContext) {
 
-			Vector3f v = Draw3DCache.getVector3f();
+			Vector3f viewPoint = Draw3DCache.getVector3f();
+			Vector3f diff = Draw3DCache.getVector3f();
 			try {
-				getCenter3D(m_figure, v);
-				return i_renderContext.getScene().getCamera().getDistance(v);
+				i_renderContext.getScene().getCamera().getPosition(viewPoint);
+				Math3D.sub(m_figure.getPosition3D().getCenter3D(), viewPoint,
+					diff);
+
+				return diff.lengthSquared() - 0.01f;
 			} finally {
-				Draw3DCache.returnVector3f(v);
+				Draw3DCache.returnVector3f(viewPoint, diff);
 			}
 		}
 
