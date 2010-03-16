@@ -36,13 +36,34 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 /**
- * TextRenderImage There should really be more documentation here.
+ * Renders a text using a simple level of detail (LOD) technique.
+ * <p>
+ * Depending on the (normalized) distance to the camera, the text is 
  * 
+ * <ul>
+ * <li>rendered with vector fonts (distance < {@link #LOD_VF}),</li>
+ * <li>rendered with as bitmap (distance < {@link #LOD_TF}), or
+ * <li>isn't rendered at all.
+ * </ul>
+ * (LOD_VF < LOD_TF). Distance is calculated using an {@link ILodHelper}.
+ * </p>
  * @author Kristian Duske
  * @version $Revision$
  * @since 29.01.2010
  */
 public class TextRenderImage implements RenderImage {
+	/**
+	 * If distance of text to camera is less this value, the text is rendered
+	 * using vector fonts.
+	 */
+	private static final float LOD_VF = 3100f; // 1100f;
+
+	/**
+	 * If distance of text to camera is less this value (but greater
+	 * {@link #LOD_VF}, the text is rendered as bitmap. If distance is greater
+	 * this value, text is not rendered at all.
+	 */
+	private static final float LOD_TF = 10000f; // 10000f;
 
 	private float[] m_color = new float[4];
 
@@ -70,8 +91,8 @@ public class TextRenderImage implements RenderImage {
 
 		TextRenderRule textRule = i_primitive.getRenderRule().asText();
 
-		ColorConverter.toFloatArray(textRule.getTextColor(),
-			textRule.getAlpha(), m_color);
+		ColorConverter.toFloatArray(textRule.getTextColor(), textRule
+			.getAlpha(), m_color);
 
 		Dimension extent = i_primitive.getExtent();
 		m_size = new Vector2fImpl(extent.width, extent.height);
@@ -138,10 +159,6 @@ public class TextRenderImage implements RenderImage {
 
 	}
 
-	private static final float LOD_VF = 1100f;
-
-	private static final float LOD_TF = 10000f;
-
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -161,25 +178,26 @@ public class TextRenderImage implements RenderImage {
 				GL11.glPushMatrix();
 				try {
 					GL11.glMultMatrix(m_transformationBuffer);
-					if (nd <= LOD_VF) {
-						// GL11.glColor4f(1, 0, 0, 1);
-						m_vectorFont.render(m_text);
-					} else {
-						// GL11.glColor4f(0, 1, 0, 1);
-						m_textureFont.renderString(m_text, 0, 0, false);
-					}
+					renderLOD(nd);
 				} finally {
 					GL11.glPopMatrix();
 				}
 			} else {
-				if (nd <= LOD_VF) {
-					// GL11.glColor4f(1, 0, 0, 1);
-					m_vectorFont.render(m_text);
-				} else {
-					// GL11.glColor4f(0, 1, 0, 1);
-					m_textureFont.renderString(m_text, 0, 0, false);
-				}
+				renderLOD(nd);
 			}
+		}
+	}
+
+	/**
+	 * @param nd normalized distance to camera
+	 */
+	private void renderLOD(float nd) {
+		if (nd <= LOD_VF) {
+			// GL11.glColor4f(1, 0, 0, 1);
+			m_vectorFont.render(m_text);
+		} else {
+			// GL11.glColor4f(0, 1, 0, 1);
+			m_textureFont.renderString(m_text, 0, 0, false);
 		}
 	}
 }
