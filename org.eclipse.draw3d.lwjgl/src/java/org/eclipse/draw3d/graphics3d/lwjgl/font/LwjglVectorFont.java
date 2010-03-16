@@ -488,6 +488,8 @@ public class LwjglVectorFont {
 
 				listIdBuffer.limit(listIdBuffer.position());
 				listIdBuffer.rewind();
+
+				GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 				GL11.glCallLists(listIdBuffer);
 			} finally {
 				Draw3DCache.returnIntBuffer(listIdBuffer);

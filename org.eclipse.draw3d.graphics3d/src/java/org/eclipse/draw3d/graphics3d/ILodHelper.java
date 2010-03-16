@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d;
 
+import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.IVector3f;
 
 /**
@@ -21,6 +22,9 @@ import org.eclipse.draw3d.geometry.IVector3f;
  */
 public interface ILodHelper {
 
-	public float getNormalizedArea(IVector3f i_position, IVector3f i_normal,
-		float i_area);
+	public float getNormalizedArea(IVector3f i_position, IVector2f i_size,
+		IVector3f i_normal);
+
+	public float getNormalizedDistance(IVector3f i_position, IVector2f i_size,
+		IVector3f i_normal);
 }

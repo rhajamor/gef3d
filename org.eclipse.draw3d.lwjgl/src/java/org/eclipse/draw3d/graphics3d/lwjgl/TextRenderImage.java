@@ -12,12 +12,15 @@ package org.eclipse.draw3d.graphics3d.lwjgl;
 
 import java.nio.FloatBuffer;
 
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.IMatrix3f;
 import org.eclipse.draw3d.geometry.IPosition3D;
+import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Matrix4f;
+import org.eclipse.draw3d.geometry.Vector2fImpl;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics.optimizer.primitive.TextPrimitive;
@@ -45,7 +48,7 @@ public class TextRenderImage implements RenderImage {
 
 	private String m_text;
 
-	private int m_area;
+	private IVector2f m_size;
 
 	private LwjglVectorFont m_vectorFont;
 
@@ -70,7 +73,8 @@ public class TextRenderImage implements RenderImage {
 		ColorConverter.toFloatArray(textRule.getTextColor(),
 			textRule.getAlpha(), m_color);
 
-		m_area = i_primitive.getExtent().getArea();
+		Dimension extent = i_primitive.getExtent();
+		m_size = new Vector2fImpl(extent.width, extent.height);
 
 		IMatrix3f t3f = i_primitive.getTransformation();
 		Point p = i_primitive.getPosition();
@@ -134,9 +138,9 @@ public class TextRenderImage implements RenderImage {
 
 	}
 
-	private static final float LOD_VF = 0.0002f;
+	private static final float LOD_VF = 1100f;
 
-	private static final float LOD_TF = 0.001f;
+	private static final float LOD_TF = 10000f;
 
 	/**
 	 * {@inheritDoc}
@@ -146,9 +150,10 @@ public class TextRenderImage implements RenderImage {
 	 */
 	public void render(Graphics3D i_g3d, ILodHelper i_lodHelper) {
 
-		float na = i_lodHelper.getNormalizedArea(m_absPos, m_normal, m_area);
+		float nd =
+			i_lodHelper.getNormalizedDistance(m_absPos, m_size, m_normal);
 
-		if (na > LOD_VF) {
+		if (nd <= LOD_TF) {
 
 			GL11.glColor4f(m_color[0], m_color[1], m_color[2], m_color[3]);
 			if (m_transformationBuffer != null) {
@@ -156,18 +161,24 @@ public class TextRenderImage implements RenderImage {
 				GL11.glPushMatrix();
 				try {
 					GL11.glMultMatrix(m_transformationBuffer);
-					if (na > LOD_TF)
+					if (nd <= LOD_VF) {
+						// GL11.glColor4f(1, 0, 0, 1);
 						m_vectorFont.render(m_text);
-					else
+					} else {
+						// GL11.glColor4f(0, 1, 0, 1);
 						m_textureFont.renderString(m_text, 0, 0, false);
+					}
 				} finally {
 					GL11.glPopMatrix();
 				}
 			} else {
-				if (na > LOD_TF)
+				if (nd <= LOD_VF) {
+					// GL11.glColor4f(1, 0, 0, 1);
 					m_vectorFont.render(m_text);
-				else
+				} else {
+					// GL11.glColor4f(0, 1, 0, 1);
 					m_textureFont.renderString(m_text, 0, 0, false);
+				}
 			}
 		}
 	}

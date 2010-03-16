@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.camera;
 
+import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -56,11 +57,11 @@ public class CameraLodHelper implements ILodHelper {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.ILodHelper#getNormalizedArea(org.eclipse.draw3d.geometry.IVector3f,
-	 *      org.eclipse.draw3d.geometry.IVector3f, float)
+	 * @see org.eclipse.draw3d.graphics3d.ILodHelper#getNormalizedArea(IVector3f,
+	 *      IVector2f, IVector3f)
 	 */
-	public float getNormalizedArea(IVector3f i_position, IVector3f i_normal,
-		float i_area) {
+	public float getNormalizedArea(IVector3f i_position, IVector2f i_size,
+		IVector3f i_normal) {
 
 		Vector3f cPos = Draw3DCache.getVector3f();
 		Vector3f v = Draw3DCache.getVector3f();
@@ -69,10 +70,41 @@ public class CameraLodHelper implements ILodHelper {
 			Math3D.sub(i_position, cPos, v);
 
 			float d2 = v.lengthSquared();
-			float sa = i_area / d2;
+			float sa = i_size.getX() * i_size.getY() / d2;
 
 			float cosa = Math3D.dot(getNormalizedCameraDirection(), i_normal);
 			return sa * Math.abs(cosa);
+		} finally {
+			Draw3DCache.returnVector3f(cPos, v);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.graphics3d.ILodHelper#getNormalizedDistance(IVector3f,
+	 *      IVector2f, IVector3f)
+	 */
+	public float getNormalizedDistance(IVector3f i_position, IVector2f i_size,
+		IVector3f i_normal) {
+
+		Vector3f cPos = Draw3DCache.getVector3f();
+		Vector3f v = Draw3DCache.getVector3f();
+		try {
+			v.setX(i_position.getX() + i_size.getX() / 2);
+			v.setY(i_position.getY() + i_size.getY() / 2);
+			v.setZ(i_position.getZ());
+
+			m_camera.getPosition(cPos);
+			Math3D.sub(v, cPos, v);
+
+			float d = v.length();
+
+			float cosa = Math3D.dot(getNormalizedCameraDirection(), i_normal);
+			if (cosa == 0)
+				return Float.MAX_VALUE;
+
+			return d / Math.abs(cosa);
 		} finally {
 			Draw3DCache.returnVector3f(cPos, v);
 		}

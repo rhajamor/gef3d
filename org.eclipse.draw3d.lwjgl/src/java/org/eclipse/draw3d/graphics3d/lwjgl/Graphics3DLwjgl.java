@@ -491,12 +491,37 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 						getFontManager().getFont(textRule.getFont(), (char) 32,
 							(char) 127, true);
 
+					final List<TextRenderImage> textImages =
+						new LinkedList<TextRenderImage>();
+
 					for (Primitive primitive : set.getPrimitives()) {
 						TextPrimitive text = (TextPrimitive) primitive;
-						vbos.add(new TextRenderImage(text, vectorFont,
+						textImages.add(new TextRenderImage(text, vectorFont,
 							textureFont, m_current2DPosition));
 					}
 
+					vbos.add(new RenderImage() {
+						public void dispose() {
+
+							for (TextRenderImage image : textImages)
+								image.dispose();
+
+							textImages.clear();
+						}
+
+						public void initialize(Graphics3D i_g3d) {
+
+							for (TextRenderImage image : textImages)
+								image.initialize(i_g3d);
+						}
+
+						public void render(Graphics3D i_g3d,
+							ILodHelper i_lodHelper) {
+
+							for (TextRenderImage image : textImages)
+								image.render(i_g3d, i_lodHelper);
+						}
+					});
 					// vbos.add(new LwjglTextVBO(set, getFontManager()));
 					// generateVectorText(set, vbos);
 				} else {
@@ -523,12 +548,15 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 				public void render(Graphics3D i_g3d, ILodHelper i_lodContext) {
 
-					GL11.glDisable(GL11.GL_DEPTH_TEST);
+					GL11.glMatrixMode(GL11.GL_MODELVIEW);
+					GL11.glPushMatrix();
 					try {
-						for (RenderImage vbo : vbos)
+						for (RenderImage vbo : vbos) {
+							glTranslatef(0, 0, -0.01f);
 							vbo.render(i_g3d, i_lodContext);
+						}
 					} finally {
-						GL11.glEnable(GL11.GL_DEPTH_TEST);
+						GL11.glPopMatrix();
 					}
 				}
 			};
