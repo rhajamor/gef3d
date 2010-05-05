@@ -20,7 +20,6 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
@@ -64,6 +63,11 @@ import org.osgi.framework.Bundle;
  * <p>
  * In contrast to {@link AbstractMultiEditor}, editors in an 3D editor share the
  * same view.
+ * </p>
+ * <p>
+ * You may override the {@link #acceptsInput(org.eclipse.ui.IEditorInput)} method, which
+ * by default accepts all input for which a nestable editor can be retrieved, see
+ * {@link AbstractMultiEditor3D#acceptsInput(org.eclipse.ui.IEditorInput)}.
  * </p>
  * 
  * @author Jens von Pilgrim
@@ -492,11 +496,20 @@ public abstract class AbstractMultiEditor3D extends
 	/**
 	 * @return
 	 */
-	private MultiEditorPropertySheetPage createPropertySheetPage() {
-		
+	protected MultiEditorPropertySheetPage createPropertySheetPage() {
 		MultiEditorPropertySheetPage page = new MultiEditorPropertySheetPage(this);
 		return page;
-
+	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * <p>
+	 * Accepts input if a nesteable editor is found in the plug-in registry
+	 * </p>
+	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditor#acceptsInput(org.eclipse.ui.IEditorInput)
+	 */
+	public boolean acceptsInput(IEditorInput i_editorInput) {
+		return ! findNestableEditorClasses(i_editorInput).isEmpty();
 	}
 
 }
