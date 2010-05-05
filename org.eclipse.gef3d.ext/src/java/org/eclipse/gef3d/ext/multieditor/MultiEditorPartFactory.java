@@ -137,6 +137,11 @@ public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPart
 	private class FactorySet extends TreeSet<WeightedFactory> {
 
 		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 2881198801304911931L;
+
+		/**
 		 * @param i_context
 		 * @param i_model
 		 * @return
