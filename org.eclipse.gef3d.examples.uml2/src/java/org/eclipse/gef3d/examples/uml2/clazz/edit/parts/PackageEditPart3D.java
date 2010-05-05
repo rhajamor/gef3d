@@ -28,7 +28,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.uml2.diagram.clazz.edit.parts.PackageEditPart;
 
 /**
- * PackageEditPart3D There should really be more documentation here.
+ * 3D plane for displaying UML class diagrams, 3D version of 
+ * {@link PackageEditPart}. Plane is automatically resized to fit its content.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
