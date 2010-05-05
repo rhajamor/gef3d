@@ -27,6 +27,8 @@ class GraphWizardConfigurePage extends WizardPage {
 	int numberOfVerticesPerPlane = 5;
 
 	int numberOfPlanes = 1;
+	
+	int interconnect = 10;
 
 	Label openingHint;
 
@@ -92,6 +94,20 @@ class GraphWizardConfigurePage extends WizardPage {
 					graphWizard.updateEditorType();
 				}
 				
+			}
+		});
+		
+		label = new Label(composite, SWT.LEFT);
+		label.setText("Interconnec every x-th element:");
+		spinner = new Spinner(composite, SWT.None);
+		spinner.setMinimum(1);
+		spinner.setMaximum(30);
+		spinner.setIncrement(1);
+		spinner.setSelection(interconnect);
+		spinner.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				interconnect = ((Spinner) e.getSource()).getSelection();
 			}
 		});
 

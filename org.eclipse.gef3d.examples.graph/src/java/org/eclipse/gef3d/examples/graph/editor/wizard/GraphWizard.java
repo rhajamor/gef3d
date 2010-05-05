@@ -158,7 +158,7 @@ public class GraphWizard extends Wizard implements INewWizard {
 							
 							for (int p = 1; p < graphs.length; p++) {
 								for (int c = 0; c < graphWizardConfigurePage.numberOfVerticesPerPlane; c +=
-									12) {
+									graphWizardConfigurePage.interconnect) {
 									int source = (int) (c);
 									int target = (int) (c);
 									Edge e = new Edge();
