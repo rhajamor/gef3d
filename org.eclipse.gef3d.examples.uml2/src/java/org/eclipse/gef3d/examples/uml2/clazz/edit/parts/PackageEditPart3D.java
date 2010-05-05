@@ -10,7 +10,9 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.uml2.clazz.edit.parts;
 
+import org.eclipse.draw2d.FigureListener;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.gef.DragTracker;
@@ -48,13 +50,25 @@ public class PackageEditPart3D extends PackageEditPart {
 	 */
 	@Override
 	protected IFigure createFigure() {
-		Figure3D f = new DiagramFigure3D();
+		Figure3D f = new DiagramFigure3D() {
+			@Override
+			public void add(IFigure i_figure, Object i_constraint, int i_index) {
+				super.add(i_figure, i_constraint, i_index);
+				i_figure.addFigureListener(new FigureListener() {
+					
+					public void figureMoved(IFigure i_source) {
+						autoResize();
+						
+					}
+				});
+			}
+		};
 		// Figure3D f = new ClassDiagramFigure3DEmbedded();
 
 		f.getPosition3D().setLocation3D(new Vector3fImpl(0, 0, 0));
-		f.getPosition3D().setSize3D(new Vector3fImpl(1400, 1400, 60));
+		f.getPosition3D().setSize3D(new Vector3fImpl(400, 400, 30));
 
-		f.setBackgroundColor(new Color(Display.getCurrent(), 255, 255, 255));
+		f.setBackgroundColor(new Color(Display.getCurrent(), 200,200,200)); // 255, 255, 255));
 		f.setAlpha((byte) (255 / 2));
 
 		return f;
@@ -73,5 +87,23 @@ public class PackageEditPart3D extends PackageEditPart {
 			&& ((SelectionRequest) req).getLastButtonPressed() == 3)
 			return new DeselectAllTracker(this);
 		return new DragEditPartsTrackerEx(this);
+	}
+	
+	/**
+	 * 
+	 */
+	private void autoResize() {
+		int maxX = 400;
+		int maxY = 400;
+		Rectangle rect = getChildrenBounds();
+		int border=30;
+		int depth=20;
+		
+		rect.width += border;
+		rect.height += border;
+		
+		if (maxX<rect.width) maxX = rect.width;
+		if (maxY<rect.height) maxY = rect.height;
+		((Figure3D) getFigure()).getPosition3D().setSize3D(new Vector3fImpl(maxX+border, maxY+border, depth));
 	}
 }
