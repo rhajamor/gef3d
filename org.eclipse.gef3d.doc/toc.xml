@@ -14,6 +14,9 @@
 	-->
 	<topic label="Online Docs">
 		<topic label="GEF3D Project Website" href="http://gef3d.org" />
+		<topic label="Tutorials">
+			<topic label="GEF goes 3D. Part 1: Creating a Simple GEF3D Editor Step by Step" href="http://jaxenter.com/gef-goes-3d-10076.html" />
+		</topic>
 		<!--
 		<topic label="Release Notes">
 			<topic label="What's New in v1.x" href="http://gef3d.org/news/relnotes1.x.html" />
