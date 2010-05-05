@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.gef3d.ext.multieditor;
 
+import org.eclipse.gef.EditPart;
 import org.eclipse.ui.IEditorInput;
 
 /**
@@ -38,4 +39,30 @@ public interface IMultiEditor {
 	 * @param i_editorInput the input to add
 	 */
 	public void addEditor(IEditorInput i_editorInput);
+
+	/**
+	 * Retrieves an {@link INestableEditor} by an edit part. This method is used
+	 * for example by {@link MultiEditorPropertySheetPage} in order to retrieve
+	 * the nested editor based on the current selection.
+	 * 
+	 * @param part the part
+	 * @return the nested editor or null, if no nested editor is found
+	 */
+	public INestableEditor findEditorByEditPart(EditPart part);
+
+	/**
+	 * Adds a new {@link IMultiEditorListener} which is notified when editors
+	 * are newly nested or remove.
+	 * 
+	 * @param multiEditorListener, must not be null
+	 */
+	public void addMultiEditorListener(IMultiEditorListener multiEditorListener);
+
+	/**
+	 * Removes an {@link IMultiEditorListener}.
+	 * 
+	 * @param multiEditorListener
+	 */
+	public void removeMultiEditorListener(
+		IMultiEditorListener multiEditorListener);
 }

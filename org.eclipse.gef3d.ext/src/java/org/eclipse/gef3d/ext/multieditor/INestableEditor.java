@@ -22,15 +22,15 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 
 /**
- * Editors implementing this interface can be nested into a multi editor. 
- * The nesting is not done automatically, the nesting, viz 
- * multi, editor has to be manually created, there is no general-purpose
- * multi editor available. This interface is used in combination with
- * an multi editor implementing {@link IMultiEditor}.
+ * Editors implementing this interface can be nested into a multi editor. The
+ * nesting is not done automatically, the nesting, viz multi, editor has to be
+ * manually created, there is no general-purpose multi editor available. This
+ * interface is used in combination with an multi editor implementing
+ * {@link IMultiEditor}.
  * <p>
- * An example using this interface can be found in 
+ * An example using this interface can be found in
  * org.eclipse.gef3d.examples.uml2.
- * </p> 
+ * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -45,20 +45,26 @@ public interface INestableEditor {
 	 * editor, this should be considered.
 	 * <p>
 	 * The nested editor is expected to set up the multi factory. The following
-	 * snippet can be used as a template: <code>
+	 * snippet can be used as a template: <code><pre>
 	 * Diagram diagram = getDiagram();
 	 * EditPartFactory factory = ... // e.g. EditPartService.getInstance();
 	 * i_multiEditorPartFactory.prepare(diagram, factory);
 	 * i_multiEditorModelContainer.add(diagram);
-	 * </code>
+	 * ...
+	 * return diagram;
+	 * </pre></code>
 	 * </p>
+	 * The returned root content element, usually the same as used in the multi
+	 * factory, is used by the multi editor to distinguish between different
+	 * editors, e.g., for switching the properties sheet page.
 	 * 
 	 * @param i_graphicalViewer
 	 * @param i_multiFactory
 	 * @param i_container
+	 * @return the root content element of the nested editor
 	 * @todo maybe rename this? It is confusing to have to init methods.
 	 */
-	void initializeAsNested(GraphicalViewer i_graphicalViewer,
+	Object initializeAsNested(GraphicalViewer i_graphicalViewer,
 		MultiEditorPartFactory i_multiFactory,
 		MultiEditorModelContainer i_container);
 
@@ -88,23 +94,22 @@ public interface INestableEditor {
 	 * @return the editor specific drawer or null, if no palette is provided.
 	 */
 	PaletteDrawer createPaletteDrawer();
-	
+
 	/**
-	 * This method is already defined in {@link IEditorPart} and used
-	 * by multi editor to distinguish loaded editors. 
+	 * This method is already defined in {@link IEditorPart} and used by multi
+	 * editor to distinguish loaded editors.
+	 * 
 	 * @return
 	 * @see IEditorPart#getEditorInput()
-	 * 
 	 */
 	IEditorInput getEditorInput();
-	
-	
+
 	/**
 	 * @param monitor
 	 * @see EditorPart#doSave(IProgressMonitor)
 	 */
 	void doSave(IProgressMonitor monitor);
-	
+
 	/**
 	 * @see EditorPart#isDirty()
 	 * @return

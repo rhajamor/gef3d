@@ -42,6 +42,11 @@ public class MultiEditorModelContainer {
 		m_Listeners = new PropertyChangeSupport(this);
 	}
 
+	/**
+	 * Returns list of all contained nested root elements, i.e. the
+	 * root models of the nested editors.
+	 * @return
+	 */
 	public List getModelContainers() {
 		return modelContainer;
 	}

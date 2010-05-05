@@ -80,13 +80,13 @@ import org.eclipse.gef.EditPartViewer;
  * @version $Revision$
  * @since Sep 28, 2009
  */
-public class EditPartByModelPathFinderStrategy<NotationType> implements
+public class ModelPathFinderStrategy<NotationType> implements
 		ILookupStrategy<NotationType> {
 	/**
 	 * Logger for this class
 	 */
 	private static final Logger log =
-		Logger.getLogger(EditPartByModelPathFinderStrategy.class.getName());
+		Logger.getLogger(ModelPathFinderStrategy.class.getName());
 
 	/**
 	 * Set of model element path finders.
@@ -102,7 +102,7 @@ public class EditPartByModelPathFinderStrategy<NotationType> implements
 
 	/**
 	 * The default root, used in
-	 * {@link #findNotationElementForDomainElement(Object)}
+	 * {@link #findNotationByDomain(Object)}
 	 */
 	protected NotationType defaultNotationRoot;
 	
@@ -114,7 +114,7 @@ public class EditPartByModelPathFinderStrategy<NotationType> implements
 	 * 
 	 * @param i_defaultNotationRoot, must not be null
 	 */
-	public EditPartByModelPathFinderStrategy(NotationType i_defaultNotationRoot) {
+	public ModelPathFinderStrategy(NotationType i_defaultNotationRoot) {
 		if (i_defaultNotationRoot == null) // parameter precondition
 			throw new NullPointerException("i_defaultNotationRoot must not be null");
 		
@@ -131,9 +131,9 @@ public class EditPartByModelPathFinderStrategy<NotationType> implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupStrategy#findNotationElementForDomainElement(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupStrategy#findNotationByDomain(java.lang.Object)
 	 */
-	public NotationType findNotationElementForDomainElement(
+	public NotationType findNotationByDomain(
 		Object i_domainElement) {
 		return findNotationElementForDomainElement(getDefaultNotationRoot(),
 			i_domainElement);
@@ -425,7 +425,7 @@ public class EditPartByModelPathFinderStrategy<NotationType> implements
 	 */
 	@Override
 	public String toString() {
-		return "EditPartByModelPathFinderStrategy [defaultNotationRoot="
+		return "ModelPathFinderStrategy [defaultNotationRoot="
 			+ defaultNotationRoot + ", modelElementPathFinders="
 			+ modelElementPathFinders + ", notationAdapters="
 			+ notationAdapters + "]";

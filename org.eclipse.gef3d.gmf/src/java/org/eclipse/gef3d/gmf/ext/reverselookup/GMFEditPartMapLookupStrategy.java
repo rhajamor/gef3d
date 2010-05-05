@@ -19,7 +19,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.GraphicalEditPart;
-import org.eclipse.gef3d.ext.reverselookup.EditPartByModelPathFinderStrategy;
+import org.eclipse.gef3d.ext.reverselookup.ModelPathFinderStrategy;
 import org.eclipse.gef3d.ext.reverselookup.ILookupStrategy;
 import org.eclipse.gef3d.ext.reverselookup.ReverseLookupManager;
 import org.eclipse.gmf.runtime.diagram.ui.parts.IDiagramGraphicalViewer;
@@ -32,7 +32,7 @@ import org.eclipse.gmf.runtime.emf.core.util.EMFCoreUtil;
  * {@link IDiagramGraphicalViewer#findEditPartsForElement(String, Class)}.
  * <p>
  * As only the first edit part is returned, it may be even more efficient to use
- * GEF3D's {@link EditPartByModelPathFinderStrategy} in combination with
+ * GEF3D's {@link ModelPathFinderStrategy} in combination with
  * {@link GMFEditPartNotationAdapter}, since this method stops when the first
  * edit part is found. Apart from that, you'll need to use this strategy if no
  * {@link IDiagramGraphicalViewer} is used, as it may be the case in 3D
@@ -56,7 +56,7 @@ public class GMFEditPartMapLookupStrategy implements ILookupStrategy<EditPart> {
 	/**
 	 * Creates this strategy, if you do not have an
 	 * {@link IDiagramGraphicalViewer}, you can use GEF3D's lookup mechanism,
-	 * see {@link EditPartByModelPathFinderStrategy}.
+	 * see {@link ModelPathFinderStrategy}.
 	 * 
 	 * @param i_viewer
 	 */
@@ -71,9 +71,9 @@ public class GMFEditPartMapLookupStrategy implements ILookupStrategy<EditPart> {
 	 * {@link GraphicalEditPart} is returned (if possible), otherwise the first
 	 * found {@link EditPart}.
 	 * 
-	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupStrategy#findNotationElementForDomainElement(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupStrategy#findNotationByDomain(java.lang.Object)
 	 */
-	public EditPart findNotationElementForDomainElement(Object i_domainElement) {
+	public EditPart findNotationByDomain(Object i_domainElement) {
 		if (i_domainElement instanceof EObject) {
 			String id = EMFCoreUtil.getProxyID((EObject) i_domainElement);
 			if (id != null) {

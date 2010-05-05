@@ -31,6 +31,6 @@ import org.eclipse.gef.EditPart;
  */
 public interface ILookupStrategy<NotationType> extends ILookupHelper {
 
-	public NotationType findNotationElementForDomainElement(Object domainElement);
+	public NotationType findNotationByDomain(Object domainElement);
 
 }

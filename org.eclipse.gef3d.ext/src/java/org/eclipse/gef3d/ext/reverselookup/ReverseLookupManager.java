@@ -38,7 +38,7 @@ import org.eclipse.gef.ui.parts.GraphicalEditor;
  * <li>
  * <code>org.eclipse.gef3d.gmf.ext.reverselookup.GMFEditPartMapLookupStrategy</code>
  * (in plugin org.eclipse.gef3d.gmf) for GMF editors using GMF's notation model</li>
- * <li>{@link EditPartByModelPathFinderStrategy}, GEF3D's multi purpose reverse
+ * <li>{@link ModelPathFinderStrategy}, GEF3D's multi purpose reverse
  * lookup method</li>
  * </ol>
  * The first one, {@link EditPartRegistryLookupStrategy} is installed by default
@@ -66,8 +66,8 @@ import org.eclipse.gef.ui.parts.GraphicalEditor;
  * 		rlm.addLookupStrategy(1, new GMFEditPartMapLookupStrategy(
  * 		(IDiagramGraphicalViewer) getGraphicalViewer()));
  * 	} else {
- * 		EditPartByModelPathFinderStrategy<EditPart> gef3DStrategy =
- * 			new EditPartByModelPathFinderStrategy<EditPart>(
+ * 		ModelPathFinderStrategy<EditPart> gef3DStrategy =
+ * 			new ModelPathFinderStrategy<EditPart>(
  * 		getGraphicalViewer().getContents());
  * 		gef3DStrategy.addNotationAdapter(GMFEditPartNotationAdapter.INSTANCE);
  * 		// gef3DStrategy.addNotationAdapter(EditPartNotationAdapter.INSTANCE);
@@ -186,7 +186,7 @@ public class ReverseLookupManager<NotationType> {
 	 * @return notation element referencing given domainElement, or null if no
 	 *         such element is found
 	 */
-	public NotationType findNotationElementForDomainElement(
+	public NotationType findNotationByDomain(
 		final Object domainElement) {
 		NotationType notationType = null;
 		for (Set<ILookupStrategy<NotationType>> strategies : lookupStrategies
@@ -220,7 +220,7 @@ public class ReverseLookupManager<NotationType> {
 
 			for (ILookupStrategy<NotationType> strategy : sortedStrategies) {
 				notationType =
-					strategy.findNotationElementForDomainElement(domainElement);
+					strategy.findNotationByDomain(domainElement);
 				if (notationType != null)
 					return notationType;
 			}

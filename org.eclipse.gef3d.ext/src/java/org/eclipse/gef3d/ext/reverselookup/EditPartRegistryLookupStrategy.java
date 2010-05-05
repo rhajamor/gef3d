@@ -55,9 +55,9 @@ public class EditPartRegistryLookupStrategy implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupStrategy#findNotationElementForDomainElement(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupStrategy#findNotationByDomain(java.lang.Object)
 	 */
-	public EditPart findNotationElementForDomainElement(Object i_domainElement) {
+	public EditPart findNotationByDomain(Object i_domainElement) {
 		return (EditPart) viewer.getEditPartRegistry().get(i_domainElement);
 	}
 

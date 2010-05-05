@@ -48,7 +48,7 @@ public class MultiEditorModelContainerEditPart extends
 	protected IFigure createFigure() {
 
 		Figure fig = new MultiEditorModelContainerFigure();
-		fig.setLayoutManager(new StackLayout3D());
+		fig.setLayoutManager(new StackLayout3D(500));
 
 		return fig;
 	}

@@ -247,7 +247,7 @@ public class UMLActivityDiagramEditor3D extends UMLDiagramEditor implements
      * **********************************************************************
      */
 
-    public void initializeAsNested(GraphicalViewer viewer,
+    public Object initializeAsNested(GraphicalViewer viewer,
             MultiEditorPartFactory i_multiEditorPartFactory,
             MultiEditorModelContainer i_multiEditorModelContainer) {
 
@@ -273,9 +273,12 @@ public class UMLActivityDiagramEditor3D extends UMLDiagramEditor implements
             // between 3D and 2D instances!
             diagram.eAdapters().remove(
                 ProviderAcceptor.retrieveProviderSelector(viewer));
+            
+            return diagram;
 
         } catch (Exception ex) {
-            log.warning("GraphicalViewer exception: " + ex); //$NON-NLS-1$ 
+            log.warning("GraphicalViewer exception: " + ex); //$NON-NLS-1$
+            return null;
         }
 
     }
