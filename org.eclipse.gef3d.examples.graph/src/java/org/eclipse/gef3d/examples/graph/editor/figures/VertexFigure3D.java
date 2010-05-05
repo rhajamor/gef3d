@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Label;
+import org.eclipse.draw3d.FigureSurface;
+import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.SurfaceLayout;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -33,6 +35,12 @@ import org.eclipse.swt.widgets.Display;
  */
 public class VertexFigure3D extends ShapeFigure3D {
 	private static int counter = 1;
+	
+	/**
+	 * The surface of this figure. This is where 2D children are placed.
+	 */
+	private ISurface m_surface = new FigureSurface(this);
+
 
 	/**
 	 * Logger for this class
@@ -126,6 +134,16 @@ public class VertexFigure3D extends ShapeFigure3D {
 	protected Shape createShape() {
 
 		return new CuboidFigureShape(this, false);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.Figure3D#getSurface()
+	 */
+	@Override
+	public ISurface getSurface() {
+		return m_surface;
 	}
 
 	/**
