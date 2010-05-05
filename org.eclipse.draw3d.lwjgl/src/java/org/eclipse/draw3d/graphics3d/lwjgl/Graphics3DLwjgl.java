@@ -94,6 +94,12 @@ import org.lwjgl.util.glu.GLUtessellatorCallback;
  */
 public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		Graphics3D {
+	/**
+	 * @todo We have to find a better mechanism for ensuring 2D content to be
+	 *       placed on top of surface plane
+	 */
+	private static final float OFFSET_2DCONTENT_SURFACE = -0.2f;
+
 	private static class PolygonTesselator implements GLUtessellatorCallback {
 
 		private int m_currentType;
@@ -552,7 +558,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 					GL11.glPushMatrix();
 					try {
 						for (RenderImage vbo : vbos) {
-							glTranslatef(0, 0, -0.01f);
+							glTranslatef(0, 0, OFFSET_2DCONTENT_SURFACE);
 							vbo.render(i_g3d, i_lodContext);
 						}
 					} finally {
@@ -641,8 +647,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 			IMatrix3f t = textPrimitive.getTransformation();
 			AffineTransform af =
-				new AffineTransform(t.get(0, 0), t.get(0, 1), t.get(1, 0),
-					t.get(1, 1), t.get(2, 0), t.get(2, 1));
+				new AffineTransform(t.get(0, 0), t.get(0, 1), t.get(1, 0), t
+					.get(1, 1), t.get(2, 0), t.get(2, 1));
 
 			Point p = textPrimitive.getPosition();
 			af.translate(p.x, p.y + size);
@@ -1123,6 +1129,15 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 */
 	public void glShadeModel(int mode) {
 		org.lwjgl.opengl.GL11.glShadeModel(mode);
+
+		// org.lwjgl.opengl.GL11.glEnable(org.lwjgl.opengl.GL11.GL_LIGHTING);
+		// org.lwjgl.opengl.GL11.glEnable(org.lwjgl.opengl.GL11.GL_LIGHT0);
+		//
+		// org.lwjgl.opengl.GL11.glColorMaterial(
+		// org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK,
+		// org.lwjgl.opengl.GL11.GL_AMBIENT_AND_DIFFUSE); // GL_EMISSION ) ;
+		// org.lwjgl.opengl.GL11.glEnable(org.lwjgl.opengl.GL11.GL_COLOR_MATERIAL);
+
 	}
 
 	/**
@@ -1387,9 +1402,9 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			SolidRenderRule solid = renderRule.asSolid();
 
 			m_tesselator.gluTessProperty(GLU.GLU_TESS_BOUNDARY_ONLY, 0);
-			m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE,
-				solid.getFillRule() == SWT.FILL_EVEN_ODD
-					? GLU.GLU_TESS_WINDING_ODD : GLU.GLU_TESS_WINDING_NONZERO);
+			m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE, solid
+				.getFillRule() == SWT.FILL_EVEN_ODD ? GLU.GLU_TESS_WINDING_ODD
+				: GLU.GLU_TESS_WINDING_NONZERO);
 		}
 
 		for (Primitive primitive : i_set.getPrimitives()) {
