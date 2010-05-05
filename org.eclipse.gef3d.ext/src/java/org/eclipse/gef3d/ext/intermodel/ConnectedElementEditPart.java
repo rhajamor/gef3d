@@ -302,7 +302,7 @@ public class ConnectedElementEditPart extends AbstractGraphicalEditPart
 		Vector3f size = Draw3DCache.getVector3f();
 		Vector3f topCenter = Draw3DCache.getVector3f();
 		try {
-			size.set(7, 7, 7);
+			size.set(5, 5, 5);
 			fig.getPosition3D().setSize3D(size);
 
 			IFigure connectedFig = getModelEditPart().getFigure();

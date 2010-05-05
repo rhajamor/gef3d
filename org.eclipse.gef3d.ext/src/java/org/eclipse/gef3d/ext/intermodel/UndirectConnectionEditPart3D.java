@@ -186,7 +186,7 @@ public abstract class UndirectConnectionEditPart3D extends
 				return null;
 
 			adaptedSourceEditPart =
-				rlm.findNotationElementForDomainElement(sourceModel);
+				rlm.findNotationByDomain(sourceModel);
 			if (adaptedSourceEditPart == null) {
 				throw new IllegalStateException("Source edit part for "
 					+ sourceModel + " not found by reverse lookup, "
@@ -242,7 +242,7 @@ public abstract class UndirectConnectionEditPart3D extends
 				return null;
 
 			adaptedTargetEditPart =
-				rlm.findNotationElementForDomainElement(targetModel);
+				rlm.findNotationByDomain(targetModel);
 			if (adaptedTargetEditPart == null) {
 				throw new IllegalStateException("Target edit part for "
 					+ targetModel + " not found by reverse lookup, "
