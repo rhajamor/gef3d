@@ -22,8 +22,11 @@ import org.eclipse.draw3d.StackLayout3D;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 
 /**
- * MultiEditorModelContainerEditPart There should really be more documentation
- * here.
+ * Edit Part for multi container, that is the content of a multi editor. The
+ * root elements of all nested editors are children of this element, i.e., the
+ * children edit parts of this part are the content edit parts of the nested
+ * editors. This edit part uses a simple {@link StackLayout3D} for layouting
+ * the children planes.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -46,7 +49,6 @@ public class MultiEditorModelContainerEditPart extends
 	 */
 	@Override
 	protected IFigure createFigure() {
-
 		Figure fig = new MultiEditorModelContainerFigure();
 		fig.setLayoutManager(new StackLayout3D(500));
 
@@ -70,10 +72,8 @@ public class MultiEditorModelContainerEditPart extends
 	 * 
 	 * @see org.eclipse.gef.editparts.AbstractEditPart#getModelChildren()
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	protected List getModelChildren() {
-
 		MultiEditorModelContainer base = (MultiEditorModelContainer) getModel();
 		return base.getModelContainers();
 	}
