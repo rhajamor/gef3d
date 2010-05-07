@@ -21,7 +21,8 @@ import org.eclipse.draw3d.util.Draw3DCache;
 /**
  * A layout that stacks 3D figures along the Z axis in a configurable distance.
  * The X and Y position is set to 0. 2D children are ignored. The size and
- * rotation of the children are not changed.
+ * rotation of the children are not changed. Only children with surfaces are
+ * stacked, other children are ignored (see {@link #layoutChild(Object)}.
  * 
  * @author Kristian Duske, Jens von Pilgrim
  * @version $Revision$
@@ -111,13 +112,18 @@ public class StackLayout3D extends AbstractLayout {
 
 	/**
 	 * Returns true if the given child is to be layouted, that is if it is a
-	 * layer added to the stacks. This method returns true by default,
-	 * subclasses may override this method.
+	 * layer added to the stacks. The default implementation returns true if and
+	 * only if the child is a {@link IFigure3D} and
+	 * {@link IFigure3D#getSurface()} is not null. Subclasses may override this
+	 * method.
 	 * 
 	 * @param i_child
 	 * @return
 	 */
 	protected boolean layoutChild(Object i_child) {
-		return true;
+		if (i_child instanceof IFigure3D) {
+			return ((IFigure3D) i_child).getSurface() != null;
+		}
+		return false;
 	}
 }
