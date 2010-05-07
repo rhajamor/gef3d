@@ -56,7 +56,7 @@ public class TextRenderImage implements RenderImage {
 	 * If distance of text to camera is less this value, the text is rendered
 	 * using vector fonts.
 	 */
-	private static final float LOD_VF = 3100f; // 1100f;
+	private static final float LOD_VF = 1200f; // 1100f;
 
 	/**
 	 * If distance of text to camera is less this value (but greater
