@@ -76,7 +76,29 @@ public class MultiEditorPropertySheetPage implements IPropertySheetPage,
 	public MultiEditorPropertySheetPage(IMultiEditor multiEditor) {
 		m_multiEditor = multiEditor;
 		cachedPages = new HashMap<INestableEditor, IPropertySheetPage>();
-		defaultPage = new IPropertySheetPage() {
+		defaultPage = createDefaultPage();
+
+		currentPage = defaultPage;
+
+		// // return new PropertiesBrowserPage(this);
+		// for (INestableEditor nestedEditor : nestedEditors) {
+		// if (nestedEditor instanceof IAdaptable) {
+		// Object result =
+		// ((IAdaptable) nestedEditor).getAdapter(type);
+		// if (result != null)
+		// return result;
+		// }
+		// }
+		// return new PropertiesBrowserPage(this);
+
+	}
+
+	/**
+	 * Creates a simple label, maybe overridden by subclasses.
+	 * @return
+	 */
+	protected IPropertySheetPage createDefaultPage() {
+		return new IPropertySheetPage() {
 			Label label;
 
 			public void selectionChanged(IWorkbenchPart i_part,
@@ -103,20 +125,6 @@ public class MultiEditorPropertySheetPage implements IPropertySheetPage,
 				label.setText("No properties available");
 			}
 		};
-
-		currentPage = defaultPage;
-
-		// // return new PropertiesBrowserPage(this);
-		// for (INestableEditor nestedEditor : nestedEditors) {
-		// if (nestedEditor instanceof IAdaptable) {
-		// Object result =
-		// ((IAdaptable) nestedEditor).getAdapter(type);
-		// if (result != null)
-		// return result;
-		// }
-		// }
-		// return new PropertiesBrowserPage(this);
-
 	}
 
 	/**
@@ -223,6 +231,7 @@ public class MultiEditorPropertySheetPage implements IPropertySheetPage,
 				}
 			}
 			setCurrent(defaultPage);
+			defaultPage.selectionChanged(i_part, structuredSelection);
 		}
 
 	}
@@ -265,6 +274,8 @@ public class MultiEditorPropertySheetPage implements IPropertySheetPage,
 	 */
 	public void init(IPageSite i_site) throws PartInitException {
 		pageSite = i_site;
+		if (defaultPage instanceof IPageBookViewPage)
+			((IPageBookViewPage) defaultPage).init(i_site);
 		for (IPropertySheetPage page : cachedPages.values()) {
 			if (page instanceof IPageBookViewPage)
 				((IPageBookViewPage) page).init(i_site);

@@ -65,8 +65,9 @@ import org.osgi.framework.Bundle;
  * same view.
  * </p>
  * <p>
- * You may override the {@link #acceptsInput(org.eclipse.ui.IEditorInput)} method, which
- * by default accepts all input for which a nestable editor can be retrieved, see
+ * You may override the {@link #acceptsInput(org.eclipse.ui.IEditorInput)}
+ * method, which by default accepts all input for which a nestable editor can be
+ * retrieved, see
  * {@link AbstractMultiEditor3D#acceptsInput(org.eclipse.ui.IEditorInput)}.
  * </p>
  * 
@@ -172,6 +173,8 @@ public abstract class AbstractMultiEditor3D extends
 	protected void configureGraphicalViewer() {
 		super.configureGraphicalViewer();
 
+		getGraphicalViewer().setProperty(IMultiEditor.class.getName(), this);
+		
 		RootEditPart root = createRootEditPart();
 		getGraphicalViewer().setRootEditPart(root);
 
@@ -442,6 +445,30 @@ public abstract class AbstractMultiEditor3D extends
 	}
 
 	/**
+	 * Returns the content edit part of the given nested editor. This method is
+	 * rather expensive (however, usually there are not too much editors
+	 * nested).
+	 * 
+	 * @param nestableEditor
+	 * @return
+	 */
+	public EditPart findNestedEditorContent(INestableEditor nestableEditor) {
+		if (nestableEditor == null)
+			return null;
+
+		List parts = getGraphicalViewer().getContents().getChildren();
+		int count = parts.size();
+		for (int i = 0; i < count; i++) {
+			EditPart part = (EditPart) parts.get(i);
+			if (findEditorByEditPart(part)==nestableEditor) {
+				return part;
+			}
+		}
+		return null;
+
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditor#addMultiEditorListener(org.eclipse.gef3d.ext.multieditor.IMultiEditorListener)
@@ -472,8 +499,7 @@ public abstract class AbstractMultiEditor3D extends
 	 * <p>
 	 * {@link AbstractMultiEditor} supports the following types:
 	 * <ul>
-	 * <li>{@link IPropertySheetPage}</li>
-	 * editor</li>
+	 * <li>{@link IPropertySheetPage}</li> editor</li>
 	 * </ul>
 	 * </p>
 	 * 
@@ -484,32 +510,37 @@ public abstract class AbstractMultiEditor3D extends
 		// TODO this is a hack, in the long run we need a properties page
 		// for the multi editor which is aware of the nested editors
 		if (type == IPropertySheetPage.class) {
-			if (m_multiEditorSheetPage==null) {
+			if (m_multiEditorSheetPage == null) {
 				m_multiEditorSheetPage = createPropertySheetPage();
 			}
 			return m_multiEditorSheetPage;
 		}
-		
+
 		return super.getAdapter(type);
 	}
 
 	/**
+	 * Creates a {@link MultiEditorPropertySheetPage}, maybe overriden by
+	 * subclasses.
+	 * 
 	 * @return
 	 */
 	protected MultiEditorPropertySheetPage createPropertySheetPage() {
-		MultiEditorPropertySheetPage page = new MultiEditorPropertySheetPage(this);
+		MultiEditorPropertySheetPage page =
+			new MultiEditorPropertySheetPage(this);
 		return page;
 	}
-	
-	/** 
+
+	/**
 	 * {@inheritDoc}
 	 * <p>
 	 * Accepts input if a nesteable editor is found in the plug-in registry
 	 * </p>
+	 * 
 	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditor#acceptsInput(org.eclipse.ui.IEditorInput)
 	 */
 	public boolean acceptsInput(IEditorInput i_editorInput) {
-		return ! findNestableEditorClasses(i_editorInput).isEmpty();
+		return !findNestableEditorClasses(i_editorInput).isEmpty();
 	}
 
 }

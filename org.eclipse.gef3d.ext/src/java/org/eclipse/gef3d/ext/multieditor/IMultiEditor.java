@@ -49,7 +49,17 @@ public interface IMultiEditor {
 	 * @return the nested editor or null, if no nested editor is found
 	 */
 	public INestableEditor findEditorByEditPart(EditPart part);
-
+	
+	/**
+	 * Returns the content edit part of the given nested editor. This method is
+	 * rather expensive (however, usually there are not too much editors
+	 * nested).
+	 * 
+	 * @param nestableEditor
+	 * @return
+	 */
+	public EditPart findNestedEditorContent(INestableEditor nestableEditor);
+	
 	/**
 	 * Adds a new {@link IMultiEditorListener} which is notified when editors
 	 * are newly nested or remove.
