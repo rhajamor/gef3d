@@ -19,6 +19,7 @@ import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
 import org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramEditor;
 import org.eclipse.gef.ContextMenuProvider;
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.KeyHandler;
@@ -27,6 +28,7 @@ import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
+import org.eclipse.gef3d.ext.multieditor.IMultiEditor;
 import org.eclipse.gef3d.ext.multieditor.INestableEditor;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
@@ -36,6 +38,7 @@ import org.eclipse.gef3d.tools.CameraTool;
 import org.eclipse.gef3d.ui.parts.FpsStatusLineItem;
 import org.eclipse.gmf.runtime.common.core.service.IProvider;
 import org.eclipse.gmf.runtime.diagram.ui.actions.ActionIds;
+import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.IDiagramPreferenceSupport;
 import org.eclipse.gmf.runtime.diagram.ui.internal.parts.DiagramGraphicalViewerKeyHandler;
 import org.eclipse.gmf.runtime.diagram.ui.internal.parts.DirectEditKeyHandler;
@@ -82,6 +85,8 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 	 */
 	protected DiagramGraphicalViewer3D viewer3D;
 
+	private GraphicalViewer multiEditorViewer;
+
 	/**
 	 * {@inheritDoc}
 	 * <p>
@@ -113,11 +118,13 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 			final RootEditPart rootEP =
 				EditPartService.getInstance().createRootEditPart(getDiagram());
 			if (rootEP instanceof IDiagramPreferenceSupport) {
-				((IDiagramPreferenceSupport) rootEP).setPreferencesHint(getPreferencesHint());
+				((IDiagramPreferenceSupport) rootEP)
+					.setPreferencesHint(getPreferencesHint());
 			}
 
 			if (getDiagramGraphicalViewer() instanceof DiagramGraphicalViewer) {
-				((DiagramGraphicalViewer) getDiagramGraphicalViewer()).hookWorkspacePreferenceStore(getWorkspaceViewerPreferenceStore());
+				((DiagramGraphicalViewer) getDiagramGraphicalViewer())
+					.hookWorkspacePreferenceStore(getWorkspaceViewerPreferenceStore());
 			}
 
 			viewer.setRootEditPart(rootEP);
@@ -129,8 +136,10 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 			getSite().registerContextMenu(
 				ActionIds.DIAGRAM_EDITOR_CONTEXT_MENU, provider, viewer);
 			final KeyHandler viewerKeyHandler =
-				new DiagramGraphicalViewerKeyHandler(viewer).setParent(getKeyHandler());
-			viewer.setKeyHandler(new DirectEditKeyHandler(viewer).setParent(viewerKeyHandler));
+				new DiagramGraphicalViewerKeyHandler(viewer)
+					.setParent(getKeyHandler());
+			viewer.setKeyHandler(new DirectEditKeyHandler(viewer)
+				.setParent(viewerKeyHandler));
 		}
 	}
 
@@ -260,6 +269,8 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 		MultiEditorPartFactory i_multiEditorPartFactory,
 		MultiEditorModelContainer i_multiEditorModelContainer) {
 
+		multiEditorViewer = viewer;
+		
 		fNested = true;
 		try {
 			// initializeGraphicalViewerContents():
@@ -273,13 +284,13 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 
 			i_multiEditorPartFactory.prepare(diagram, factory);
 			i_multiEditorModelContainer.add(diagram);
-
+			
 			// we need this only during initialization, views
 			// are shared between multiple editor instances, even
 			// between 3D and 2D instances!
 			diagram.eAdapters().remove(
 				ProviderAcceptor.retrieveProviderSelector(viewer));
-			
+
 			return diagram;
 
 		} catch (Exception ex) {
@@ -299,5 +310,25 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 		// zoom needs to be 1
 		super.initializeGraphicalViewerContents();
 		getZoomManager().setZoom(1.0);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor#getDiagramEditPart()
+	 */
+	@Override
+	public DiagramEditPart getDiagramEditPart() {
+		if (getDiagramGraphicalViewer() != null) {
+			return (DiagramEditPart) getDiagramGraphicalViewer().getContents();
+		}
+		if (fNested) {
+			IMultiEditor multiEditor = (IMultiEditor) multiEditorViewer.getProperty(IMultiEditor.class.getName());
+			if (multiEditor!=null) {
+				EditPart part = multiEditor.findNestedEditorContent(this);
+				return (DiagramEditPart) part;
+			}
+		}
+		return null;
 	}
 }
