@@ -37,8 +37,9 @@ public interface IMultiEditor {
 	 * Adds the given editor input to this multi editor.
 	 * 
 	 * @param i_editorInput the input to add
+	 * @param true if the editor was actually added
 	 */
-	public void addEditor(IEditorInput i_editorInput);
+	public boolean addEditor(IEditorInput i_editorInput);
 
 	/**
 	 * Retrieves an {@link INestableEditor} by an edit part. This method is used

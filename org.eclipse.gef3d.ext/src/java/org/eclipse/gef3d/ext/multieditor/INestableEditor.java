@@ -32,9 +32,18 @@ import org.eclipse.ui.part.EditorPart;
  * org.eclipse.gef3d.examples.uml2.
  * </p>
  * 
+ * <p>This is the sequence of method calls:
+ * <ol>
+ * <li>{@link #init(IEditorSite, IEditorInput)}</li>
+ * <li>{@link #initializeAsNested(GraphicalViewer, MultiEditorPartFactory, MultiEditorModelContainer)}</li>
+ * <li>{@link #createPaletteDrawer()}</li>
+ * </ol>
+ * </p>
+ * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Apr 15, 2009
+ * @see INestableEMFEditor
  */
 public interface INestableEditor {
 
@@ -57,12 +66,17 @@ public interface INestableEditor {
 	 * The returned root content element, usually the same as used in the multi
 	 * factory, is used by the multi editor to distinguish between different
 	 * editors, e.g., for switching the properties sheet page.
+	 * <p>
+	 * This method is called <em>after</em>
+	 * {@link #init(IEditorSite, IEditorInput)} has been called, so editor input
+	 * is already set.
+	 * </p>
 	 * 
 	 * @param i_graphicalViewer
 	 * @param i_multiFactory
 	 * @param i_container
 	 * @return the root content element of the nested editor
-	 * @todo maybe rename this? It is confusing to have to init methods.
+	 * @todo maybe rename this? It is confusing to have two init methods.
 	 */
 	Object initializeAsNested(GraphicalViewer i_graphicalViewer,
 		MultiEditorPartFactory i_multiFactory,
@@ -75,6 +89,7 @@ public interface INestableEditor {
 	 * 
 	 * @param i_editorSite -- this is actuallyte site of the nesting editor
 	 * @param i_editorInput -- new input to be presented with the nested editor
+	 * @see #initializeAsNested(GraphicalViewer, MultiEditorPartFactory, MultiEditorModelContainer)
 	 */
 	void init(IEditorSite i_editorSite, IEditorInput i_editorInput)
 		throws PartInitException;

@@ -111,14 +111,16 @@ public abstract class AbstractMultiEditor3D extends
 	 * 
 	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditor#addEditor(org.eclipse.ui.IEditorInput)
 	 */
-	public void addEditor(IEditorInput i_editorInput) {
+	public boolean addEditor(IEditorInput i_editorInput) {
+		if (i_editorInput==null)
+			return false;
 
 		// do not add content twice
 		for (INestableEditor nestedEditor : nestedEditors.values()) {
 			if (nestedEditor.getEditorInput().equals(i_editorInput)
 				|| i_editorInput.getName().equals(
 					nestedEditor.getEditorInput().getName()))
-				return;
+				return false;
 		}
 
 		// find appropriate editor
@@ -129,7 +131,7 @@ public abstract class AbstractMultiEditor3D extends
 				log.info("No nestable editor found for input " //$NON-NLS-1$
 					+ i_editorInput);
 			}
-			return;
+			return false;
 		}
 
 		if (nestedEditor instanceof INestableEMFEditor) {
@@ -151,8 +153,10 @@ public abstract class AbstractMultiEditor3D extends
 
 		} catch (PartInitException ex) {
 			log.warning("IEditorInput - exception: " + ex); //$NON-NLS-1$
+			return false;
 		}
 		// getGraphicalViewer().getRootEditPart().refresh();
+		return true;
 	}
 
 	/**
@@ -266,6 +270,8 @@ public abstract class AbstractMultiEditor3D extends
 			editor.doSave(monitor);
 		}
 	}
+	
+	
 
 	/**
 	 * Returns a list of classes implementing {@link INestableEditor} which are

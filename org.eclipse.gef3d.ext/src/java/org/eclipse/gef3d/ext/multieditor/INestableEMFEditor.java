@@ -11,10 +11,21 @@
 package org.eclipse.gef3d.ext.multieditor;
 
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.gef.GraphicalViewer;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
 
 /**
- * INestableEMFEditor
- * There should really be more documentation here.
+ * {@link INestableEditor} using the same {@link ResourceSet} as its
+ * nesting multi editor.
+<p>This is the sequence of method calls:
+ * <ol>
+ * <li>{@link INestableEMFEditor#setResourceSet(resourceSet)}</li>
+ * <li>{@link #init(IEditorSite, IEditorInput)}</li>
+ * <li>{@link #initializeAsNested(GraphicalViewer, MultiEditorPartFactory, MultiEditorModelContainer)}</li>
+ * <li>{@link #createPaletteDrawer()}</li>
+ * </ol>
+ * </p>
  *
  * @author 	Jens von Pilgrim
  * @version	$Revision$
