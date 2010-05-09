@@ -27,7 +27,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.EditPart;
@@ -52,7 +52,7 @@ import org.osgi.framework.Bundle;
 /**
  * This is an abstract base class for multi editors with GEF3D. All nested
  * editors are to be instances of {@link INestableEditor}, in case of
- * {@link INestableEMFEditor} a {@link ResourceSet} is used for all nested
+ * {@link INestableEditorWithResourceSet} a {@link ResourceSet} is used for all nested
  * editors. A {@link MultiEditorPartFactory} is used to combine all nested
  * factories, subclasses can combine this factory with other patterns, such as
  * the {@link BorgEditPartFactory}. Subclasses have to implement
@@ -87,8 +87,6 @@ public abstract class AbstractMultiEditor3D extends
 
 	protected MultiEditorPartFactory m_multiFactory;
 
-	protected ResourceSet resourceSet;
-
 	protected Map<Object, INestableEditor> nestedEditors;
 
 	protected Set<IMultiEditorListener> multiEditorListeners;
@@ -101,18 +99,25 @@ public abstract class AbstractMultiEditor3D extends
 	public AbstractMultiEditor3D() {
 
 		setEditDomain(new DefaultEditDomain(this));
-		resourceSet = createResourceSet();
 		nestedEditors = new HashMap<Object, INestableEditor>();
 		multiEditorListeners = new HashSet<IMultiEditorListener>();
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * <p>
+	 * This method is not intended to be overridden. If you need to adjust the
+	 * creation of nested editors, you may want to override
+	 * {@link #createNestedEditor(IEditorInput)} or
+	 * {@link #configureNestableEditor(INestableEditor)}. If you really need to
+	 * override, think about calling this method before or after your specific
+	 * code (via <code>super.addEditor(i_editorInput)</code>).
+	 * </p>
 	 * 
 	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditor#addEditor(org.eclipse.ui.IEditorInput)
 	 */
 	public boolean addEditor(IEditorInput i_editorInput) {
-		if (i_editorInput==null)
+		if (i_editorInput == null)
 			return false;
 
 		// do not add content twice
@@ -134,9 +139,8 @@ public abstract class AbstractMultiEditor3D extends
 			return false;
 		}
 
-		if (nestedEditor instanceof INestableEMFEditor) {
-			((INestableEMFEditor) nestedEditor).setResourceSet(resourceSet);
-		}
+		nestedEditor.setMultiEditor(this);
+		configureNestableEditor(nestedEditor);
 
 		try {
 			nestedEditor.init(getEditorSite(), i_editorInput);
@@ -160,6 +164,15 @@ public abstract class AbstractMultiEditor3D extends
 	}
 
 	/**
+	 * Configures nested editor right after it has been created and right before
+	 * it is initialized. This method is intended to be overridden by subclasses
+	 * in order set additional attributes, such as a shared {@link ResourceSet},
+	 * an editing domain id or an {@link EditingDomain}.
+	 */
+	protected void configureNestableEditor(INestableEditor nestedEditor) {
+	}
+
+	/**
 	 * @param i_createPaletteDrawer
 	 */
 	protected void addNestedPalette(PaletteDrawer drawer) {
@@ -178,7 +191,7 @@ public abstract class AbstractMultiEditor3D extends
 		super.configureGraphicalViewer();
 
 		getGraphicalViewer().setProperty(IMultiEditor.class.getName(), this);
-		
+
 		RootEditPart root = createRootEditPart();
 		getGraphicalViewer().setRootEditPart(root);
 
@@ -238,17 +251,6 @@ public abstract class AbstractMultiEditor3D extends
 	}
 
 	/**
-	 * Returns the resource set to be used in the editor. Returns a new resource
-	 * set by default.
-	 * 
-	 * @return the resource set
-	 */
-	protected ResourceSet createResourceSet() {
-
-		return new ResourceSetImpl();
-	}
-
-	/**
 	 * Default implementation returns a {@link ScalableFreeformRootEditPart3D},
 	 * called from {@link #configureGraphicalViewer()}.
 	 * 
@@ -270,8 +272,6 @@ public abstract class AbstractMultiEditor3D extends
 			editor.doSave(monitor);
 		}
 	}
-	
-	
 
 	/**
 	 * Returns a list of classes implementing {@link INestableEditor} which are
@@ -466,7 +466,7 @@ public abstract class AbstractMultiEditor3D extends
 		int count = parts.size();
 		for (int i = 0; i < count; i++) {
 			EditPart part = (EditPart) parts.get(i);
-			if (findEditorByEditPart(part)==nestableEditor) {
+			if (findEditorByEditPart(part) == nestableEditor) {
 				return part;
 			}
 		}
@@ -505,7 +505,7 @@ public abstract class AbstractMultiEditor3D extends
 	 * <p>
 	 * {@link AbstractMultiEditor} supports the following types:
 	 * <ul>
-	 * <li>{@link IPropertySheetPage}</li> editor</li>
+	 * <li>{@link IPropertySheetPage} -- see {@link #createPropertySheetPage()}</li>
 	 * </ul>
 	 * </p>
 	 * 
@@ -513,8 +513,6 @@ public abstract class AbstractMultiEditor3D extends
 	 */
 	@Override
 	public Object getAdapter(Class type) {
-		// TODO this is a hack, in the long run we need a properties page
-		// for the multi editor which is aware of the nested editors
 		if (type == IPropertySheetPage.class) {
 			if (m_multiEditorSheetPage == null) {
 				m_multiEditorSheetPage = createPropertySheetPage();
@@ -526,8 +524,9 @@ public abstract class AbstractMultiEditor3D extends
 	}
 
 	/**
-	 * Creates a {@link MultiEditorPropertySheetPage}, maybe overriden by
-	 * subclasses.
+	 * Creates a {@link MultiEditorPropertySheetPage}, maybe overridden by
+	 * subclasses. This method is called by {@link #getAdapter(Class)} if
+	 * class is {@link IPropertySheetPage}.
 	 * 
 	 * @return
 	 */

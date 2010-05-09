@@ -11,6 +11,7 @@
 package org.eclipse.gef3d.examples.uml2.clazz.edit.parts;
 
 import org.eclipse.gef.EditPart;
+import org.eclipse.gmf.runtime.common.core.util.Log;
 import org.eclipse.gmf.runtime.notation.View;
 import org.eclipse.uml2.diagram.clazz.edit.parts.PackageEditPart;
 import org.eclipse.uml2.diagram.clazz.edit.parts.UMLEditPartFactory;
@@ -26,6 +27,9 @@ import org.eclipse.uml2.diagram.clazz.part.UMLVisualIDRegistry;
 public class UMLEditPartFactory3D extends UMLEditPartFactory {
 
 	public EditPart createEditPart(EditPart context, Object model) {
+		
+		
+		
 		if (model instanceof View) {
 			View view = (View) model;
 			switch (UMLVisualIDRegistry.getVisualID(view)) {

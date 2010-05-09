@@ -17,7 +17,10 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
+import org.eclipse.emf.edit.domain.EditingDomain;
+import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.gef.ContextMenuProvider;
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.KeyHandler;
@@ -25,7 +28,9 @@ import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
-import org.eclipse.gef3d.ext.multieditor.INestableEditor;
+import org.eclipse.gef3d.ext.multieditor.IMultiEditor;
+import org.eclipse.gef3d.ext.multieditor.INestableEditorWithEditingDomain;
+import org.eclipse.gef3d.ext.multieditor.INestableEditorWithResourceSet;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
 import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
@@ -33,12 +38,15 @@ import org.eclipse.gef3d.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer3D;
 import org.eclipse.gef3d.tools.CameraTool;
 import org.eclipse.gef3d.ui.parts.FpsStatusLineItem;
 import org.eclipse.gmf.runtime.diagram.ui.actions.ActionIds;
+import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.IDiagramPreferenceSupport;
 import org.eclipse.gmf.runtime.diagram.ui.internal.parts.DiagramGraphicalViewerKeyHandler;
 import org.eclipse.gmf.runtime.diagram.ui.internal.parts.DirectEditKeyHandler;
 import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.parts.IDiagramGraphicalViewer;
 import org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider;
+import org.eclipse.gmf.runtime.diagram.ui.resources.editor.document.DiagramDocument;
+import org.eclipse.gmf.runtime.diagram.ui.resources.editor.document.IDocument;
 import org.eclipse.gmf.runtime.diagram.ui.resources.editor.parts.DiagramDocumentEditor;
 import org.eclipse.gmf.runtime.diagram.ui.services.editpart.EditPartService;
 import org.eclipse.gmf.runtime.draw2d.ui.mapmode.MapModeTypes;
@@ -47,9 +55,12 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.uml2.diagram.common.pathmap.XMI2UMLSupport;
 import org.eclipse.uml2.diagram.usecase.part.DiagramEditorContextMenuProvider;
 import org.eclipse.uml2.diagram.usecase.part.UMLDiagramEditor;
+import org.eclipse.uml2.diagram.usecase.part.UMLDocumentProvider;
 
 /**
  * UMLDiagramEditor3D There should really be more documentation here.
@@ -60,13 +71,20 @@ import org.eclipse.uml2.diagram.usecase.part.UMLDiagramEditor;
  * @since Apr 7, 2009
  */
 public class UMLUseCaseDiagramEditor3D extends UMLDiagramEditor implements
-		INestableEditor {
+		INestableEditorWithEditingDomain {
 
 	/**
 	 * Logger for this class
 	 */
 	private static final Logger log =
 		Logger.getLogger(UMLUseCaseDiagramEditor3D.class.getName());
+
+	/**
+	 * Reference to viewer of nesting multi editor, set in
+	 * {@link #initializeAsNested(GraphicalViewer, MultiEditorPartFactory, MultiEditorModelContainer)}
+	 * . This reference is used in {@link #getDiagramEditPart()}.
+	 */
+	protected GraphicalViewer multiEditorViewer;
 
 	private ScenePreferenceDistributor scenePreferenceDistributor;
 
@@ -244,6 +262,25 @@ public class UMLUseCaseDiagramEditor3D extends UMLDiagramEditor implements
 	}
 
 	/**
+	 * Overridden in order to retrieve {@link DiagramEditPart} if this editor is
+	 * nested. In that case, the owned viewer is null, as the viewer of the
+	 * nesting multi editor is used. {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor#getDiagramEditPart()
+	 */
+	@Override
+	public DiagramEditPart getDiagramEditPart() {
+		if (getDiagramGraphicalViewer() != null) {
+			return (DiagramEditPart) getDiagramGraphicalViewer().getContents();
+		}
+		if (isNested()) {
+			EditPart part = multiEditor.findNestedEditorContent(this);
+			return (DiagramEditPart) part;
+		}
+		return null;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor#getGraphicalControl()
@@ -271,6 +308,7 @@ public class UMLUseCaseDiagramEditor3D extends UMLDiagramEditor implements
 		MultiEditorPartFactory i_multiEditorPartFactory,
 		MultiEditorModelContainer i_multiEditorModelContainer) {
 
+		multiEditorViewer = viewer;
 		try {
 			// setGraphicalViewer(viewer);
 
@@ -309,10 +347,106 @@ public class UMLUseCaseDiagramEditor3D extends UMLDiagramEditor implements
 	 */
 	@Override
 	protected void initializeGraphicalViewerContents() {
-
-		// zoom needs to be 1
-		super.initializeGraphicalViewerContents();
-		getZoomManager().setZoom(1.0);
+		if (!isNested()) {
+			// zoom needs to be 1
+			super.initializeGraphicalViewerContents();
+			getZoomManager().setZoom(1.0);
+		}
 	}
 
+	/**
+	 * The editing domain id, used in {@link #createEditingDomain()} to retrieve
+	 * shared {@link EditingDomain}. The default value is null, if this editor
+	 * is nested, the multi editor set this id via
+	 * {@link #setEditingDomainID(String)} defined in
+	 * {@link INestableEditorWithResourceSet} .
+	 */
+	protected String editingDomainID = null;
+
+	/**
+	 * The multi editor into which this editor is nested, set in
+	 * {@link #setMultiEditor(IMultiEditor)}.
+	 */
+	protected IMultiEditor multiEditor;
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditorWithEditingDomain#setEditingDomainID(java.lang.String)
+	 */
+	public void setEditingDomainID(String i_editingDomainID) {
+		editingDomainID = i_editingDomainID;
+	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.gmf.runtime.diagram.ui.resources.editor.parts.DiagramDocumentEditor#getEditingDomainID()
+	 */
+	@Override
+	protected String getEditingDomainID() {
+		return editingDomainID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditor#setMultiEditor(org.eclipse.gef3d.ext.multieditor.IMultiEditor)
+	 */
+	public void setMultiEditor(IMultiEditor i_multiEditor) {
+		multiEditor = i_multiEditor;
+	}
+
+	/**
+	 * Returns true, if multi editor is set.
+	 * 
+	 * @return
+	 */
+	public boolean isNested() {
+		return multiEditor != null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor#clearGraphicalViewerContents()
+	 */
+	@Override
+	protected void clearGraphicalViewerContents() {
+		if (getGraphicalViewer() != null
+			&& getGraphicalViewer() instanceof IDiagramGraphicalViewer) {
+			super.clearGraphicalViewerContents();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramEditor#setDocumentProvider(org.eclipse.ui.IEditorInput)
+	 * @see http://bugs.eclipse.org/189974
+	 */
+	@Override
+	protected void setDocumentProvider(IEditorInput i_input) {
+		if (!isNested()) {
+			super.setDocumentProvider(i_input);
+		} else {
+			setDocumentProvider(new UMLDocumentProvider() {
+				/**
+				 * @generated
+				 */
+				@Override
+				protected IDocument createEmptyDocument() {
+					DiagramDocument document = new DiagramDocument();
+					TransactionalEditingDomain domain =
+						TransactionalEditingDomain.Registry.INSTANCE
+							.getEditingDomain(getEditingDomainID());
+					;
+					XMI2UMLSupport
+						.enableXMI2UMLSupport(domain.getResourceSet());
+					document.setEditingDomain(domain);
+					return document;
+				}
+
+			});
+		}
+	}
 }

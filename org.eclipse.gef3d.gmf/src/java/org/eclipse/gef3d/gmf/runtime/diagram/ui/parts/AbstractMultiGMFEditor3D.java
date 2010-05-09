@@ -13,15 +13,13 @@ package org.eclipse.gef3d.gmf.runtime.diagram.ui.parts;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.emf.edit.domain.IEditingDomainProvider;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
-import org.eclipse.emf.transaction.util.TransactionUtil;
 import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef3d.ext.multieditor.AbstractMultiEditor3D;
 import org.eclipse.gef3d.ext.multieditor.INestableEditor;
+import org.eclipse.gef3d.ext.multieditor.INestableEditorWithEditingDomain;
 import org.eclipse.gef3d.gmf.runtime.diagram.ui.editparts.DiagramRootEditPart3D;
 import org.eclipse.gef3d.ui.parts.GraphicalViewer3D;
-import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor;
 import org.eclipse.gmf.runtime.draw2d.ui.mapmode.MapModeTypes;
-import org.eclipse.gmf.runtime.notation.Diagram;
 
 /**
  * Abstract multi editor for EMF/GMF based diagrams (i.e., nested GMF editors),
@@ -42,8 +40,9 @@ import org.eclipse.gmf.runtime.notation.Diagram;
  * </pre></code> This snippet is taken from the UML3D example, the class defined
  * there simply extends this class and is empty.
  * <p>
- * You may override the {@link #acceptsInput(org.eclipse.ui.IEditorInput)} method, which
- * by default accepts all input for which a nestable editor can be retrieved, see
+ * You may override the {@link #acceptsInput(org.eclipse.ui.IEditorInput)}
+ * method, which by default accepts all input for which a nestable editor can be
+ * retrieved, see
  * {@link AbstractMultiEditor3D#acceptsInput(org.eclipse.ui.IEditorInput)}.
  * </p>
  * 
@@ -52,6 +51,13 @@ import org.eclipse.gmf.runtime.notation.Diagram;
  * @since May 5, 2010
  */
 public abstract class AbstractMultiGMFEditor3D extends AbstractMultiEditor3D {
+
+	/**
+	 * Lazily created in {@link #createEditingDomainProvider()}, passed to
+	 * clients via {@link #getAdapter(Class)}, class is
+	 * {@link IEditingDomainProvider}.
+	 */
+	protected IEditingDomainProvider domainProvider;
 
 	/**
 	 * 
@@ -88,39 +94,69 @@ public abstract class AbstractMultiGMFEditor3D extends AbstractMultiEditor3D {
 	 * editor</li>
 	 * </ul>
 	 * 
-	 * @todo return MultiPropertySheetPage, which nests the property sheet pages
-	 *       of nested editor
 	 * @see org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette#getAdapter(java.lang.Class)
 	 */
 	@Override
 	public Object getAdapter(Class type) {
 
 		if (type == IEditingDomainProvider.class) {
+			if (domainProvider == null)
+				domainProvider = createEditingDomainProvider();
 			return domainProvider;
 		}
 
 		return super.getAdapter(type);
 	}
 
-	private IEditingDomainProvider domainProvider =
-		new IEditingDomainProvider() {
+	/**
+	 * Subclassses may override.
+	 * 
+	 * @return
+	 * @see #getAdapter(Class)
+	 */
+	protected IEditingDomainProvider createEditingDomainProvider() {
+		return new IEditingDomainProvider() {
 			public EditingDomain getEditingDomain() {
 				return AbstractMultiGMFEditor3D.this.getEditingDomain();
 			}
 		};
-
-	public TransactionalEditingDomain getEditingDomain() {
-		for (INestableEditor nestedEditor : nestedEditors.values()) {
-			if (nestedEditor instanceof DiagramEditor) {
-				Diagram diagram = ((DiagramEditor) nestedEditor).getDiagram();
-				if (diagram != null) {
-					TransactionalEditingDomain domain =
-						TransactionUtil.getEditingDomain(diagram);
-					if (domain != null)
-						return domain;
-				}
-			}
-		}
-		return null;
 	}
+
+	/**
+	 * Returns the {@link TransactionalEditingDomain} previously created in
+	 * {@link #createResourceSet()} and registered at
+	 * {@link TransactionalEditingDomain.Registry} using id
+	 * {@link #getEditingDomainID()}.
+	 * 
+	 * @return
+	 */
+	public TransactionalEditingDomain getEditingDomain() {
+		return TransactionalEditingDomain.Registry.INSTANCE
+			.getEditingDomain(getEditingDomainID());
+	}
+
+	/**
+	 * Returns default editing domain ID passed to nested editors in
+	 * {@link #configureNestableEditor(INestableEditor)}.
+	 * 
+	 * @return
+	 */
+	public String getEditingDomainID() {
+		return "org.eclipse.gef3d.ext.multieditor";
+	}
+
+	/**
+	 * Configures nested editor right after it has been created and right before
+	 * it is initialized. If nested editor is of type
+	 * {@link INestableEditorWithEditingDomain} , the editing domain id (
+	 * {@link #getEditingDomainID()}) is passed to the nested editor.
+	 */
+	@Override
+	protected void configureNestableEditor(INestableEditor nestedEditor) {
+		if (nestedEditor instanceof INestableEditorWithEditingDomain) {
+			((INestableEditorWithEditingDomain) nestedEditor)
+				.setEditingDomainID(getEditingDomainID());
+		}
+	}
+
 }

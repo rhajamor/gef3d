@@ -18,6 +18,8 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
 import org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramEditor;
+import org.eclipse.emf.ecoretools.diagram.part.EcoreDocumentProvider;
+import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
@@ -29,7 +31,8 @@ import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
 import org.eclipse.gef3d.ext.multieditor.IMultiEditor;
-import org.eclipse.gef3d.ext.multieditor.INestableEditor;
+import org.eclipse.gef3d.ext.multieditor.INestableEditorWithEditingDomain;
+import org.eclipse.gef3d.ext.multieditor.INestableEditorWithResourceSet;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory;
 import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
@@ -52,6 +55,7 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 
 /**
@@ -64,7 +68,7 @@ import org.eclipse.ui.IEditorSite;
  * @since 01.12.2008
  */
 public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
-		INestableEditor {
+		INestableEditorWithEditingDomain {
 
 	/**
 	 * Logger for this class
@@ -73,10 +77,11 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 		Logger.getLogger(EcoreDiagramEditor3D.class.getName());
 
 	/**
-	 * Flag indicating whether this editor is nested inside a multi-editor or is
-	 * used stand-alone.
+	 * Reference to viewer of nesting multi editor, set in
+	 * {@link #initializeAsNested(GraphicalViewer, MultiEditorPartFactory, MultiEditorModelContainer)}
+	 * . This reference is used in {@link #getDiagramEditPart()}.
 	 */
-	boolean fNested;
+	protected GraphicalViewer multiEditorViewer;
 
 	private ScenePreferenceDistributor scenePreferenceDistributor;
 
@@ -84,8 +89,6 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 	 * A reference to the 3D diagram graphical viewer.
 	 */
 	protected DiagramGraphicalViewer3D viewer3D;
-
-	private GraphicalViewer multiEditorViewer;
 
 	/**
 	 * {@inheritDoc}
@@ -155,6 +158,79 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 		getGraphicalViewer().setProperty(
 			ProviderAcceptor.PROVIDER_ACCEPTOR_PROPERTY_KEY, providerAcceptor);
 		getDiagram().eAdapters().add(providerAcceptor);
+	}
+
+	/**
+	 * The editing domain id, used in {@link #createEditingDomain()} to retrieve
+	 * shared {@link EditingDomain}. The default value is null, if this editor
+	 * is nested, the multi editor set this id via
+	 * {@link #setEditingDomainID(String)} defined in
+	 * {@link INestableEditorWithResourceSet} .
+	 */
+	protected String editingDomainID = null;
+
+	/**
+	 * The multi editor nesting this editr (if editor is nested).
+	 */
+	protected IMultiEditor multiEditor;
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The editing domain ID is set via setEditingDomainID(), defined in
+	 * {@link INestableEditorWithResourceSet} as well.
+	 * 
+	 * @see org.eclipse.gmf.runtime.diagram.ui.resources.editor.parts.DiagramDocumentEditor#getEditingDomainID()
+	 * @see INestableEditorWithResourceSet#setEditingDomainID(String)
+	 */
+	@Override
+	protected String getEditingDomainID() {
+		return editingDomainID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditorWithEditingDomain#setEditingDomainID(java.lang.String)
+	 */
+	public void setEditingDomainID(String i_editingDomainID) {
+		editingDomainID = i_editingDomainID;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditor#setMultiEditor(org.eclipse.gef3d.ext.multieditor.IMultiEditor)
+	 */
+	public void setMultiEditor(IMultiEditor i_multiEditor) {
+		multiEditor = i_multiEditor;
+	}
+
+	/**
+	 * Returns true, if multi editor is set.
+	 * @return
+	 */
+	public boolean isNested() {
+		return multiEditor != null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramEditor#setDocumentProvider(org.eclipse.ui.IEditorInput)
+	 */
+	@Override
+	protected void setDocumentProvider(IEditorInput i_input) {
+		if (editingDomainID != null) {
+			setDocumentProvider(new EcoreDocumentProvider() {
+				@Override
+				public String getEditingDomainID() {
+					return editingDomainID;
+				}
+			});
+		} else {
+			super.setDocumentProvider(i_input);
+		}
 	}
 
 	/**
@@ -249,6 +325,30 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 	}
 
 	/**
+	 * Overridden in order to retrieve {@link DiagramEditPart} if this editor is
+	 * nested. In that case, the owned viewer is null, as the viewer of the
+	 * nesting multi editor is used. {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor#getDiagramEditPart()
+	 */
+	@Override
+	public DiagramEditPart getDiagramEditPart() {
+		if (getDiagramGraphicalViewer() != null) {
+			return (DiagramEditPart) getDiagramGraphicalViewer().getContents();
+		}
+		if (isNested()) {
+			IMultiEditor multiEditor =
+				(IMultiEditor) multiEditorViewer.getProperty(IMultiEditor.class
+					.getName());
+			if (multiEditor != null) {
+				EditPart part = multiEditor.findNestedEditorContent(this);
+				return (DiagramEditPart) part;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor#getGraphicalControl()
@@ -264,14 +364,24 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 	 * Nested
 	 * **********************************************************************
 	 */
-
+	
+	/**
+	 * 
+	 * {@inheritDoc}
+	 * Precondition: {@link #setMultiEditor(IMultiEditor)} has been set.
+	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditor#initializeAsNested(org.eclipse.gef.GraphicalViewer, org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory, org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer)
+	 */
 	public Object initializeAsNested(GraphicalViewer viewer,
 		MultiEditorPartFactory i_multiEditorPartFactory,
 		MultiEditorModelContainer i_multiEditorModelContainer) {
 
 		multiEditorViewer = viewer;
-		
-		fNested = true;
+
+		if (!isNested()) {
+			throw new IllegalStateException(
+				"Multi editor not set, call setMultiEditor(..) before initializing this editor");
+		}
+
 		try {
 			// initializeGraphicalViewerContents():
 			Diagram diagram = getDiagram();
@@ -284,7 +394,7 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 
 			i_multiEditorPartFactory.prepare(diagram, factory);
 			i_multiEditorModelContainer.add(diagram);
-			
+
 			// we need this only during initialization, views
 			// are shared between multiple editor instances, even
 			// between 3D and 2D instances!
@@ -315,20 +425,16 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor#getDiagramEditPart()
+	 * @see org.eclipse.gmf.runtime.diagram.ui.parts.DiagramEditor#clearGraphicalViewerContents()
 	 */
 	@Override
-	public DiagramEditPart getDiagramEditPart() {
-		if (getDiagramGraphicalViewer() != null) {
-			return (DiagramEditPart) getDiagramGraphicalViewer().getContents();
+	protected void clearGraphicalViewerContents() {
+		if (getGraphicalViewer() != null
+			&& getGraphicalViewer() instanceof IDiagramGraphicalViewer) {
+			super.clearGraphicalViewerContents();
 		}
-		if (fNested) {
-			IMultiEditor multiEditor = (IMultiEditor) multiEditorViewer.getProperty(IMultiEditor.class.getName());
-			if (multiEditor!=null) {
-				EditPart part = multiEditor.findNestedEditorContent(this);
-				return (DiagramEditPart) part;
-			}
-		}
-		return null;
 	}
+
+	
+
 }

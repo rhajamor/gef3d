@@ -34,7 +34,21 @@ public interface IMultiEditor {
 	public boolean acceptsInput(IEditorInput i_editorInput);
 
 	/**
-	 * Adds the given editor input to this multi editor.
+	 * Adds the given editor input to this multi editor. If a new nestable
+	 * editor is actually created, this method should call the following methods
+	 * in that order:
+	 * <ol>
+	 * <li>{@link INestableEditor#setMultiEditor(IMultiEditor)}</li>
+	 * <li>
+	 * {@link INestableEditor#init(org.eclipse.ui.IEditorSite, IEditorInput)}</li>
+	 * <li>
+	 * {@link INestableEditor#initializeAsNested(org.eclipse.gef.GraphicalViewer, MultiEditorPartFactory, MultiEditorModelContainer)}
+	 * </li>
+	 * </ol>
+	 * <p>
+	 * This method is defined here in order to enable other classes to
+	 * dynamically load new models into the multi editor.
+	 * </p>
 	 * 
 	 * @param i_editorInput the input to add
 	 * @param true if the editor was actually added
@@ -50,7 +64,7 @@ public interface IMultiEditor {
 	 * @return the nested editor or null, if no nested editor is found
 	 */
 	public INestableEditor findEditorByEditPart(EditPart part);
-	
+
 	/**
 	 * Returns the content edit part of the given nested editor. This method is
 	 * rather expensive (however, usually there are not too much editors
@@ -60,7 +74,7 @@ public interface IMultiEditor {
 	 * @return
 	 */
 	public EditPart findNestedEditorContent(INestableEditor nestableEditor);
-	
+
 	/**
 	 * Adds a new {@link IMultiEditorListener} which is notified when editors
 	 * are newly nested or remove.

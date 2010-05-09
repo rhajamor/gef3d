@@ -31,11 +31,13 @@ import org.eclipse.ui.part.EditorPart;
  * An example using this interface can be found in
  * org.eclipse.gef3d.examples.uml2.
  * </p>
- * 
- * <p>This is the sequence of method calls:
+ * <p>
+ * This is the sequence of method calls:
  * <ol>
  * <li>{@link #init(IEditorSite, IEditorInput)}</li>
- * <li>{@link #initializeAsNested(GraphicalViewer, MultiEditorPartFactory, MultiEditorModelContainer)}</li>
+ * <li>
+ * {@link #initializeAsNested(GraphicalViewer, MultiEditorPartFactory, MultiEditorModelContainer)}
+ * </li>
  * <li>{@link #createPaletteDrawer()}</li>
  * </ol>
  * </p>
@@ -43,9 +45,18 @@ import org.eclipse.ui.part.EditorPart;
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Apr 15, 2009
- * @see INestableEMFEditor
+ * @see INestableEditorWithResourceSet
  */
 public interface INestableEditor {
+
+	/**
+	 * Sets the multi editor nesting this editor. This method is called after
+	 * nestable editor has been created, but before
+	 * {@link #init(IEditorSite, IEditorInput)} is called.
+	 * 
+	 * @param multiEditor
+	 */
+	void setMultiEditor(IMultiEditor multiEditor);
 
 	/**
 	 * Initializes a nested editor, it replaces the call to
@@ -69,7 +80,8 @@ public interface INestableEditor {
 	 * <p>
 	 * This method is called <em>after</em>
 	 * {@link #init(IEditorSite, IEditorInput)} has been called, so editor input
-	 * is already set.
+	 * is already set. That also means that this method is called <em>after</em>
+	 * {@link #setMultiEditor(IMultiEditor)} has been set!
 	 * </p>
 	 * 
 	 * @param i_graphicalViewer
@@ -89,7 +101,8 @@ public interface INestableEditor {
 	 * 
 	 * @param i_editorSite -- this is actuallyte site of the nesting editor
 	 * @param i_editorInput -- new input to be presented with the nested editor
-	 * @see #initializeAsNested(GraphicalViewer, MultiEditorPartFactory, MultiEditorModelContainer)
+	 * @see #initializeAsNested(GraphicalViewer, MultiEditorPartFactory,
+	 *      MultiEditorModelContainer)
 	 */
 	void init(IEditorSite i_editorSite, IEditorInput i_editorInput)
 		throws PartInitException;
