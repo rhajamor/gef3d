@@ -23,6 +23,7 @@ import org.eclipse.draw2d.FreeformListener;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.draw2dports.FreeformHelper;
+import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 /**
  * 3D version of {@link FreeformLayer}. Besides the information found in GEF's
@@ -37,6 +38,8 @@ import org.eclipse.draw3d.draw2dports.FreeformHelper;
  * <p>
  * Internal note: Why is this necessary? Still not clear.
  * </p>
+ * Initial size of {@link FreeformLayer3D} is set to maximum size, see
+ * constructor for details.
  * 
  * @author IBM Corporation (original 2D version)
  * @author Jens von Pilgrim
@@ -48,8 +51,32 @@ public class FreeformLayer3D extends Figure3D implements FreeformFigure {
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(FreeformLayer3D.class
-			.getName());
+	private static final Logger log =
+		Logger.getLogger(FreeformLayer3D.class.getName());
+
+	/**
+	 * Creates this layer 3D and sets initial size via {@link #initSize()}.
+	 */
+	public FreeformLayer3D() {
+		initSize();
+	}
+
+	/**
+	 * Sets initial size of this layer. The default implementation sets the size
+	 * to maximal values in order to let layer be painted independently from
+	 * clippings. This is required, since Figure version 20100517, as from then
+	 * on figures get only painted if their clipping (see
+	 * {@link org.eclipse.draw2d.IClippingStrategy} intersects with
+	 * {@link org.eclipse.draw2d.Graphics} clipping.
+	 */
+	protected void initSize() {
+		this.getPosition3D()
+			.setSize3D(
+				new Vector3fImpl(Float.MAX_VALUE, Float.MAX_VALUE,
+					Float.MAX_VALUE));
+		this
+			.setBounds(new Rectangle(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE));
+	}
 
 	/**
 	 * <p>
