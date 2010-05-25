@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.gef3d.ext.multieditor;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,7 +45,11 @@ import org.eclipse.gef3d.ext.multieditor.dnd.EditorInputTransferDropTargetListen
 import org.eclipse.gef3d.tools.CameraTool;
 import org.eclipse.gef3d.ui.parts.GraphicalEditor3DWithFlyoutPalette;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.internal.EditorSite;
+import org.eclipse.ui.internal.Workbench;
+import org.eclipse.ui.internal.registry.EditorDescriptor;
 import org.eclipse.ui.part.AbstractMultiEditor;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.osgi.framework.Bundle;
@@ -52,10 +57,10 @@ import org.osgi.framework.Bundle;
 /**
  * This is an abstract base class for multi editors with GEF3D. All nested
  * editors are to be instances of {@link INestableEditor}, in case of
- * {@link INestableEditorWithResourceSet} a {@link ResourceSet} is used for all nested
- * editors. A {@link MultiEditorPartFactory} is used to combine all nested
- * factories, subclasses can combine this factory with other patterns, such as
- * the {@link BorgEditPartFactory}. Subclasses have to implement
+ * {@link INestableEditorWithResourceSet} a {@link ResourceSet} is used for all
+ * nested editors. A {@link MultiEditorPartFactory} is used to combine all
+ * nested factories, subclasses can combine this factory with other patterns,
+ * such as the {@link BorgEditPartFactory}. Subclasses have to implement
  * {@link IMultiEditor#acceptsInput(IEditorInput)}, this method is called during
  * droping a file onto the 3D scene. Nested editors are retrieved by searching
  * the Eclipse extension registry, if other strategies are to be used,
@@ -89,6 +94,8 @@ public abstract class AbstractMultiEditor3D extends
 
 	protected Map<Object, INestableEditor> nestedEditors;
 
+	protected Map<INestableEditor, String> nestedEditorIDs;
+
 	protected Set<IMultiEditorListener> multiEditorListeners;
 
 	protected MultiEditorPropertySheetPage m_multiEditorSheetPage;
@@ -100,6 +107,7 @@ public abstract class AbstractMultiEditor3D extends
 
 		setEditDomain(new DefaultEditDomain(this));
 		nestedEditors = new HashMap<Object, INestableEditor>();
+		nestedEditorIDs = new HashMap<INestableEditor, String>();
 		multiEditorListeners = new HashSet<IMultiEditorListener>();
 	}
 
@@ -142,8 +150,15 @@ public abstract class AbstractMultiEditor3D extends
 		nestedEditor.setMultiEditor(this);
 		configureNestableEditor(nestedEditor);
 
+		String id = nestedEditorIDs.get(nestedEditor);
+		if (id == null)
+			id = getEditorSite().getId();
+
+		IEditorSite nestedEditorSiteProxy =
+			NestedEditorSite.createNestedEditorSite(id, getEditorSite());
+
 		try {
-			nestedEditor.init(getEditorSite(), i_editorInput);
+			nestedEditor.init(nestedEditorSiteProxy, i_editorInput);
 			Object editorContent =
 				nestedEditor.initializeAsNested(getGraphicalViewer(),
 					m_multiFactory, m_container);
@@ -208,17 +223,28 @@ public abstract class AbstractMultiEditor3D extends
 
 	/**
 	 * Searches matching editor for given input (in extension registry) and
-	 * returns an instance of that editor.
+	 * returns an instance of that editor. This method is called by
+	 * {@link #addEditor(IEditorInput)}.
+	 * <p>
+	 * If this method is overloaded, ensure to put the nested editor ID to
+	 * {@link #nestedEditorIDs}, as this is used later on (in
+	 * {@link #addEditor(IEditorInput)} to create an {@link NestedEditorSite}.
+	 * This is necessary in order to let GMF providers support the nested
+	 * editor.
 	 * 
 	 * @param i_editorInput
 	 * @return the nestable editor, or null if no matching editor was found
 	 */
 	protected INestableEditor createNestedEditor(IEditorInput i_editorInput) {
-		List<Class> editorClasses = findNestableEditorClasses(i_editorInput);
-		for (Class clazz : editorClasses) {
+		Map<String, Class> editorClasses =
+			findNestableEditorClasses(i_editorInput);
+		Class clazz = null;
+		for (String id : editorClasses.keySet()) {
 			try {
-				Object obj = clazz.newInstance();
-				return (INestableEditor) obj;
+				clazz = editorClasses.get(id);
+				INestableEditor editor = (INestableEditor) clazz.newInstance();
+				nestedEditorIDs.put(editor, id);
+				return editor;
 			} catch (InstantiationException ex) {
 				log.warning("Cannot create nested editor " //$NON-NLS-1$
 					+ clazz.toString() + ", ex=" + ex); //$NON-NLS-1$
@@ -278,9 +304,10 @@ public abstract class AbstractMultiEditor3D extends
 	 * registered for this editor input.
 	 * 
 	 * @param i_editorInput
-	 * @return
+	 * @return map, keys are the ids of the editors, values the classes.
 	 */
-	protected List<Class> findNestableEditorClasses(IEditorInput i_editorInput) {
+	protected Map<String, Class> findNestableEditorClasses(
+		IEditorInput i_editorInput) {
 		String strName = i_editorInput.getName();
 		IExtensionRegistry registry = Platform.getExtensionRegistry();
 		IExtensionPoint point =
@@ -289,7 +316,7 @@ public abstract class AbstractMultiEditor3D extends
 			return null;
 		IExtension[] extensions = point.getExtensions();
 
-		List<Class> editorClasses = new ArrayList<Class>(5);
+		Map<String, Class> editorClasses = new HashMap<String, Class>();
 
 		for (IExtension extension : extensions) {
 			String strContributorName = extension.getContributor().getName();
@@ -313,6 +340,10 @@ public abstract class AbstractMultiEditor3D extends
 									Platform.getBundle(strContributorName);
 								String strClassname =
 									element.getAttribute("class");
+								String strID = element.getAttribute("id");
+								if (strID == null || strID.isEmpty()) {
+									strID = strClassname;
+								}
 
 								Class clazz;
 								try {
@@ -321,7 +352,7 @@ public abstract class AbstractMultiEditor3D extends
 										.isAssignableFrom(clazz)) {
 										if (isCompatibleEditor(i_editorInput,
 											element, clazz))
-											editorClasses.add(clazz);
+											editorClasses.put(strID, clazz);
 									}
 								} catch (ClassNotFoundException ex) {
 									log.warning("Cannot create nested editor " //$NON-NLS-1$
@@ -525,8 +556,8 @@ public abstract class AbstractMultiEditor3D extends
 
 	/**
 	 * Creates a {@link MultiEditorPropertySheetPage}, maybe overridden by
-	 * subclasses. This method is called by {@link #getAdapter(Class)} if
-	 * class is {@link IPropertySheetPage}.
+	 * subclasses. This method is called by {@link #getAdapter(Class)} if class
+	 * is {@link IPropertySheetPage}.
 	 * 
 	 * @return
 	 */
