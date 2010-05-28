@@ -10,28 +10,58 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.ecore.diagram.parts;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.draw2d.FigureListener;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.emf.ecore.EClassifier;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecoretools.diagram.edit.parts.EClass2EditPart;
+import org.eclipse.emf.ecoretools.diagram.edit.parts.EDataType2EditPart;
+import org.eclipse.emf.ecoretools.diagram.edit.parts.EEnum2EditPart;
+import org.eclipse.emf.ecoretools.diagram.edit.policies.EPackageCanonicalEditPolicy;
+import org.eclipse.emf.ecoretools.diagram.edit.policies.EPackageContentsCanonicalEditPolicy;
+import org.eclipse.emf.ecoretools.diagram.edit.policies.EcoretoolsEditPolicyRoles;
+import org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramUpdater;
+import org.eclipse.emf.ecoretools.diagram.part.EcoreNodeDescriptor;
+import org.eclipse.emf.ecoretools.diagram.part.EcoreVisualIDRegistry;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.requests.SelectionRequest;
 import org.eclipse.gef.tools.DeselectAllTracker;
 import org.eclipse.gef3d.gmf.runtime.diagram.ui.figures.DiagramFigure3D;
+import org.eclipse.gmf.runtime.common.core.util.Log;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart;
+import org.eclipse.gmf.runtime.diagram.ui.internal.DiagramUIPlugin;
+import org.eclipse.gmf.runtime.diagram.ui.l10n.DiagramUIMessages;
 import org.eclipse.gmf.runtime.diagram.ui.tools.DragEditPartsTrackerEx;
 import org.eclipse.gmf.runtime.notation.View;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
 /**
  * 3D plane for displaying ecore diagrams in 3D, 3D version of
  * {@link DiagramEditPart}. Plane is automatically resized to fit its content.
+ * <p>
+ * This edit part keeps model and diagram partially synchronized, i.e. nodes are
+ * created if new classes, enumerations or data types are created.
+ * </p>
  * 
- * 
+ * @todo sync feature should be configurable via properties or preferences
+ *       (however, this is an Ecore Tools problem)
+ * @see http://www.eclipse.org/forums/index.php?t=msg&th=168993&start=0&
  * @author Kristian Duske
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -49,6 +79,55 @@ public class DiagramEditPart3D extends DiagramEditPart {
 	}
 
 	/**
+	 * {@inheritDoc} Replaces original {@link EPackageCanonicalEditPolicy} with
+	 * syncing policy, i.e. views are created for newly added semantic nodes.
+	 * 
+	 * @see org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart#createDefaultEditPolicies()
+	 */
+	@Override
+	protected void createDefaultEditPolicies() {
+		super.createDefaultEditPolicies();
+		installEditPolicy(EcoretoolsEditPolicyRoles.PSEUDO_CANONICAL_ROLE,
+			new EPackageCanonicalEditPolicy() {
+
+				/**
+				 * {@inheritDoc}
+				 * 
+				 * @see org.eclipse.emf.ecoretools.diagram.edit.policies.EPackageCanonicalEditPolicy#refreshSemantic()
+				 */
+				@Override
+				protected void refreshSemantic() {
+					// delete orphans and update connections
+					super.refreshSemantic();
+					// create views for newly added children
+					List<IAdaptable> createdViews = refreshSemanticChildren();
+					makeViewsImmutable(createdViews);
+				}
+
+				/**
+				 * {@inheritDoc}
+				 * 
+				 * @see <a
+				 *      href="http://www.eclipse.org/forums/index.php?t=msg&&th=162860&goto=515348#msg_515348">Sven
+				 *      Krause: Re: Synchronize semantic and notation
+				 *      information on editor start</a>
+				 * @see org.eclipse.gmf.runtime.diagram.ui.editpolicies.CanonicalEditPolicy#getFactoryHint(org.eclipse.core.runtime.IAdaptable)
+				 */
+				@Override
+				protected String getFactoryHint(IAdaptable elementAdapter) {
+					CanonicalElementAdapter element =
+						(CanonicalElementAdapter) elementAdapter;
+					int visualID =
+						EcoreVisualIDRegistry.getNodeVisualID((View) getHost()
+							.getModel(), (EObject) element.getRealObject());
+					return EcoreVisualIDRegistry.getType(visualID);
+				}
+
+			});
+
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart#createFigure()
@@ -60,10 +139,10 @@ public class DiagramEditPart3D extends DiagramEditPart {
 			public void add(IFigure i_figure, Object i_constraint, int i_index) {
 				super.add(i_figure, i_constraint, i_index);
 				i_figure.addFigureListener(new FigureListener() {
-					
+
 					public void figureMoved(IFigure i_source) {
 						autoResize();
-						
+
 					}
 				});
 			}
@@ -91,7 +170,7 @@ public class DiagramEditPart3D extends DiagramEditPart {
 			return new DeselectAllTracker(this);
 		return new DragEditPartsTrackerEx(this);
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -99,14 +178,17 @@ public class DiagramEditPart3D extends DiagramEditPart {
 		int maxX = 400;
 		int maxY = 400;
 		Rectangle rect = getChildrenBounds();
-		int border=30;
-		int depth=20;
-		
+		int border = 30;
+		int depth = 20;
+
 		rect.width += border;
 		rect.height += border;
-		
-		if (maxX<rect.width) maxX = rect.width;
-		if (maxY<rect.height) maxY = rect.height;
-		((Figure3D) getFigure()).getPosition3D().setSize3D(new Vector3fImpl(maxX+border, maxY+border, depth));
+
+		if (maxX < rect.width)
+			maxX = rect.width;
+		if (maxY < rect.height)
+			maxY = rect.height;
+		((Figure3D) getFigure()).getPosition3D().setSize3D(
+			new Vector3fImpl(maxX + border, maxY + border, depth));
 	}
 }
