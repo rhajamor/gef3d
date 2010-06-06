@@ -56,6 +56,7 @@
 			-->
 			<pathelement path="../org.eclipse.gef3d/build/classes" />
 			<pathelement path="../org.eclipse.gef3d.ext/build/classes" />
+			<pathelement path="../org.eclipse.gef3d.ext.emf/build/classes" />
 			<pathelement path="../org.eclipse.gef3d.gmf/build/classes" />
 			<pathelement path="../org.eclipse.gef3d.examples.graph/build/classes" />
 			<pathelement path="../org.eclipse.gef3d.examples.ecore/build/classes" />
@@ -78,6 +79,7 @@
 			<!-- <pathelement path="../org.eclipse.draw3d.test/src/java" /> -->
 			<pathelement path="../org.eclipse.gef3d/src/java" />
 			<pathelement path="../org.eclipse.gef3d.ext/src/java" />
+			<pathelement path="../org.eclipse.gef3d.ext.emf/src/java" />
 			<pathelement path="../org.eclipse.gef3d.gmf/src/java" />
 			<pathelement path="../org.eclipse.gef3d.examples.graph/src/java" />
 			<pathelement path="../org.eclipse.gef3d.examples.ecore/src/java" />
