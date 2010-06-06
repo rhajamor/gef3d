@@ -60,6 +60,7 @@ public class DispatchingConnectionLayerEx extends ConnectionLayerEx {
 	public DispatchingConnectionLayerEx() {
 		dclhelper = new DispatchingConnectionLayerHelper(this,
 				CONNECTIONLAYEREXFACTORY);
+		dclhelper.setPendingParent(new MapModeFigure());
 	}
 
 	/**

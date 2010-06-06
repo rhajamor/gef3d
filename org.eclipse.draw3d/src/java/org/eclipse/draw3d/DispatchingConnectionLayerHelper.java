@@ -79,12 +79,24 @@ public class DispatchingConnectionLayerHelper {
 		new HashMap<Connection, ConnectionConstraints>();
 
 	/**
+	 * While connections are pending, they are added to this parent (if not
+	 * null). The parent may be configured in order to provide settings during
+	 * set up of child, e.g. map mode information for GMF figures.
+	 */
+	private IFigure pendingParent;
+
+	/**
 	 * @param i_host
 	 */
 	public DispatchingConnectionLayerHelper(ConnectionLayer i_host,
 			ConnectionLayerFactory i_factory) {
 		host = i_host;
 		factory = i_factory;
+		pendingParent = null;
+	}
+	
+	public void setPendingParent(IFigure fig) {
+		pendingParent = fig;
 	}
 
 	/**
@@ -106,7 +118,8 @@ public class DispatchingConnectionLayerHelper {
 
 			if (distributedLayer != null) {
 				// if (distributedLayer.getConnectionRouter()==null) {
-				distributedLayer.setConnectionRouter(host.getConnectionRouter());
+				distributedLayer
+					.setConnectionRouter(host.getConnectionRouter());
 				// }
 				distributedLayer.add(i_figure, i_constraint, i_index);
 				// if it was added before:
@@ -115,6 +128,9 @@ public class DispatchingConnectionLayerHelper {
 			} else {
 				pendingConnections.put((Connection) i_figure,
 					new ConnectionConstraints(i_constraint, i_index));
+				if (pendingParent!=null) {
+					pendingParent.add(i_figure);
+				}
 
 			}
 			return true;
@@ -134,7 +150,8 @@ public class DispatchingConnectionLayerHelper {
 			IFigure3D fig3DHost;
 			ConnectionLayer distributedLayer;
 
-			for (Entry<Connection, ConnectionConstraints> entry : pendingConnections.entrySet()) {
+			for (Entry<Connection, ConnectionConstraints> entry : pendingConnections
+				.entrySet()) {
 				Connection connection = entry.getKey();
 				ConnectionConstraints cc = entry.getValue();
 
@@ -142,7 +159,8 @@ public class DispatchingConnectionLayerHelper {
 				distributedLayer = getConnectionLayerOf3DHost(fig3DHost);
 
 				if (distributedLayer != null) {
-					distributedLayer.setConnectionRouter(host.getConnectionRouter());
+					distributedLayer.setConnectionRouter(host
+						.getConnectionRouter());
 					dispatchedConnections.add(connection);
 					distributedLayer.add(connection, cc.constaint, cc.index);
 					rewire(connection);
