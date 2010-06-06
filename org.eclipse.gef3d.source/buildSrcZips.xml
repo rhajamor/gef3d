@@ -12,6 +12,7 @@
 	<property name="draw3d.test" value="org.eclipse.draw3d.test" />
 	<property name="gef3d" value="org.eclipse.gef3d" />
 	<property name="gef3d.ext" value="org.eclipse.gef3d.ext" />
+	<property name="gef3d.ext.emf" value="org.eclipse.gef3d.ext.emf" />
 	<property name="gef3d.gmf" value="org.eclipse.gef3d.gmf" />
 	<property name="gef3d.examples.graph" value="org.eclipse.gef3d.examples.graph" />
 	<property name="gef3d.examples.ecore" value="org.eclipse.gef3d.examples.ecore" />
@@ -46,6 +47,9 @@
 
 		<mkdir dir="src/${gef3d.ext}_${version}" />
 		<zip destfile="src/${gef3d.ext}_${version}/src.zip" basedir="../${gef3d.ext}/src/java" />
+		
+		<mkdir dir="src/${gef3d.ext.emf}_${version}" />
+				<zip destfile="src/${gef3d.ext.emf}_${version}/src.zip" basedir="../${gef3d.ext.emf}/src/java" />
 
 		<mkdir dir="src/${gef3d.gmf}_${version}" />
 		<zip destfile="src/${gef3d.gmf}_${version}/src.zip" basedir="../${gef3d.gmf}/src/java" />
