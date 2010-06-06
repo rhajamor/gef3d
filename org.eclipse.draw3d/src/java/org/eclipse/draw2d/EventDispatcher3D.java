@@ -39,6 +39,8 @@ import org.eclipse.swt.widgets.Event;
  * <p>
  * This class resides in the <code>org.eclipse.draw2d</code> package because its
  * super class {@link EventDispatcher} has abstract package private methods.
+ * This is not necessary since GEF 3.6 anymore, still it is placed in this
+ * package for backward compatibility.
  * </p>
  * 
  * @author Kristian Duske
@@ -265,7 +267,7 @@ public class EventDispatcher3D extends EventDispatcher {
 	 * @see org.eclipse.draw2d.EventDispatcher#getAccessibilityDispatcher()
 	 */
 	@Override
-	protected AccessibilityDispatcher getAccessibilityDispatcher() {
+	public AccessibilityDispatcher getAccessibilityDispatcher() {
 
 		// TODO see https://bugs.eclipse.org/bugs/show_bug.cgi?id=281008
 		try {
@@ -276,7 +278,8 @@ public class EventDispatcher3D extends EventDispatcher {
 				m_getAccessibilityDispatcherMethod.setAccessible(true);
 			}
 
-			return (AccessibilityDispatcher) m_getAccessibilityDispatcherMethod.invoke(m_dispatcher);
+			return (AccessibilityDispatcher) m_getAccessibilityDispatcherMethod
+				.invoke(m_dispatcher);
 		} catch (Exception e) {
 			// very unlikely to happen, so
 			throw new RuntimeException("could not reflectively invoke method "
@@ -297,9 +300,13 @@ public class EventDispatcher3D extends EventDispatcher {
 	 * @see org.eclipse.draw2d.EventDispatcher#getFocusOwner()
 	 */
 	@Override
-	IFigure getFocusOwner() {
-
-		return m_dispatcher.getFocusOwner();
+	public IFigure getFocusOwner() {
+		try {
+			return m_dispatcher.getFocusOwner();
+		} catch (Error ex) {
+			log.warning("Error retrieving focus owner: " + ex);
+			return null;
+		}
 	}
 
 	/**
@@ -319,7 +326,7 @@ public class EventDispatcher3D extends EventDispatcher {
 	 * @see org.eclipse.draw2d.EventDispatcher#releaseCapture()
 	 */
 	@Override
-	protected void releaseCapture() {
+	public void releaseCapture() {
 
 		// TODO see https://bugs.eclipse.org/bugs/show_bug.cgi?id=281008
 		try {
@@ -365,7 +372,7 @@ public class EventDispatcher3D extends EventDispatcher {
 	 * @see org.eclipse.draw2d.EventDispatcher#setCapture(org.eclipse.draw2d.IFigure)
 	 */
 	@Override
-	protected void setCapture(IFigure i_figure) {
+	public void setCapture(IFigure i_figure) {
 
 		// TODO see https://bugs.eclipse.org/bugs/show_bug.cgi?id=281008
 		try {
@@ -412,7 +419,7 @@ public class EventDispatcher3D extends EventDispatcher {
 	 * @see org.eclipse.draw2d.EventDispatcher#updateCursor()
 	 */
 	@Override
-	protected void updateCursor() {
+	public void updateCursor() {
 
 		// TODO see https://bugs.eclipse.org/bugs/show_bug.cgi?id=281008
 		try {
