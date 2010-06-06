@@ -17,13 +17,8 @@
       <page
             category="org.eclipse.draw3d.ui.draw3dPreferences"
             class="org.eclipse.draw3d.ui.preferences.dialog.CameraPreferencePage"
-            id="org.eclipse.draw3d.ui.page1"
-            name="Camera Controls">
-      </page>
-      <page
-            class="org.eclipse.draw3d.ui.WorkbenchPreferencePage2"
             id="org.eclipse.draw3d.ui.cameraPreferences"
-            name="name">
+            name="Camera Controls">
       </page>
    </extension>
    <extension
