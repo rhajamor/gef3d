@@ -37,7 +37,7 @@ public class GMFEditPartNotationAdapter extends EditPartNotationAdapter {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef3d.ext.reverselookup.INotationAdapter#getDomainObject(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.emf.INotationAdapter#getDomainObject(java.lang.Object)
 	 */
 	public Object getDomainObject(EditPart notationElement) {
 		return ((View) notationElement.getModel()).getElement();
@@ -48,7 +48,7 @@ public class GMFEditPartNotationAdapter extends EditPartNotationAdapter {
 	 * a {@link View}, since the length of the navigation path is 2
 	 * (getModel().getElement()). Otherwise, -1 is returned.
 	 * 
-	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupHelper#handlesElement(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.emf.ILookupHelper#handlesElement(java.lang.Object)
 	 */
 	public int handlesElement(Object i_modelElement) {
 		if (i_modelElement instanceof EditPart) {

@@ -10,44 +10,27 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.ecore.diagram.parts;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.draw2d.FigureListener;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecoretools.diagram.edit.parts.EClass2EditPart;
-import org.eclipse.emf.ecoretools.diagram.edit.parts.EDataType2EditPart;
-import org.eclipse.emf.ecoretools.diagram.edit.parts.EEnum2EditPart;
 import org.eclipse.emf.ecoretools.diagram.edit.policies.EPackageCanonicalEditPolicy;
-import org.eclipse.emf.ecoretools.diagram.edit.policies.EPackageContentsCanonicalEditPolicy;
 import org.eclipse.emf.ecoretools.diagram.edit.policies.EcoretoolsEditPolicyRoles;
-import org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramUpdater;
-import org.eclipse.emf.ecoretools.diagram.part.EcoreNodeDescriptor;
 import org.eclipse.emf.ecoretools.diagram.part.EcoreVisualIDRegistry;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.requests.SelectionRequest;
 import org.eclipse.gef.tools.DeselectAllTracker;
 import org.eclipse.gef3d.gmf.runtime.diagram.ui.figures.DiagramFigure3D;
-import org.eclipse.gmf.runtime.common.core.util.Log;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart;
-import org.eclipse.gmf.runtime.diagram.ui.internal.DiagramUIPlugin;
-import org.eclipse.gmf.runtime.diagram.ui.l10n.DiagramUIMessages;
 import org.eclipse.gmf.runtime.diagram.ui.tools.DragEditPartsTrackerEx;
 import org.eclipse.gmf.runtime.notation.View;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 

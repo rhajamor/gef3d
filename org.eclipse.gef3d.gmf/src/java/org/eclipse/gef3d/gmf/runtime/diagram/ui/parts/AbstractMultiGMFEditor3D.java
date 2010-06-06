@@ -16,7 +16,7 @@ import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef3d.ext.multieditor.AbstractMultiEditor3D;
 import org.eclipse.gef3d.ext.multieditor.INestableEditor;
-import org.eclipse.gef3d.ext.multieditor.INestableEditorWithEditingDomain;
+import org.eclipse.gef3d.ext.multieditor.emf.INestableEditorWithEditingDomain;
 import org.eclipse.gef3d.gmf.runtime.diagram.ui.editparts.DiagramRootEditPart3D;
 import org.eclipse.gef3d.ui.parts.GraphicalViewer3D;
 import org.eclipse.gmf.runtime.draw2d.ui.mapmode.MapModeTypes;

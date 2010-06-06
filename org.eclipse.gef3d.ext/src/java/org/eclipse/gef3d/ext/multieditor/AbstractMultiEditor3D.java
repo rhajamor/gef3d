@@ -10,8 +10,6 @@
  ******************************************************************************/
 package org.eclipse.gef3d.ext.multieditor;
 
-import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,8 +25,6 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.EditPart;
@@ -47,9 +43,6 @@ import org.eclipse.gef3d.ui.parts.GraphicalEditor3DWithFlyoutPalette;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.internal.EditorSite;
-import org.eclipse.ui.internal.Workbench;
-import org.eclipse.ui.internal.registry.EditorDescriptor;
 import org.eclipse.ui.part.AbstractMultiEditor;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.osgi.framework.Bundle;
@@ -182,7 +175,8 @@ public abstract class AbstractMultiEditor3D extends
 	 * Configures nested editor right after it has been created and right before
 	 * it is initialized. This method is intended to be overridden by subclasses
 	 * in order set additional attributes, such as a shared {@link ResourceSet},
-	 * an editing domain id or an {@link EditingDomain}.
+	 * an editing domain id or an
+	 * {@link org.eclipse.emf.edit.domain.EditingDomain}.
 	 */
 	protected void configureNestableEditor(INestableEditor nestedEditor) {
 	}

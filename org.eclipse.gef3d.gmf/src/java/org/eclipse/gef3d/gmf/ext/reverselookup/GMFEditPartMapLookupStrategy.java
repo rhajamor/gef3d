@@ -71,7 +71,7 @@ public class GMFEditPartMapLookupStrategy implements ILookupStrategy<EditPart> {
 	 * {@link GraphicalEditPart} is returned (if possible), otherwise the first
 	 * found {@link EditPart}.
 	 * 
-	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupStrategy#findNotationByDomain(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.emf.ILookupStrategy#findNotationByDomain(java.lang.Object)
 	 */
 	public EditPart findNotationByDomain(Object i_domainElement) {
 		if (i_domainElement instanceof EObject) {
@@ -105,7 +105,7 @@ public class GMFEditPartMapLookupStrategy implements ILookupStrategy<EditPart> {
 	/**
 	 * Returns 1 if model element is an instance of {@link EObject}, else -1.
 	 * 
-	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupHelper#handlesElement(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.emf.ILookupHelper#handlesElement(java.lang.Object)
 	 */
 	public int handlesElement(Object i_modelElement) {
 		if (i_modelElement instanceof EObject)

@@ -1,3 +1,5 @@
+package org.eclipse.gef3d.ext.multieditor.emf;
+
 /*******************************************************************************
  * Copyright (c) 2009 Jens von Pilgrim and others.
  * All rights reserved. This program and the accompanying materials
@@ -8,22 +10,24 @@
  * Contributors:
  *    Jens von Pilgrim - initial API and implementation
  ******************************************************************************/
-package org.eclipse.gef3d.ext.multieditor;
 
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.gef3d.ext.multieditor.INestableEditor;
 
 /**
- * {@link INestableEditor} using the same {@link ResourceSet} as its nesting multi editor.
+ * {@link INestableEditor} using the same {@link ResourceSet} as its nesting
+ * multi editor.
  * <p>
  * {@link #setResourceSet(ResourceSet)} is intended to be called after nested
  * editor has been created but before it was initialized. Usually, it is called
- * in {@link AbstractMultiEditor3D#configureNestableEditor(INestableEditor)}.
+ * in {@link org.eclipse.gef3d.ext.multieditor.AbstractMultiEditor3D}'s
+ * <code>configureNestableEditor(INestableEditor)</code> method.
  * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Sep 22, 2009
- * @see INestableEditorWithEditingDomain
+ * @see org.eclipse.gef3d.ext.multieditor.emf.INestableEditorWithEditingDomain
  */
 public interface INestableEditorWithResourceSet extends INestableEditor {
 

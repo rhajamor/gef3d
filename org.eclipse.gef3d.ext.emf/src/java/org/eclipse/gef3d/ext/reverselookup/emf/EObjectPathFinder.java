@@ -8,12 +8,14 @@
  * Contributors:
  *    Jens von Pilgrim - initial API and implementation
  ******************************************************************************/
-package org.eclipse.gef3d.ext.reverselookup;
+package org.eclipse.gef3d.ext.reverselookup.emf;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.gef3d.ext.reverselookup.IModelPathFinder;
+import org.eclipse.gef3d.ext.reverselookup.ReverseLookupManager;
 
 /**
  * Implementation of {@link IModelPathFinder} used in the
@@ -43,7 +45,7 @@ public class EObjectPathFinder implements IModelPathFinder {
 	 * @param i_modelElement must be an instance of {@link EObject}
 	 * @return a path with first item is the givebn model element, the last item
 	 *         is the root container
-	 * @see org.eclipse.gef3d.ext.reverselookup.IModelPathFinder#findPath(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.emf.IModelPathFinder#findPath(java.lang.Object)
 	 */
 	public List findPath(Object i_modelElement) {
 		EObject eobj = (EObject) i_modelElement;
@@ -62,7 +64,7 @@ public class EObjectPathFinder implements IModelPathFinder {
 	/**
 	 * Returns 1 if given model element is an instance of {@link EObject}.
 	 * 
-	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupHelper#handlesElement(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.emf.ILookupHelper#handlesElement(java.lang.Object)
 	 * @return 1, if model element is instance of {@link EObject}, 0 otherwise
 	 */
 	public int handlesElement(Object i_modelElement) {

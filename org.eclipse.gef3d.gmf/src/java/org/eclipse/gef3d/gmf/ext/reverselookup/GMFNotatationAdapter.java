@@ -28,7 +28,7 @@ public class GMFNotatationAdapter implements INotationAdapter<View> {
 
 	/** 
 	 * {@inheritDoc}
-	 * @see org.eclipse.gef3d.ext.reverselookup.INotationAdapter#getDomainObject(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.emf.INotationAdapter#getDomainObject(java.lang.Object)
 	 */
 	public Object getDomainObject(View i_notationElement) {
 		return i_notationElement.getElement();
@@ -36,7 +36,7 @@ public class GMFNotatationAdapter implements INotationAdapter<View> {
 
 	/** 
 	 * {@inheritDoc}
-	 * @see org.eclipse.gef3d.ext.reverselookup.INotationAdapter#getNotationChildren(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.emf.INotationAdapter#getNotationChildren(java.lang.Object)
 	 */
 	@SuppressWarnings("unchecked")
 	public List<View> getNotationChildren(View i_notationElement) {
@@ -45,7 +45,7 @@ public class GMFNotatationAdapter implements INotationAdapter<View> {
 
 	/** 
 	 * {@inheritDoc}
-	 * @see org.eclipse.gef3d.ext.reverselookup.ILookupHelper#handlesElement(java.lang.Object)
+	 * @see org.eclipse.gef3d.ext.reverselookup.emf.ILookupHelper#handlesElement(java.lang.Object)
 	 */
 	public int handlesElement(Object i_modelElement) {
 		return (i_modelElement instanceof EObject)? 1 : 0;

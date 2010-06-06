@@ -10,9 +10,10 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.gmf,
  org.eclipse.gmf.runtime.common.ui,
  org.eclipse.gmf.runtime.draw2d.ui,
- org.eclipse.gmf.runtime.diagram.ui;bundle-version>="1.1.2",
+ org.eclipse.gmf.runtime.diagram.ui;bundle-version="1.1.2",
  org.eclipse.gef3d;bundle-version="0.8.1",
- org.eclipse.gef3d.ext;bundle-version="0.8.1"
+ org.eclipse.gef3d.ext;bundle-version="0.8.1",
+ org.eclipse.gef3d.ext.emf;bundle-version="0.8.2";visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.gef3d.gmf,
  org.eclipse.gef3d.gmf.ext.reverselookup,

@@ -54,6 +54,9 @@
  * is provided, which returns a lookup manager associated to a given
  * {@link org.eclipse.gef.EditPartViewer}. The manager is created lazily if requried. 
  * </p> 
+ * <p>For EMF models, an implemention of the {@link IModelPathFinder} interface
+ * can be found in plugin <code>org.eclipse.gef3d.ext.emf</code>.</p> 
+ * 
  *  
  * @author 	Jens von Pilgrim
  * @version	$Revision$
