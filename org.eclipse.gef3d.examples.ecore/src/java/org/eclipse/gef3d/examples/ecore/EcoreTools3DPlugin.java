@@ -49,17 +49,6 @@ public class EcoreTools3DPlugin extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 
-		InputStream configStream = getClass().getClassLoader()
-				.getResourceAsStream("logging.properties");
-
-		if (configStream != null) {
-			try {
-				LogManager logManager = LogManager.getLogManager();
-				logManager.readConfiguration(configStream);
-			} finally {
-				configStream.close();
-			}
-		}
 	}
 
 	/*
