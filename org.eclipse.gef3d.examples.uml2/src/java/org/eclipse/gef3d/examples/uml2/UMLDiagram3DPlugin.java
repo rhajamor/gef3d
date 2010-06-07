@@ -45,24 +45,6 @@ public class UMLDiagram3DPlugin extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		initLogging();
-
-	}
-
-	private void initLogging() {
-		
-		InputStream is = this.getClass().getResourceAsStream("logging.properties");
-		if (is==null) return;
-		try {
-			LogManager.getLogManager().readConfiguration(is);
-		} catch (SecurityException ex) {
-			// TODO Implement catch block for SecurityException
-			ex.printStackTrace();
-		} catch (IOException ex) {
-			// TODO Implement catch block for IOException
-			ex.printStackTrace();
-		}
-		
 	}
 
 	/*
