@@ -46,36 +46,6 @@ public class GEF3DGraphExamplePlugin extends AbstractUIPlugin {
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
-
-		initLogging();
-
-	}
-
-	private void initLogging() {
-		
-		InputStream is = this.getClass().getResourceAsStream("logging.properties");
-		try {
-			LogManager.getLogManager().readConfiguration(is);
-		} catch (SecurityException ex) {
-			// TODO Implement catch block for SecurityException
-			ex.printStackTrace();
-		} catch (IOException ex) {
-			// TODO Implement catch block for IOException
-			ex.printStackTrace();
-		}
-		
-//		System.out.println(System.getProperties());
-		
-//		Logger logger = Logger.getLogger("de.feu");
-//		logger.setLevel(Level.FINEST);
-//
-//		EclipseConsoleFormatter formatter = new EclipseConsoleFormatter();
-//		Handler[] aHandlers = Logger.getLogger("").getHandlers();
-//		for (Handler handler : aHandlers) {
-//			handler.setLevel(Level.FINEST);
-//			handler.setFormatter(formatter);
-//		}
-
 	}
 
 	/*
