@@ -74,6 +74,7 @@ public class PackageEditPart3D extends PackageEditPart {
 
 		return f;
 	}
+	
 
 	/**
 	 * Replaces the {@link RubberbandDragTracker} with an old school
