@@ -53,6 +53,15 @@ import org.eclipse.gmf.runtime.draw2d.ui.mapmode.MapModeTypes;
 public abstract class AbstractMultiGMFEditor3D extends AbstractMultiEditor3D {
 
 	/**
+	 * Default transactional editing domain id. This string is returned in
+	 * {@link #getEditingDomainID()} by default, a factory of type
+	 * |@link org.eclipse.gmf.runtime.diagram.core.DiagramEditingDomainFactory}
+	 * for that id is
+	 * registered to the plugin registry (see plugin.xml). 
+	 */
+	public static final String DEFAULT_MULTI_EDITOR_DOMAIN_ID = "org.eclipse.gef3d.ext.multieditor";
+	
+	/**
 	 * Lazily created in {@link #createEditingDomainProvider()}, passed to
 	 * clients via {@link #getAdapter(Class)}, class is
 	 * {@link IEditingDomainProvider}.
@@ -136,13 +145,23 @@ public abstract class AbstractMultiGMFEditor3D extends AbstractMultiEditor3D {
 	}
 
 	/**
-	 * Returns default editing domain ID passed to nested editors in
-	 * {@link #configureNestableEditor(INestableEditor)}.
-	 * 
-	 * @return
+	 * Returns default editing domain ID {@link #DEFAULT_MULTI_EDITOR_DOMAIN_ID}
+	 * passed to nested editors in
+	 * {@link #configureNestableEditor(INestableEditor)}. A factory for
+	 * creating a domain for that id is registered via extension point
+	 * "org.eclipse.emf.transaction.editingDomains".
+	 * <p>
+	 * Subclasses may override this method in order to provide a different
+	 * domain id. In that case, ensure to add a factory to your plugin.xml:
+	 * <code><pre>
+	 * &lt;extension point="org.eclipse.emf.transaction.editingDomains">
+	 * 	&lt;editingDomain id="my.domain.id" factory="my.domain.Factory"/>
+	 * &lt;/extension>
+	 * </pre></code>
+	 * @return {@value #DEFAULT_MULTI_EDITOR_DOMAIN_ID}
 	 */
 	public String getEditingDomainID() {
-		return "org.eclipse.gef3d.ext.multieditor";
+		return AbstractMultiGMFEditor3D.DEFAULT_MULTI_EDITOR_DOMAIN_ID;
 	}
 
 	/**

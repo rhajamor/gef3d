@@ -11,6 +11,7 @@
 package org.eclipse.gef3d.gmf.runtime.diagram.ui.services.editpart;
 
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.eclipse.gef.RootEditPart;

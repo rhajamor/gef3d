@@ -22,6 +22,14 @@ import org.eclipse.gef3d.ext.multieditor.INestableEditor;
  * in {@link org.eclipse.gef3d.ext.multieditor.AbstractMultiEditor3D}'s
  * <code>configureNestableEditor(INestableEditor)</code> method.
  * </p>
+ * <p>
+ * The
+ * {@link org.eclipse.gef3d.gmf.runtime.diagram.ui.parts.AbstractMultiGMFEditor3D}
+ * uses a default domain id "org.eclipse.gef3d.ext.multieditor", see
+ * {@link org.eclipse.gef3d.gmf.runtime.diagram.ui.parts.AbstractMultiGMFEditor3D@getDomainID}.
+ * Its plugin also registers a factory for automatically creating a domain
+ * for that id.
+ * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -45,8 +53,8 @@ public interface INestableEditorWithEditingDomain extends INestableEditor {
 	 * </p>
 	 * <p>
 	 * <em>Important:</em>: Ensure to override
-	 * <code>DiagramDocumentEditor#getEditingDomainID()</code>
-	 * , as this default implementation simply returns null
+	 * <code>DiagramDocumentEditor#getEditingDomainID()</code> , as this default
+	 * implementation simply returns null
 	 * </p>
 	 * 
 	 * @param i_editingDomainID

@@ -33,4 +33,12 @@
       </editpartProvider>
    </extension>
 
+
+	<!-- Default transactional editing domain used for multi editors -->
+	<extension point="org.eclipse.emf.transaction.editingDomains">
+     <editingDomain
+           id="org.eclipse.gef3d.ext.multieditor"
+           factory="org.eclipse.gmf.runtime.diagram.core.DiagramEditingDomainFactory"/>
+     </extension>
+
 </plugin>
