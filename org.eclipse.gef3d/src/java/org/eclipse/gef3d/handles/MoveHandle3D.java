@@ -20,8 +20,14 @@ import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.Locator;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
+import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.shapes.CuboidFigureShape;
+import org.eclipse.draw3d.shapes.CuboidShape;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.DragTracker;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.handles.MoveHandle;
@@ -45,6 +51,7 @@ import org.eclipse.gef3d.editpolicies.ResizableEditPolicy3D;
  */
 public class MoveHandle3D extends AbstractHandle3D {
 
+	private static final float INNER_PAD = 4;
 	private CuboidFigureShape m_shape = new CuboidFigureShape(this, true);
 
 	/**
@@ -116,7 +123,31 @@ public class MoveHandle3D extends AbstractHandle3D {
 	public float getDistance(IVector3f i_rayOrigin, IVector3f i_rayDirection,
 		Map<Object, Object> i_context) {
 
-		return m_shape.getDistance(i_rayOrigin, i_rayDirection, i_context);
+		float outer =
+			m_shape.getDistance(i_rayOrigin, i_rayDirection, i_context);
+
+		if (!Float.isNaN(outer)) {
+			Position3D pos = Draw3DCache.getPosition3D();
+			Vector3f v=Draw3DCache.getVector3f();
+			try {
+				pos.setPosition(getPosition3D());
+				v.set(pos.getSize3D());
+				v.setX(v.getX() - INNER_PAD);
+				v.setY(v.getY() - INNER_PAD);
+				v.setZ(v.getZ() + 0.05f);
+				pos.setSize3D(v);
+				CuboidShape neg = new CuboidShape(pos, false);
+				float inner = neg.getDistance(i_rayOrigin, i_rayDirection, i_context);
+				return Float.isNaN(inner) ? outer : Float.NaN;
+
+			} finally {
+				Draw3DCache.returnVector3f(v);
+				Draw3DCache.returnPosition3D(pos);
+			}
+		}
+		
+		return outer;
+
 	}
 
 	/**
