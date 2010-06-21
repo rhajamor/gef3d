@@ -17,17 +17,9 @@
 
 package org.eclipse.gef3d.editpolicies;
 
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.eclipse.gef.EditPart;
-import org.eclipse.gef.EditPartListener;
 import org.eclipse.gef.EditPolicy;
-import org.eclipse.gef.editpolicies.AbstractEditPolicy;
 import org.eclipse.gef.editpolicies.ConstrainedLayoutEditPolicy;
-import org.eclipse.gef.editpolicies.ResizableEditPolicy;
-import org.eclipse.gef3d.editpolicies.ResizableEditPolicy3D;
 
 /**
  * This policy decorates the child edit parts of its host edit parts by adding
@@ -40,110 +32,74 @@ import org.eclipse.gef3d.editpolicies.ResizableEditPolicy3D;
  * separately.
  * <p>
  * This policy itself is installed by a provider (GMF style), see
- * {@link UMLEditPolicyProvider3D#createEditPolicies(EditPart)} in this case.
- * (If only GEF is used, this policy must be installed, for example by using the
- * borg factory pattern and an assimilator installing new policies). The role 
- * of this policy is usually {@link #CHILD_DECORATOR}.
+ * {@link org.eclipse.gef3d.gmf.runtime.diagram.ui.services.editpolicy.Handles3DEditPolicyProvider3D}
+ * . If only GEF is used, this policy must be installed, for example by using
+ * the borg factory pattern and an assimilator installing new policies). The
+ * role of this policy is usually {@link #CHILD_DECORATOR}.
  * </p>
  * 
  * @author Jens von Pilgrim, Kristian Duske
  * @version $Revision$
  * @since May 5, 2008
- * 
  */
-public class Handles3DEditPolicy extends AbstractEditPolicy {
+public class Handles3DEditPolicy extends AbstractDecoratorEditPolicy {
+
 	/**
-	 * Logger for this class
+	 * The role for this edit policy. This role is also used when the policy is
+	 * deeply installed, that is when an instance of this policy class is
+	 * additionally installed to the children (which causes an recursive
+	 * installation).
 	 */
-	private static final Logger log =
-		Logger.getLogger(Handles3DEditPolicy.class.getName());
-
-	public static final Object CHILD_DECORATOR = "Handles3DEditPolicy Child Decorator";
-
-	private EditPartListener listener;
+	public static final Object CHILD_DECORATOR =
+		"Handles3DEditPolicy Child Decorator";
 
 	/**
-	 * Extends activate() to allow proper decoration of children.
+	 * If true, an instance of this class is installed to the children as well.
+	 */
+	protected boolean bDeep = false;
+
+	/**
+	 * @param i_bDeep
+	 */
+	public Handles3DEditPolicy(boolean i_bDeep) {
+		bDeep = i_bDeep;
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef.EditPolicy#activate()
+	 * @see org.eclipse.gef3d.editpolicies.AbstractDecoratorEditPolicy#createChildEditPolicies(org.eclipse.gef.EditPart)
 	 */
-	public void activate() {
-		setListener(createListener());
-		decorateChildren();
-		super.activate();
+	@Override
+	protected EditPolicy[] createChildEditPolicies(EditPart i_child) {
+		if (!bDeep) {
+			return new EditPolicy[] { new ResizableEditPolicy3D() };
+		} else {
+			return new EditPolicy[] { new ResizableEditPolicy3D(),
+				new Handles3DEditPolicy(bDeep) };
+		}
 	}
 
 	/**
-	 * Returns the "satellite" EditPolicy used to decorate the child.
+	 * {@inheritDoc}
 	 * 
-	 * @param child the child EditPart
-	 * @return an EditPolicy to be installed as the
-	 *         {@link EditPolicy#PRIMARY_DRAG_ROLE}
+	 * @param i_editPolicy must not be null
+	 * @see org.eclipse.gef3d.editpolicies.AbstractDecoratorEditPolicy#getRole(org.eclipse.gef.EditPolicy)
 	 */
-	protected EditPolicy createChildEditPolicy(EditPart child) {
-		return new ResizableEditPolicy3D();
-	}
+	@Override
+	protected Object getRole(EditPolicy i_editPolicy) {
+		if (i_editPolicy instanceof ResizableEditPolicy3D) {
+			return EditPolicy.PRIMARY_DRAG_ROLE;
+		}
+		if (i_editPolicy instanceof Handles3DEditPolicy) {
+			return Handles3DEditPolicy.CHILD_DECORATOR;
+		}
 
-	/**
-	 * creates the EditPartListener for observing when children are added to the
-	 * host.
-	 * 
-	 * @return EditPartListener
-	 */
-	protected EditPartListener createListener() {
-		return new EditPartListener.Stub() {
-			public void childAdded(EditPart child, int index) {
-				decorateChild(child);
-			}
-		};
-	}
+		if (i_editPolicy == null) // parameter precondition
+			throw new NullPointerException("i_editPolicy must not be null");
 
-	/**
-	 * Overrides deactivate to remove the EditPartListener.
-	 * 
-	 * @see org.eclipse.gef.EditPolicy#deactivate()
-	 */
-	public void deactivate() {
-		// if (sizeOnDropFeedback != null) {
-		// removeFeedback(sizeOnDropFeedback);
-		// sizeOnDropFeedback = null;
-		// }
-		setListener(null);
-		super.deactivate();
-	}
-
-	/**
-	 * Decorates the child with a {@link EditPolicy#PRIMARY_DRAG_ROLE} such as
-	 * {@link ResizableEditPolicy}.
-	 * 
-	 * @param child the child EditPart being decorated
-	 */
-	protected void decorateChild(EditPart child) {
-
-		EditPolicy policy = createChildEditPolicy(child);
-
-		child.installEditPolicy(EditPolicy.PRIMARY_DRAG_ROLE, policy);
-
-		if (log.isLoggable(Level.FINE))
-			log.fine("Decorated child " + child.getClass().getName()
-					+ " with :" + policy);
-	}
-
-	/**
-	 * Decorates all existing children. This method is called on activation.
-	 */
-	protected void decorateChildren() {
-		List children = getHost().getChildren();
-		for (int i = 0; i < children.size(); i++)
-			decorateChild((EditPart) children.get(i));
-	}
-
-	protected void setListener(EditPartListener listener) {
-		if (this.listener != null)
-			getHost().removeEditPartListener(this.listener);
-		this.listener = listener;
-		if (this.listener != null)
-			getHost().addEditPartListener(this.listener);
+		throw new IllegalArgumentException("Cannot handle policies of type "
+			+ i_editPolicy.getClass());
 	}
 
 }

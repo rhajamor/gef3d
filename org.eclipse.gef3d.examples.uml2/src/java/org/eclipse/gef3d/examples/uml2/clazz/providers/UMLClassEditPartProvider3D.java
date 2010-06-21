@@ -26,7 +26,9 @@ import org.eclipse.gmf.runtime.notation.Diagram;
 import org.eclipse.uml2.diagram.clazz.providers.UMLEditPartProvider;
 
 /**
- * UMLEditPartProvider3D There should really be more documentation here.
+ * This provider uses an {@link UMLEditPartFactory3D}, it is installed in
+ * <i>plugin.xml</i> at extension point
+ * "org.eclipse.gmf.runtime.diagram.ui.editpartProviders".
  * 
  * @author Jens von Pilgrim
  * @author Kristian Duske
@@ -91,28 +93,6 @@ public class UMLClassEditPartProvider3D extends UMLEditPartProvider {
 		}
 		return false;
 	}
-
-	// /**
-	// * Tests if the editor using this provider is supported. This method
-	// * actually is a hack and we have to find a better solution.
-	// *
-	// * @return
-	// */
-	// public boolean isSupported() {
-	// Exception ex = new Exception();
-	// // ex.printStackTrace();
-	// String name;
-	// for (StackTraceElement element : ex.getStackTrace()) {
-	// name = element.getClassName();
-	// if (name.startsWith("org.eclipse.ui"))
-	// break;
-	// for (int i = 0; i < SUPPORTED_EDITORS.length; i++) {
-	// if (name.equals(SUPPORTED_EDITORS[i]))
-	// return true;
-	// }
-	// }
-	// return false;
-	// }
 
 	/**
 	 * Returns null as the root edit part is expected to be created by a

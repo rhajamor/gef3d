@@ -93,6 +93,21 @@ public class UMLClassDiagramEditor3D extends UMLDiagramEditor implements
 	 * A reference to the 3D diagram graphical viewer.
 	 */
 	protected DiagramGraphicalViewer3D viewer3D;
+	
+	/**
+	 * The editing domain id, used in {@link #createEditingDomain()} to retrieve
+	 * shared {@link EditingDomain}. The default value is null, if this editor
+	 * is nested, the multi editor set this id via
+	 * {@link #setEditingDomainID(String)} defined in
+	 * {@link INestableEditorWithResourceSet} .
+	 */
+	protected String editingDomainID = null;
+
+	/**
+	 * The multi editor into which this editor is nested, set in
+	 * {@link #setMultiEditor(IMultiEditor)}.
+	 */
+	protected IMultiEditor multiEditor;
 
 	/**
 	 * 
@@ -346,20 +361,7 @@ public class UMLClassDiagramEditor3D extends UMLDiagramEditor implements
 		}
 	}
 
-	/**
-	 * The editing domain id, used in {@link #createEditingDomain()} to retrieve
-	 * shared {@link EditingDomain}. The default value is null, if this editor
-	 * is nested, the multi editor set this id via
-	 * {@link #setEditingDomainID(String)} defined in
-	 * {@link INestableEditorWithResourceSet} .
-	 */
-	protected String editingDomainID = null;
-
-	/**
-	 * The multi editor into which this editor is nested, set in
-	 * {@link #setMultiEditor(IMultiEditor)}.
-	 */
-	protected IMultiEditor multiEditor;
+	
 
 	/**
 	 * {@inheritDoc}

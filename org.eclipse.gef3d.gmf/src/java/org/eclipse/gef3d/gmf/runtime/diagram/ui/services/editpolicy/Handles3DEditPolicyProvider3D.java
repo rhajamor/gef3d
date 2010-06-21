@@ -27,7 +27,9 @@ import org.eclipse.gmf.runtime.diagram.ui.services.editpolicy.CreateEditPolicies
 import org.eclipse.gmf.runtime.diagram.ui.services.editpolicy.IEditPolicyProvider;
 
 /**
- * Adds policies for 3D handles.
+ * Adds policies for 3D handles. This policy provider is registered to
+ * extension point "org.eclipse.gmf.runtime.diagram.ui.editpolicyProviders"
+ * in the <i>plugin.xml</i> of <code>plugin org.eclipse.gef3d.gmf</code>
  * 
  * @author Kristian Duske, Jens von Pilgrim
  * @version $Revision$
@@ -56,7 +58,7 @@ public class Handles3DEditPolicyProvider3D extends AbstractProvider implements
 		
 		// show handles
 		i_editPart.installEditPolicy(EditPolicy.PRIMARY_DRAG_ROLE,
-			new Handles3DEditPolicy());
+			new Handles3DEditPolicy(true));
 		
 		
 	}
