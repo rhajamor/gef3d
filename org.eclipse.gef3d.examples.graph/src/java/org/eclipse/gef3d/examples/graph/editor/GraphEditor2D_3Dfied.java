@@ -233,7 +233,7 @@ public class GraphEditor2D_3Dfied extends GraphEditor2D {
 				// handles and feedback when moving or resizing a node
 				io_editpart.installEditPolicy(
 					Handles3DEditPolicy.CHILD_DECORATOR,
-					new Handles3DEditPolicy());
+					new Handles3DEditPolicy(true));
 			}
 		});
 

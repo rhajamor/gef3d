@@ -14,15 +14,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.gef.EditPart;
-import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef3d.editpolicies.Handles3DEditPolicy;
 import org.eclipse.gef3d.editpolicies.ShowLayoutFeedbackEditPolicy3D;
-import org.eclipse.gef3d.editpolicies.ShowSourceFeedback3DEditPolicy;
 import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
+import org.eclipse.gef3d.gmf.runtime.diagram.ui.editpolicies.Handles3DEditPolicyEx;
 import org.eclipse.gmf.runtime.common.core.service.AbstractProvider;
 import org.eclipse.gmf.runtime.common.core.service.IOperation;
-import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.services.editpolicy.CreateEditPoliciesOperation;
 import org.eclipse.gmf.runtime.diagram.ui.services.editpolicy.IEditPolicyProvider;
 
@@ -57,8 +55,8 @@ public class Handles3DEditPolicyProvider3D extends AbstractProvider implements
 			new ShowLayoutFeedbackEditPolicy3D());
 		
 		// show handles
-		i_editPart.installEditPolicy(EditPolicy.PRIMARY_DRAG_ROLE,
-			new Handles3DEditPolicy(true));
+		i_editPart.installEditPolicy(Handles3DEditPolicy.CHILD_DECORATOR, //EditPolicy.PRIMARY_DRAG_ROLE,
+			new Handles3DEditPolicyEx(true));
 		
 		
 	}

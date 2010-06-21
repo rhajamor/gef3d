@@ -29,6 +29,7 @@ import org.eclipse.gef.requests.SelectionRequest;
 import org.eclipse.gef.tools.DeselectAllTracker;
 import org.eclipse.gef3d.gmf.runtime.diagram.ui.figures.DiagramFigure3D;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart;
+import org.eclipse.gmf.runtime.diagram.ui.internal.tools.RubberbandDragTracker;
 import org.eclipse.gmf.runtime.diagram.ui.tools.DragEditPartsTrackerEx;
 import org.eclipse.gmf.runtime.notation.View;
 import org.eclipse.swt.graphics.Color;
@@ -142,7 +143,9 @@ public class DiagramEditPart3D extends DiagramEditPart {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Replaces the {@link RubberbandDragTracker} with an old school
+	 * {@link DragEditPartsTrackerEx}, since the former performs a cast which
+	 * fails.
 	 * 
 	 * @see org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart#getDragTracker(org.eclipse.gef.Request)
 	 */

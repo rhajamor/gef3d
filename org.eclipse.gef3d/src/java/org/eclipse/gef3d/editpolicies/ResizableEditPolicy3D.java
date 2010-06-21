@@ -61,6 +61,11 @@ import org.eclipse.gef3d.handles.ResizableHandle3DFactory;
  * {@link ResizableEditPolicy}, copyright (c) 2000, 2005 IBM Corporation and
  * others and distributed under the EPL license.
  * </p>
+ * <p>
+ * Note: This edit policy does not understand drag and drop! If you need that,
+ * use
+ * {@link org.eclipse.gef3d.gmf.runtime.diagram.ui.editpolicies.ResizableEditPolicy3DEx}
+ * </p>
  * 
  * @author Randy Hudson (hudsonr) (original 2D version)
  * @author Jens von Pilgrim

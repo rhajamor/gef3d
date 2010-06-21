@@ -20,15 +20,4 @@
          </Priority>
       </editpartProvider>
    </extension>
-   <!--
-   <extension
-         point="org.eclipse.gmf.runtime.diagram.ui.editpolicyProviders">
-      <editpolicyProvider
-            class="org.eclipse.gef3d.examples.ecore.diagram.providers.EcoreEditPolicyProvider3D">
-         <Priority
-               name="Highest">
-         </Priority>
-      </editpolicyProvider>
-   </extension>
-  -->
 </plugin>

@@ -89,6 +89,20 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 	 * A reference to the 3D diagram graphical viewer.
 	 */
 	protected DiagramGraphicalViewer3D viewer3D;
+	
+	/**
+	 * The editing domain id, used in {@link #createEditingDomain()} to retrieve
+	 * shared {@link EditingDomain}. The default value is null, if this editor
+	 * is nested, the multi editor set this id via
+	 * {@link #setEditingDomainID(String)} defined in
+	 * {@link INestableEditorWithResourceSet} .
+	 */
+	protected String editingDomainID = null;
+
+	/**
+	 * The multi editor nesting this editr (if editor is nested).
+	 */
+	protected IMultiEditor multiEditor;
 
 	/**
 	 * {@inheritDoc}
@@ -160,78 +174,9 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 		getDiagram().eAdapters().add(providerAcceptor);
 	}
 
-	/**
-	 * The editing domain id, used in {@link #createEditingDomain()} to retrieve
-	 * shared {@link EditingDomain}. The default value is null, if this editor
-	 * is nested, the multi editor set this id via
-	 * {@link #setEditingDomainID(String)} defined in
-	 * {@link INestableEditorWithResourceSet} .
-	 */
-	protected String editingDomainID = null;
-
-	/**
-	 * The multi editor nesting this editr (if editor is nested).
-	 */
-	protected IMultiEditor multiEditor;
-
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * The editing domain ID is set via setEditingDomainID(), defined in
-	 * {@link INestableEditorWithResourceSet} as well.
-	 * 
-	 * @see org.eclipse.gmf.runtime.diagram.ui.resources.editor.parts.DiagramDocumentEditor#getEditingDomainID()
-	 * @see INestableEditorWithResourceSet#setEditingDomainID(String)
-	 */
-	@Override
-	protected String getEditingDomainID() {
-		return editingDomainID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditorWithEditingDomain#setEditingDomainID(java.lang.String)
-	 */
-	public void setEditingDomainID(String i_editingDomainID) {
-		editingDomainID = i_editingDomainID;
-	}
 	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditor#setMultiEditor(org.eclipse.gef3d.ext.multieditor.IMultiEditor)
-	 */
-	public void setMultiEditor(IMultiEditor i_multiEditor) {
-		multiEditor = i_multiEditor;
-	}
 
-	/**
-	 * Returns true, if multi editor is set.
-	 * @return
-	 */
-	public boolean isNested() {
-		return multiEditor != null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramEditor#setDocumentProvider(org.eclipse.ui.IEditorInput)
-	 */
-	@Override
-	protected void setDocumentProvider(IEditorInput i_input) {
-		if (editingDomainID != null) {
-			setDocumentProvider(new EcoreDocumentProvider() {
-				@Override
-				public String getEditingDomainID() {
-					return editingDomainID;
-				}
-			});
-		} else {
-			super.setDocumentProvider(i_input);
-		}
-	}
+	
 
 	/**
 	 * {@inheritDoc}
@@ -435,6 +380,63 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The editing domain ID is set via setEditingDomainID(), defined in
+	 * {@link INestableEditorWithResourceSet} as well.
+	 * 
+	 * @see org.eclipse.gmf.runtime.diagram.ui.resources.editor.parts.DiagramDocumentEditor#getEditingDomainID()
+	 * @see INestableEditorWithResourceSet#setEditingDomainID(String)
+	 */
+	@Override
+	protected String getEditingDomainID() {
+		return editingDomainID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditorWithEditingDomain#setEditingDomainID(java.lang.String)
+	 */
+	public void setEditingDomainID(String i_editingDomainID) {
+		editingDomainID = i_editingDomainID;
+	}
 	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditor#setMultiEditor(org.eclipse.gef3d.ext.multieditor.IMultiEditor)
+	 */
+	public void setMultiEditor(IMultiEditor i_multiEditor) {
+		multiEditor = i_multiEditor;
+	}
+
+	/**
+	 * Returns true, if multi editor is set.
+	 * @return
+	 */
+	public boolean isNested() {
+		return multiEditor != null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.emf.ecoretools.diagram.part.EcoreDiagramEditor#setDocumentProvider(org.eclipse.ui.IEditorInput)
+	 */
+	@Override
+	protected void setDocumentProvider(IEditorInput i_input) {
+		if (editingDomainID != null) {
+			setDocumentProvider(new EcoreDocumentProvider() {
+				@Override
+				public String getEditingDomainID() {
+					return editingDomainID;
+				}
+			});
+		} else {
+			super.setDocumentProvider(i_input);
+		}
+	}
 
 }
