@@ -20,6 +20,7 @@ import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecoretools.diagram.edit.parts.EPackageEditPart;
 import org.eclipse.emf.ecoretools.diagram.edit.policies.EPackageCanonicalEditPolicy;
 import org.eclipse.emf.ecoretools.diagram.edit.policies.EcoretoolsEditPolicyRoles;
 import org.eclipse.emf.ecoretools.diagram.part.EcoreVisualIDRegistry;
@@ -51,7 +52,7 @@ import org.eclipse.swt.widgets.Display;
  * @version $Revision$
  * @since 02.09.2009
  */
-public class DiagramEditPart3D extends DiagramEditPart {
+public class DiagramEditPart3D extends EPackageEditPart { // DiagramEditPart {
 
 	/**
 	 * Creates a new edit part for the given view.
