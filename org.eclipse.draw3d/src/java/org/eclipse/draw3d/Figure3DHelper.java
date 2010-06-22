@@ -403,7 +403,9 @@ public class Figure3DHelper {
 				connectionLayer.paint(graphics);
 				graphics.restoreState();
 			}
-		} finally {
+		} catch (Error er) {
+			log.severe("Error painting 2d children: " + er);
+	 	} finally {
 			graphics.popState();
 		}
 	}
