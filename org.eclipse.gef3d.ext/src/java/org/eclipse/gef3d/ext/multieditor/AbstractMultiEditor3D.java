@@ -38,6 +38,7 @@ import org.eclipse.gef3d.ext.assimilator.BorgEditPartFactory;
 import org.eclipse.gef3d.ext.multieditor.MultiEditorChangeEvent.Type;
 import org.eclipse.gef3d.ext.multieditor.dnd.EditorInputDropPolicy;
 import org.eclipse.gef3d.ext.multieditor.dnd.EditorInputTransferDropTargetListener;
+import org.eclipse.gef3d.factories.CachingEditPartFactory;
 import org.eclipse.gef3d.tools.CameraTool;
 import org.eclipse.gef3d.ui.parts.GraphicalEditor3DWithFlyoutPalette;
 import org.eclipse.ui.IEditorInput;
@@ -205,7 +206,8 @@ public abstract class AbstractMultiEditor3D extends
 		getGraphicalViewer().setRootEditPart(root);
 
 		m_multiFactory = createMultiFactory();
-		getGraphicalViewer().setEditPartFactory(m_multiFactory);
+		getGraphicalViewer().setEditPartFactory(
+			new CachingEditPartFactory(m_multiFactory));
 	}
 
 	/**
@@ -342,8 +344,7 @@ public abstract class AbstractMultiEditor3D extends
 								Class clazz;
 								try {
 									clazz = bundle.loadClass(strClassname);
-									if (INestableEditor.class
-										.isAssignableFrom(clazz)) {
+									if (INestableEditor.class.isAssignableFrom(clazz)) {
 										if (isCompatibleEditor(i_editorInput,
 											element, clazz))
 											editorClasses.put(strID, clazz);
