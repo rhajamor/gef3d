@@ -27,7 +27,8 @@ import org.eclipse.gef.EditPartFactory;
  */
 public class CachingEditPartFactory implements EditPartFactory {
 
-	private Map<Object, EditPart> m_cache = new WeakHashMap<Object, EditPart>();
+	private Map<EditPart, Map<Object, EditPart>> m_cache =
+		new WeakHashMap<EditPart, Map<Object, EditPart>>();
 
 	private EditPartFactory m_delegate;
 
@@ -52,13 +53,19 @@ public class CachingEditPartFactory implements EditPartFactory {
 	 */
 	public EditPart createEditPart(EditPart i_context, Object i_model) {
 
-		EditPart part = m_cache.get(i_model);
+		Map<Object, EditPart> contextCache = m_cache.get(i_context);
+		if (contextCache == null) {
+			contextCache = new WeakHashMap<Object, EditPart>();
+			m_cache.put(i_context, contextCache);
+		}
+
+		EditPart part = contextCache.get(i_model);
 		if (part != null)
 			return part;
 
 		part = m_delegate.createEditPart(i_context, i_model);
 		if (part != null)
-			m_cache.put(i_model, part);
+			contextCache.put(i_model, part);
 
 		return part;
 	}
