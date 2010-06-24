@@ -331,7 +331,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	/**
 	 * Translation offset for 2D rendering of non-polygon shapes.
 	 */
-	public static final float RASTER_OFFSET = 0.49f;
+	public static final float RASTER_OFFSET = 0f; // 0.49f;
 
 	/**
 	 * Descriptor of this instance.
