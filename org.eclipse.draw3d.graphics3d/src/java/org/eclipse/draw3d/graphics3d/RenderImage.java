@@ -37,6 +37,7 @@ public interface RenderImage {
 	 * Renders this image.
 	 * 
 	 * @param i_g3d the current 3D graphics instance
+	 * @param i_lodHelper a helper class for level of detail calculations
 	 */
 	public void render(Graphics3D i_g3d, ILodHelper i_lodHelper);
 }

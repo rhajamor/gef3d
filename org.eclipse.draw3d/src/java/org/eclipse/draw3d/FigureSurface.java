@@ -38,7 +38,6 @@ public class FigureSurface extends AbstractSurface {
 	private FigureListener m_figureListener = new FigureListener() {
 
 		public void figureMoved(IFigure i_source) {
-
 			coordinateSystemChanged();
 		}
 	};
@@ -51,7 +50,6 @@ public class FigureSurface extends AbstractSurface {
 	 * @param i_host the host figure of this surface
 	 */
 	public FigureSurface(IFigure3D i_host) {
-
 		if (i_host == null)
 			throw new NullPointerException("i_host must not be null");
 
@@ -62,12 +60,23 @@ public class FigureSurface extends AbstractSurface {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.AbstractSurface#calculateNormal(org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	@Override
+	protected void calculateNormal(Vector3f io_normal) {
+		io_normal.set(IVector3f.Z_AXIS_NEG);
+		IMatrix4f rotation = m_host.getPosition3D().getAbsoluteRotationMatrix();
+		Math3D.transform(io_normal, rotation, io_normal);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.ISurface#findFigureAt(int, int,
 	 *      org.eclipse.draw2d.TreeSearch)
 	 */
 	@SuppressWarnings("unchecked")
 	public IFigure findFigureAt(int i_sx, int i_sy, TreeSearch i_search) {
-
 		// host pruned?
 		if (i_search != null && i_search.prune(m_host))
 			return null;
@@ -113,7 +122,6 @@ public class FigureSurface extends AbstractSurface {
 	 * @see org.eclipse.draw3d.ISurface#getHost()
 	 */
 	public IFigure3D getHost() {
-
 		return m_host;
 	}
 
@@ -124,7 +132,6 @@ public class FigureSurface extends AbstractSurface {
 	 */
 	@Override
 	protected Vector3f getOrigin(Vector3f io_result) {
-
 		Vector3f result = io_result;
 		if (result == null)
 			result = new Vector3fImpl();
@@ -144,7 +151,6 @@ public class FigureSurface extends AbstractSurface {
 	 * @see org.eclipse.draw3d.ISurface#getSurfaceRotation(org.eclipse.draw3d.geometry.Vector3f)
 	 */
 	public Vector3f getSurfaceRotation(Vector3f o_result) {
-
 		Vector3f result = o_result;
 		if (result == null)
 			result = new Vector3fImpl();
@@ -167,7 +173,6 @@ public class FigureSurface extends AbstractSurface {
 	 */
 	@Override
 	protected Vector3f getXAxis(Vector3f io_result) {
-
 		Vector3f result = io_result;
 		if (result == null)
 			result = new Vector3fImpl();
@@ -185,7 +190,6 @@ public class FigureSurface extends AbstractSurface {
 	 */
 	@Override
 	protected Vector3f getYAxis(Vector3f io_result) {
-
 		Vector3f result = io_result;
 		if (result == null)
 			result = new Vector3fImpl();
@@ -203,7 +207,6 @@ public class FigureSurface extends AbstractSurface {
 	 */
 	@Override
 	protected Vector3f getZAxis(Vector3f io_result) {
-
 		Vector3f result = io_result;
 		if (result == null)
 			result = new Vector3fImpl();
@@ -214,8 +217,16 @@ public class FigureSurface extends AbstractSurface {
 		return result;
 	}
 
-	private void rotateVector(Vector3f i_vector) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ISurface#is2DHost()
+	 */
+	public boolean is2DHost() {
+		return true;
+	}
 
+	private void rotateVector(Vector3f i_vector) {
 		Matrix4f rot = Math3DCache.getMatrix4f();
 		try {
 			IVector3f angles = m_host.getPosition3D().getRotation3D();
@@ -234,7 +245,6 @@ public class FigureSurface extends AbstractSurface {
 	 */
 	@Override
 	public String toString() {
-
 		StringBuilder b = new StringBuilder();
 
 		b.append("Figure surface for host [");
@@ -242,15 +252,5 @@ public class FigureSurface extends AbstractSurface {
 		b.append("]");
 
 		return b.toString();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.ISurface#is2DHost()
-	 */
-	public boolean is2DHost() {
-
-		return true;
 	}
 }

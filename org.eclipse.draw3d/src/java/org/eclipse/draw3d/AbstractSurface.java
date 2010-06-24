@@ -41,6 +41,16 @@ public abstract class AbstractSurface implements ISurface {
 	private Vector3f[] m_cachedProjection;
 
 	/**
+	 * The surface normal.
+	 */
+	private Vector3f m_normal = new Vector3fImpl();
+
+	/**
+	 * Indicates whether the surface normal is still valid.
+	 */
+	private boolean m_normalValid = false;
+
+	/**
 	 * The matrix that transforms a vector given in surface coordinates to world
 	 * coordinates.
 	 */
@@ -57,6 +67,14 @@ public abstract class AbstractSurface implements ISurface {
 	private boolean m_worldToSurfaceValid = false;
 
 	/**
+	 * Calculates the normal of this surface.
+	 * 
+	 * @param io_normal the result vector, this argument is never
+	 *            <code>null</code>
+	 */
+	protected abstract void calculateNormal(Vector3f io_normal);
+
+	/**
 	 * This method must be called whenever the surface coordinate system has
 	 * changed.
 	 */
@@ -64,7 +82,23 @@ public abstract class AbstractSurface implements ISurface {
 
 		m_surfaceToWorldValid = false;
 		m_worldToSurfaceValid = false;
+		m_normalValid = false;
 		m_cachedProjection = null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ISurface#getNormal()
+	 */
+	public IVector3f getNormal() {
+
+		if (!m_normalValid) {
+			calculateNormal(m_normal);
+			m_normalValid = true;
+		}
+
+		return m_normal;
 	}
 
 	/**

@@ -51,6 +51,13 @@ public interface ISurface {
 	public IFigure3D getHost();
 
 	/**
+	 * Returns the normal vector of this surface.
+	 * 
+	 * @return the normal vector
+	 */
+	public IVector3f getNormal();
+
+	/**
 	 * Returns the 2D surface coordinates of a point specified in world
 	 * coordinates.
 	 * 

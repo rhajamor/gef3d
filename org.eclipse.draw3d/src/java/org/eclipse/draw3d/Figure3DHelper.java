@@ -37,6 +37,7 @@ import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
+import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.graphics3d.ILodHelper;
 import org.eclipse.draw3d.graphics3d.RenderImage;
 import org.eclipse.draw3d.picking.Picker;
@@ -102,7 +103,6 @@ public class Figure3DHelper {
 		private RenderImage m_image;
 
 		public ImageRenderFragment(IFigure3D i_figure) {
-
 			m_figure = i_figure;
 		}
 
@@ -112,17 +112,28 @@ public class Figure3DHelper {
 		 * @see org.eclipse.draw3d.RenderFragment#getDistanceMeasure(org.eclipse.draw3d.RenderContext)
 		 */
 		public float getDistanceMeasure(RenderContext i_renderContext) {
+			ISurface surface = m_figure.getSurface();
+			IVector3f normal = surface.getNormal();
 
+			Vector3f viewDir = Draw3DCache.getVector3f();
 			Vector3f viewPoint = Draw3DCache.getVector3f();
 			Vector3f diff = Draw3DCache.getVector3f();
 			try {
-				i_renderContext.getScene().getCamera().getPosition(viewPoint);
-				Math3D.sub(m_figure.getPosition3D().getCenter3D(), viewPoint,
-					diff);
+				ICamera camera = i_renderContext.getScene().getCamera();
+				camera.getViewDirection(viewDir);
+				camera.getPosition(viewPoint);
 
-				return diff.lengthSquared() - 0.01f;
+				IVector3f figCenter = m_figure.getPosition3D().getCenter3D();
+				Math3D.sub(figCenter, viewPoint, diff);
+				float dist = diff.lengthSquared();
+
+				float cos = Math3D.dot(normal, viewDir);
+				if (cos > 0)
+					return dist + 0.1f;
+
+				return dist - 0.1f;
 			} finally {
-				Draw3DCache.returnVector3f(viewPoint, diff);
+				Draw3DCache.returnVector3f(viewDir, viewPoint, diff);
 			}
 		}
 
@@ -132,7 +143,6 @@ public class Figure3DHelper {
 		 * @see org.eclipse.draw3d.RenderFragment#getRenderType()
 		 */
 		public RenderType getRenderType() {
-
 			// TODO: what if the figure is superimposed?
 			return RenderType.getRenderType(m_figure.getAlpha(), false);
 		}
@@ -143,7 +153,6 @@ public class Figure3DHelper {
 		 * @see org.eclipse.draw3d.RenderFragment#render(org.eclipse.draw3d.RenderContext)
 		 */
 		public void render(RenderContext i_renderContext) {
-
 			Position3D temp = Draw3DCache.getPosition3D();
 			try {
 				m_figure.getPosition3D().getAbsolute(temp);
@@ -155,10 +164,12 @@ public class Figure3DHelper {
 					ICamera camera = i_renderContext.getScene().getCamera();
 					ILodHelper lodHelper = new CameraLodHelper(camera);
 
+					g3d.glDisable(Graphics3DDraw.GL_CULL_FACE);
 					g3d.setPosition(temp);
 					m_image.render(g3d, lodHelper);
 				} finally {
 					g3d.glPopMatrix();
+					g3d.glEnable(Graphics3DDraw.GL_CULL_FACE);
 				}
 			} finally {
 				Draw3DCache.returnPosition3D(temp);
@@ -405,7 +416,7 @@ public class Figure3DHelper {
 			}
 		} catch (Error er) {
 			log.severe("Error painting 2d children: " + er);
-	 	} finally {
+		} finally {
 			graphics.popState();
 		}
 	}

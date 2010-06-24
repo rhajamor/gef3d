@@ -72,6 +72,17 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.AbstractSurface#calculateNormal(org.eclipse.draw3d.geometry.Vector3f)
+	 */
+	@Override
+	protected void calculateNormal(Vector3f io_normal) {
+
+		io_normal.set(IVector3f.NULLVEC3f);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.ISceneListener#cameraChanged(org.eclipse.draw3d.camera.ICamera,
 	 *      org.eclipse.draw3d.camera.ICamera)
 	 */
