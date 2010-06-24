@@ -85,13 +85,34 @@ public abstract class AbstractMultiEditor3D extends
 
 	protected MultiEditorPartFactory m_multiFactory;
 
+	/**
+	 * This collection maps the root model elements to the nested editor
+	 * visualizing this model. 
+	 */
 	protected Map<Object, INestableEditor> nestedEditors;
 
+	/**
+	 * This collection maps nestable editors to their IDs. The map is updated
+	 * when new editors are added (see {@link #createNestedEditor(IEditorInput)}
+	 * ), it is used to create a proxy {@link IEditorSite}. The latter is
+	 * required during initialization of the nested editor in order to get GMF
+	 * providers be activated for the nested editor.
+	 */
 	protected Map<INestableEditor, String> nestedEditorIDs;
 
 	protected Set<IMultiEditorListener> multiEditorListeners;
 
 	protected MultiEditorPropertySheetPage m_multiEditorSheetPage;
+
+	/**
+	 * This set is used in {@link #addEditor(IEditorInput)} for temporarliy
+	 * storing new editor input elements right before or while the according
+	 * nested editor is created. This prevents similar editor inputs to be added
+	 * multiple times. This may happen in case of cross references (inter-model
+	 * connecdtions), when the referenced models are automatically resolved and
+	 * their visualization loaded into the editor.
+	 */
+	protected Set<IEditorInput> m_addingInput = new HashSet<IEditorInput>();
 
 	/**
 	 * 
@@ -120,55 +141,65 @@ public abstract class AbstractMultiEditor3D extends
 	public boolean addEditor(IEditorInput i_editorInput) {
 		if (i_editorInput == null)
 			return false;
-
-		// do not add content twice
-		for (INestableEditor nestedEditor : nestedEditors.values()) {
-			if (nestedEditor.getEditorInput().equals(i_editorInput)
-				|| i_editorInput.getName().equals(
-					nestedEditor.getEditorInput().getName()))
-				return false;
-		}
-
-		// find appropriate editor
-		INestableEditor nestedEditor = createNestedEditor(i_editorInput);
-
-		if (nestedEditor == null) {
-			if (log.isLoggable(Level.INFO)) {
-				log.info("No nestable editor found for input " //$NON-NLS-1$
-					+ i_editorInput);
-			}
+		// we are already adding this editor input:
+		if (m_addingInput.contains(i_editorInput))
 			return false;
-		}
-
-		nestedEditor.setMultiEditor(this);
-		configureNestableEditor(nestedEditor);
-
-		String id = nestedEditorIDs.get(nestedEditor);
-		if (id == null)
-			id = getEditorSite().getId();
-
-		IEditorSite nestedEditorSiteProxy =
-			NestedEditorSite.createNestedEditorSite(id, getEditorSite());
 
 		try {
-			nestedEditor.init(nestedEditorSiteProxy, i_editorInput);
-			Object editorContent =
-				nestedEditor.initializeAsNested(getGraphicalViewer(),
-					m_multiFactory, m_container);
+			m_addingInput.add(i_editorInput);
 
-			addNestedPalette(nestedEditor.createPaletteDrawer());
+			// do not add content twice
+			for (INestableEditor nestedEditor : nestedEditors.values()) {
+				if (nestedEditor.getEditorInput().equals(i_editorInput)
+					|| i_editorInput.getName().equals(
+						nestedEditor.getEditorInput().getName()))
+					return false;
+			}
 
-			nestedEditors.put(editorContent, nestedEditor);
+			// find appropriate editor
+			INestableEditor nestedEditor = createNestedEditor(i_editorInput);
 
-			fireMultiEditorChangeEvent(new MultiEditorChangeEvent(this,
-				nestedEditor, editorContent, Type.added));
+			if (nestedEditor == null) {
+				if (log.isLoggable(Level.INFO)) {
+					log.info("No nestable editor found for input " //$NON-NLS-1$
+						+ i_editorInput);
+				}
+				return false;
+			}
 
-		} catch (PartInitException ex) {
-			log.warning("IEditorInput - exception: " + ex); //$NON-NLS-1$
-			return false;
+			nestedEditor.setMultiEditor(this);
+			configureNestableEditor(nestedEditor);
+
+			String id = nestedEditorIDs.get(nestedEditor);
+			if (id == null)
+				id = getEditorSite().getId();
+
+			IEditorSite nestedEditorSiteProxy =
+				NestedEditorSite.createNestedEditorSite(id, getEditorSite());
+
+			try {
+				nestedEditor.init(nestedEditorSiteProxy, i_editorInput);
+				Object editorContent =
+					nestedEditor.initializeAsNested(getGraphicalViewer(),
+						m_multiFactory, m_container);
+
+				addNestedPalette(nestedEditor.createPaletteDrawer());
+
+				nestedEditors.put(editorContent, nestedEditor);
+
+				fireMultiEditorChangeEvent(new MultiEditorChangeEvent(this,
+					nestedEditor, editorContent, Type.added));
+
+			} catch (PartInitException ex) {
+				log.warning("IEditorInput - exception: " + ex); //$NON-NLS-1$
+				return false;
+			}
+			// getGraphicalViewer().getRootEditPart().refresh();
+			return true;
+
+		} finally {
+			m_addingInput.remove(i_editorInput);
 		}
-		// getGraphicalViewer().getRootEditPart().refresh();
-		return true;
 	}
 
 	/**
