@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.gef3d.ext.multieditor;
 
-import org.eclipse.gef.EditPart;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 
@@ -34,16 +33,6 @@ public interface INestedEditorInfo {
 	}
 	
 	/**
-	 * Returns the key of the nested editor. This key is usually the 
-	 * editor input, but in case of nested editors beeing created without
-	 * an editor input, this may be any other kind of identifying object.
-	 * This key is used by the multi editor to prevent the very same model
-	 * to be opened more then once.
-	 * @return
-	 */
-	Object getKey();
-
-	/**
 	 * The multi editor nesting the nestable editor.
 	 * 
 	 * @return
@@ -58,10 +47,10 @@ public interface INestedEditorInfo {
 	INestableEditor getNestableEditor();
 
 	/**
-	 * The editor input of the nestable editor or null, if the nestable editor
-	 * has been created otherwise.
+	 * The editor input of the nestable editor. This information is always
+	 * available and used as key.
 	 * 
-	 * @return the input or null, if this inforamtion is not available
+	 * @return the input, this information is always available
 	 */
 	IEditorInput getEditorInput();
 

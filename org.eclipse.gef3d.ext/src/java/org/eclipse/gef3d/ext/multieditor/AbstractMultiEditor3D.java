@@ -134,7 +134,6 @@ public abstract class AbstractMultiEditor3D extends
 		if (!nestedEditors.add(info)) { // input already added
 			return false;
 		}
-		info.setEditorInput(i_editorInput);
 		
 		try {
 
@@ -146,14 +145,17 @@ public abstract class AbstractMultiEditor3D extends
 					log.info("No nestable editor found for input " //$NON-NLS-1$
 						+ i_editorInput);
 				}
+				return false;
 			}
 			info.setNestableEditor(nestedEditor);
 			nestedEditor.setMultiEditor(this);
 			configureNestableEditor(nestedEditor);
 
 			String id = info.getEditorID();
-			if (id == null)
+			if (id == null) {
 				id = getEditorSite().getId();
+				info.setEditorID(id);
+			}
 
 			IEditorSite nestedEditorSiteProxy =
 				NestedEditorSite.createNestedEditorSite(id, getEditorSite());
@@ -164,11 +166,9 @@ public abstract class AbstractMultiEditor3D extends
 				Object editorContent =
 					nestedEditor.initializeAsNested(getGraphicalViewer(),
 						m_multiFactory, m_container);
-
-				addNestedPalette(nestedEditor.createPaletteDrawer());
-				
 				info.setContents(editorContent);
-
+				
+				addNestedPalette(nestedEditor.createPaletteDrawer());
 				fireMultiEditorChangeEvent(new MultiEditorChangeEvent(this,
 					nestedEditor, editorContent, Type.added));
 

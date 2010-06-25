@@ -25,57 +25,61 @@ import org.eclipse.ui.IEditorSite;
  * @since Jun 25, 2010
  */
 public class NestedEditorInfo implements INestedEditorInfo {
-	
-	public static class NestedEditorInfoList implements Iterable<NestedEditorInfo> {
-		
-		protected Vector<NestedEditorInfo> infos = new Vector<NestedEditorInfo>();
-		
+
+	public static class NestedEditorInfoList implements
+			Iterable<NestedEditorInfo> {
+
+		protected Vector<NestedEditorInfo> infos =
+			new Vector<NestedEditorInfo>();
+
 		private static final long serialVersionUID = 1475599197292250765L;
-		
-		public boolean contains(Object key) {
-			for (NestedEditorInfo info: infos) {
-				if (info.getKey().equals(key)) 
+
+		public boolean contains(IEditorInput key) {
+			if (key==null) return false;
+			for (NestedEditorInfo info : infos) {
+				if (info.getEditorInput().equals(key)
+					|| info.getEditorInput().getName().equals(key.getName()))
 					return true;
 			}
 			return false;
 		}
 		
-		public boolean add(NestedEditorInfo i_element) {
-			if (contains(i_element.getKey())) return false;
-			infos.add(i_element);
-			return true;
+		public boolean contains(INestedEditorInfo info) {
+			if (info==null)
+				return false;
+			return contains(info.getEditorInput());
 		}
 		
-		public boolean remove(NestedEditorInfo i_element) {
-			return infos.remove(i_element);
+		public boolean add(NestedEditorInfo info) {
+			if (info == null) // parameter precondition
+				throw new NullPointerException("info must not be null");
+			if (contains(info)) return false;
+			return infos.add(info);
 		}
-		
-		public NestedEditorInfo getByKey(Object i_key) {
-			for (NestedEditorInfo info: infos) {
-				if (info.getKey().equals(i_key)) 
-					return info;
-			}
-			return null;
+
+		public boolean remove(INestedEditorInfo info) {
+			return infos.remove(info);
 		}
-		
+
 		public NestedEditorInfo getByEditorInput(IEditorInput i_editorInput) {
-			for (NestedEditorInfo info: infos) {
-				if (info.getEditorInput().equals(i_editorInput)) 
-					return info;
-			}
-			return null;
-		}
-		
-		public NestedEditorInfo getByContents(Object i_contents) {
-			for (NestedEditorInfo info: infos) {
-				if (info.getContents().equals(i_contents)) 
+			for (NestedEditorInfo info : infos) {
+				if (info.getEditorInput().equals(i_editorInput))
 					return info;
 			}
 			return null;
 		}
 
-		/** 
+		public NestedEditorInfo getByContents(Object i_contents) {
+			for (NestedEditorInfo info : infos) {
+				if (info.getContents().equals(i_contents))
+					return info;
+			}
+			return null;
+		}
+
+		/**
 		 * {@inheritDoc}
+		 * 
 		 * @see java.lang.Iterable#iterator()
 		 */
 		public Iterator<NestedEditorInfo> iterator() {
@@ -88,7 +92,7 @@ public class NestedEditorInfo implements INestedEditorInfo {
 		public int size() {
 			return infos.size();
 		}
-		
+
 	}
 
 	String m_editorID;
@@ -102,31 +106,29 @@ public class NestedEditorInfo implements INestedEditorInfo {
 	INestableEditor m_nestableEditor;
 
 	State m_state;
-	
+
 	HashMap<String, Object> m_properties;
 
 	Object m_contents;
-	
-	Object m_key;
 
 	/**
 	 * Creates a new info with the given key.
 	 * 
-	 * @param i_key must not be null
+	 * @param i_editorInput must not be null
 	 * @param i_multiEditor must not be null
 	 */
-	public NestedEditorInfo(Object i_key, IMultiEditor i_multiEditor) {
-		if (i_key == null) // parameter precondition
-			throw new NullPointerException("i_key must not be null");
+	public NestedEditorInfo(IEditorInput i_editorInput,
+			IMultiEditor i_multiEditor) {
+		if (i_editorInput == null) // parameter precondition
+			throw new NullPointerException("i_editorInput must not be null");
 		if (i_multiEditor == null) // parameter precondition
 			throw new NullPointerException("i_multiEditor must not be null");
-		
-		m_key = i_key;
+
+		m_editorInput = i_editorInput;
 		m_multiEditor = i_multiEditor;
 		m_state = State.starting;
 		m_properties = new HashMap<String, Object>();
 	}
-	
 
 	/**
 	 * {@inheritDoc}
@@ -190,12 +192,13 @@ public class NestedEditorInfo implements INestedEditorInfo {
 	public State getState() {
 		return m_state;
 	}
-	
+
 	/**
-	 * Sets the state of the nested editor. The state is initially set to 
+	 * Sets the state of the nested editor. The state is initially set to
 	 * {@link State#starting}. When the editor has been initialized, the state
-	 * is changed to {@value State#active}. This method should only be called
-	 * by the multi editor nesting the editor.
+	 * is changed to {@value State#active}. This method should only be called by
+	 * the multi editor nesting the editor.
+	 * 
 	 * @param i_state
 	 */
 	public void setState(State i_state) {
@@ -216,8 +219,6 @@ public class NestedEditorInfo implements INestedEditorInfo {
 		}
 	}
 
-	
-
 	/**
 	 * Sets the editor ID, this method should only be called be the multi editor
 	 * nesting the nestable editor.
@@ -226,16 +227,6 @@ public class NestedEditorInfo implements INestedEditorInfo {
 	 */
 	public void setEditorID(String i_editorID) {
 		m_editorID = i_editorID;
-	}
-
-	/**
-	 * Sets the editor input, this method should only be called be the multi
-	 * editor nesting the nestable editor.
-	 * 
-	 * @param i_editorInput the m_editorInput to set
-	 */
-	public void setEditorInput(IEditorInput i_editorInput) {
-		m_editorInput = i_editorInput;
 	}
 
 	/**
@@ -270,38 +261,30 @@ public class NestedEditorInfo implements INestedEditorInfo {
 	}
 
 	/**
-	 * Sets the contents model of the nested editor, this method should only
-	 * be called be the multi editor nesting the nestable editor.
+	 * Sets the contents model of the nested editor, this method should only be
+	 * called be the multi editor nesting the nestable editor.
 	 */
 	public void setContents(Object contents) {
 		m_contents = contents;
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
-	 * @see org.eclipse.gef3d.ext.multieditor.INestedEditorInfo#getKey()
-	 */
-	public Object getKey() {
-		return m_key; 
-	}
-
-
-	/** 
-	 * {@inheritDoc}
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("NestedEditorInfo [m_contents=").append(m_contents)
-			.append(", m_editorID=").append(m_editorID).append(
-				", m_editorInput=").append(m_editorInput).append(", m_key=")
-			.append(m_key).append(", m_nestableEditor=").append(
-				m_nestableEditor).append(", m_state=").append(m_state).append(
-				"]");
+		builder.append("NestedEditorInfo (").append(getState()).append("): ")
+			.append(getEditorInput().getName()).append(" [");
+		if (getNestableEditor() != null)
+			builder.append("editor=").append(
+				getNestableEditor().getClass().getSimpleName());
+		if (getEditorID() != null)
+			builder.append(", id=").append(getEditorID());
+		builder.append("]");
 		return builder.toString();
 	}
-	
-	
 
 }
