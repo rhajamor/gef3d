@@ -162,20 +162,20 @@ public class DiagramEditPart3D extends EPackageEditPart { // DiagramEditPart {
 	 * 
 	 */
 	private void autoResize() {
-		int maxX = 400;
-		int maxY = 400;
-		Rectangle rect = getChildrenBounds();
+		int width = 400;
+		int height = 400;
 		int border = 30;
 		int depth = 20;
 
+		Rectangle rect = getChildrenBounds();
 		rect.width += border;
 		rect.height += border;
 
-		if (maxX < rect.width)
-			maxX = rect.width;
-		if (maxY < rect.height)
-			maxY = rect.height;
+		if (width < rect.width)
+			width = rect.width;
+		if (height < rect.height)
+			height = rect.height;
 		((Figure3D) getFigure()).getPosition3D().setSize3D(
-			new Vector3fImpl(maxX + border, maxY + border, depth));
+			new Vector3fImpl(width + border, height + border, depth));
 	}
 }

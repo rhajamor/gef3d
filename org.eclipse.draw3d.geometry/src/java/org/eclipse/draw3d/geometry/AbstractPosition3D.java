@@ -403,8 +403,16 @@ public abstract class AbstractPosition3D implements Position3D {
 			// transformations are applied in reverse order
 			Position3D parent = getParentPosition();
 			if (parent != null) {
-				Math3D.translate(parent.getRotationLocationMatrix(),
-					getLocation3D(), m_rotationLocationMatrix);
+
+				Math3D.transform(getLocation3D(),
+					parent.getRotationLocationMatrix(), location);
+				m_rotationLocationMatrix.set(IMatrix4f.IDENTITY);
+				m_rotationLocationMatrix.a41 += location.getX();
+				m_rotationLocationMatrix.a42 += location.getY();
+				m_rotationLocationMatrix.a43 += location.getZ();
+
+				// Math3D.translate(parent.getRotationLocationMatrix(),
+				// getLocation3D(), m_rotationLocationMatrix);
 				m_absoluteRotationMatrix.set(parent.getAbsoluteRotationMatrix());
 			} else {
 				Math3D.translate(IMatrix4f.IDENTITY, getLocation3D(),
