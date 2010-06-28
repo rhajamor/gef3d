@@ -200,10 +200,7 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 	protected Vector3f getZAxis(Vector3f io_result) {
 
 		ICamera camera = m_scene.getCamera();
-		Vector3f zAxis = camera.getViewDirection(io_result);
-
-		Math3D.normalise(zAxis, zAxis);
-		return zAxis;
+		return camera.getViewDirection(io_result);
 	}
 
 	/**

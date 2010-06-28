@@ -125,7 +125,7 @@ public interface ICamera {
 	 * 
 	 * @param io_result the result vector, if <code>null</code>, a new vector
 	 *            will be returned
-	 * @return the current view direction, which is not neccesarily normalized
+	 * @return the normalized current view direction vector
 	 */
 	public Vector3f getViewDirection(Vector3f io_result);
 

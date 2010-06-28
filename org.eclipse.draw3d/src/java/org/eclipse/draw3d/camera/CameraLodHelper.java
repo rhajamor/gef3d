@@ -14,12 +14,12 @@ import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.graphics3d.ILodHelper;
 import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
- * CameraLodHelper There should really be more documentation here.
+ * An implementation of {@link ILodHelper} that uses the camera to determine LOD
+ * status.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -29,29 +29,14 @@ public class CameraLodHelper implements ILodHelper {
 
 	private ICamera m_camera;
 
-	private Vector3f m_cDir = new Vector3fImpl();
-
-	private Vector3f m_ncDir = new Vector3fImpl();
-
+	/**
+	 * Creates a new instance that uses the given camera.
+	 * 
+	 * @param i_camera
+	 */
 	public CameraLodHelper(ICamera i_camera) {
 
 		m_camera = i_camera;
-	}
-
-	private IVector3f getNormalizedCameraDirection() {
-
-		Vector3f cDir = Draw3DCache.getVector3f();
-		try {
-			m_camera.getViewDirection(cDir);
-			if (!m_cDir.equals(cDir)) {
-				m_cDir.set(cDir);
-				Math3D.normalise(m_cDir, m_ncDir);
-			}
-
-			return m_ncDir;
-		} finally {
-			Draw3DCache.returnVector3f(cDir);
-		}
 	}
 
 	/**
@@ -65,17 +50,19 @@ public class CameraLodHelper implements ILodHelper {
 
 		Vector3f cPos = Draw3DCache.getVector3f();
 		Vector3f v = Draw3DCache.getVector3f();
+		Vector3f vDir = Draw3DCache.getVector3f();
 		try {
+			m_camera.getViewDirection(vDir);
 			m_camera.getPosition(cPos);
 			Math3D.sub(i_position, cPos, v);
 
 			float d2 = v.lengthSquared();
 			float sa = i_size.getX() * i_size.getY() / d2;
 
-			float cosa = Math3D.dot(getNormalizedCameraDirection(), i_normal);
+			float cosa = Math3D.dot(vDir, i_normal);
 			return sa * Math.abs(cosa);
 		} finally {
-			Draw3DCache.returnVector3f(cPos, v);
+			Draw3DCache.returnVector3f(cPos, v, vDir);
 		}
 	}
 
@@ -90,23 +77,25 @@ public class CameraLodHelper implements ILodHelper {
 
 		Vector3f cPos = Draw3DCache.getVector3f();
 		Vector3f v = Draw3DCache.getVector3f();
+		Vector3f vDir = Draw3DCache.getVector3f();
 		try {
 			v.setX(i_position.getX() + i_size.getX() / 2);
 			v.setY(i_position.getY() + i_size.getY() / 2);
 			v.setZ(i_position.getZ());
 
+			m_camera.getViewDirection(vDir);
 			m_camera.getPosition(cPos);
 			Math3D.sub(v, cPos, v);
 
 			float d = v.length();
 
-			float cosa = Math3D.dot(getNormalizedCameraDirection(), i_normal);
+			float cosa = Math3D.dot(vDir, i_normal);
 			if (cosa == 0)
 				return Float.MAX_VALUE;
 
 			return d / Math.abs(cosa);
 		} finally {
-			Draw3DCache.returnVector3f(cPos, v);
+			Draw3DCache.returnVector3f(cPos, v, vDir);
 		}
 	}
 
