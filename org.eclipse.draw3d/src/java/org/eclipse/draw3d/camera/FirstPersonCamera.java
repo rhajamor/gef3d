@@ -328,6 +328,16 @@ public class FirstPersonCamera extends AbstractCamera {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.camera.ICamera#getFar()
+	 */
+	public float getFar() {
+
+		return m_far;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.camera.ICamera#getNear()
 	 */
 	public float getNear() {

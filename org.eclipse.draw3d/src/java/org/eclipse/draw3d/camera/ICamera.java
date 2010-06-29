@@ -69,6 +69,13 @@ public interface ICamera {
 	public float getDistance(IVector3f i_point);
 
 	/**
+	 * Distance of the far clipping plane from the camera.
+	 * 
+	 * @return the distance of the far clipping plane
+	 */
+	public float getFar();
+
+	/**
 	 * Distance of the viewing plane from the camera.
 	 * 
 	 * @return the distance of the viewing plane
