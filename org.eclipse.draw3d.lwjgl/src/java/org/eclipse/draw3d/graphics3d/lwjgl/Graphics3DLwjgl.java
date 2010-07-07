@@ -98,7 +98,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * @todo We have to find a better mechanism for ensuring 2D content to be
 	 *       placed on top of surface plane
 	 */
-	private static final float OFFSET_2DCONTENT_SURFACE = -0.2f;
+	public static final float OFFSET_2DCONTENT_SURFACE = -0.2f;
 
 	private static class PolygonTesselator implements GLUtessellatorCallback {
 

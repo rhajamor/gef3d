@@ -61,17 +61,23 @@ public class LwjglFontChar {
 	private final int m_width;
 
 	/**
+	 * The advance width of this character.
+	 */
+	private int m_advance;
+
+	/**
 	 * Creates a new character with the given width and height.
 	 * 
 	 * @param i_char the character
 	 * @param i_width the width of this character
 	 * @param i_height the height of the font this character belongs to
+	 * @param i_advance the advance width of this character
 	 */
-	public LwjglFontChar(char i_char, int i_width, int i_height) {
-
+	public LwjglFontChar(char i_char, int i_width, int i_height, int i_advance) {
 		m_char = i_char;
 		m_width = i_width;
 		m_height = i_height;
+		m_advance = i_advance;
 	}
 
 	/**
@@ -80,7 +86,6 @@ public class LwjglFontChar {
 	 * @return the width of this character
 	 */
 	public int getWidth() {
-
 		return m_width;
 	}
 
@@ -97,7 +102,6 @@ public class LwjglFontChar {
 	 */
 	public void render(IMatrix4f i_transformation, float i_x, float i_y,
 		FloatBuffer i_vertexBuffer, FloatBuffer i_coordBuffer) {
-
 		if (i_transformation == null
 			|| IMatrix4f.IDENTITY.equals(i_transformation)) {
 			i_vertexBuffer.put(i_x);
@@ -159,7 +163,6 @@ public class LwjglFontChar {
 	 * Renders this character directly in immediate mode.
 	 */
 	public void render() {
-
 		GL11.glBegin(GL11.GL_QUADS);
 
 		GL11.glTexCoord2f(m_s1, m_t1);
@@ -175,6 +178,15 @@ public class LwjglFontChar {
 	}
 
 	/**
+	 * Returns the advance width of this character.
+	 * 
+	 * @return the advance the advance width of this character
+	 */
+	public int getAdvance() {
+		return m_advance;
+	}
+
+	/**
 	 * Sets the texture coordinates of this character.
 	 * 
 	 * @param i_s1 the S coordinate of the upper left corner
@@ -183,7 +195,6 @@ public class LwjglFontChar {
 	 * @param i_t2 the T coordinate of the lower right corner
 	 */
 	public void setTextureCoords(float i_s1, float i_t1, float i_s2, float i_t2) {
-
 		m_s1 = i_s1;
 		m_t1 = i_t1;
 		m_s2 = i_s2;
@@ -197,7 +208,6 @@ public class LwjglFontChar {
 	 */
 	@Override
 	public String toString() {
-
 		return Character.toString(m_char);
 	}
 }

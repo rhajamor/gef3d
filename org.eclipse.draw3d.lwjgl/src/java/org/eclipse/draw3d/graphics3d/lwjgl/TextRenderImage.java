@@ -62,7 +62,7 @@ public class TextRenderImage implements RenderImage {
 	 * If distance of text to camera is less this value, the text is rendered
 	 * using vector fonts.
 	 */
-	private static final float LOD_VF = 0.12f; // 1100f;
+	private static final float LOD_VF = 0.01f; // 1100f;
 
 	private static final float LOD_B = 0.1f;
 
@@ -72,7 +72,7 @@ public class TextRenderImage implements RenderImage {
 
 	private Vector3f m_absPos = new Vector3fImpl();
 
-	private float[] m_color = new float[4];
+	private float[] m_c = new float[4];
 
 	private Vector3f m_normal = new Vector3fImpl(IVector3f.Z_AXIS_NEG);
 
@@ -95,7 +95,7 @@ public class TextRenderImage implements RenderImage {
 		TextRenderRule textRule = i_primitive.getRenderRule().asText();
 
 		ColorConverter.toFloatArray(textRule.getTextColor(),
-			textRule.getAlpha(), m_color);
+			textRule.getAlpha(), m_c);
 
 		Dimension extent = i_primitive.getExtent();
 		// m_absPos.set(extent.width / 2f, extent.height / 2f, 0);
@@ -191,24 +191,34 @@ public class TextRenderImage implements RenderImage {
 	 */
 	private void renderLOD(float l) {
 		if (l <= LOD_VF) {
-			GL11.glColor4f(m_color[0], m_color[1], m_color[2], m_color[3]);
+			// GL11.glColor4f(m_c[0], m_c[1], m_c[2], m_c[3]);
+			GL11.glColor4f(1, 0, 0, 1);
 			m_vectorFont.render(m_text);
 		} else if (l <= LOD_VF + LOD_B) {
 			float f = (l - LOD_VF) / LOD_B;
 
-			GL11.glColor4f(m_color[0], m_color[1], m_color[2], (1 - f)
-				* m_color[3]);
-			m_vectorFont.render(m_text);
-
-			GL11.glColor4f(m_color[0], m_color[1], m_color[2], f * m_color[3]);
+			// GL11.glColor4f(m_c[0], m_c[1], m_c[2], f * m_c[3]);
+			GL11.glColor4f(0, 1, 0, 1); // f);
 			m_textureFont.renderString(m_text, 0, 0, false);
+
+			GL11.glMatrixMode(GL11.GL_MODELVIEW);
+			GL11.glPushMatrix();
+			try {
+				GL11.glTranslatef(0, 0,
+					Graphics3DLwjgl.OFFSET_2DCONTENT_SURFACE);
+				// GL11.glColor4f(m_c[0], m_c[1], m_c[2], (1 - f) * m_c[3]);
+				GL11.glColor4f(1, 0, 0, 1); //1 - f);
+				m_vectorFont.render(m_text);
+			} finally {
+				GL11.glPopMatrix();
+			}
 		} else if (l <= LOD_TF - LOD_B) {
-			GL11.glColor4f(m_color[0], m_color[1], m_color[2], m_color[3]);
-			m_vectorFont.render(m_text);
+			GL11.glColor4f(0, 1, 0, 1);
+			m_textureFont.renderString(m_text, 0, 0, false);
 		} else {
 			float f = (LOD_TF - l) / LOD_B;
-			GL11.glColor4f(m_color[0], m_color[1], m_color[2], f * m_color[3]);
-			m_vectorFont.render(m_text);
+			GL11.glColor4f(0, 1, 0, f);
+			m_textureFont.renderString(m_text, 0, 0, false);
 		}
 	}
 }

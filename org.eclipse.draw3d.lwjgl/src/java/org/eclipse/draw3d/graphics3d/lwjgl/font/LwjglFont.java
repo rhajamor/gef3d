@@ -64,13 +64,13 @@ public class LwjglFont {
 
 	private final String m_description;
 
+	private DisplayListManager m_displayListManager;
+
 	private boolean m_disposed = false;
 
 	private final char m_endChar;
 
 	private FontMetrics m_fontMetrics;
-
-	private DisplayListManager m_displayListManager;
 
 	/**
 	 * The height of the character texture.
@@ -79,7 +79,7 @@ public class LwjglFont {
 
 	private final char m_startChar;
 
-	private int m_tabWidth;
+	private int m_tabAdvance;
 
 	private int m_textureId = -1;
 
@@ -130,7 +130,7 @@ public class LwjglFont {
 				gc.setFont(i_font);
 				m_fontMetrics = gc.getFontMetrics();
 
-				m_tabWidth = gc.textExtent("\t").x;
+				m_tabAdvance = gc.getAdvanceWidth('\t');
 				int height = m_fontMetrics.getHeight();
 
 				// calculate the area needed to render all available characters
@@ -140,8 +140,10 @@ public class LwjglFont {
 					char c = (char) (m_startChar + i);
 					String s = Character.toString(c);
 					Point cExtent = gc.stringExtent(s);
+					int advance = gc.getAdvanceWidth(c);
 
-					m_chars[i] = new LwjglFontChar(c, cExtent.x, height);
+					m_chars[i] =
+						new LwjglFontChar(c, cExtent.x, height, advance);
 					area += (cExtent.x + 1) * (height + 1);
 				}
 
@@ -314,7 +316,7 @@ public class LwjglFont {
 	}
 
 	/**
-	 * Measues the extent of the given string.
+	 * Measures the extent of the given string.
 	 * 
 	 * @param i_string the string to measure
 	 * @param i_expand specifies whether newline and tab character should be
@@ -340,7 +342,7 @@ public class LwjglFont {
 			switch (c) {
 			case '\t':
 				if (i_expand)
-					extent.x += m_tabWidth;
+					extent.x += m_tabAdvance;
 				break;
 
 			case '\n':
@@ -351,26 +353,13 @@ public class LwjglFont {
 				int index = c - m_startChar;
 				if (index >= 0 && index < m_chars.length) {
 					LwjglFontChar fontChar = m_chars[index];
-					extent.x += fontChar.getWidth();
+					extent.x += fontChar.getAdvance();
 				}
 				break;
 			}
 		}
 
 		return extent;
-	}
-
-	/**
-	 * Returns the texture ID of this font.
-	 * 
-	 * @return the texture ID
-	 */
-	public int getTextureId() {
-
-		if (m_disposed)
-			throw new IllegalStateException("font is disposed");
-
-		return m_textureId;
 	}
 
 	/**
@@ -413,6 +402,19 @@ public class LwjglFont {
 	}
 
 	/**
+	 * Returns the texture ID of this font.
+	 * 
+	 * @return the texture ID
+	 */
+	public int getTextureId() {
+
+		if (m_disposed)
+			throw new IllegalStateException("font is disposed");
+
+		return m_textureId;
+	}
+
+	/**
 	 * Render the given string at the given coordinates. The characters are not
 	 * rendered directly, but their vertex and texture coordinates are put into
 	 * the given buffers.
@@ -451,7 +453,7 @@ public class LwjglFont {
 				switch (c) {
 				case '\t':
 					if (i_expand)
-						x += m_tabWidth;
+						x += m_tabAdvance;
 					break;
 
 				case '\n':
@@ -465,7 +467,7 @@ public class LwjglFont {
 						fontChar.render(i_transformation, x, y, i_vertexBuffer,
 							i_coordBuffer);
 
-						x += fontChar.getWidth();
+						x += fontChar.getAdvance();
 					}
 					break;
 				}
@@ -518,7 +520,7 @@ public class LwjglFont {
 					switch (c) {
 					case '\t':
 						if (i_expand)
-							GL11.glTranslatef(m_tabWidth, 0, 0);
+							GL11.glTranslatef(m_tabAdvance, 0, 0);
 						break;
 
 					case '\n':
@@ -533,7 +535,7 @@ public class LwjglFont {
 						if (index >= 0 && index < m_chars.length) {
 							LwjglFontChar fontChar = m_chars[index];
 							m_displayListManager.executeDisplayList(fontChar);
-							GL11.glTranslatef(fontChar.getWidth(), 0, 0);
+							GL11.glTranslatef(fontChar.getAdvance(), 0, 0);
 						}
 						break;
 					}

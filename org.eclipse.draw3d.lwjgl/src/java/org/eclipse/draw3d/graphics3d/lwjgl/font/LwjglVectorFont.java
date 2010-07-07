@@ -430,8 +430,8 @@ public class LwjglVectorFont {
 			GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
 			try {
 				GL11.glVertexPointer(2, GL11.GL_FLOAT, 0, 0);
-				// TODO possible creates marginally more lists than need (e.g.
-				// for space char)
+				// TODO possibly creates more lists than needed (e.g. for space
+				// char)
 				m_listBaseId = GL11.glGenLists(charCount);
 				for (int i = 0; i < charCount; i++) {
 					int listId = m_listBaseId + i;
