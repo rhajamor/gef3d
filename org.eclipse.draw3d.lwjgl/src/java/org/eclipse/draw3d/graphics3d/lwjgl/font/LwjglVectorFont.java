@@ -303,11 +303,6 @@ public class LwjglVectorFont {
 		}
 	}
 
-	public Font getAwtFont() {
-
-		return m_awtFont;
-	}
-
 	private int m_listBaseId;
 
 	public void initialize() {
