@@ -92,8 +92,7 @@ public class LwjglTextVBO extends LwjglVBO {
 		Font font = renderRule.getFont();
 		boolean fontAntialias = renderRule.isFontAntialias();
 
-		m_glFont =
-			i_fontManager.getFont(font, (char) 32, (char) 127, fontAntialias);
+		m_glFont = i_fontManager.getFont(font, 128, fontAntialias);
 
 		boolean first = true;
 		Color constColor = null;

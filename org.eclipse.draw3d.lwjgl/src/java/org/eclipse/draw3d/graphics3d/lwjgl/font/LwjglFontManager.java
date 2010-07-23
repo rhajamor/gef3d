@@ -82,8 +82,7 @@ public class LwjglFontManager {
 	 * @return the GL font
 	 * @throws NullPointerException if the given SWT font is <code>null</code>
 	 */
-	public LwjglFont getFont(Font i_font, char i_startChar, char i_endChar,
-		boolean i_antiAliased) {
+	public LwjglFont getFont(Font i_font, int i_numChars, boolean i_antiAliased) {
 
 		if (m_disposed)
 			throw new IllegalStateException("font manager is disposed");
@@ -91,13 +90,12 @@ public class LwjglFontManager {
 		if (i_font == null)
 			throw new NullPointerException("i_font must not be null");
 
-		GLFontKey key =
-			new GLFontKey(i_font, i_startChar, i_endChar, i_antiAliased);
+		GLFontKey key = new GLFontKey(i_font, i_numChars, i_antiAliased);
 
 		LwjglFont glFont = m_fonts.get(key);
 		if (glFont == null) {
 			glFont =
-				new LwjglFont(i_font, i_startChar, i_endChar, i_antiAliased,
+				new LwjglFont(i_font, i_numChars, i_antiAliased,
 					m_displayListManager);
 			m_fonts.put(key, glFont);
 

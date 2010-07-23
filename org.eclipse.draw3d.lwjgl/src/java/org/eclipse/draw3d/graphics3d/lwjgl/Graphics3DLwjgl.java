@@ -441,16 +441,14 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	}
 
 	private LwjglVectorFont getVectorFont(
-		org.eclipse.swt.graphics.Font i_swtFont, char i_startChar,
-		char i_endChar, boolean i_antialias) {
+		org.eclipse.swt.graphics.Font i_swtFont, int i_numChars,
+		boolean i_antialias) {
 
-		GLFontKey key =
-			new GLFontKey(i_swtFont, i_startChar, i_endChar, i_antialias);
+		GLFontKey key = new GLFontKey(i_swtFont, i_numChars, i_antialias);
 		LwjglVectorFont vectorFont = m_vectorFonts.get(key);
 		if (vectorFont == null) {
 			vectorFont =
-				new LwjglVectorFont(i_swtFont, i_startChar, i_endChar,
-					i_antialias);
+				new LwjglVectorFont(i_swtFont, i_numChars, i_antialias);
 			vectorFont.initialize();
 			m_vectorFonts.put(key, vectorFont);
 		}
@@ -491,11 +489,9 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 				} else if (clazz.isText()) {
 					TextRenderRule textRule = clazz.getRenderRule().asText();
 					LwjglVectorFont vectorFont =
-						getVectorFont(textRule.getFont(), (char) 32,
-							(char) 127, true);
+						getVectorFont(textRule.getFont(), 128, true);
 					LwjglFont textureFont =
-						getFontManager().getFont(textRule.getFont(), (char) 32,
-							(char) 127, true);
+						getFontManager().getFont(textRule.getFont(), 128, true);
 
 					final List<TextRenderImage> textImages =
 						new LinkedList<TextRenderImage>();
@@ -647,8 +643,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 			IMatrix3f t = textPrimitive.getTransformation();
 			AffineTransform af =
-				new AffineTransform(t.get(0, 0), t.get(0, 1), t.get(1, 0), t
-					.get(1, 1), t.get(2, 0), t.get(2, 1));
+				new AffineTransform(t.get(0, 0), t.get(0, 1), t.get(1, 0),
+					t.get(1, 1), t.get(2, 0), t.get(2, 1));
 
 			Point p = textPrimitive.getPosition();
 			af.translate(p.x, p.y + size);
@@ -1402,9 +1398,9 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			SolidRenderRule solid = renderRule.asSolid();
 
 			m_tesselator.gluTessProperty(GLU.GLU_TESS_BOUNDARY_ONLY, 0);
-			m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE, solid
-				.getFillRule() == SWT.FILL_EVEN_ODD ? GLU.GLU_TESS_WINDING_ODD
-				: GLU.GLU_TESS_WINDING_NONZERO);
+			m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE,
+				solid.getFillRule() == SWT.FILL_EVEN_ODD
+					? GLU.GLU_TESS_WINDING_ODD : GLU.GLU_TESS_WINDING_NONZERO);
 		}
 
 		for (Primitive primitive : i_set.getPrimitives()) {

@@ -93,15 +93,14 @@ public class LwjglFont {
 	 * characters defined by the given character range.
 	 * 
 	 * @param i_font the SWT font to render
-	 * @param i_startChar the first available character
-	 * @param i_endChar the last available character
+	 * @param i_numChars the number of available characters
 	 * @param i_antiAliased whether or not the font should be rendered with
 	 *            antialiasing
 	 * @param i_displayListManager the display list manager
 	 * @throws NullPointerException if the given font is <code>null</code>
 	 */
-	public LwjglFont(Font i_font, char i_startChar, char i_endChar,
-			boolean i_antiAliased, DisplayListManager i_displayListManager) {
+	public LwjglFont(Font i_font, int i_numChars, boolean i_antiAliased,
+			DisplayListManager i_displayListManager) {
 
 		if (i_font == null)
 			throw new NullPointerException("i_font must not be null");
@@ -114,8 +113,8 @@ public class LwjglFont {
 
 		m_displayListManager.interruptDisplayList();
 		try {
-			m_startChar = i_startChar;
-			m_endChar = i_endChar;
+			m_startChar = 0;
+			m_endChar = (char) (i_numChars - 1);
 
 			int numChars = m_endChar - m_startChar + 1;
 			m_chars = new LwjglFontChar[numChars];
@@ -200,8 +199,8 @@ public class LwjglFont {
 
 				// create a luminance alpha texture from the image
 				ColorBufferInfo info =
-					new ColorBufferInfo(m_width, m_height, GL11.GL_LUMINANCE_ALPHA,
-						GL11.GL_UNSIGNED_BYTE, 1);
+					new ColorBufferInfo(m_width, m_height,
+						GL11.GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE, 1);
 
 				ImageConverter converter = ImageConverter.getInstance();
 				ByteBuffer buffer =

@@ -1194,8 +1194,7 @@ public class LwjglGraphics extends StatefulGraphics {
 		}
 
 		Font font = getState().getFont();
-		return m_fontManager.getFont(font, (char) 32, (char) 127,
-			antialias == SWT.ON);
+		return m_fontManager.getFont(font, 128, antialias == SWT.ON);
 	}
 
 	private void glResetRasterOffset() {

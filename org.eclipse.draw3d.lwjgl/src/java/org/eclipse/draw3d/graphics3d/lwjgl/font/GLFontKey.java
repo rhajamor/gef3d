@@ -18,17 +18,14 @@ public class GLFontKey {
 	 * Creates a new key for a given font and character range.
 	 * 
 	 * @param i_font the font
-	 * @param i_startChar the start character
-	 * @param i_endChar the end character
+	 * @param i_numChars the number of characters
 	 * @param i_antiAliased whether or not the font is antialiased
 	 */
-	public GLFontKey(Font i_font, char i_startChar, char i_endChar,
-			boolean i_antiAliased) {
+	public GLFontKey(Font i_font, int i_numChars, boolean i_antiAliased) {
 
 		m_hashCode = 17;
 		m_hashCode = 37 * getFontHashCode(i_font);
-		m_hashCode = 37 * m_hashCode + new Character(i_startChar).hashCode();
-		m_hashCode = 37 * m_hashCode + new Character(i_endChar).hashCode();
+		m_hashCode = 37 * m_hashCode + i_numChars;
 		m_hashCode = 37 * m_hashCode + new Boolean(i_antiAliased).hashCode();
 	}
 
