@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Draw3D Font Rendering
-Bundle-SymbolicName: org.eclipse.draw3d.font
+Bundle-SymbolicName: org.eclipse.draw3d.font;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.eclipse.draw3d.font.Draw3DFontPlugin
 Bundle-Vendor: Kristian Duske

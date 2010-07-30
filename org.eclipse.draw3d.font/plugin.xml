@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="org.eclipse.draw3d.font"
+            name="Draw3D">
+      </category>
+      <view
+            category="org.eclipse.draw3d.font"
+            class="org.eclipse.draw3d.font.viewer.Draw3DFontViewer"
+            icon="icons/sample.gif"
+            id="org.eclipse.draw3d.font.viewer.Draw3DFontViewer"
+            name="Font Viewer">
+      </view>
+   </extension>
+
+</plugin>
