@@ -190,35 +190,38 @@ public class TextRenderImage implements RenderImage {
 	 * @param l normalized distance to camera
 	 */
 	private void renderLOD(float l) {
-		if (l <= LOD_VF) {
-			// GL11.glColor4f(m_c[0], m_c[1], m_c[2], m_c[3]);
-			GL11.glColor4f(1, 0, 0, 1);
-			m_vectorFont.render(m_text);
-		} else if (l <= LOD_VF + LOD_B) {
-			float f = (l - LOD_VF) / LOD_B;
 
-			// GL11.glColor4f(m_c[0], m_c[1], m_c[2], f * m_c[3]);
-			GL11.glColor4f(0, 1, 0, 1); // f);
-			m_textureFont.renderString(m_text, 0, 0, false);
-
-			GL11.glMatrixMode(GL11.GL_MODELVIEW);
-			GL11.glPushMatrix();
-			try {
-				GL11.glTranslatef(0, 0,
-					Graphics3DLwjgl.OFFSET_2DCONTENT_SURFACE);
-				// GL11.glColor4f(m_c[0], m_c[1], m_c[2], (1 - f) * m_c[3]);
-				GL11.glColor4f(1, 0, 0, 1); //1 - f);
-				m_vectorFont.render(m_text);
-			} finally {
-				GL11.glPopMatrix();
-			}
-		} else if (l <= LOD_TF - LOD_B) {
-			GL11.glColor4f(0, 1, 0, 1);
-			m_textureFont.renderString(m_text, 0, 0, false);
-		} else {
-			float f = (LOD_TF - l) / LOD_B;
-			GL11.glColor4f(0, 1, 0, f);
-			m_textureFont.renderString(m_text, 0, 0, false);
-		}
+		GL11.glColor4f(m_c[0], m_c[1], m_c[2], m_c[3]);
+		m_vectorFont.render(l, m_text);
+		// if (l <= LOD_VF) {
+		// // GL11.glColor4f(m_c[0], m_c[1], m_c[2], m_c[3]);
+		// GL11.glColor4f(1, 0, 0, 1);
+		// m_vectorFont.render(l, m_text);
+		// } else if (l <= LOD_VF + LOD_B) {
+		// float f = (l - LOD_VF) / LOD_B;
+		//
+		// // GL11.glColor4f(m_c[0], m_c[1], m_c[2], f * m_c[3]);
+		// // GL11.glColor4f(0, 1, 0, 1); // f);
+		// // m_textureFont.renderString(m_text, 0, 0, false);
+		//
+		// GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		// GL11.glPushMatrix();
+		// try {
+		// GL11.glTranslatef(0, 0,
+		// Graphics3DLwjgl.OFFSET_2DCONTENT_SURFACE);
+		// // GL11.glColor4f(m_c[0], m_c[1], m_c[2], (1 - f) * m_c[3]);
+		// GL11.glColor4f(1, 0, 0, 1); //1 - f);
+		// m_vectorFont.render(l, m_text);
+		// } finally {
+		// GL11.glPopMatrix();
+		// }
+		// } else if (l <= LOD_TF - LOD_B) {
+		// GL11.glColor4f(0, 1, 0, 1);
+		// m_textureFont.renderString(m_text, 0, 0, false);
+		// } else {
+		// float f = (LOD_TF - l) / LOD_B;
+		// GL11.glColor4f(0, 1, 0, f);
+		// m_textureFont.renderString(m_text, 0, 0, false);
+		// }
 	}
 }

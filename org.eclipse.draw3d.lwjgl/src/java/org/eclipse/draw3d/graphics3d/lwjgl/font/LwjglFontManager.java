@@ -17,7 +17,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
-import org.eclipse.draw3d.graphics3d.lwjgl.texture.LwjglTextureManager;
 import org.eclipse.swt.graphics.Font;
 
 /**

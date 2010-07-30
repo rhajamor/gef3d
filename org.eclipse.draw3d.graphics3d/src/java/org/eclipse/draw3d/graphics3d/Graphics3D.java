@@ -94,16 +94,6 @@ public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 	public DisplayListManager getDisplayListManager();
 
 	/**
-	 * Gets an ID for the graphics object associated with the given key object.
-	 * 
-	 * @param i_key The key object.
-	 * @return The ID of the graphics object associated with the key object.
-	 * @throws IllegalArgumentException If there is no graphics object
-	 *             associated with the key object yet.
-	 */
-	public int getGraphics2DId(Object i_key);
-
-	/**
 	 * Creates an offscreen buffer for the current rendering implementation.
 	 * 
 	 * @param i_height The height of the buffer
@@ -142,16 +132,6 @@ public interface Graphics3D extends Graphics3DDraw, Graphics3DUtil {
 	 * @return
 	 */
 	public String getProperty(String key);
-
-	/**
-	 * Returns whether there is a graphics object associate with the given key
-	 * object.
-	 * 
-	 * @param i_key The key object.
-	 * @return <code>true</code> if there was a graphics object associated to
-	 *         the key obect previously or <code>false</code> otherwise
-	 */
-	public boolean hasGraphics2D(Object i_key);
 
 	/**
 	 * @param i_graphics3DDescriptor

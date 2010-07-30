@@ -10,31 +10,35 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.font;
 
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.*;
+
 import java.awt.Font;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphMetrics;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.text.CharacterIterator;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.Vector2fImpl;
 import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.SWT;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.glu.GLUtessellator;
-import org.lwjgl.util.glu.GLUtessellatorCallbackAdapter;
 
 /**
  * VectorFont There should really be more documentation here.
@@ -44,80 +48,6 @@ import org.lwjgl.util.glu.GLUtessellatorCallbackAdapter;
  * @since 22.01.2010
  */
 public class LwjglVectorFont {
-
-	private static class FontCallback extends GLUtessellatorCallbackAdapter {
-
-		private VectorCharData m_charData = new VectorCharData();
-
-		private int m_curType;
-
-		private List<IVector2f> m_curVerts = new LinkedList<IVector2f>();
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallbackAdapter#begin(int)
-		 */
-		@Override
-		public void begin(int i_type) {
-			m_curType = i_type;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallbackAdapter#combine(double[],
-		 *      java.lang.Object[], float[], java.lang.Object[])
-		 */
-		@Override
-		public void combine(double[] i_coords, Object[] i_data,
-			float[] i_weight, Object[] i_outData) {
-
-			i_outData[0] =
-				new Vector2fImpl((float) i_coords[0], (float) i_coords[1]);
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallbackAdapter#end()
-		 */
-		@Override
-		public void end() {
-			m_charData.addPrimitive(m_curType, m_curVerts);
-			m_curVerts.clear();
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallbackAdapter#error(int)
-		 */
-		@Override
-		public void error(int i_errnum) {
-			throw new RuntimeException(
-				"caught error during polygon tesselation: " + i_errnum);
-		}
-
-		public VectorCharData getCharData() {
-			return m_charData;
-		}
-
-		public void reset() {
-			m_curVerts.clear();
-			m_charData = new VectorCharData();
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see org.lwjgl.util.glu.GLUtessellatorCallbackAdapter#vertex(java.lang.Object)
-		 */
-		@Override
-		public void vertex(Object i_vertexData) {
-			m_curVerts.add((IVector2f) i_vertexData);
-		}
-	}
 
 	private static class PrimitiveData {
 		private float[] m_vertices;
@@ -141,11 +71,15 @@ public class LwjglVectorFont {
 
 	private static class RangeCharacterIterator implements CharacterIterator {
 
-		private int m_current = 0;
+		private char m_beginIndex;
+
+		private int m_current;
 
 		private int m_numChars;
 
-		public RangeCharacterIterator(int i_numChars) {
+		public RangeCharacterIterator(char i_startChar, int i_numChars) {
+			m_beginIndex = i_startChar;
+			m_current = m_beginIndex;
 			m_numChars = i_numChars;
 		}
 
@@ -191,7 +125,7 @@ public class LwjglVectorFont {
 		 * @see java.text.CharacterIterator#getBeginIndex()
 		 */
 		public int getBeginIndex() {
-			return 0;
+			return m_beginIndex;
 		}
 
 		/**
@@ -200,7 +134,7 @@ public class LwjglVectorFont {
 		 * @see java.text.CharacterIterator#getEndIndex()
 		 */
 		public int getEndIndex() {
-			return m_numChars;
+			return m_beginIndex + m_numChars;
 		}
 
 		/**
@@ -265,6 +199,7 @@ public class LwjglVectorFont {
 	}
 
 	private static class VectorChar {
+
 		private float m_advanceX;
 
 		private float m_advanceY;
@@ -394,7 +329,7 @@ public class LwjglVectorFont {
 				m_triFanIndices.rewind();
 				m_triFanLengths.rewind();
 
-				GL14.glMultiDrawArrays(GL11.GL_TRIANGLE_FAN, m_triFanIndices,
+				GL14.glMultiDrawArrays(GL_TRIANGLE_FAN, m_triFanIndices,
 					m_triFanLengths);
 			}
 
@@ -402,25 +337,25 @@ public class LwjglVectorFont {
 				m_triStripIndices.rewind();
 				m_triStripLengths.rewind();
 
-				GL14.glMultiDrawArrays(GL11.GL_TRIANGLE_STRIP,
-					m_triStripIndices, m_triStripLengths);
+				GL14.glMultiDrawArrays(GL_TRIANGLE_STRIP, m_triStripIndices,
+					m_triStripLengths);
 			}
 
 			if (m_trisIndices != null) {
 				m_trisIndices.rewind();
 				m_trisLengths.rewind();
-				GL14.glMultiDrawArrays(GL11.GL_TRIANGLES, m_trisIndices,
+				GL14.glMultiDrawArrays(GL_TRIANGLES, m_trisIndices,
 					m_trisLengths);
 			}
 
 			if (m_loopIndices != null) {
 				m_loopIndices.rewind();
 				m_loopLengths.rewind();
-				GL14.glMultiDrawArrays(GL11.GL_LINE_LOOP, m_loopIndices,
+				GL14.glMultiDrawArrays(GL_LINE_LOOP, m_loopIndices,
 					m_loopLengths);
 			}
 
-			GL11.glTranslatef(m_advanceX, m_advanceY, 0);
+			glTranslatef(m_advanceX, m_advanceY, 0);
 		}
 
 		public void setLineLoops(List<PrimitiveData> i_lineLoops) {
@@ -440,8 +375,7 @@ public class LwjglVectorFont {
 		}
 	}
 
-	private static class VectorCharData {
-
+	static class VectorCharData {
 		private Map<Integer, List<PrimitiveData>> m_primitives =
 			new HashMap<Integer, List<PrimitiveData>>();
 
@@ -465,12 +399,16 @@ public class LwjglVectorFont {
 		}
 
 		public void setPrimitives(VectorChar i_vectorChar) {
-			i_vectorChar.setTriangleFans(m_primitives.get(GL11.GL_TRIANGLE_FAN));
-			i_vectorChar.setTriangleStrips(m_primitives.get(GL11.GL_TRIANGLE_STRIP));
-			i_vectorChar.setTriangles(m_primitives.get(GL11.GL_TRIANGLES));
-			i_vectorChar.setLineLoops(m_primitives.get(GL11.GL_LINE_LOOP));
+			i_vectorChar.setTriangleFans(m_primitives.get(GL_TRIANGLE_FAN));
+			i_vectorChar.setTriangleStrips(m_primitives.get(GL_TRIANGLE_STRIP));
+			i_vectorChar.setTriangles(m_primitives.get(GL_TRIANGLES));
+			i_vectorChar.setLineLoops(m_primitives.get(GL_LINE_LOOP));
 		}
 	}
+
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(LwjglVectorFont.class.getName());
 
 	private static int getAwtStyle(boolean i_bold, boolean i_italic) {
 
@@ -489,13 +427,13 @@ public class LwjglVectorFont {
 
 	private int m_numChars;
 
-	private int m_textureId = 0;
+	private char m_startChar = (char) 32;
 
-	private int m_textureListBaseId = -1;
+	private int m_numSteps = 5;
 
-	private int m_vectorListBaseId = -1;
+	private int[] m_listBaseIds;
 
-	private int m_vertexBufferId = 0;
+	private int[] m_bufferIds;
 
 	public LwjglVectorFont(org.eclipse.swt.graphics.Font i_swtFont,
 			int i_numChars, boolean i_antialias) {
@@ -523,32 +461,34 @@ public class LwjglVectorFont {
 		m_awtFont = new Font(i_name, i_awtStyle, i_height);
 		m_numChars = i_numChars;
 		m_antialias = i_antialias;
+
+		m_listBaseIds = new int[m_numSteps];
+		Arrays.fill(m_listBaseIds, -1);
+
+		m_bufferIds = new int[m_numSteps];
+		Arrays.fill(m_bufferIds, 0);
 	}
 
-	private int createDisplayLists(VectorChar[] i_chars) {
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_vertexBufferId);
-		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+	private int createDisplayLists(int i_precStep, VectorChar[] i_chars) {
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_bufferIds[i_precStep]);
+		glEnableClientState(GL_VERTEX_ARRAY);
 		try {
-			GL11.glVertexPointer(2, GL11.GL_FLOAT, 0, 0);
-			int listBaseId = GL11.glGenLists(i_chars.length);
+			glVertexPointer(2, GL_FLOAT, 0, 0);
+			int listBaseId = glGenLists(i_chars.length);
 			for (int i = 0; i < i_chars.length; i++) {
-				int listId = m_vectorListBaseId + i;
-				GL11.glNewList(listId, GL11.GL_COMPILE);
+				int listId = listBaseId + i;
+				glNewList(listId, GL_COMPILE);
 				i_chars[i].render();
-				GL11.glEndList();
+				glEndList();
 			}
 
 			return listBaseId;
 		} finally {
-			GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+			glDisableClientState(GL_VERTEX_ARRAY);
 		}
 	}
 
-	private void createTextureData(GlyphVector i_glyphs) {
-
-	}
-
-	private int createVectorData(GlyphVector i_glyphs,
+	private int createVectorData(int i_precStep, GlyphVector i_glyphs,
 		VectorChar[] i_vectorChars) {
 		GLUtessellator tesselator = GLU.gluNewTess();
 		try {
@@ -584,12 +524,17 @@ public class LwjglVectorFont {
 			AffineTransform af = new AffineTransform();
 			af.translate(0, m_awtFont.getSize());
 
-			for (int i = 0; i < i_glyphs.getNumGlyphs(); i++) {
-				Shape outline = i_glyphs.getGlyphOutline(i);
-				PathIterator path = outline.getPathIterator(af, 0.01d);
+			double p = (double) i_precStep / m_numSteps;
+			double pathFlatness = 9.9d * p + 0.1d;
 
-				float advanceX = i_glyphs.getGlyphMetrics(i).getAdvanceX();
-				float advanceY = i_glyphs.getGlyphMetrics(i).getAdvanceY();
+			for (int i = 0; i < i_glyphs.getNumGlyphs(); i++) {
+				GlyphMetrics metrics = i_glyphs.getGlyphMetrics(i);
+				Shape outline = i_glyphs.getGlyphOutline(i);
+				PathIterator path = outline.getPathIterator(af, pathFlatness);
+
+				float advanceX = metrics.getAdvanceX();
+				float advanceY = metrics.getAdvanceY();
+
 				i_vectorChars[i] = new VectorChar(advanceX, advanceY);
 
 				if (!path.isDone()) {
@@ -642,7 +587,6 @@ public class LwjglVectorFont {
 	}
 
 	private int createVertexBuffer(VectorChar[] i_chars, int i_totalVertexCount) {
-
 		int idx = 0;
 		FloatBuffer buf = BufferUtils.createFloatBuffer(2 * i_totalVertexCount);
 		for (int i = 0; i < i_chars.length; i++)
@@ -665,101 +609,102 @@ public class LwjglVectorFont {
 		}
 	}
 
+	private boolean m_disposed = false;
+
 	public void dispose() {
+		if (m_disposed)
+			return;
 
-		if (m_vectorListBaseId != -1) {
-			GL11.glDeleteLists(m_vectorListBaseId, m_numChars);
-			m_vectorListBaseId = -1;
-		}
+		for (int i = 0; i < m_numSteps; i++)
+			glDeleteLists(m_listBaseIds[i], m_numChars);
+		m_listBaseIds = null;
 
-		if (m_textureListBaseId != 1) {
-			GL11.glDeleteLists(m_textureListBaseId, m_numChars);
-			m_textureListBaseId = -1;
-		}
-
-		IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
+		IntBuffer idBuffer = Draw3DCache.getIntBuffer(m_numSteps);
 		try {
-			if (m_vertexBufferId != 0) {
-				idBuffer.rewind();
-				idBuffer.put(m_vertexBufferId);
+			BufferUtils.put(idBuffer, m_bufferIds);
+			GL15.glDeleteBuffers(idBuffer);
 
-				idBuffer.rewind();
-				GL15.glDeleteBuffers(idBuffer);
-
-				m_vertexBufferId = 0;
-			}
-
-			if (m_textureId != 0) {
-				idBuffer.rewind();
-				idBuffer.put(m_textureId);
-
-				idBuffer.rewind();
-				GL11.glDeleteTextures(idBuffer);
-
-				m_textureId = 0;
-			}
+			m_bufferIds = null;
 		} finally {
 			Draw3DCache.returnIntBuffer(idBuffer);
 		}
 
+		m_disposed = true;
 	}
 
 	public void initialize() {
+		if (m_disposed)
+			throw new IllegalStateException(this + " is already disposed");
+
 		// create a glyph vector for all chars
 		FontRenderContext ctx = new FontRenderContext(null, m_antialias, true);
-		RangeCharacterIterator charIter =
-			new RangeCharacterIterator(m_numChars);
-		GlyphVector glyphs = m_awtFont.createGlyphVector(ctx, charIter);
+		RangeCharacterIterator ci =
+			new RangeCharacterIterator(m_startChar, m_numChars);
+		GlyphVector glyphs = m_awtFont.createGlyphVector(ctx, ci);
 
-		// add the missing char to the glyph vector
+		// add the char that represents an invalid char to the glyph vector
 		int[] codes = new int[m_numChars + 1];
 		glyphs.getGlyphCodes(0, m_numChars, codes);
 		codes[codes.length - 1] = m_awtFont.getMissingGlyphCode();
 		glyphs = m_awtFont.createGlyphVector(ctx, codes);
 
-		// create vector font
-		VectorChar[] vectorChars = new VectorChar[glyphs.getNumGlyphs()];
-		int totalVertexCount = createVectorData(glyphs, vectorChars);
-		m_vertexBufferId = createVertexBuffer(vectorChars, totalVertexCount);
-		m_vectorListBaseId = createDisplayLists(vectorChars);
-
-		createTextureData(glyphs);
+		// create vector fonts
+		for (int i = 0; i < m_numSteps; i++) {
+			VectorChar[] vectorChars = new VectorChar[glyphs.getNumGlyphs()];
+			int totalVertexCount = createVectorData(i, glyphs, vectorChars);
+			m_bufferIds[i] = createVertexBuffer(vectorChars, totalVertexCount);
+			m_listBaseIds[i] = createDisplayLists(i, vectorChars);
+		}
 	}
 
-	public void render(String i_string) {
+	private void postVectorRender() {
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
+
+	private void preVectorRender(int i_precStep) {
+		glBindBuffer(GL15.GL_ARRAY_BUFFER, m_bufferIds[i_precStep]);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(2, GL_FLOAT, 0, 0);
+	}
+
+	public void render(float i_lodFactor, String i_string) {
+		if (m_disposed)
+			throw new IllegalStateException(this + " is already disposed");
 
 		if (i_string == null)
 			throw new NullPointerException("i_string must not be null");
 
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_vertexBufferId);
-		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-		try {
-			GL11.glVertexPointer(2, GL11.GL_FLOAT, 0, 0);
+		int precStep =
+			m_numSteps
+				- (int) (-20 * m_numSteps * i_lodFactor + 2 * m_numSteps);
+		precStep = Math.min(m_numSteps - 1, precStep);
+		precStep = Math.max(0, precStep);
 
+		log.info("step: " + precStep + ", factor: " + i_lodFactor);
+
+		preVectorRender(precStep);
+		try {
 			IntBuffer listIdBuffer =
 				Draw3DCache.getIntBuffer(i_string.length());
-
 			try {
 				listIdBuffer.rewind();
 				for (int i = 0; i < i_string.length(); i++) {
 					char c = i_string.charAt(i);
-					if (c >= 0 && c < m_numChars)
-						listIdBuffer.put(m_vectorListBaseId + c - 2);
+					if (c >= m_startChar && c < m_startChar + m_numChars)
+						listIdBuffer.put(m_listBaseIds[precStep] + c
+							- m_startChar);
 					else
-						listIdBuffer.put(m_vectorListBaseId + m_numChars);
+						listIdBuffer.put(m_listBaseIds[precStep] + m_numChars);
 				}
-
-				listIdBuffer.limit(listIdBuffer.position());
 				listIdBuffer.rewind();
 
-				GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-				GL11.glCallLists(listIdBuffer);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				glCallLists(listIdBuffer);
 			} finally {
 				Draw3DCache.returnIntBuffer(listIdBuffer);
 			}
 		} finally {
-			GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+			postVectorRender();
 		}
 	}
-
 }

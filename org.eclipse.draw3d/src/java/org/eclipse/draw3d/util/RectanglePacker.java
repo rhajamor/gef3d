@@ -14,10 +14,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 
@@ -29,9 +31,28 @@ import org.eclipse.draw2d.geometry.Rectangle;
  * 
  * @author Kristian Duske
  * @version $Revision$
+ * @param <T> the type of the payload data associated with each rectangle
  * @since 05.01.2010
  */
 public class RectanglePacker<T> {
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		if (!m_packed)
+			return m_rectangles.toString();
+
+		StringBuilder sb = new StringBuilder();
+		for (Strip strip : m_strips) {
+			sb.append(strip.toString());
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
 
 	private class Strip {
 
@@ -41,8 +62,44 @@ public class RectanglePacker<T> {
 
 		private int m_y;
 
-		public Strip(int i_y, Rectangle i_firstRectangle) {
+		private List<Rectangle> m_rectangles = new LinkedList<Rectangle>();
 
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("[Y: ");
+			sb.append(m_y);
+			sb.append(", H: ");
+			sb.append(m_height);
+			sb.append(", N: ");
+			sb.append(m_rectangles.size());
+			sb.append("]");
+
+			for (Iterator<Rectangle> i = m_rectangles.iterator(); i.hasNext();) {
+				Rectangle rect = i.next();
+				sb.append(" [X: ");
+				sb.append(rect.x);
+				sb.append(", Y: ");
+				sb.append(rect.y);
+				sb.append(", W: ");
+				sb.append(rect.width);
+				sb.append(", H: ");
+				sb.append(rect.height);
+				sb.append("]");
+
+				if (i.hasNext())
+					sb.append(",");
+			}
+
+			return sb.toString();
+		}
+
+		public Strip(int i_y, Rectangle i_firstRectangle) {
 			m_y = i_y;
 			m_height = i_firstRectangle.height;
 
@@ -50,8 +107,7 @@ public class RectanglePacker<T> {
 		}
 
 		public boolean add(Rectangle i_rectangle) {
-
-			if (i_rectangle.width > getLength() - m_x
+			if (i_rectangle.width > getCurrentLength() - m_x
 				|| i_rectangle.height > m_height)
 				return false;
 
@@ -59,19 +115,18 @@ public class RectanglePacker<T> {
 			i_rectangle.y = m_y;
 			m_x += i_rectangle.width;
 
+			m_rectangles.add(i_rectangle);
 			return true;
 		}
 	}
 
 	private Comparator<Rectangle> m_comparator = new Comparator<Rectangle>() {
-
 		public int compare(Rectangle i_r1, Rectangle i_r2) {
-
 			if (i_r1.height < i_r2.height)
-				return -1;
+				return 1;
 
 			if (i_r1.height > i_r2.height)
-				return 1;
+				return -1;
 
 			return 0;
 		}
@@ -87,34 +142,132 @@ public class RectanglePacker<T> {
 
 	private int m_totalHeight = 0;
 
+	/**
+	 * Adds the given rectangle to this packer.
+	 * 
+	 * @param i_w the width of the rectangle
+	 * @param i_h the height of the rectangle
+	 * @param i_data the payload data
+	 * @throws IllegalStateException if this packer has already been packed
+	 * @throws NullPointerException if the given payload data is
+	 *             <code>null</code>
+	 */
 	public void add(int i_w, int i_h, T i_data) {
-
 		if (m_packed)
 			throw new IllegalStateException(this + " is already packed");
 
 		m_rectangles.put(i_data, new Rectangle(0, 0, i_w, i_h));
 	}
 
-	public int getLength() {
-
+	private int getCurrentLength() {
 		return m_length;
 	}
 
+	/**
+	 * Returns the dimension of the rectangle with the given payload data. This
+	 * are the exact same values that haven been supplied to
+	 * {@link #add(int, int, Object)}.
+	 * 
+	 * @param i_data the payload data
+	 * @param io_result the result object, if <code>null</code>, a new instance
+	 *            of {@link Dimension} will be created
+	 * @return the dimension
+	 * @throws IllegalArgumentException if no rectangle with the given payload
+	 *             data has been added to this packer
+	 * @throws IllegalStateException if this packer has not been packed yet
+	 * @throws NullPointerException if the given payload data is
+	 *             <code>null</code>
+	 */
+	public Dimension getDimension(T i_data, Dimension io_result) {
+		if (!m_packed)
+			throw new IllegalStateException(this + " has not been packed yet");
+		if (i_data == null)
+			throw new NullPointerException("i_data must not be null");
+
+		Rectangle rectangle = m_rectangles.get(i_data);
+		if (rectangle == null)
+			throw new IllegalArgumentException(
+				"no rectangle with payload data '" + i_data
+					+ "' has been added to this packer");
+
+		Dimension result = io_result;
+		if (result == null)
+			result = new Dimension();
+
+		result.width = rectangle.width;
+		result.height = rectangle.height;
+
+		return result;
+	}
+
+	/**
+	 * Returns the length of the square which the rectangles have been packed
+	 * into.
+	 * 
+	 * @return the length
+	 * @throws IllegalStateException if this packer has not been packed yet
+	 */
+	public int getLength() {
+		if (!m_packed)
+			throw new IllegalStateException(this + " has not been packed yet");
+
+		return getCurrentLength();
+	}
+
+	/**
+	 * Returns the number of rectangles contained in this packer.
+	 * 
+	 * @return the number of rectangles
+	 */
+	public int getNumRectangles() {
+		return m_rectangles.size();
+	}
+
+	public boolean contains(T i_data) {
+		return m_rectangles.containsKey(i_data);
+	}
+
+	/**
+	 * Returns the position of the rectangle with the given payload data.
+	 * 
+	 * @param i_data the data
+	 * @param io_result the result point, if <code>null</code>, a new point will
+	 *            be created
+	 * @return the position
+	 * @throws IllegalArgumentException if no rectangle with the given payload
+	 *             data has been added to this packer
+	 * @throws IllegalStateException if this packer has not been packed yet
+	 * @throws NullPointerException if the given payload data is
+	 *             <code>null</code>
+	 */
 	public Point getPosition(T i_data, Point io_result) {
+		if (!m_packed)
+			throw new IllegalStateException(this + " has not been packed yet");
+		if (i_data == null)
+			throw new NullPointerException("i_data must not be null");
+
+		Rectangle rectangle = m_rectangles.get(i_data);
+		if (rectangle == null)
+			throw new IllegalArgumentException(
+				"no rectangle with payload data '" + i_data
+					+ "' has been added to this packer");
 
 		Point result = io_result;
 		if (result == null)
 			result = new Point();
 
-		Rectangle rectangle = m_rectangles.get(i_data);
 		result.x = rectangle.x;
 		result.y = rectangle.y;
 
 		return result;
 	}
 
+	/**
+	 * Packs the rectangles that were stored in this packer.
+	 * 
+	 * @throws IllegalStateException if this packer has already been packed
+	 */
 	public void pack() {
-
 		if (m_packed)
 			throw new IllegalStateException(this + " is already packed");
 
@@ -129,7 +282,6 @@ public class RectanglePacker<T> {
 	}
 
 	private void pack(Rectangle i_rectangle) {
-
 		// find strip that can contain the rectangle
 		for (Strip strip : m_strips)
 			if (strip.add(i_rectangle))

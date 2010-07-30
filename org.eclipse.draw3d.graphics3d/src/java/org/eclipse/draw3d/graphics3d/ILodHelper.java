@@ -15,7 +15,8 @@ import org.eclipse.draw3d.geometry.IVector3f;
 /**
  * Instances of this class calculate an LOD factor (a float between 0 and 1,
  * inclusive) for a given object. This factor can be used as a measure to
- * determine the detail level for that object.
+ * determine the detail level for that object, where 0 equals full detail and 1
+ * equals the least detail.
  * 
  * @author Kristian Duske
  * @version $Revision$

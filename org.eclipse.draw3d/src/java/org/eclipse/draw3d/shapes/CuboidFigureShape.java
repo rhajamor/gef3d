@@ -12,7 +12,6 @@ package org.eclipse.draw3d.shapes;
 
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
-import org.eclipse.draw3d.graphics3d.Graphics3D;
 
 /**
  * A figure shape that renders itself as a cuboid.
@@ -57,12 +56,6 @@ public class CuboidFigureShape extends FigureShape<CuboidShape> {
 		getShape().setAlpha(getFigure().getAlpha());
 		getShape().setFillColor(getFigure().getBackgroundColor());
 		getShape().setOutlineColor(getFigure().getForegroundColor());
-
-		Graphics3D g3d = i_renderContext.getGraphics3D();
-		if (g3d.hasGraphics2D(getFigure()))
-			getShape().setTextureId(g3d.getGraphics2DId(getFigure()));
-		else
-			getShape().setTextureId(null);
 
 		getShape().render(i_renderContext);
 	}

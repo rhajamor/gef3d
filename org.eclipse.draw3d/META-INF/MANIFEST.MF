@@ -28,6 +28,7 @@ Export-Package: org.eclipse.draw3d;
  org.eclipse.draw3d.graphics.optimizer,
  org.eclipse.draw3d.graphics.optimizer.classification,
  org.eclipse.draw3d.graphics.optimizer.primitive,
+ org.eclipse.draw3d.offscreen,
  org.eclipse.draw3d.picking;
   uses:="org.eclipse.draw3d.camera,
    org.eclipse.draw3d.geometry,

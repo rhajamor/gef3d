@@ -27,31 +27,15 @@ import java.nio.IntBuffer;
 public class BufferUtils {
 
 	/**
-	 * Creates a float buffer with the specified number of elements. Elements
-	 * will be stored in native byte order as the buffer is a view on an
-	 * ByteBuffer with native byte order. The created buffer will be direct.
+	 * Creates a byte buffer with the specified number of elements. Elements
+	 * will be stored in native byte. The created buffer will be direct.
 	 * 
-	 * @param size The number of float elements which shall fit into the created
+	 * @param size The number of bte elements which shall fit into the created
 	 *            buffer.
-	 * @return A FloatBuffer of specified size.
+	 * @return A ByteBuffer of specified size.
 	 */
-	public static FloatBuffer createFloatBuffer(int size) {
-		return createByteBuffer(size * (Float.SIZE / Byte.SIZE))
-				.asFloatBuffer();
-	}
-
-	/**
-	 * Creates an integer buffer with the specified number of elements. Elements
-	 * will be stored in native byte order as the buffer is a view on an
-	 * ByteBuffer with native byte order. The created buffer will be direct.
-	 * 
-	 * @param size The number of integer elements which shall fit into the
-	 *            created buffer.
-	 * @return An IntBuffer of specified size.
-	 */
-	public static IntBuffer createIntBuffer(int size) {
-		return createByteBuffer(size * (Integer.SIZE / Byte.SIZE))
-				.asIntBuffer();
+	public static ByteBuffer createByteBuffer(int size) {
+		return ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder());
 	}
 
 	/**
@@ -64,20 +48,57 @@ public class BufferUtils {
 	 * @return A DoubleBuffer of specified size.
 	 */
 	public static DoubleBuffer createDoubleBuffer(int size) {
-		return createByteBuffer(size * (Double.SIZE / Byte.SIZE))
-				.asDoubleBuffer();
+		return createByteBuffer(size * (Double.SIZE / Byte.SIZE)).asDoubleBuffer();
 	}
 
 	/**
-	 * Creates a byte buffer with the specified number of elements. Elements
-	 * will be stored in native byte. The created buffer will be direct.
+	 * Creates a float buffer with the specified number of elements. Elements
+	 * will be stored in native byte order as the buffer is a view on an
+	 * ByteBuffer with native byte order. The created buffer will be direct.
 	 * 
-	 * @param size The number of bte elements which shall fit into the created
+	 * @param size The number of float elements which shall fit into the created
 	 *            buffer.
-	 * @return A ByteBuffer of specified size.
+	 * @return A FloatBuffer of specified size.
 	 */
-	public static ByteBuffer createByteBuffer(int size) {
-		return ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder());
+	public static FloatBuffer createFloatBuffer(int size) {
+		return createByteBuffer(size * (Float.SIZE / Byte.SIZE)).asFloatBuffer();
+	}
+
+	/**
+	 * Creates an integer buffer with the specified number of elements. Elements
+	 * will be stored in native byte order as the buffer is a view on an
+	 * ByteBuffer with native byte order. The created buffer will be direct.
+	 * 
+	 * @param size The number of integer elements which shall fit into the
+	 *            created buffer.
+	 * @return An IntBuffer of specified size.
+	 */
+	public static IntBuffer createIntBuffer(int size) {
+		return createByteBuffer(size * (Integer.SIZE / Byte.SIZE)).asIntBuffer();
+	}
+
+	/**
+	 * Puts the given values into the given buffer, limiting the buffer to the
+	 * number of values.
+	 * 
+	 * @param i_buf the buffer
+	 * @param i_values the values
+	 * @throws NullPointerException if either of the given arguments is
+	 *             <code>null</code>
+	 * @throws IllegalArgumentException if the given buffer is too small to hold
+	 *             the given values
+	 */
+	public static void put(IntBuffer i_buf, int... i_values) {
+		if (i_buf == null)
+			throw new NullPointerException("i_buf must not be null");
+
+		if (i_buf.capacity() < i_values.length)
+			throw new IllegalArgumentException(i_buf + " is too small");
+
+		i_buf.limit(i_values.length);
+		i_buf.rewind();
+		i_buf.put(i_values);
+		i_buf.rewind();
 	}
 
 }

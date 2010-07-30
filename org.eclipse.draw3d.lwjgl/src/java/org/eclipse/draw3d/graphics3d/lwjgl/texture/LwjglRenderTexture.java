@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.texture;
 
-import org.eclipse.draw2d.Graphics;
 import org.eclipse.swt.graphics.Color;
 
 /**
@@ -21,7 +20,7 @@ import org.eclipse.swt.graphics.Color;
  * @since 06.08.2008
  * @version $Revision$
  */
-public interface LwjglTexture {
+public interface LwjglRenderTexture {
 
 	/**
 	 * Activates this texture for rendering.
@@ -40,6 +39,16 @@ public interface LwjglTexture {
 	public void clear(Color i_color, int i_alpha);
 
 	/**
+	 * Clears the texture using the given color and alpha value.
+	 * 
+	 * @param i_red the red component
+	 * @param i_green the green component
+	 * @param i_blue the blue component
+	 * @param i_alpha the clear alpha value
+	 */
+	public void clear(float i_red, float i_green, float i_blue, float i_alpha);
+
+	/**
 	 * Deactivates this texture and restores the previous OpenGL state.
 	 * 
 	 * @throws IllegalStateException if this texture is disposed
@@ -48,15 +57,10 @@ public interface LwjglTexture {
 
 	/**
 	 * Disposes all resources associated with this texture.
-	 */
-	public void dispose();
-
-	/**
-	 * Returns a graphics object that can be used to render this texture.
 	 * 
-	 * @return a graphics object
+	 * @param i_deleteTexture delete the GL texture
 	 */
-	public Graphics getGraphics();
+	public void dispose(boolean i_deleteTexture);
 
 	/**
 	 * Returns the OpenGL texture ID of this texture.
