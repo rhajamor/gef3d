@@ -184,11 +184,11 @@ public abstract class AWTBasedFont implements IDraw3DFont {
 	protected abstract void doUpdateFontData(GlyphVector i_glyphs,
 		char i_newFirst, char i_newLast, char i_oldFirst, char i_oldLast);
 
-	public AWTBasedFont(String i_name, int i_size, Flags... i_flags) {
+	public AWTBasedFont(String i_name, int i_size, Flag... i_flags) {
 		if (i_name == null)
 			throw new NullPointerException("i_name must not be null");
 
-		m_font = new Font(i_name, i_size, Flags.getAWTStyle(i_flags));
+		m_font = new Font(i_name, i_size, Flag.getAWTStyle(i_flags));
 
 		char lastChar = (char) (DEF_FIRST_CHAR + DEF_NUM_CHARS);
 		updateFontData(DEF_FIRST_CHAR, lastChar);

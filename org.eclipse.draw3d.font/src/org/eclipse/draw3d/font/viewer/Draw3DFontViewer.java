@@ -5,6 +5,10 @@ import static org.lwjgl.opengl.GL13.*;
 
 import java.awt.GraphicsEnvironment;
 
+import org.eclipse.draw3d.font.IDraw3DFont;
+import org.eclipse.draw3d.font.IDraw3DGlyphVector;
+import org.eclipse.draw3d.font.LwjglVectorFont;
+import org.eclipse.draw3d.font.IDraw3DFont.Flag;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
@@ -12,6 +16,8 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -139,6 +145,31 @@ public class Draw3DFontViewer extends ViewPart {
 		m_canvas.addPaintListener(new PaintListener() {
 			public void paintControl(PaintEvent i_e) {
 				glClear(GL_COLOR_BUFFER_BIT);
+
+				String name = m_fontList.getText();
+				int size = 0;
+				String sizeStr = m_sizeList.getText();
+				if (sizeStr != null) {
+					try {
+						size = Integer.parseInt(sizeStr);
+					} catch (NumberFormatException e) {
+						// ignore
+					}
+				}
+
+				if (name != null && name.length() > 0 && size > 0) {
+					Flag[] flags =
+						Flag.getFlags(m_bold.getSelection(),
+							m_italic.getSelection());
+					IDraw3DFont font =
+						new LwjglVectorFont(name, size, 1, flags);
+					IDraw3DGlyphVector glyphs =
+						font.createGlyphVector("The quick brown fox jumps over the lazy dog");
+					glyphs.render();
+					glyphs.dispose();
+					font.dispose();
+				}
+
 				m_canvas.swapBuffers();
 			}
 		});
@@ -158,17 +189,54 @@ public class Draw3DFontViewer extends ViewPart {
 			GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String fontNames[] = ge.getAvailableFontFamilyNames();
 		m_fontList.setItems(fontNames);
+		m_fontList.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(SelectionEvent i_e) {
+				m_canvas.redraw();
+			}
+
+			public void widgetDefaultSelected(SelectionEvent i_e) {
+				widgetSelected(i_e);
+			}
+		});
 
 		m_sizeList = new Combo(container, SWT.DROP_DOWN);
 		String[] sizeNames = new String[FONT_SIZES.length];
 		for (int i = 0; i < FONT_SIZES.length; i++)
 			sizeNames[i] = Integer.toString(FONT_SIZES[i]);
 		m_sizeList.setItems(sizeNames);
+		m_sizeList.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(SelectionEvent i_e) {
+				m_canvas.redraw();
+			}
+
+			public void widgetDefaultSelected(SelectionEvent i_e) {
+				widgetSelected(i_e);
+			}
+		});
 
 		m_bold = new Button(container, SWT.CHECK);
 		m_bold.setText("Bold");
+		m_bold.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(SelectionEvent i_e) {
+				m_canvas.redraw();
+			}
+
+			public void widgetDefaultSelected(SelectionEvent i_e) {
+				widgetSelected(i_e);
+			}
+		});
+
 		m_italic = new Button(container, SWT.CHECK);
 		m_italic.setText("Italic");
+		m_italic.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(SelectionEvent i_e) {
+				m_canvas.redraw();
+			}
+
+			public void widgetDefaultSelected(SelectionEvent i_e) {
+				widgetSelected(i_e);
+			}
+		});
 	}
 
 	private Composite createContainer(Composite i_parent) {

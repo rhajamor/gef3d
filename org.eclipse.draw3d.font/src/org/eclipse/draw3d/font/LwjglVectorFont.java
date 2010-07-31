@@ -35,7 +35,7 @@ public class LwjglVectorFont extends AWTBasedFont {
 	private float m_precision;
 
 	public LwjglVectorFont(String i_name, int i_size, float i_precision,
-			Flags... i_flags) {
+			Flag... i_flags) {
 		super(i_name, i_size, i_flags);
 
 		if (i_precision < 0 || i_precision > 1)
@@ -110,7 +110,7 @@ public class LwjglVectorFont extends AWTBasedFont {
 
 			double[] coords = new double[3];
 			float[] vertex = new float[2];
-			double flatness = 9.9d * m_precision + 0.1d;
+			double flatness = 9.9d * (1 - m_precision) + 0.1d;
 
 			for (int i = 0; i < i_glyphs.getNumGlyphs(); i++) {
 				if (m_chars[i] != null) {

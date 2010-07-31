@@ -20,12 +20,12 @@ import java.awt.Font;
  * @since 30.07.2010
  */
 public interface IDraw3DFont {
-	public enum Flags {
+	public enum Flag {
 		BOLD, ITALIC;
 
-		public static int getAWTStyle(Flags... i_flags) {
+		public static int getAWTStyle(Flag... i_flags) {
 			int style = 0;
-			for (Flags flag : i_flags) {
+			for (Flag flag : i_flags) {
 				switch (flag) {
 				case BOLD:
 					style |= Font.BOLD;
@@ -38,6 +38,16 @@ public interface IDraw3DFont {
 				}
 			}
 			return style;
+		}
+
+		public static Flag[] getFlags(boolean i_bold, boolean i_italic) {
+			if (i_bold && i_italic)
+				return new Flag[] { BOLD, ITALIC };
+			else if (i_bold)
+				return new Flag[] { BOLD };
+			else if (i_italic)
+				return new Flag[] { ITALIC };
+			return new Flag[0];
 		}
 	}
 
