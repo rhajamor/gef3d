@@ -9,8 +9,6 @@ import org.eclipse.draw3d.font.IDraw3DFont;
 import org.eclipse.draw3d.font.IDraw3DGlyphVector;
 import org.eclipse.draw3d.font.LwjglVectorFont;
 import org.eclipse.draw3d.font.IDraw3DFont.Flag;
-import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
-import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -53,12 +51,6 @@ public class Draw3DFontViewer extends ViewPart {
 	 */
 	public static final String ID =
 		"org.eclipse.draw3d.font.viewer.Draw3DFontViewer";
-
-	private Action action1;
-
-	private Action action2;
-
-	private Action doubleClickAction;
 
 	private GLCanvas m_canvas;
 
@@ -111,11 +103,13 @@ public class Draw3DFontViewer extends ViewPart {
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_MULTISAMPLE);
 
-		glEnable(GL_CULL_FACE);
+		glDisable(GL_CULL_FACE);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glShadeModel(GL_FLAT);
-		glEnable(GL_BLEND);
 
 		glClearColor(1, 1, 1, 1);
 		glColor4f(0, 0, 0, 1);
@@ -135,16 +129,19 @@ public class Draw3DFontViewer extends ViewPart {
 				Rectangle bounds = m_canvas.getBounds();
 				glViewport(0, 0, bounds.width, bounds.height);
 
-				glMatrixMode(Graphics3DDraw.GL_PROJECTION);
+				glMatrixMode(GL_PROJECTION);
 				glLoadIdentity();
 
-				glOrtho(0, bounds.width, bounds.height, 0, 10, 1000);
+				glOrtho(0, bounds.width, bounds.height, 0, -10, 10);
 			}
 		});
 
 		m_canvas.addPaintListener(new PaintListener() {
 			public void paintControl(PaintEvent i_e) {
 				glClear(GL_COLOR_BUFFER_BIT);
+
+				glMatrixMode(GL_MODELVIEW);
+				glLoadIdentity();
 
 				String name = m_fontList.getText();
 				int size = 0;
@@ -157,14 +154,24 @@ public class Draw3DFontViewer extends ViewPart {
 					}
 				}
 
+				glColor4f(0, 0, 0, 1);
+				glBegin(GL_QUADS);
+				glVertex2f(0, 0);
+				glVertex2f(10, 0);
+				glVertex2f(10, 10);
+				glVertex2f(0, 10);
+				glEnd();
+
 				if (name != null && name.length() > 0 && size > 0) {
 					Flag[] flags =
 						Flag.getFlags(m_bold.getSelection(),
 							m_italic.getSelection());
 					IDraw3DFont font =
 						new LwjglVectorFont(name, size, 1, flags);
+					font.initialize();
 					IDraw3DGlyphVector glyphs =
 						font.createGlyphVector("The quick brown fox jumps over the lazy dog");
+					glTranslatef(0, 20, 0);
 					glyphs.render();
 					glyphs.dispose();
 					font.dispose();

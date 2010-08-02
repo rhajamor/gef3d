@@ -159,39 +159,15 @@ public abstract class AWTBasedFont implements IDraw3DFont {
 
 	private char m_firstChar = Character.MAX_VALUE;
 
-	private char m_lastChar = Character.MIN_VALUE;
-
 	private Font m_font;
 
-	private void updateFontData(char i_firstChar, char i_lastChar) {
-
-		char f = (char) Math.min(m_firstChar, i_firstChar);
-		char l = (char) Math.max(m_lastChar, i_lastChar);
-
-		if (f >= m_firstChar && l <= m_lastChar)
-			return;
-
-		FontRenderContext ctx = new FontRenderContext(null, true, true);
-		RangeCharacterIterator ci = new RangeCharacterIterator(f, l);
-		GlyphVector glyphs = m_font.createGlyphVector(ctx, ci);
-
-		doUpdateFontData(glyphs, f, l, m_firstChar, m_lastChar);
-
-		m_firstChar = f;
-		m_lastChar = l;
-	}
-
-	protected abstract void doUpdateFontData(GlyphVector i_glyphs,
-		char i_newFirst, char i_newLast, char i_oldFirst, char i_oldLast);
+	private char m_lastChar = Character.MIN_VALUE;
 
 	public AWTBasedFont(String i_name, int i_size, Flag... i_flags) {
 		if (i_name == null)
 			throw new NullPointerException("i_name must not be null");
 
 		m_font = new Font(i_name, i_size, Flag.getAWTStyle(i_flags));
-
-		char lastChar = (char) (DEF_FIRST_CHAR + DEF_NUM_CHARS);
-		updateFontData(DEF_FIRST_CHAR, lastChar);
 	}
 
 	/**
@@ -221,4 +197,38 @@ public abstract class AWTBasedFont implements IDraw3DFont {
 	}
 
 	protected abstract IDraw3DGlyphVector doCreateGlyphVector(String i_string);
+
+	protected abstract void doUpdateFontData(GlyphVector i_glyphs,
+		char i_newFirst, char i_newLast, char i_oldFirst, char i_oldLast);
+
+	protected char getFirstChar() {
+		return m_firstChar;
+	}
+
+	protected char getLastChar() {
+		return m_lastChar;
+	}
+
+	public void initialize() {
+		char lastChar = (char) (DEF_FIRST_CHAR + DEF_NUM_CHARS);
+		updateFontData(DEF_FIRST_CHAR, lastChar);
+	}
+
+	private void updateFontData(char i_firstChar, char i_lastChar) {
+
+		char f = (char) Math.min(m_firstChar, i_firstChar);
+		char l = (char) Math.max(m_lastChar, i_lastChar);
+
+		if (f >= m_firstChar && l <= m_lastChar)
+			return;
+
+		FontRenderContext ctx = new FontRenderContext(null, true, true);
+		RangeCharacterIterator ci = new RangeCharacterIterator(f, l);
+		GlyphVector glyphs = m_font.createGlyphVector(ctx, ci);
+
+		doUpdateFontData(glyphs, f, l, m_firstChar, m_lastChar);
+
+		m_firstChar = f;
+		m_lastChar = l;
+	}
 }

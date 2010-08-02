@@ -64,8 +64,11 @@ public class LwjglVectorFont extends AWTBasedFont {
 	 */
 	@Override
 	protected IDraw3DGlyphVector doCreateGlyphVector(String i_string) {
-		// TODO implement method LwjglVectorFont.doCreateGlyphVector
-		return null;
+		VectorChar[] stringChars = new VectorChar[i_string.length()];
+		for (int i = 0; i < i_string.length(); i++)
+			stringChars[i] = m_chars[i_string.charAt(i) - getFirstChar()];
+
+		return new VectorGlyphVector(stringChars);
 	}
 
 	/**
@@ -113,7 +116,7 @@ public class LwjglVectorFont extends AWTBasedFont {
 			double flatness = 9.9d * (1 - m_precision) + 0.1d;
 
 			for (int i = 0; i < i_glyphs.getNumGlyphs(); i++) {
-				if (m_chars[i] != null) {
+				if (m_chars[i] == null) {
 					GlyphMetrics metrics = i_glyphs.getGlyphMetrics(i);
 					Shape outline = i_glyphs.getGlyphOutline(i);
 					PathIterator path = outline.getPathIterator(at, flatness);

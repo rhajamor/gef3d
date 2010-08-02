@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.font;
 
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL15.*;
 
 import java.nio.FloatBuffer;
@@ -17,6 +19,7 @@ import java.nio.IntBuffer;
 
 import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.Draw3DCache;
+import org.lwjgl.opengl.GL15;
 
 /**
  * VectorText There should really be more documentation here.
@@ -110,6 +113,20 @@ public class VectorGlyphVector implements IDraw3DGlyphVector {
 	public void render() {
 		if (m_disposed)
 			throw new IllegalStateException(this + " is disposed");
+
+		glBindBuffer(GL15.GL_ARRAY_BUFFER, m_bufferId);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(2, GL_FLOAT, 0, 0);
+		try {
+			if (m_fanIdx != null)
+				glMultiDrawArrays(GL_TRIANGLE_FAN, m_fanIdx, m_fanCnt);
+			if (m_stripIdx != null)
+				glMultiDrawArrays(GL_TRIANGLE_STRIP, m_stripIdx, m_stripCnt);
+			if (m_triIdx != null)
+				glMultiDrawArrays(GL_TRIANGLES, m_triIdx, m_triCnt);
+		} finally {
+			glDisableClientState(GL_VERTEX_ARRAY);
+		}
 	}
 
 	/**

@@ -51,6 +51,8 @@ public interface IDraw3DFont {
 		}
 	}
 
+	public void initialize();
+
 	public IDraw3DGlyphVector createGlyphVector(String i_string);
 
 	public void dispose();
