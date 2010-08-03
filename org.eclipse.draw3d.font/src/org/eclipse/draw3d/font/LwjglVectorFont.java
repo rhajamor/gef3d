@@ -105,6 +105,7 @@ public class LwjglVectorFont extends AWTBasedFont {
 			tesselator.gluTessNormal(0, 0, -1);
 
 			AffineTransform at = new AffineTransform();
+			at.translate(0, getAwtFont().getSize());
 
 			VectorChar[] temp = m_chars;
 			m_chars = new VectorChar[i_glyphs.getNumGlyphs()];

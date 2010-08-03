@@ -167,7 +167,7 @@ public abstract class AWTBasedFont implements IDraw3DFont {
 		if (i_name == null)
 			throw new NullPointerException("i_name must not be null");
 
-		m_font = new Font(i_name, i_size, Flag.getAWTStyle(i_flags));
+		m_font = new Font(i_name, Flag.getAWTStyle(i_flags), i_size);
 	}
 
 	/**
@@ -207,6 +207,10 @@ public abstract class AWTBasedFont implements IDraw3DFont {
 
 	protected char getLastChar() {
 		return m_lastChar;
+	}
+
+	protected Font getAwtFont() {
+		return m_font;
 	}
 
 	public void initialize() {

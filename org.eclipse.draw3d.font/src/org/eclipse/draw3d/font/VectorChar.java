@@ -39,7 +39,7 @@ public class VectorChar {
 
 		int index = i_index;
 		for (int i = 0; i < m_fans.length; i++) {
-			for (int j = 0; i < m_fans[i].length / 2; j++) {
+			for (int j = 0; j < m_fans[i].length / 2; j++) {
 				i_buffer.put(m_fans[i][2 * j] + i_x);
 				i_buffer.put(m_fans[i][2 * j + 1] + i_y);
 			}
@@ -57,7 +57,7 @@ public class VectorChar {
 
 		int index = i_index;
 		for (int i = 0; i < m_strips.length; i++) {
-			for (int j = 0; i < m_strips[i].length / 2; j++) {
+			for (int j = 0; j < m_strips[i].length / 2; j++) {
 				i_buffer.put(m_strips[i][2 * j] + i_x);
 				i_buffer.put(m_strips[i][2 * j + 1] + i_y);
 			}
@@ -75,7 +75,7 @@ public class VectorChar {
 
 		int index = i_index;
 		for (int i = 0; i < m_tris.length; i++) {
-			for (int j = 0; i < m_tris[i].length / 2; j++) {
+			for (int j = 0; j < m_tris[i].length / 2; j++) {
 				i_buffer.put(m_tris[i][2 * j] + i_x);
 				i_buffer.put(m_tris[i][2 * j + 1] + i_y);
 			}
