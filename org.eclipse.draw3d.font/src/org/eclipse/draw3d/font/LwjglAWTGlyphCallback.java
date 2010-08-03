@@ -104,7 +104,6 @@ public class LwjglAWTGlyphCallback extends GLUtessellatorCallbackAdapter {
 	}
 
 	public void reset() {
-		m_index = 0;
 		m_numFans = 0;
 		m_numStrips = 0;
 		m_numTris = 0;
@@ -122,7 +121,7 @@ public class LwjglAWTGlyphCallback extends GLUtessellatorCallbackAdapter {
 		if (m_numStrips > 0)
 			i_vectorChar.setTriangleStrips(m_strips, m_numStrips);
 		if (m_numTris > 0)
-			i_vectorChar.setTriangleFans(m_tris, m_numTris);
+			i_vectorChar.setTriangles(m_tris, m_numTris);
 	}
 
 	/**

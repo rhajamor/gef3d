@@ -112,8 +112,9 @@ public class LwjglVectorFont extends AWTBasedFont {
 			if (temp != null)
 				System.arraycopy(temp, 0, m_chars, i_of - i_nf, temp.length);
 
-			double[] coords = new double[3];
-			float[] vertex = new float[2];
+			double[] c = new double[3];
+			float[][] v = new float[8][2];
+			int vi = 0;
 			double flatness = 9.9d * (1 - m_precision) + 0.1d;
 
 			for (int i = 0; i < i_glyphs.getNumGlyphs(); i++) {
@@ -136,24 +137,30 @@ public class LwjglVectorFont extends AWTBasedFont {
 								GLU.GLU_TESS_WINDING_RULE,
 								GLU.GLU_TESS_WINDING_NONZERO);
 
+						vi = 0;
 						tesselator.gluTessBeginPolygon(null);
 						while (!path.isDone()) {
-							int segmentType = path.currentSegment(coords);
+							int segmentType = path.currentSegment(c);
 
 							switch (segmentType) {
 							case PathIterator.SEG_MOVETO:
 								tesselator.gluTessBeginContour();
-								vertex[0] = (float) coords[0];
-								vertex[1] = (float) coords[1];
-								tesselator.gluTessVertex(coords, 0, vertex);
+
+								if (vi == v.length)
+									v = resizeVertexBuffer(v);
+								v[vi][0] = (float) c[0];
+								v[vi][1] = (float) c[1];
+								tesselator.gluTessVertex(c, 0, v[vi++]);
 								break;
 							case PathIterator.SEG_CLOSE:
 								tesselator.gluTessEndContour();
 								break;
 							case PathIterator.SEG_LINETO:
-								vertex[0] = (float) coords[0];
-								vertex[1] = (float) coords[1];
-								tesselator.gluTessVertex(coords, 0, vertex);
+								if (vi == v.length)
+									v = resizeVertexBuffer(v);
+								v[vi][0] = (float) c[0];
+								v[vi][1] = (float) c[1];
+								tesselator.gluTessVertex(c, 0, v[vi++]);
 								break;
 							}
 							path.next();
@@ -169,5 +176,13 @@ public class LwjglVectorFont extends AWTBasedFont {
 		} finally {
 			tesselator.gluDeleteTess();
 		}
+	}
+
+	private float[][] resizeVertexBuffer(float[][] i_v) {
+		float[][] r = new float[2 * i_v.length][];
+		System.arraycopy(i_v, 0, r, 0, i_v.length);
+		for (int i = i_v.length; i < r.length; i++)
+			r[i] = new float[2];
+		return r;
 	}
 }

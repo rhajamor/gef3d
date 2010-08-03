@@ -19,7 +19,6 @@ import java.nio.IntBuffer;
 
 import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.Draw3DCache;
-import org.lwjgl.opengl.GL15;
 
 /**
  * VectorText There should really be more documentation here.
@@ -114,7 +113,23 @@ public class VectorGlyphVector implements IDraw3DGlyphVector {
 		if (m_disposed)
 			throw new IllegalStateException(this + " is disposed");
 
-		glBindBuffer(GL15.GL_ARRAY_BUFFER, m_bufferId);
+		// TODO: move this to initialization if possible
+		if (m_fanIdx != null) {
+			m_fanIdx.rewind();
+			m_fanCnt.rewind();
+		}
+
+		if (m_stripIdx != null) {
+			m_stripIdx.rewind();
+			m_stripCnt.rewind();
+		}
+
+		if (m_triIdx != null) {
+			m_triIdx.rewind();
+			m_triCnt.rewind();
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_bufferId);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, 0);
 		try {

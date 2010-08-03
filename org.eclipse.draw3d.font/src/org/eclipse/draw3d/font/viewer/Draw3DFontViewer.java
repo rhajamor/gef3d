@@ -19,6 +19,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.eclipse.swt.opengl.GLData;
@@ -154,14 +155,6 @@ public class Draw3DFontViewer extends ViewPart {
 					}
 				}
 
-				glColor4f(0, 0, 0, 1);
-				glBegin(GL_QUADS);
-				glVertex2f(0, 0);
-				glVertex2f(10, 0);
-				glVertex2f(10, 10);
-				glVertex2f(0, 10);
-				glEnd();
-
 				if (name != null && name.length() > 0 && size > 0) {
 					Flag[] flags =
 						Flag.getFlags(m_bold.getSelection(),
@@ -170,8 +163,7 @@ public class Draw3DFontViewer extends ViewPart {
 						new LwjglVectorFont(name, size, 1, flags);
 					font.initialize();
 					IDraw3DGlyphVector glyphs =
-						font.createGlyphVector("The quick brown fox jumps over the lazy dog");
-					glTranslatef(0, 20, 0);
+						font.createGlyphVector("The quick brown fox jumps over the lazy dog.");
 					glyphs.render();
 					glyphs.dispose();
 					font.dispose();
@@ -196,6 +188,10 @@ public class Draw3DFontViewer extends ViewPart {
 			GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String fontNames[] = ge.getAvailableFontFamilyNames();
 		m_fontList.setItems(fontNames);
+		for (int i = 0; i < fontNames.length; i++)
+			if ("Arial".equals(fontNames[i]))
+				m_fontList.select(i);
+
 		m_fontList.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent i_e) {
 				m_canvas.redraw();
@@ -207,10 +203,12 @@ public class Draw3DFontViewer extends ViewPart {
 		});
 
 		m_sizeList = new Combo(container, SWT.DROP_DOWN);
+		m_sizeList.setLayoutData(new RowData(60, 24));
 		String[] sizeNames = new String[FONT_SIZES.length];
 		for (int i = 0; i < FONT_SIZES.length; i++)
 			sizeNames[i] = Integer.toString(FONT_SIZES[i]);
 		m_sizeList.setItems(sizeNames);
+		m_sizeList.select(2);
 		m_sizeList.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent i_e) {
 				m_canvas.redraw();
