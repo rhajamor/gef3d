@@ -10,11 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,25 +32,9 @@ import org.eclipse.draw2d.geometry.Rectangle;
  */
 public class RectanglePacker<T> {
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		if (!m_packed)
-			return m_rectangles.toString();
-
-		StringBuilder sb = new StringBuilder();
-		for (Strip strip : m_strips) {
-			sb.append(strip.toString());
-			sb.append("\n");
-		}
-		return sb.toString();
-	}
-
 	private class Strip {
+
+		private int m_count = 0;
 
 		private int m_height = 0;
 
@@ -62,7 +42,25 @@ public class RectanglePacker<T> {
 
 		private int m_y;
 
-		private List<Rectangle> m_rectangles = new LinkedList<Rectangle>();
+		public Strip(int i_y, Rectangle i_firstRectangle) {
+			m_y = i_y;
+			m_height = i_firstRectangle.height;
+
+			add(i_firstRectangle);
+		}
+
+		public boolean add(Rectangle i_rectangle) {
+			if (i_rectangle.width > getLength() - m_x
+				|| i_rectangle.height > m_height)
+				return false;
+
+			i_rectangle.x = m_x;
+			i_rectangle.y = m_y;
+			m_x += i_rectangle.width;
+			m_count++;
+
+			return true;
+		}
 
 		/**
 		 * {@inheritDoc}
@@ -77,64 +75,14 @@ public class RectanglePacker<T> {
 			sb.append(", H: ");
 			sb.append(m_height);
 			sb.append(", N: ");
-			sb.append(m_rectangles.size());
+			sb.append(m_count);
 			sb.append("]");
-
-			for (Iterator<Rectangle> i = m_rectangles.iterator(); i.hasNext();) {
-				Rectangle rect = i.next();
-				sb.append(" [X: ");
-				sb.append(rect.x);
-				sb.append(", Y: ");
-				sb.append(rect.y);
-				sb.append(", W: ");
-				sb.append(rect.width);
-				sb.append(", H: ");
-				sb.append(rect.height);
-				sb.append("]");
-
-				if (i.hasNext())
-					sb.append(",");
-			}
 
 			return sb.toString();
 		}
-
-		public Strip(int i_y, Rectangle i_firstRectangle) {
-			m_y = i_y;
-			m_height = i_firstRectangle.height;
-
-			add(i_firstRectangle);
-		}
-
-		public boolean add(Rectangle i_rectangle) {
-			if (i_rectangle.width > getCurrentLength() - m_x
-				|| i_rectangle.height > m_height)
-				return false;
-
-			i_rectangle.x = m_x;
-			i_rectangle.y = m_y;
-			m_x += i_rectangle.width;
-
-			m_rectangles.add(i_rectangle);
-			return true;
-		}
 	}
 
-	private Comparator<Rectangle> m_comparator = new Comparator<Rectangle>() {
-		public int compare(Rectangle i_r1, Rectangle i_r2) {
-			if (i_r1.height < i_r2.height)
-				return 1;
-
-			if (i_r1.height > i_r2.height)
-				return -1;
-
-			return 0;
-		}
-	};
-
 	private int m_length = 16;
-
-	private boolean m_packed = false;
 
 	private Map<T, Rectangle> m_rectangles = new HashMap<T, Rectangle>();
 
@@ -148,19 +96,25 @@ public class RectanglePacker<T> {
 	 * @param i_w the width of the rectangle
 	 * @param i_h the height of the rectangle
 	 * @param i_data the payload data
-	 * @throws IllegalStateException if this packer has already been packed
 	 * @throws NullPointerException if the given payload data is
 	 *             <code>null</code>
 	 */
 	public void add(int i_w, int i_h, T i_data) {
-		if (m_packed)
-			throw new IllegalStateException(this + " is already packed");
-
-		m_rectangles.put(i_data, new Rectangle(0, 0, i_w, i_h));
+		Rectangle rect = new Rectangle(0, 0, i_w, i_h);
+		m_rectangles.put(i_data, rect);
+		pack(rect);
 	}
 
-	private int getCurrentLength() {
-		return m_length;
+	/**
+	 * Indicates whether this packer contains a rectangle with the given payload
+	 * data.
+	 * 
+	 * @param i_data the payload data
+	 * @return <code>true</code> if this packer contains a rectangle with the
+	 *         given payload data and <code>false</code> otherwise
+	 */
+	public boolean contains(T i_data) {
+		return m_rectangles.containsKey(i_data);
 	}
 
 	/**
@@ -174,13 +128,10 @@ public class RectanglePacker<T> {
 	 * @return the dimension
 	 * @throws IllegalArgumentException if no rectangle with the given payload
 	 *             data has been added to this packer
-	 * @throws IllegalStateException if this packer has not been packed yet
 	 * @throws NullPointerException if the given payload data is
 	 *             <code>null</code>
 	 */
 	public Dimension getDimension(T i_data, Dimension io_result) {
-		if (!m_packed)
-			throw new IllegalStateException(this + " has not been packed yet");
 		if (i_data == null)
 			throw new NullPointerException("i_data must not be null");
 
@@ -205,13 +156,9 @@ public class RectanglePacker<T> {
 	 * into.
 	 * 
 	 * @return the length
-	 * @throws IllegalStateException if this packer has not been packed yet
 	 */
 	public int getLength() {
-		if (!m_packed)
-			throw new IllegalStateException(this + " has not been packed yet");
-
-		return getCurrentLength();
+		return m_length;
 	}
 
 	/**
@@ -221,10 +168,6 @@ public class RectanglePacker<T> {
 	 */
 	public int getNumRectangles() {
 		return m_rectangles.size();
-	}
-
-	public boolean contains(T i_data) {
-		return m_rectangles.containsKey(i_data);
 	}
 
 	/**
@@ -241,8 +184,6 @@ public class RectanglePacker<T> {
 	 *             <code>null</code>
 	 */
 	public Point getPosition(T i_data, Point io_result) {
-		if (!m_packed)
-			throw new IllegalStateException(this + " has not been packed yet");
 		if (i_data == null)
 			throw new NullPointerException("i_data must not be null");
 
@@ -262,25 +203,6 @@ public class RectanglePacker<T> {
 		return result;
 	}
 
-	/**
-	 * Packs the rectangles that were stored in this packer.
-	 * 
-	 * @throws IllegalStateException if this packer has already been packed
-	 */
-	public void pack() {
-		if (m_packed)
-			throw new IllegalStateException(this + " is already packed");
-
-		List<Rectangle> sorted =
-			new ArrayList<Rectangle>(m_rectangles.values());
-
-		Collections.sort(sorted, m_comparator);
-		for (Rectangle rectangle : sorted)
-			pack(rectangle);
-
-		m_packed = true;
-	}
-
 	private void pack(Rectangle i_rectangle) {
 		// find strip that can contain the rectangle
 		for (Strip strip : m_strips)
@@ -294,5 +216,20 @@ public class RectanglePacker<T> {
 
 		m_strips.add(new Strip(m_totalHeight, i_rectangle));
 		m_totalHeight += i_rectangle.height;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (Strip strip : m_strips) {
+			sb.append(strip.toString());
+			sb.append("\n");
+		}
+		return sb.toString();
 	}
 }

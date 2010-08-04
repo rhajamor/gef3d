@@ -7,6 +7,7 @@ import java.awt.GraphicsEnvironment;
 
 import org.eclipse.draw3d.font.IDraw3DFont;
 import org.eclipse.draw3d.font.IDraw3DGlyphVector;
+import org.eclipse.draw3d.font.LwjglTextureFont;
 import org.eclipse.draw3d.font.LwjglVectorFont;
 import org.eclipse.draw3d.font.IDraw3DFont.Flag;
 import org.eclipse.swt.SWT;
@@ -26,6 +27,8 @@ import org.eclipse.swt.opengl.GLData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Scale;
 import org.eclipse.ui.part.ViewPart;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.GLContext;
@@ -62,6 +65,10 @@ public class Draw3DFontViewer extends ViewPart {
 	private Button m_bold;
 
 	private Button m_italic;
+
+	private Scale m_precision;
+
+	private Label m_precLabel;
 
 	/**
 	 * The constructor.
@@ -159,14 +166,18 @@ public class Draw3DFontViewer extends ViewPart {
 					Flag[] flags =
 						Flag.getFlags(m_bold.getSelection(),
 							m_italic.getSelection());
+					float p = m_precision.getSelection() / 100f;
 					IDraw3DFont font =
-						new LwjglVectorFont(name, size, 1, flags);
+						new LwjglVectorFont(name, size, p, flags);
 					font.initialize();
 					IDraw3DGlyphVector glyphs =
 						font.createGlyphVector("The quick brown fox jumps over the lazy dog.");
 					glyphs.render();
 					glyphs.dispose();
 					font.dispose();
+
+					IDraw3DFont tFont = new LwjglTextureFont(name, size, flags);
+					tFont.createGlyphVector("The quick brown fox jumps over the lazy dog.");
 				}
 
 				m_canvas.swapBuffers();
@@ -242,6 +253,26 @@ public class Draw3DFontViewer extends ViewPart {
 				widgetSelected(i_e);
 			}
 		});
+
+		m_precision = new Scale(container, SWT.HORIZONTAL);
+		m_precision.setMinimum(0);
+		m_precision.setMaximum(100);
+		m_precision.setIncrement(1);
+		m_precision.setPageIncrement(10);
+		m_precision.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(SelectionEvent i_e) {
+				m_precLabel.setText(String.format("%2.2f",
+					m_precision.getSelection() / 100f));
+				m_canvas.redraw();
+			}
+
+			public void widgetDefaultSelected(SelectionEvent i_e) {
+				widgetSelected(i_e);
+			}
+		});
+
+		m_precLabel = new Label(container, SWT.NONE);
+		m_precLabel.setLayoutData(new RowData(100, 24));
 	}
 
 	private Composite createContainer(Composite i_parent) {

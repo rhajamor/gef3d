@@ -233,8 +233,6 @@ public class LwjglImageVBO extends LwjglVertexPrimitiveVBO {
 			m_packer.add(source.width, source.height, imagePrimitive);
 		}
 
-		m_packer.pack();
-
 		Device device = Display.getCurrent();
 		int tw = m_packer.getLength();
 		int th = m_packer.getLength();

@@ -115,13 +115,15 @@ public class LwjglAWTGlyphCallback extends GLUtessellatorCallbackAdapter {
 		return resized;
 	}
 
-	public void setData(VectorChar i_vectorChar) {
+	public VectorChar createVectorChar(float i_advX, float i_advY) {
+		VectorChar result = new VectorChar(i_advX, i_advY);
 		if (m_numFans > 0)
-			i_vectorChar.setTriangleFans(m_fans, m_numFans);
+			result.setTriangleFans(m_fans, m_numFans);
 		if (m_numStrips > 0)
-			i_vectorChar.setTriangleStrips(m_strips, m_numStrips);
+			result.setTriangleStrips(m_strips, m_numStrips);
 		if (m_numTris > 0)
-			i_vectorChar.setTriangles(m_tris, m_numTris);
+			result.setTriangles(m_tris, m_numTris);
+		return result;
 	}
 
 	/**

@@ -28,11 +28,23 @@ import org.lwjgl.util.glu.GLUtessellator;
  */
 public class LwjglVectorFont extends AWTBasedFont {
 
-	private VectorChar[] m_chars;
+	private LwjglAWTGlyphCallback m_callback;
+
+	/**
+	 * Buffer for a single vertex during character tesselation.
+	 */
+	private double[] m_cBuf = new double[3];
 
 	private boolean m_disposed = false;
 
 	private float m_precision;
+
+	private GLUtessellator m_tesselator;
+
+	/**
+	 * Vertex buffer for GLU tesselator.
+	 */
+	private float[][] m_vBuf = new float[8][2];
 
 	public LwjglVectorFont(String i_name, int i_size, float i_precision,
 			Flag... i_flags) {
@@ -45,6 +57,61 @@ public class LwjglVectorFont extends AWTBasedFont {
 		m_precision = i_precision;
 	}
 
+	private VectorChar createVectorChar(GlyphVector i_glyphs, int i_index,
+		AffineTransform i_at, double i_flatness) {
+		GlyphMetrics metrics = i_glyphs.getGlyphMetrics(i_index);
+		Shape outline = i_glyphs.getGlyphOutline(i_index);
+		PathIterator path = outline.getPathIterator(i_at, i_flatness);
+
+		float advX = metrics.getAdvanceX();
+		float advY = metrics.getAdvanceY();
+
+		if (!path.isDone()) {
+			if (path.getWindingRule() == PathIterator.WIND_EVEN_ODD)
+				m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE,
+					GLU.GLU_TESS_WINDING_ODD);
+			else if (path.getWindingRule() == PathIterator.WIND_NON_ZERO)
+				m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE,
+					GLU.GLU_TESS_WINDING_NONZERO);
+
+			int vi = 0;
+			m_tesselator.gluTessBeginPolygon(null);
+			while (!path.isDone()) {
+				int segmentType = path.currentSegment(m_cBuf);
+
+				switch (segmentType) {
+				case PathIterator.SEG_MOVETO:
+					m_tesselator.gluTessBeginContour();
+
+					if (vi == m_vBuf.length)
+						m_vBuf = resizeVertexBuffer(m_vBuf);
+					m_vBuf[vi][0] = (float) m_cBuf[0];
+					m_vBuf[vi][1] = (float) m_cBuf[1];
+					m_tesselator.gluTessVertex(m_cBuf, 0, m_vBuf[vi++]);
+					break;
+				case PathIterator.SEG_CLOSE:
+					m_tesselator.gluTessEndContour();
+					break;
+				case PathIterator.SEG_LINETO:
+					if (vi == m_vBuf.length)
+						m_vBuf = resizeVertexBuffer(m_vBuf);
+					m_vBuf[vi][0] = (float) m_cBuf[0];
+					m_vBuf[vi][1] = (float) m_cBuf[1];
+					m_tesselator.gluTessVertex(m_cBuf, 0, m_vBuf[vi++]);
+					break;
+				}
+				path.next();
+			}
+			m_tesselator.gluTessEndPolygon();
+		}
+		VectorChar vectorChar = m_callback.createVectorChar(advX, advY);
+
+		m_callback.reset();
+		i_at.translate(-advX, -advY);
+
+		return vectorChar;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -54,128 +121,63 @@ public class LwjglVectorFont extends AWTBasedFont {
 		if (m_disposed)
 			throw new IllegalStateException(this + " is disposed");
 
+		m_callback = null;
+		m_tesselator.gluDeleteTess();
+		m_tesselator = null;
+
+		m_cBuf = null;
+		m_vBuf = null;
+
 		m_disposed = true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.AWTBasedFont#doCreateGlyphVector(java.lang.String)
+	 * @see org.eclipse.draw3d.font.AWTBasedFont#doCreateGlyphVector(java.awt.font.GlyphVector)
 	 */
 	@Override
-	protected IDraw3DGlyphVector doCreateGlyphVector(String i_string) {
-		VectorChar[] stringChars = new VectorChar[i_string.length()];
-		for (int i = 0; i < i_string.length(); i++)
-			stringChars[i] = m_chars[i_string.charAt(i) - getFirstChar()];
+	protected IDraw3DGlyphVector doCreateGlyphVector(GlyphVector i_glyphs) {
+		AffineTransform at = new AffineTransform();
+		at.translate(0, getAwtFont().getSize());
 
-		return new VectorGlyphVector(stringChars);
+		double flatness = 1.9d * (1 - m_precision) + 0.1d;
+		VectorChar[] stringChars = new VectorChar[i_glyphs.getNumGlyphs()];
+
+		for (int i = 0; i < i_glyphs.getNumGlyphs(); i++)
+			stringChars[i] = createVectorChar(i_glyphs, i, at, flatness);
+
+		return new LwjglVectorGlyphVector(stringChars);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.AWTBasedFont#doUpdateFontData(GlyphVector,
-	 *      char, char, char, char)
+	 * @see org.eclipse.draw3d.font.IDraw3DFont#initialize()
 	 */
-	@Override
-	protected void doUpdateFontData(GlyphVector i_glyphs, char i_nf, char i_nl,
-		char i_of, char i_ol) {
-		GLUtessellator tesselator = GLU.gluNewTess();
-		try {
-			LwjglAWTGlyphCallback callback = new LwjglAWTGlyphCallback();
+	public void initialize() {
+		m_tesselator = GLU.gluNewTess();
+		m_callback = new LwjglAWTGlyphCallback();
 
-			// bug in LWJGL, must set edge flag callback to null before setting
-			// begin callback
-			tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG, null);
-			tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG_DATA, null);
-			tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN, callback);
-			tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN_DATA, null);
-			tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX, callback);
-			tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX_DATA, null);
-			tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE, callback);
-			tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE_DATA, null);
-			tesselator.gluTessCallback(GLU.GLU_TESS_END, callback);
-			tesselator.gluTessCallback(GLU.GLU_TESS_END_DATA, null);
-			tesselator.gluTessCallback(GLU.GLU_TESS_ERROR, callback);
-			tesselator.gluTessCallback(GLU.GLU_TESS_ERROR_DATA, null);
+		// bug in LWJGL, must set edge flag callback to null before setting
+		// begin callback
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN, m_callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX, m_callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE, m_callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_END, m_callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_END_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR, m_callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR_DATA, null);
 
-			tesselator.gluTessProperty(GLU.GLU_TESS_TOLERANCE, 0);
-			tesselator.gluTessProperty(GLU.GLU_TESS_BOUNDARY_ONLY, 0);
+		m_tesselator.gluTessProperty(GLU.GLU_TESS_TOLERANCE, 0);
+		m_tesselator.gluTessProperty(GLU.GLU_TESS_BOUNDARY_ONLY, 0);
 
-			tesselator.gluTessNormal(0, 0, -1);
-
-			AffineTransform at = new AffineTransform();
-			at.translate(0, getAwtFont().getSize());
-
-			VectorChar[] temp = m_chars;
-			m_chars = new VectorChar[i_glyphs.getNumGlyphs()];
-			if (temp != null)
-				System.arraycopy(temp, 0, m_chars, i_of - i_nf, temp.length);
-
-			double[] c = new double[3];
-			float[][] v = new float[8][2];
-			int vi = 0;
-			double flatness = 9.9d * (1 - m_precision) + 0.1d;
-
-			for (int i = 0; i < i_glyphs.getNumGlyphs(); i++) {
-				if (m_chars[i] == null) {
-					GlyphMetrics metrics = i_glyphs.getGlyphMetrics(i);
-					Shape outline = i_glyphs.getGlyphOutline(i);
-					PathIterator path = outline.getPathIterator(at, flatness);
-
-					float advanceX = metrics.getAdvanceX();
-					float advanceY = metrics.getAdvanceY();
-					m_chars[i] = new VectorChar(advanceX, advanceY);
-
-					if (!path.isDone()) {
-						if (path.getWindingRule() == PathIterator.WIND_EVEN_ODD)
-							tesselator.gluTessProperty(
-								GLU.GLU_TESS_WINDING_RULE,
-								GLU.GLU_TESS_WINDING_ODD);
-						else if (path.getWindingRule() == PathIterator.WIND_NON_ZERO)
-							tesselator.gluTessProperty(
-								GLU.GLU_TESS_WINDING_RULE,
-								GLU.GLU_TESS_WINDING_NONZERO);
-
-						vi = 0;
-						tesselator.gluTessBeginPolygon(null);
-						while (!path.isDone()) {
-							int segmentType = path.currentSegment(c);
-
-							switch (segmentType) {
-							case PathIterator.SEG_MOVETO:
-								tesselator.gluTessBeginContour();
-
-								if (vi == v.length)
-									v = resizeVertexBuffer(v);
-								v[vi][0] = (float) c[0];
-								v[vi][1] = (float) c[1];
-								tesselator.gluTessVertex(c, 0, v[vi++]);
-								break;
-							case PathIterator.SEG_CLOSE:
-								tesselator.gluTessEndContour();
-								break;
-							case PathIterator.SEG_LINETO:
-								if (vi == v.length)
-									v = resizeVertexBuffer(v);
-								v[vi][0] = (float) c[0];
-								v[vi][1] = (float) c[1];
-								tesselator.gluTessVertex(c, 0, v[vi++]);
-								break;
-							}
-							path.next();
-						}
-						tesselator.gluTessEndPolygon();
-
-						callback.setData(m_chars[i]);
-						callback.reset();
-					}
-					at.translate(-advanceX, -advanceY);
-				}
-			}
-		} finally {
-			tesselator.gluDeleteTess();
-		}
+		m_tesselator.gluTessNormal(0, 0, -1);
 	}
 
 	private float[][] resizeVertexBuffer(float[][] i_v) {

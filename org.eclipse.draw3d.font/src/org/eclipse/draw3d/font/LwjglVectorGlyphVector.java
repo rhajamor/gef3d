@@ -27,7 +27,7 @@ import org.eclipse.draw3d.util.Draw3DCache;
  * @version $Revision$
  * @since 30.07.2010
  */
-public class VectorGlyphVector implements IDraw3DGlyphVector {
+public class LwjglVectorGlyphVector implements IDraw3DGlyphVector {
 
 	private boolean m_disposed = false;
 
@@ -45,7 +45,7 @@ public class VectorGlyphVector implements IDraw3DGlyphVector {
 
 	private int m_bufferId;
 
-	public VectorGlyphVector(VectorChar[] i_chars) {
+	public LwjglVectorGlyphVector(VectorChar[] i_chars) {
 		if (i_chars == null)
 			throw new NullPointerException("i_chars must not be null");
 
