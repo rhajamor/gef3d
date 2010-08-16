@@ -11,6 +11,7 @@
 package org.eclipse.draw3d.font;
 
 import java.awt.Shape;
+import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphMetrics;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
@@ -134,18 +135,21 @@ public class LwjglVectorFont extends AWTBasedFont {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.AWTBasedFont#doCreateGlyphVector(java.awt.font.GlyphVector)
+	 * @see org.eclipse.draw3d.font.AWTBasedFont#doCreateGlyphVector(String)
 	 */
 	@Override
-	protected IDraw3DGlyphVector doCreateGlyphVector(GlyphVector i_glyphs) {
+	protected IDraw3DGlyphVector doCreateGlyphVector(String i_string) {
+		FontRenderContext ctx = new FontRenderContext(null, true, false);
+		GlyphVector glyphs = getAwtFont().createGlyphVector(ctx, i_string);
+
 		AffineTransform at = new AffineTransform();
 		at.translate(0, getAwtFont().getSize());
 
 		double flatness = 1.9d * (1 - m_precision) + 0.1d;
-		VectorChar[] stringChars = new VectorChar[i_glyphs.getNumGlyphs()];
+		VectorChar[] stringChars = new VectorChar[glyphs.getNumGlyphs()];
 
-		for (int i = 0; i < i_glyphs.getNumGlyphs(); i++)
-			stringChars[i] = createVectorChar(i_glyphs, i, at, flatness);
+		for (int i = 0; i < glyphs.getNumGlyphs(); i++)
+			stringChars[i] = createVectorChar(glyphs, i, at, flatness);
 
 		return new LwjglVectorGlyphVector(stringChars);
 	}

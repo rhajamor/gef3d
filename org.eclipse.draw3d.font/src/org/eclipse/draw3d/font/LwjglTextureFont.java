@@ -17,11 +17,10 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
 
 /**
  * LwjglTextureFont There should really be more documentation here.
@@ -41,12 +40,15 @@ public class LwjglTextureFont extends AWTBasedFont {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.AWTBasedFont#doCreateGlyphVector(java.awt.font.GlyphVector)
+	 * @see org.eclipse.draw3d.font.AWTBasedFont#doCreateGlyphVector(String)
 	 */
 	@Override
-	protected IDraw3DGlyphVector doCreateGlyphVector(GlyphVector i_glyphs) {
+	protected IDraw3DGlyphVector doCreateGlyphVector(String i_string) {
 		FontRenderContext ctx = new FontRenderContext(null, true, true);
-		Rectangle bounds = i_glyphs.getPixelBounds(ctx, 0, 0);
+		LineMetrics lineMetrics = getAwtFont().getLineMetrics(i_string, ctx);
+		GlyphVector glyphs = getAwtFont().createGlyphVector(ctx, i_string);
+
+		Rectangle bounds = glyphs.getPixelBounds(ctx, 0, 0);
 		BufferedImage img =
 			new BufferedImage(bounds.width, bounds.height,
 				BufferedImage.TYPE_BYTE_GRAY);
@@ -67,22 +69,17 @@ public class LwjglTextureFont extends AWTBasedFont {
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, bounds.width, bounds.height);
 
-		g.translate(0, bounds.height);
+		g.translate(0, lineMetrics.getAscent() - 1);
 		g.setColor(Color.BLACK);
-		for (int i = 0; i < i_glyphs.getNumGlyphs(); i++) {
-			Shape outline = i_glyphs.getOutline();
+		g.setFont(getAwtFont());
+
+		for (int i = 0; i < glyphs.getNumGlyphs(); i++) {
+			Shape outline = glyphs.getGlyphOutline(i);
 			g.fill(outline);
 		}
 
-		String path =
-			"/Users/kristian/Temp/font_" + getAwtFont() + "_"
-				+ System.currentTimeMillis() + ".png";
-		File f = new File(path);
-		try {
-			ImageIO.write(img, "png", f);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		Raster data = img.getData();
+		DataBufferByte dataBuffer = (DataBufferByte) data.getDataBuffer();
 
 		return null;
 	}

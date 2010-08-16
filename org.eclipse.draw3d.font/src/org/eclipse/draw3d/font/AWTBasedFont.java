@@ -11,8 +11,6 @@
 package org.eclipse.draw3d.font;
 
 import java.awt.Font;
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
 
 /**
  * AWTBasedFont There should really be more documentation here.
@@ -52,14 +50,10 @@ public abstract class AWTBasedFont implements IDraw3DFont {
 		if (i_string.length() == 0)
 			return null;
 
-		FontRenderContext ctx = new FontRenderContext(null, true, false);
-		GlyphVector glyphs = m_font.createGlyphVector(ctx, i_string);
-
-		return doCreateGlyphVector(glyphs);
+		return doCreateGlyphVector(i_string);
 	}
 
-	protected abstract IDraw3DGlyphVector doCreateGlyphVector(
-		GlyphVector i_glyphs);
+	protected abstract IDraw3DGlyphVector doCreateGlyphVector(String i_string);
 
 	protected Font getAwtFont() {
 		return m_font;
