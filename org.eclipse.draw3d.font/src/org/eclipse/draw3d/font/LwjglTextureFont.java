@@ -45,7 +45,6 @@ public class LwjglTextureFont extends AWTBasedFont {
 	 */
 	@Override
 	protected IDraw3DGlyphVector doCreateGlyphVector(GlyphVector i_glyphs) {
-
 		FontRenderContext ctx = new FontRenderContext(null, true, true);
 		Rectangle bounds = i_glyphs.getPixelBounds(ctx, 0, 0);
 		BufferedImage img =
@@ -55,6 +54,16 @@ public class LwjglTextureFont extends AWTBasedFont {
 		Graphics2D g = img.createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 			RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+			RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+		g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
+			RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+			RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+			RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		g.setRenderingHint(RenderingHints.KEY_RENDERING,
+			RenderingHints.VALUE_RENDER_QUALITY);
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, bounds.width, bounds.height);
 
