@@ -14,6 +14,18 @@ import static org.lwjgl.opengl.GL11.*;
 
 import org.lwjgl.util.glu.GLUtessellatorCallbackAdapter;
 
+/**
+ * This instance of {@link GLUtessellatorCallbackAdapter} collects vertex data
+ * that occurs during the tesselation of a string. After each character, the
+ * vertex data, which consists of triangle strips, triangle fans and triangle
+ * sets, can be collected by calling {@link #createVectorChar(float, float)}. To
+ * reset the internal state of this callback object, the {@link #reset()}
+ * function must be called.
+ * 
+ * @author Kristian Duske
+ * @version $Revision$
+ * @since 17.08.2010
+ */
 public class LwjglAWTGlyphCallback extends GLUtessellatorCallbackAdapter {
 
 	private float[][] m_fans = new float[3][];
@@ -24,11 +36,11 @@ public class LwjglAWTGlyphCallback extends GLUtessellatorCallbackAdapter {
 
 	private int m_numStrips = 0;
 
-	private int m_numTris = 0;
+	private int m_numSets = 0;
 
 	private float[][] m_strips = new float[3][];
 
-	private float[][] m_tris = new float[3][];
+	private float[][] m_sets = new float[3][];
 
 	private int m_type;
 
@@ -58,6 +70,28 @@ public class LwjglAWTGlyphCallback extends GLUtessellatorCallbackAdapter {
 	}
 
 	/**
+	 * Creates an instance of {@link VectorChar} that represents the current
+	 * character data.
+	 * 
+	 * @param i_advX the value by which the X position must be advanced after
+	 *            this character was rendered
+	 * @param i_advY the value by which the Y position must be advanced after
+	 *            this character was rendered
+	 * @return the {@link VectorChar} instance that represents the current
+	 *         character data
+	 */
+	public VectorChar createVectorChar(float i_advX, float i_advY) {
+		VectorChar result = new VectorChar(i_advX, i_advY);
+		if (m_numFans > 0)
+			result.setTriangleFans(m_fans, m_numFans);
+		if (m_numStrips > 0)
+			result.setTriangleStrips(m_strips, m_numStrips);
+		if (m_numSets > 0)
+			result.setTriangleSets(m_sets, m_numSets);
+		return result;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.lwjgl.util.glu.GLUtessellatorCallbackAdapter#end()
@@ -80,11 +114,11 @@ public class LwjglAWTGlyphCallback extends GLUtessellatorCallbackAdapter {
 			m_strips[m_numStrips++] = strip;
 			break;
 		case GL_TRIANGLES:
-			if (m_numTris == m_tris.length)
-				m_tris = resize(m_tris);
+			if (m_numSets == m_sets.length)
+				m_sets = resize(m_sets);
 			float[] tris = new float[m_index];
 			System.arraycopy(m_vertices, 0, tris, 0, tris.length);
-			m_tris[m_numTris++] = tris;
+			m_sets[m_numSets++] = tris;
 			break;
 		default:
 			throw new IllegalStateException(
@@ -103,27 +137,19 @@ public class LwjglAWTGlyphCallback extends GLUtessellatorCallbackAdapter {
 			+ i_errnum);
 	}
 
+	/**
+	 * Resets the internal state of this callback object.
+	 */
 	public void reset() {
 		m_numFans = 0;
 		m_numStrips = 0;
-		m_numTris = 0;
+		m_numSets = 0;
 	}
 
 	private float[][] resize(float[][] i_array) {
 		float[][] resized = new float[2 * i_array.length][];
 		System.arraycopy(i_array, 0, resized, 0, i_array.length);
 		return resized;
-	}
-
-	public VectorChar createVectorChar(float i_advX, float i_advY) {
-		VectorChar result = new VectorChar(i_advX, i_advY);
-		if (m_numFans > 0)
-			result.setTriangleFans(m_fans, m_numFans);
-		if (m_numStrips > 0)
-			result.setTriangleStrips(m_strips, m_numStrips);
-		if (m_numTris > 0)
-			result.setTriangles(m_tris, m_numTris);
-		return result;
 	}
 
 	/**

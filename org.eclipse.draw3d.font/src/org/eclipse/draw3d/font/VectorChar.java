@@ -13,6 +13,13 @@ package org.eclipse.draw3d.font;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+/**
+ * Stores vector data for a single character.
+ * 
+ * @author Kristian Duske
+ * @version $Revision$
+ * @since 17.08.2010
+ */
 public class VectorChar {
 
 	private float m_advX;
@@ -25,14 +32,34 @@ public class VectorChar {
 
 	private float[][] m_strips;
 
-	private float[][] m_tris;
+	private float[][] m_sets;
 
+	/**
+	 * Creates a new vector char with the given advance values.
+	 * 
+	 * @param i_advX the value by which to advance the current X position after
+	 *            this char was rendered
+	 * @param i_advY the value by which to advance the current Y position after
+	 *            this char was rendered
+	 */
 	public VectorChar(float i_advX, float i_advY) {
 		m_advX = i_advX;
 		m_advY = i_advY;
 	}
 
-	public int compileFans(FloatBuffer i_buffer, int i_index,
+	/**
+	 * Compiles the triangle fans stored in this character into the given
+	 * buffers.
+	 * 
+	 * @param i_vertices the vertex buffer
+	 * @param i_index the current index into the vertex buffer
+	 * @param i_indices the index buffer
+	 * @param i_counts the vertex count buffer
+	 * @param i_x the X translation
+	 * @param i_y the Y translation
+	 * @return the new index into the vertex buffer
+	 */
+	public int compileFans(FloatBuffer i_vertices, int i_index,
 		IntBuffer i_indices, IntBuffer i_counts, float i_x, float i_y) {
 		if (m_fans == null || m_fans.length == 0)
 			return i_index;
@@ -41,8 +68,8 @@ public class VectorChar {
 		for (int i = 0; i < m_fans.length; i++) {
 			int count = m_fans[i].length / 2;
 			for (int j = 0; j < count; j++) {
-				i_buffer.put(m_fans[i][2 * j] + i_x);
-				i_buffer.put(m_fans[i][2 * j + 1] + i_y);
+				i_vertices.put(m_fans[i][2 * j] + i_x);
+				i_vertices.put(m_fans[i][2 * j + 1] + i_y);
 			}
 			i_indices.put(index);
 			i_counts.put(count);
@@ -51,7 +78,19 @@ public class VectorChar {
 		return index;
 	}
 
-	public int compileStrips(FloatBuffer i_buffer, int i_index,
+	/**
+	 * Compiles the triangle strips stored in this character into the given
+	 * buffers.
+	 * 
+	 * @param i_vertices the vertex buffer
+	 * @param i_index the current index into the vertex buffer
+	 * @param i_indices the index buffer
+	 * @param i_counts the vertex count buffer
+	 * @param i_x the X translation
+	 * @param i_y the Y translation
+	 * @return the new index into the vertex buffer
+	 */
+	public int compileStrips(FloatBuffer i_vertices, int i_index,
 		IntBuffer i_indices, IntBuffer i_counts, float i_x, float i_y) {
 		if (m_strips == null || m_strips.length == 0)
 			return i_index;
@@ -60,8 +99,8 @@ public class VectorChar {
 		for (int i = 0; i < m_strips.length; i++) {
 			int count = m_strips[i].length / 2;
 			for (int j = 0; j < count; j++) {
-				i_buffer.put(m_strips[i][2 * j] + i_x);
-				i_buffer.put(m_strips[i][2 * j + 1] + i_y);
+				i_vertices.put(m_strips[i][2 * j] + i_x);
+				i_vertices.put(m_strips[i][2 * j + 1] + i_y);
 			}
 			i_indices.put(index);
 			i_counts.put(count);
@@ -70,17 +109,29 @@ public class VectorChar {
 		return index;
 	}
 
-	public int compileTriangles(FloatBuffer i_buffer, int i_index,
+	/**
+	 * Compiles the triangle sets stored in this character into the given
+	 * buffers.
+	 * 
+	 * @param i_vertices the vertex buffer
+	 * @param i_index the current index into the vertex buffer
+	 * @param i_indices the index buffer
+	 * @param i_counts the vertex count buffer
+	 * @param i_x the X translation
+	 * @param i_y the Y translation
+	 * @return the new index into the vertex buffer
+	 */
+	public int compileSets(FloatBuffer i_vertices, int i_index,
 		IntBuffer i_indices, IntBuffer i_counts, float i_x, float i_y) {
-		if (m_tris == null || m_tris.length == 0)
+		if (m_sets == null || m_sets.length == 0)
 			return i_index;
 
 		int index = i_index;
-		for (int i = 0; i < m_tris.length; i++) {
-			int count = m_tris[i].length / 2;
+		for (int i = 0; i < m_sets.length; i++) {
+			int count = m_sets[i].length / 2;
 			for (int j = 0; j < count; j++) {
-				i_buffer.put(m_tris[i][2 * j] + i_x);
-				i_buffer.put(m_tris[i][2 * j + 1] + i_y);
+				i_vertices.put(m_sets[i][2 * j] + i_x);
+				i_vertices.put(m_sets[i][2 * j + 1] + i_y);
 			}
 			i_indices.put(index);
 			i_counts.put(count);
@@ -89,30 +140,71 @@ public class VectorChar {
 		return index;
 	}
 
+	/**
+	 * Returns the value by which to advance the current X position after this
+	 * character is rendered.
+	 * 
+	 * @return the X advance
+	 */
 	public float getAdvanceX() {
 		return m_advX;
 	}
 
+	/**
+	 * Returns the value by which to advance the current Y position after this
+	 * character is rendered.
+	 * 
+	 * @return the Y advance
+	 */
 	public float getAdvanceY() {
 		return m_advY;
 	}
 
+	/**
+	 * Returns the number of triangle fans stored in this char.
+	 * 
+	 * @return the number of triangle fans
+	 */
 	public int getNumFans() {
 		return m_fans == null ? 0 : m_fans.length;
 	}
 
+	/**
+	 * Returns the number of triangle strips stored in this char.
+	 * 
+	 * @return the number of triangle strips
+	 */
 	public int getNumStrips() {
 		return m_strips == null ? 0 : m_strips.length;
 	}
 
-	public int getNumTris() {
-		return m_tris == null ? 0 : m_tris.length;
+	/**
+	 * Returns the number of triangle sets stored in this char.
+	 * 
+	 * @return the number of triangle sets
+	 */
+	public int getNumSets() {
+		return m_sets == null ? 0 : m_sets.length;
 	}
 
+	/**
+	 * Returns the total number of vertices in this char.
+	 * 
+	 * @return the total number of vertices
+	 */
 	public int getNumVertices() {
 		return m_numVertices;
 	}
 
+	/**
+	 * Sets the triangle fans of this char. The given two dimensional array
+	 * stores the individual fans in the first dimension and the vector data for
+	 * each fan in the second dimension. The first dimension may be larger than
+	 * the actual number of fans, which is indicated by the second parameter
+	 * 
+	 * @param i_data the triangle fans
+	 * @param i_num the actual number of triangle fans
+	 */
 	public void setTriangleFans(float[][] i_data, int i_num) {
 		m_fans = new float[i_num][];
 		for (int i = 0; i < i_num; i++) {
@@ -121,14 +213,33 @@ public class VectorChar {
 		}
 	}
 
-	public void setTriangles(float[][] i_data, int i_num) {
-		m_tris = new float[i_num][];
+	/**
+	 * Sets the triangle sets of this char. The given two dimensional array
+	 * stores the individual sets in the first dimension and the vector data for
+	 * each set in the second dimension. The first dimension may be larger than
+	 * the actual number of sets, which is indicated by the second parameter
+	 * 
+	 * @param i_data the triangle sets
+	 * @param i_num the actual number of triangle sets
+	 */
+	public void setTriangleSets(float[][] i_data, int i_num) {
+		m_sets = new float[i_num][];
 		for (int i = 0; i < i_num; i++) {
-			m_tris[i] = i_data[i];
-			m_numVertices += m_tris[i].length / 2;
+			m_sets[i] = i_data[i];
+			m_numVertices += m_sets[i].length / 2;
 		}
 	}
 
+	/**
+	 * Sets the triangle strips of this char. The given two dimensional array
+	 * stores the individual strips in the first dimension and the vector data
+	 * for each strip in the second dimension. The first dimension may be larger
+	 * than the actual number of strips, which is indicated by the second
+	 * parameter
+	 * 
+	 * @param i_data the triangle strips
+	 * @param i_num the actual number of triangle strips
+	 */
 	public void setTriangleStrips(float[][] i_data, int i_num) {
 		m_strips = new float[i_num][];
 		for (int i = 0; i < i_num; i++) {

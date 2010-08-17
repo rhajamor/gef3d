@@ -14,6 +14,7 @@ import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphMetrics;
 import java.awt.font.GlyphVector;
+import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 
@@ -21,13 +22,13 @@ import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.glu.GLUtessellator;
 
 /**
- * LwjglVectorFont There should really be more documentation here.
+ * A font that uses vector font data to render text directly.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 30.07.2010
  */
-public class LwjglVectorFont extends AWTBasedFont {
+public class LwjglVectorFont extends AwtBasedFont {
 
 	private LwjglAWTGlyphCallback m_callback;
 
@@ -47,6 +48,19 @@ public class LwjglVectorFont extends AWTBasedFont {
 	 */
 	private float[][] m_vBuf = new float[8][2];
 
+	/**
+	 * Creates a new instance. The given precision factor must be between 0 and
+	 * 1 (inclusive) and indicates how precisely the font data should be
+	 * tesselated. A value of 1 means high precision and produces more vertices
+	 * than a value of 0, which means lowest precision.
+	 * 
+	 * @param i_name the font name
+	 * @param i_size the font size
+	 * @param i_precision the precision factor
+	 * @param i_flags the flags
+	 * @see AwtBasedFont#AwtBasedFont(String, int,
+	 *      org.eclipse.draw3d.font.IDraw3DFont.Flag...)
+	 */
 	public LwjglVectorFont(String i_name, int i_size, float i_precision,
 			Flag... i_flags) {
 		super(i_name, i_size, i_flags);
@@ -56,6 +70,29 @@ public class LwjglVectorFont extends AWTBasedFont {
 				"precision must be between 0 and 1, inclusive");
 
 		m_precision = i_precision;
+
+		m_tesselator = GLU.gluNewTess();
+		m_callback = new LwjglAWTGlyphCallback();
+
+		// bug in LWJGL, must set edge flag callback to null before setting
+		// begin callback
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN, m_callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX, m_callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE, m_callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_END, m_callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_END_DATA, null);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR, m_callback);
+		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR_DATA, null);
+
+		m_tesselator.gluTessProperty(GLU.GLU_TESS_TOLERANCE, 0);
+		m_tesselator.gluTessProperty(GLU.GLU_TESS_BOUNDARY_ONLY, 0);
+
+		m_tesselator.gluTessNormal(0, 0, -1);
 	}
 
 	private VectorChar createVectorChar(GlyphVector i_glyphs, int i_index,
@@ -135,53 +172,24 @@ public class LwjglVectorFont extends AWTBasedFont {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.AWTBasedFont#doCreateGlyphVector(String)
+	 * @see org.eclipse.draw3d.font.AwtBasedFont#doCreateText(String)
 	 */
 	@Override
-	protected IDraw3DGlyphVector doCreateGlyphVector(String i_string) {
+	protected IDraw3DText doCreateText(String i_string) {
 		FontRenderContext ctx = new FontRenderContext(null, true, false);
+		LineMetrics lineMetrics = getAwtFont().getLineMetrics(i_string, ctx);
 		GlyphVector glyphs = getAwtFont().createGlyphVector(ctx, i_string);
 
 		AffineTransform at = new AffineTransform();
-		at.translate(0, getAwtFont().getSize());
+		at.translate(0, lineMetrics.getAscent() - 1);
 
-		double flatness = 1.9d * (1 - m_precision) + 0.1d;
+		double flatness = 1.9d * m_precision + 0.1d;
 		VectorChar[] stringChars = new VectorChar[glyphs.getNumGlyphs()];
 
 		for (int i = 0; i < glyphs.getNumGlyphs(); i++)
 			stringChars[i] = createVectorChar(glyphs, i, at, flatness);
 
-		return new LwjglVectorGlyphVector(stringChars);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.font.IDraw3DFont#initialize()
-	 */
-	public void initialize() {
-		m_tesselator = GLU.gluNewTess();
-		m_callback = new LwjglAWTGlyphCallback();
-
-		// bug in LWJGL, must set edge flag callback to null before setting
-		// begin callback
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG_DATA, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN, m_callback);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN_DATA, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX, m_callback);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX_DATA, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE, m_callback);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE_DATA, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_END, m_callback);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_END_DATA, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR, m_callback);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR_DATA, null);
-
-		m_tesselator.gluTessProperty(GLU.GLU_TESS_TOLERANCE, 0);
-		m_tesselator.gluTessProperty(GLU.GLU_TESS_BOUNDARY_ONLY, 0);
-
-		m_tesselator.gluTessNormal(0, 0, -1);
+		return new LwjglVectorText(stringChars);
 	}
 
 	private float[][] resizeVertexBuffer(float[][] i_v) {

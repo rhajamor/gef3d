@@ -13,16 +13,39 @@ package org.eclipse.draw3d.font;
 import java.awt.Font;
 
 /**
- * IDraw3DFont There should really be more documentation here.
+ * A font that can be used to render text in the Draw3D subsystem. Fonts are
+ * used to create instances of {@link IDraw3DText} which are then used to render
+ * the actual text.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 30.07.2010
  */
 public interface IDraw3DFont {
+	/**
+	 * The font face flags.
+	 * 
+	 * @author Kristian Duske
+	 * @version $Revision$
+	 * @since 17.08.2010
+	 */
 	public enum Flag {
-		BOLD, ITALIC;
+		/**
+		 * The bold font face.
+		 */
+		BOLD,
+		/**
+		 * The italic font face.
+		 */
+		ITALIC;
 
+		/**
+		 * Returns the AWT style value for the given flags.
+		 * 
+		 * @param i_flags the flags
+		 * @return the AWT style
+		 * @see Font#getStyle()
+		 */
 		public static int getAWTStyle(Flag... i_flags) {
 			int style = 0;
 			for (Flag flag : i_flags) {
@@ -40,6 +63,14 @@ public interface IDraw3DFont {
 			return style;
 		}
 
+		/**
+		 * Returns an array containing the flags that represent the given
+		 * parameters.
+		 * 
+		 * @param i_bold whether the flags should include {@link #BOLD}
+		 * @param i_italic whether the flags should include {@link #ITALIC}
+		 * @return the flag array
+		 */
 		public static Flag[] getFlags(boolean i_bold, boolean i_italic) {
 			if (i_bold && i_italic)
 				return new Flag[] { BOLD, ITALIC };
@@ -51,9 +82,17 @@ public interface IDraw3DFont {
 		}
 	}
 
-	public void initialize();
+	/**
+	 * Creates an instance of {@link IDraw3DText} for the given string.
+	 * 
+	 * @param i_string the string to render
+	 * @return an instance of {@link IDraw3DText} that renders the given string
+	 * @throws IllegalStateException if this font is disposed
+	 */
+	public IDraw3DText createText(String i_string);
 
-	public IDraw3DGlyphVector createGlyphVector(String i_string);
-
+	/**
+	 * Disposes all resources associated with this font.
+	 */
 	public void dispose();
 }

@@ -10,37 +10,36 @@
  ******************************************************************************/
 package org.eclipse.draw3d.font;
 
-import java.awt.image.BufferedImage;
-
 /**
- * A font that renders text using textures created by rendering AWT font onto an
- * image.
+ * An implementation of {@link IDraw3DText} that does nothing. This is useful
+ * for empty strings and such.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 17.08.2010
  */
-public class LwjglTextureFont extends AwtBasedTextureFont {
+public class EmptyText implements IDraw3DText {
 
 	/**
-	 * Creates a new instance.
-	 * 
-	 * @param i_name the font name
-	 * @param i_size the font size
-	 * @param i_flags the flags
+	 * A single instance.
 	 */
-	public LwjglTextureFont(String i_name, int i_size, Flag[] i_flags) {
-		super(i_name, i_size, i_flags);
+	public static final EmptyText INSTANCE = new EmptyText();
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.font.IDraw3DText#dispose()
+	 */
+	public void dispose() {
+		// nothing to do
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.AwtBasedTextureFont#doCreateText(java.awt.image.BufferedImage)
+	 * @see org.eclipse.draw3d.font.IDraw3DText#render()
 	 */
-	@Override
-	protected IDraw3DText doCreateText(BufferedImage i_image) {
-		return new LwjglTextureText(i_image);
+	public void render() {
+		// nothing to do
 	}
-
 }

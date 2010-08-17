@@ -6,7 +6,7 @@ import static org.lwjgl.opengl.GL13.*;
 import java.awt.GraphicsEnvironment;
 
 import org.eclipse.draw3d.font.IDraw3DFont;
-import org.eclipse.draw3d.font.IDraw3DGlyphVector;
+import org.eclipse.draw3d.font.IDraw3DText;
 import org.eclipse.draw3d.font.LwjglTextureFont;
 import org.eclipse.draw3d.font.LwjglVectorFont;
 import org.eclipse.draw3d.font.IDraw3DFont.Flag;
@@ -69,6 +69,10 @@ public class Draw3DFontViewer extends ViewPart {
 	private Scale m_precision;
 
 	private Label m_precLabel;
+
+	private Button m_typeVector;
+
+	private Button m_typeTexture;
 
 	/**
 	 * The constructor.
@@ -166,18 +170,19 @@ public class Draw3DFontViewer extends ViewPart {
 					Flag[] flags =
 						Flag.getFlags(m_bold.getSelection(),
 							m_italic.getSelection());
-					float p = m_precision.getSelection() / 100f;
-					IDraw3DFont font =
-						new LwjglVectorFont(name, size, p, flags);
-					font.initialize();
-					IDraw3DGlyphVector glyphs =
-						font.createGlyphVector("The quick brown fox jumps over the lazy dog.");
+					IDraw3DFont font = null;
+					if (m_typeVector.getSelection()) {
+						float p = m_precision.getSelection() / 100f;
+						font = new LwjglVectorFont(name, size, p, flags);
+					} else {
+						font = new LwjglTextureFont(name, size, flags);
+					}
+
+					IDraw3DText glyphs =
+						font.createText("The quick brown fox jumps over the lazy dog.");
 					glyphs.render();
 					glyphs.dispose();
 					font.dispose();
-
-					IDraw3DFont tFont = new LwjglTextureFont(name, size, flags);
-					tFont.createGlyphVector("The quick brown fox jumps over the lazy dog.");
 				}
 
 				m_canvas.swapBuffers();
@@ -272,7 +277,33 @@ public class Draw3DFontViewer extends ViewPart {
 		});
 
 		m_precLabel = new Label(container, SWT.NONE);
-		m_precLabel.setLayoutData(new RowData(100, 24));
+		m_precLabel.setLayoutData(new RowData(80, 24));
+
+		m_typeVector = new Button(container, SWT.RADIO);
+		m_typeVector.setText("Vector");
+		m_typeVector.setSelection(true);
+		m_typeVector.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(SelectionEvent i_e) {
+				m_canvas.redraw();
+			}
+
+			public void widgetDefaultSelected(SelectionEvent i_e) {
+				widgetSelected(i_e);
+			}
+		});
+
+		m_typeTexture = new Button(container, SWT.RADIO);
+		m_typeTexture.setText("Texture");
+		m_typeTexture.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(SelectionEvent i_e) {
+				m_canvas.redraw();
+			}
+
+			public void widgetDefaultSelected(SelectionEvent i_e) {
+				widgetSelected(i_e);
+			}
+		});
+
 	}
 
 	private Composite createContainer(Composite i_parent) {

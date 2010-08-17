@@ -11,15 +11,23 @@
 package org.eclipse.draw3d.font;
 
 /**
- * IDraw3DText
- * There should really be more documentation here.
- *
- * @author 	Kristian Duske
- * @version	$Revision$
- * @since 	30.07.2010
+ * Represents a renderable chunk of text. Such a text chunk can be rendered
+ * repeatedly until it is disposed.
+ * 
+ * @author Kristian Duske
+ * @version $Revision$
+ * @since 30.07.2010
  */
-public interface IDraw3DGlyphVector {
-	public void render();
-
+public interface IDraw3DText {
+	/**
+	 * Disposes all resources associated with this text.
+	 */
 	public void dispose();
+
+	/**
+	 * Renders this text.
+	 * 
+	 * @throws IllegalStateException if this text chunk is disposed
+	 */
+	public void render();
 }

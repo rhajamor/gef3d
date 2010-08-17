@@ -21,31 +21,38 @@ import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
- * VectorText There should really be more documentation here.
+ * Renders a string using OpenGL vertex and index buffers.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 30.07.2010
  */
-public class LwjglVectorGlyphVector implements IDraw3DGlyphVector {
-
-	private boolean m_disposed = false;
-
-	private IntBuffer m_fanIdx;
-
-	private IntBuffer m_fanCnt;
-
-	private IntBuffer m_stripCnt;
-
-	private IntBuffer m_triCnt;
-
-	private IntBuffer m_stripIdx;
-
-	private IntBuffer m_triIdx;
+public class LwjglVectorText implements IDraw3DText {
 
 	private int m_bufferId;
 
-	public LwjglVectorGlyphVector(VectorChar[] i_chars) {
+	private boolean m_disposed = false;
+
+	private IntBuffer m_fanCnt;
+
+	private IntBuffer m_fanIdx;
+
+	private IntBuffer m_stripCnt;
+
+	private IntBuffer m_stripIdx;
+
+	private IntBuffer m_triCnt;
+
+	private IntBuffer m_triIdx;
+
+	/**
+	 * Creates a new instance that renders the given characters.
+	 * 
+	 * @param i_chars the characters to render
+	 * @throws NullPointerException if the given character array is
+	 *             <code>null</code>
+	 */
+	public LwjglVectorText(VectorChar[] i_chars) {
 		if (i_chars == null)
 			throw new NullPointerException("i_chars must not be null");
 
@@ -57,7 +64,7 @@ public class LwjglVectorGlyphVector implements IDraw3DGlyphVector {
 		for (int i = 0; i < i_chars.length; i++) {
 			numFans += i_chars[i].getNumFans();
 			numStrips += i_chars[i].getNumStrips();
-			numTris += i_chars[i].getNumTris();
+			numTris += i_chars[i].getNumSets();
 			numVertices += i_chars[i].getNumVertices();
 		}
 
@@ -82,7 +89,7 @@ public class LwjglVectorGlyphVector implements IDraw3DGlyphVector {
 		for (int j = 0; j < i_chars.length; j++) {
 			i = i_chars[j].compileFans(buf, i, m_fanIdx, m_fanCnt, x, y);
 			i = i_chars[j].compileStrips(buf, i, m_stripIdx, m_stripCnt, x, y);
-			i = i_chars[j].compileTriangles(buf, i, m_triIdx, m_triCnt, x, y);
+			i = i_chars[j].compileSets(buf, i, m_triIdx, m_triCnt, x, y);
 			x += i_chars[j].getAdvanceX();
 			y += i_chars[j].getAdvanceY();
 		}
@@ -107,7 +114,30 @@ public class LwjglVectorGlyphVector implements IDraw3DGlyphVector {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.IDraw3DGlyphVector#render()
+	 * @see org.eclipse.draw3d.font.IDraw3DText#dispose()
+	 */
+	public void dispose() {
+		if (m_disposed)
+			throw new IllegalStateException(this + " is disposed");
+
+		if (m_bufferId != 0) {
+			IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
+			try {
+				BufferUtils.put(idBuffer, m_bufferId);
+				glDeleteBuffers(idBuffer);
+				m_bufferId = 0;
+			} finally {
+				Draw3DCache.returnIntBuffer(idBuffer);
+			}
+		}
+
+		m_disposed = true;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.font.IDraw3DText#render()
 	 */
 	public void render() {
 		if (m_disposed)
@@ -142,28 +172,5 @@ public class LwjglVectorGlyphVector implements IDraw3DGlyphVector {
 		} finally {
 			glDisableClientState(GL_VERTEX_ARRAY);
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.font.IDraw3DGlyphVector#dispose()
-	 */
-	public void dispose() {
-		if (m_disposed)
-			throw new IllegalStateException(this + " is disposed");
-
-		if (m_bufferId != 0) {
-			IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
-			try {
-				BufferUtils.put(idBuffer, m_bufferId);
-				glDeleteBuffers(idBuffer);
-				m_bufferId = 0;
-			} finally {
-				Draw3DCache.returnIntBuffer(idBuffer);
-			}
-		}
-
-		m_disposed = true;
 	}
 }
