@@ -126,6 +126,8 @@ public class LwjglTextureText implements IDraw3DText {
 			Draw3DCache.returnIntBuffer(idBuf);
 			glPopAttrib();
 		}
+
+		m_image = null;
 	}
 
 	/**
