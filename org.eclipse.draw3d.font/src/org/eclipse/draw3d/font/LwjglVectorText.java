@@ -81,17 +81,12 @@ public class LwjglVectorText implements IDraw3DText {
 			m_triCnt = BufferUtils.createIntBuffer(numTris);
 		}
 
-		float x = 0;
-		float y = 0;
-
 		int i = 0;
 		FloatBuffer buf = BufferUtils.createFloatBuffer(2 * numVertices);
 		for (int j = 0; j < i_chars.length; j++) {
-			i = i_chars[j].compileFans(buf, i, m_fanIdx, m_fanCnt, x, y);
-			i = i_chars[j].compileStrips(buf, i, m_stripIdx, m_stripCnt, x, y);
-			i = i_chars[j].compileSets(buf, i, m_triIdx, m_triCnt, x, y);
-			x += i_chars[j].getAdvanceX();
-			y += i_chars[j].getAdvanceY();
+			i = i_chars[j].compileFans(buf, i, m_fanIdx, m_fanCnt);
+			i = i_chars[j].compileStrips(buf, i, m_stripIdx, m_stripCnt);
+			i = i_chars[j].compileSets(buf, i, m_triIdx, m_triCnt);
 		}
 
 		// upload vertex buffer

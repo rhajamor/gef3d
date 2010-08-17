@@ -22,10 +22,6 @@ import java.nio.IntBuffer;
  */
 public class VectorChar {
 
-	private float m_advX;
-
-	private float m_advY;
-
 	private float[][] m_fans;
 
 	private int m_numVertices = 0;
@@ -35,19 +31,6 @@ public class VectorChar {
 	private float[][] m_sets;
 
 	/**
-	 * Creates a new vector char with the given advance values.
-	 * 
-	 * @param i_advX the value by which to advance the current X position after
-	 *            this char was rendered
-	 * @param i_advY the value by which to advance the current Y position after
-	 *            this char was rendered
-	 */
-	public VectorChar(float i_advX, float i_advY) {
-		m_advX = i_advX;
-		m_advY = i_advY;
-	}
-
-	/**
 	 * Compiles the triangle fans stored in this character into the given
 	 * buffers.
 	 * 
@@ -55,12 +38,10 @@ public class VectorChar {
 	 * @param i_index the current index into the vertex buffer
 	 * @param i_indices the index buffer
 	 * @param i_counts the vertex count buffer
-	 * @param i_x the X translation
-	 * @param i_y the Y translation
 	 * @return the new index into the vertex buffer
 	 */
 	public int compileFans(FloatBuffer i_vertices, int i_index,
-		IntBuffer i_indices, IntBuffer i_counts, float i_x, float i_y) {
+		IntBuffer i_indices, IntBuffer i_counts) {
 		if (m_fans == null || m_fans.length == 0)
 			return i_index;
 
@@ -68,8 +49,8 @@ public class VectorChar {
 		for (int i = 0; i < m_fans.length; i++) {
 			int count = m_fans[i].length / 2;
 			for (int j = 0; j < count; j++) {
-				i_vertices.put(m_fans[i][2 * j] + i_x);
-				i_vertices.put(m_fans[i][2 * j + 1] + i_y);
+				i_vertices.put(m_fans[i][2 * j]);
+				i_vertices.put(m_fans[i][2 * j + 1]);
 			}
 			i_indices.put(index);
 			i_counts.put(count);
@@ -86,12 +67,10 @@ public class VectorChar {
 	 * @param i_index the current index into the vertex buffer
 	 * @param i_indices the index buffer
 	 * @param i_counts the vertex count buffer
-	 * @param i_x the X translation
-	 * @param i_y the Y translation
 	 * @return the new index into the vertex buffer
 	 */
 	public int compileStrips(FloatBuffer i_vertices, int i_index,
-		IntBuffer i_indices, IntBuffer i_counts, float i_x, float i_y) {
+		IntBuffer i_indices, IntBuffer i_counts) {
 		if (m_strips == null || m_strips.length == 0)
 			return i_index;
 
@@ -99,8 +78,8 @@ public class VectorChar {
 		for (int i = 0; i < m_strips.length; i++) {
 			int count = m_strips[i].length / 2;
 			for (int j = 0; j < count; j++) {
-				i_vertices.put(m_strips[i][2 * j] + i_x);
-				i_vertices.put(m_strips[i][2 * j + 1] + i_y);
+				i_vertices.put(m_strips[i][2 * j]);
+				i_vertices.put(m_strips[i][2 * j + 1]);
 			}
 			i_indices.put(index);
 			i_counts.put(count);
@@ -117,12 +96,10 @@ public class VectorChar {
 	 * @param i_index the current index into the vertex buffer
 	 * @param i_indices the index buffer
 	 * @param i_counts the vertex count buffer
-	 * @param i_x the X translation
-	 * @param i_y the Y translation
 	 * @return the new index into the vertex buffer
 	 */
 	public int compileSets(FloatBuffer i_vertices, int i_index,
-		IntBuffer i_indices, IntBuffer i_counts, float i_x, float i_y) {
+		IntBuffer i_indices, IntBuffer i_counts) {
 		if (m_sets == null || m_sets.length == 0)
 			return i_index;
 
@@ -130,34 +107,14 @@ public class VectorChar {
 		for (int i = 0; i < m_sets.length; i++) {
 			int count = m_sets[i].length / 2;
 			for (int j = 0; j < count; j++) {
-				i_vertices.put(m_sets[i][2 * j] + i_x);
-				i_vertices.put(m_sets[i][2 * j + 1] + i_y);
+				i_vertices.put(m_sets[i][2 * j]);
+				i_vertices.put(m_sets[i][2 * j + 1]);
 			}
 			i_indices.put(index);
 			i_counts.put(count);
 			index += count;
 		}
 		return index;
-	}
-
-	/**
-	 * Returns the value by which to advance the current X position after this
-	 * character is rendered.
-	 * 
-	 * @return the X advance
-	 */
-	public float getAdvanceX() {
-		return m_advX;
-	}
-
-	/**
-	 * Returns the value by which to advance the current Y position after this
-	 * character is rendered.
-	 * 
-	 * @return the Y advance
-	 */
-	public float getAdvanceY() {
-		return m_advY;
 	}
 
 	/**

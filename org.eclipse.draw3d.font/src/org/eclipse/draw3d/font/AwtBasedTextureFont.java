@@ -69,15 +69,18 @@ public abstract class AwtBasedTextureFont extends AwtBasedFont {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.AwtBasedFont#doCreateText(String)
+	 * @see org.eclipse.draw3d.font.AwtBasedFont#doCreateText(String,
+	 *      FontRenderContext)
 	 */
 	@Override
-	protected IDraw3DText doCreateText(String i_string) {
-		FontRenderContext ctx = new FontRenderContext(null, true, true);
-		LineMetrics lineMetrics = getAwtFont().getLineMetrics(i_string, ctx);
-		GlyphVector glyphs = getAwtFont().createGlyphVector(ctx, i_string);
+	protected IDraw3DText doCreateText(String i_string,
+		FontRenderContext i_context) {
+		GlyphVector glyphs =
+			getAwtFont().createGlyphVector(i_context, i_string);
+		LineMetrics lineMetrics =
+			getAwtFont().getLineMetrics(i_string, i_context);
+		Rectangle bounds = glyphs.getPixelBounds(i_context, 0, 0);
 
-		Rectangle bounds = glyphs.getPixelBounds(ctx, 0, 0);
 		BufferedImage img =
 			new BufferedImage(bounds.width, bounds.height,
 				BufferedImage.TYPE_4BYTE_ABGR);
@@ -96,7 +99,7 @@ public abstract class AwtBasedTextureFont extends AwtBasedFont {
 		g.setBackground(new Color(1, 1, 1, 0));
 
 		g.clearRect(0, 0, bounds.width, bounds.height);
-		g.translate(0, lineMetrics.getAscent() - 1);
+		g.translate(0, bounds.height - lineMetrics.getDescent() - 0.5f);
 
 		for (int i = 0; i < glyphs.getNumGlyphs(); i++) {
 			Shape outline = glyphs.getGlyphOutline(i);

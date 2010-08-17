@@ -10,9 +10,9 @@
  ******************************************************************************/
 package org.eclipse.draw3d.font;
 
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphMetrics;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
@@ -97,12 +97,8 @@ public class LwjglVectorFont extends AwtBasedFont {
 
 	private VectorChar createVectorChar(GlyphVector i_glyphs, int i_index,
 		AffineTransform i_at, double i_flatness) {
-		GlyphMetrics metrics = i_glyphs.getGlyphMetrics(i_index);
 		Shape outline = i_glyphs.getGlyphOutline(i_index);
 		PathIterator path = outline.getPathIterator(i_at, i_flatness);
-
-		float advX = metrics.getAdvanceX();
-		float advY = metrics.getAdvanceY();
 
 		if (!path.isDone()) {
 			if (path.getWindingRule() == PathIterator.WIND_EVEN_ODD)
@@ -142,11 +138,9 @@ public class LwjglVectorFont extends AwtBasedFont {
 			}
 			m_tesselator.gluTessEndPolygon();
 		}
-		VectorChar vectorChar = m_callback.createVectorChar(advX, advY);
+		VectorChar vectorChar = m_callback.createVectorChar();
 
 		m_callback.reset();
-		i_at.translate(-advX, -advY);
-
 		return vectorChar;
 	}
 
@@ -172,16 +166,20 @@ public class LwjglVectorFont extends AwtBasedFont {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.AwtBasedFont#doCreateText(String)
+	 * @see org.eclipse.draw3d.font.AwtBasedFont#doCreateText(String,
+	 *      FontRenderContext)
 	 */
 	@Override
-	protected IDraw3DText doCreateText(String i_string) {
-		FontRenderContext ctx = new FontRenderContext(null, true, false);
-		LineMetrics lineMetrics = getAwtFont().getLineMetrics(i_string, ctx);
-		GlyphVector glyphs = getAwtFont().createGlyphVector(ctx, i_string);
+	protected IDraw3DText doCreateText(String i_string,
+		FontRenderContext i_context) {
+		GlyphVector glyphs =
+			getAwtFont().createGlyphVector(i_context, i_string);
+		LineMetrics lineMetrics =
+			getAwtFont().getLineMetrics(i_string, i_context);
+		Rectangle bounds = glyphs.getPixelBounds(i_context, 0, 0);
 
 		AffineTransform at = new AffineTransform();
-		at.translate(0, lineMetrics.getAscent() - 1);
+		at.translate(0, bounds.height - lineMetrics.getDescent() - 0.5f);
 
 		double flatness = 1.9d * m_precision + 0.1d;
 		VectorChar[] stringChars = new VectorChar[glyphs.getNumGlyphs()];

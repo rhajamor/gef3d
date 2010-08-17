@@ -183,7 +183,7 @@ public class Draw3DFontViewer extends ViewPart {
 						new LwjglTextureFont(name, size, flags);
 					IDraw3DText textureText =
 						textureFont.createText("The quick brown fox jumps over the lazy dog.");
-					glTranslatef(0, 30, 0);
+					// glTranslatef(0, 30, 0);
 					textureText.render();
 					textureText.dispose();
 					textureFont.dispose();

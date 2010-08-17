@@ -11,6 +11,7 @@
 package org.eclipse.draw3d.font;
 
 import java.awt.Font;
+import java.awt.font.FontRenderContext;
 
 /**
  * Base class for all fonts that use an AWT font to create their font data.
@@ -46,7 +47,8 @@ public abstract class AwtBasedFont implements IDraw3DFont {
 		if (i_string == null || i_string.trim().length() == 0)
 			return EmptyText.INSTANCE;
 
-		return doCreateText(i_string);
+		FontRenderContext ctx = new FontRenderContext(null, true, true);
+		return doCreateText(i_string, ctx);
 	}
 
 	/**
@@ -54,9 +56,11 @@ public abstract class AwtBasedFont implements IDraw3DFont {
 	 * which is guaranteed to not be <code>null</code> or empty.
 	 * 
 	 * @param i_string the string, which is neither <code>null</code> or empty
+	 * @param i_context the font rendering context
 	 * @return the {@link IDraw3DText} instance
 	 */
-	protected abstract IDraw3DText doCreateText(String i_string);
+	protected abstract IDraw3DText doCreateText(String i_string,
+		FontRenderContext i_context);
 
 	/**
 	 * Returns the AWT font which this font is based on.

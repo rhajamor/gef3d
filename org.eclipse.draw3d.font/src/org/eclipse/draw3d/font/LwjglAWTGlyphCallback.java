@@ -73,15 +73,11 @@ public class LwjglAWTGlyphCallback extends GLUtessellatorCallbackAdapter {
 	 * Creates an instance of {@link VectorChar} that represents the current
 	 * character data.
 	 * 
-	 * @param i_advX the value by which the X position must be advanced after
-	 *            this character was rendered
-	 * @param i_advY the value by which the Y position must be advanced after
-	 *            this character was rendered
 	 * @return the {@link VectorChar} instance that represents the current
 	 *         character data
 	 */
-	public VectorChar createVectorChar(float i_advX, float i_advY) {
-		VectorChar result = new VectorChar(i_advX, i_advY);
+	public VectorChar createVectorChar() {
+		VectorChar result = new VectorChar();
 		if (m_numFans > 0)
 			result.setTriangleFans(m_fans, m_numFans);
 		if (m_numStrips > 0)
