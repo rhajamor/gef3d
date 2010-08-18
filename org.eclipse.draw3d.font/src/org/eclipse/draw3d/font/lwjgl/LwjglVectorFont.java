@@ -8,7 +8,7 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.font;
+package org.eclipse.draw3d.font.lwjgl;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -18,6 +18,8 @@ import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 
+import org.eclipse.draw3d.font.simple.AwtBasedFont;
+import org.eclipse.draw3d.font.simple.IDraw3DText;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.glu.GLUtessellator;
 
@@ -30,7 +32,7 @@ import org.lwjgl.util.glu.GLUtessellator;
  */
 public class LwjglVectorFont extends AwtBasedFont {
 
-	private LwjglAWTGlyphCallback m_callback;
+	private LwjglGlyphCallback m_callback;
 
 	/**
 	 * Buffer for a single vertex during character tesselation.
@@ -59,7 +61,7 @@ public class LwjglVectorFont extends AwtBasedFont {
 	 * @param i_precision the precision factor
 	 * @param i_flags the flags
 	 * @see AwtBasedFont#AwtBasedFont(String, int,
-	 *      org.eclipse.draw3d.font.IDraw3DFont.Flag...)
+	 *      org.eclipse.draw3d.font.simple.IDraw3DFont.Flag...)
 	 */
 	public LwjglVectorFont(String i_name, int i_size, float i_precision,
 			Flag... i_flags) {
@@ -72,7 +74,7 @@ public class LwjglVectorFont extends AwtBasedFont {
 		m_precision = i_precision;
 
 		m_tesselator = GLU.gluNewTess();
-		m_callback = new LwjglAWTGlyphCallback();
+		m_callback = new LwjglGlyphCallback();
 
 		// bug in LWJGL, must set edge flag callback to null before setting
 		// begin callback
@@ -147,7 +149,7 @@ public class LwjglVectorFont extends AwtBasedFont {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.IDraw3DFont#dispose()
+	 * @see org.eclipse.draw3d.font.simple.IDraw3DFont#dispose()
 	 */
 	public void dispose() {
 		if (m_disposed)
@@ -166,7 +168,7 @@ public class LwjglVectorFont extends AwtBasedFont {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.AwtBasedFont#doCreateText(String,
+	 * @see org.eclipse.draw3d.font.simple.AwtBasedFont#doCreateText(String,
 	 *      FontRenderContext)
 	 */
 	@Override

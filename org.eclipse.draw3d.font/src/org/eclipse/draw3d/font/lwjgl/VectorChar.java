@@ -8,7 +8,7 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.font;
+package org.eclipse.draw3d.font.lwjgl;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;

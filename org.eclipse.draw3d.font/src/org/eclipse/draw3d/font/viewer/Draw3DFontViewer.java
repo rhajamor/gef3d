@@ -5,11 +5,11 @@ import static org.lwjgl.opengl.GL13.*;
 
 import java.awt.GraphicsEnvironment;
 
-import org.eclipse.draw3d.font.IDraw3DFont;
-import org.eclipse.draw3d.font.IDraw3DText;
-import org.eclipse.draw3d.font.LwjglTextureFont;
-import org.eclipse.draw3d.font.LwjglVectorFont;
-import org.eclipse.draw3d.font.IDraw3DFont.Flag;
+import org.eclipse.draw3d.font.lwjgl.LwjglMultiFontManager;
+import org.eclipse.draw3d.font.multi.IDraw3DMultiFont;
+import org.eclipse.draw3d.font.multi.IDraw3DMultiFontManager;
+import org.eclipse.draw3d.font.multi.IDraw3DMultiText;
+import org.eclipse.draw3d.font.simple.IDraw3DFont.Flag;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -66,13 +66,15 @@ public class Draw3DFontViewer extends ViewPart {
 
 	private Button m_italic;
 
-	private Scale m_precision;
+	private Scale m_lod;
 
 	private Label m_precLabel;
 
 	private Button m_typeVector;
 
 	private Button m_typeTexture;
+
+	private IDraw3DMultiFontManager m_fontManager;
 
 	/**
 	 * The constructor.
@@ -108,6 +110,8 @@ public class Draw3DFontViewer extends ViewPart {
 	 * it.
 	 */
 	public void createPartControl(Composite i_parent) {
+		m_fontManager = new LwjglMultiFontManager();
+
 		Composite container = createContainer(i_parent);
 		createGLCanvas(container);
 		createFontSelector(container);
@@ -170,23 +174,14 @@ public class Draw3DFontViewer extends ViewPart {
 					Flag[] flags =
 						Flag.getFlags(m_bold.getSelection(),
 							m_italic.getSelection());
-					float p = m_precision.getSelection() / 100f;
-					IDraw3DFont vectorFont =
-						new LwjglVectorFont(name, size, p, flags);
-					IDraw3DText vectorText =
-						vectorFont.createText("The quick brown fox jumps over the lazy dog.");
-					vectorText.render();
-					vectorText.dispose();
-					vectorFont.dispose();
+					float lod = m_lod.getSelection() / 100f;
 
-					IDraw3DFont textureFont =
-						new LwjglTextureFont(name, size, flags);
-					IDraw3DText textureText =
-						textureFont.createText("The quick brown fox jumps over the lazy dog.");
-					// glTranslatef(0, 30, 0);
-					textureText.render();
-					textureText.dispose();
-					textureFont.dispose();
+					IDraw3DMultiFont font =
+						m_fontManager.getFont(name, size, flags);
+					IDraw3DMultiText text =
+						font.createText("The quick brown fox jumps over the lazy dog.");
+					text.render(lod);
+					text.dispose();
 				}
 
 				m_canvas.swapBuffers();
@@ -263,15 +258,15 @@ public class Draw3DFontViewer extends ViewPart {
 			}
 		});
 
-		m_precision = new Scale(container, SWT.HORIZONTAL);
-		m_precision.setMinimum(0);
-		m_precision.setMaximum(100);
-		m_precision.setIncrement(1);
-		m_precision.setPageIncrement(10);
-		m_precision.addSelectionListener(new SelectionListener() {
+		m_lod = new Scale(container, SWT.HORIZONTAL);
+		m_lod.setMinimum(0);
+		m_lod.setMaximum(100);
+		m_lod.setIncrement(1);
+		m_lod.setPageIncrement(10);
+		m_lod.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent i_e) {
 				m_precLabel.setText(String.format("%2.2f",
-					m_precision.getSelection() / 100f));
+					m_lod.getSelection() / 100f));
 				m_canvas.redraw();
 			}
 

@@ -8,7 +8,7 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.font;
+package org.eclipse.draw3d.font.simple;
 
 import java.awt.Font;
 import java.awt.font.FontRenderContext;
@@ -41,7 +41,7 @@ public abstract class AwtBasedFont implements IDraw3DFont {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.IDraw3DFont#createText(java.lang.String)
+	 * @see org.eclipse.draw3d.font.simple.IDraw3DFont#createText(java.lang.String)
 	 */
 	public IDraw3DText createText(String i_string) {
 		if (i_string == null || i_string.trim().length() == 0)

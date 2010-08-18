@@ -8,38 +8,26 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.font;
+package org.eclipse.draw3d.font.simple;
 
 /**
- * An implementation of {@link IDraw3DText} that does nothing. This is useful
- * for empty strings and such.
+ * Represents a renderable chunk of text. Such a text chunk can be rendered
+ * repeatedly until it is disposed.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 17.08.2010
+ * @since 30.07.2010
  */
-public class EmptyText implements IDraw3DText {
-
+public interface IDraw3DText {
 	/**
-	 * A single instance.
+	 * Disposes all resources associated with this text.
 	 */
-	public static final EmptyText INSTANCE = new EmptyText();
+	public void dispose();
 
 	/**
-	 * {@inheritDoc}
+	 * Renders this text.
 	 * 
-	 * @see org.eclipse.draw3d.font.IDraw3DText#dispose()
+	 * @throws IllegalStateException if this text chunk is disposed
 	 */
-	public void dispose() {
-		// nothing to do
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.font.IDraw3DText#render()
-	 */
-	public void render() {
-		// nothing to do
-	}
+	public void render();
 }

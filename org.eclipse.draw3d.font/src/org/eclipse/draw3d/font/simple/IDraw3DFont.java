@@ -8,7 +8,7 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.font;
+package org.eclipse.draw3d.font.simple;
 
 import java.awt.Font;
 

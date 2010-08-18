@@ -8,7 +8,7 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.font;
+package org.eclipse.draw3d.font.lwjgl;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -17,6 +17,7 @@ import java.awt.image.Raster;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
+import org.eclipse.draw3d.font.simple.IDraw3DText;
 import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.Draw3DCache;
 
@@ -59,7 +60,7 @@ public class LwjglTextureText implements IDraw3DText {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.IDraw3DText#dispose()
+	 * @see org.eclipse.draw3d.font.simple.IDraw3DText#dispose()
 	 */
 	public void dispose() {
 		if (m_state == State.DISPOSED)
@@ -133,7 +134,7 @@ public class LwjglTextureText implements IDraw3DText {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.IDraw3DText#render()
+	 * @see org.eclipse.draw3d.font.simple.IDraw3DText#render()
 	 */
 	public void render() {
 		if (m_state == State.DISPOSED)

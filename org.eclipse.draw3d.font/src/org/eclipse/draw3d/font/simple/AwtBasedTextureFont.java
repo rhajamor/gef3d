@@ -8,7 +8,7 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.font;
+package org.eclipse.draw3d.font.simple;
 
 import static java.awt.RenderingHints.*;
 
@@ -48,7 +48,7 @@ public abstract class AwtBasedTextureFont extends AwtBasedFont {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.IDraw3DFont#dispose()
+	 * @see org.eclipse.draw3d.font.simple.IDraw3DFont#dispose()
 	 */
 	public void dispose() {
 		if (m_disposed)
@@ -69,7 +69,7 @@ public abstract class AwtBasedTextureFont extends AwtBasedFont {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.AwtBasedFont#doCreateText(String,
+	 * @see org.eclipse.draw3d.font.simple.AwtBasedFont#doCreateText(String,
 	 *      FontRenderContext)
 	 */
 	@Override

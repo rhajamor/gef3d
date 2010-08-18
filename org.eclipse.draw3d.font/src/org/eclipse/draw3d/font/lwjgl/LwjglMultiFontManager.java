@@ -8,39 +8,38 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.font;
+package org.eclipse.draw3d.font.lwjgl;
 
-import java.awt.image.BufferedImage;
+import org.eclipse.draw3d.font.multi.MultiFontManager;
+import org.eclipse.draw3d.font.simple.IDraw3DFontManager;
 
 /**
- * A font that renders text using textures created by rendering AWT font onto an
- * image.
+ * Manages LWJGL multi fonts.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 17.08.2010
+ * @since 18.08.2010
  */
-public class LwjglTextureFont extends AwtBasedTextureFont {
+public class LwjglMultiFontManager extends MultiFontManager {
 
 	/**
-	 * Creates a new instance.
+	 * {@inheritDoc}
 	 * 
-	 * @param i_name the font name
-	 * @param i_size the font size
-	 * @param i_flags the flags
+	 * @see org.eclipse.draw3d.font.multi.MultiFontManager#createTextureFontManager()
 	 */
-	public LwjglTextureFont(String i_name, int i_size, Flag[] i_flags) {
-		super(i_name, i_size, i_flags);
+	@Override
+	protected IDraw3DFontManager createTextureFontManager() {
+		return new LwjglTextureFontManager();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.font.AwtBasedTextureFont#doCreateText(java.awt.image.BufferedImage)
+	 * @see org.eclipse.draw3d.font.multi.MultiFontManager#createVectorFontManager()
 	 */
 	@Override
-	protected IDraw3DText doCreateText(BufferedImage i_image) {
-		return new LwjglTextureText(i_image);
+	protected IDraw3DFontManager createVectorFontManager() {
+		return new LwjglVectorFontManager();
 	}
 
 }

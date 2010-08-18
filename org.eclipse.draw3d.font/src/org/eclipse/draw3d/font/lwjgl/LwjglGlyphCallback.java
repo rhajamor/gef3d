@@ -8,7 +8,7 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.font;
+package org.eclipse.draw3d.font.lwjgl;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -26,7 +26,7 @@ import org.lwjgl.util.glu.GLUtessellatorCallbackAdapter;
  * @version $Revision$
  * @since 17.08.2010
  */
-public class LwjglAWTGlyphCallback extends GLUtessellatorCallbackAdapter {
+public class LwjglGlyphCallback extends GLUtessellatorCallbackAdapter {
 
 	private float[][] m_fans = new float[3][];
 

@@ -8,26 +8,33 @@
  * Contributors:
  *    Kristian Duske - initial API and implementation
  ******************************************************************************/
-package org.eclipse.draw3d.font;
+package org.eclipse.draw3d.font.simple;
+
+import org.eclipse.draw3d.font.simple.IDraw3DFont.Flag;
 
 /**
- * Represents a renderable chunk of text. Such a text chunk can be rendered
- * repeatedly until it is disposed.
+ * Manages simple fonts.
  * 
  * @author Kristian Duske
  * @version $Revision$
- * @since 30.07.2010
+ * @since 18.08.2010
  */
-public interface IDraw3DText {
+public interface IDraw3DFontManager {
 	/**
-	 * Disposes all resources associated with this text.
+	 * Disposes all resources associated with this font manager.
 	 */
 	public void dispose();
 
 	/**
-	 * Renders this text.
+	 * Returns a font with the given parameters.
 	 * 
-	 * @throws IllegalStateException if this text chunk is disposed
+	 * @param i_name the font name
+	 * @param i_size the font size
+	 * @param i_precision the precision value
+	 * @param i_flags the font flags
+	 * @return the font
+	 * @throws IllegalStateException if this font manager is disposed
 	 */
-	public void render();
+	public IDraw3DFont getFont(String i_name, int i_size, float i_precision,
+		Flag... i_flags);
 }
