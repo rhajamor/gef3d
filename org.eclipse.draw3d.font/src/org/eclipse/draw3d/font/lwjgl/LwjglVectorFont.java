@@ -189,7 +189,7 @@ public class LwjglVectorFont extends AwtBasedFont {
 		for (int i = 0; i < glyphs.getNumGlyphs(); i++)
 			stringChars[i] = createVectorChar(glyphs, i, at, flatness);
 
-		return new LwjglVectorText(stringChars);
+		return new LwjglVectorText(stringChars, bounds.width, bounds.height);
 	}
 
 	private float[][] resizeVertexBuffer(float[][] i_v) {

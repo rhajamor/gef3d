@@ -38,6 +38,8 @@ public class LwjglVectorText implements IDraw3DText {
 
 	private IntBuffer m_fanIdx;
 
+	private float m_height;
+
 	private IntBuffer m_stripCnt;
 
 	private IntBuffer m_stripIdx;
@@ -46,6 +48,8 @@ public class LwjglVectorText implements IDraw3DText {
 
 	private IntBuffer m_triIdx;
 
+	private float m_width;
+
 	/**
 	 * Creates a new instance that renders the given characters.
 	 * 
@@ -53,9 +57,12 @@ public class LwjglVectorText implements IDraw3DText {
 	 * @throws NullPointerException if the given character array is
 	 *             <code>null</code>
 	 */
-	public LwjglVectorText(VectorChar[] i_chars) {
+	public LwjglVectorText(VectorChar[] i_chars, float i_width, float i_height) {
 		if (i_chars == null)
 			throw new NullPointerException("i_chars must not be null");
+
+		m_width = i_width;
+		m_height = i_height;
 
 		// create vertex buffer
 		int numFans = 0;
@@ -128,6 +135,24 @@ public class LwjglVectorText implements IDraw3DText {
 		}
 
 		m_disposed = true;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.font.simple.IDraw3DText#getHeight()
+	 */
+	public float getHeight() {
+		return m_height;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.font.simple.IDraw3DText#getWidth()
+	 */
+	public float getWidth() {
+		return m_width;
 	}
 
 	/**

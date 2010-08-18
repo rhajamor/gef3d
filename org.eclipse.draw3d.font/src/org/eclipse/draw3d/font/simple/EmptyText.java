@@ -37,6 +37,24 @@ public class EmptyText implements IDraw3DText {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * @see org.eclipse.draw3d.font.simple.IDraw3DText#getHeight()
+	 */
+	public float getHeight() {
+		return 0;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.font.simple.IDraw3DText#getWidth()
+	 */
+	public float getWidth() {
+		return 0;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * @see org.eclipse.draw3d.font.simple.IDraw3DText#render()
 	 */
 	public void render() {

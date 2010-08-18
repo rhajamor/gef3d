@@ -24,6 +24,20 @@ public interface IDraw3DMultiText {
 	public void dispose();
 
 	/**
+	 * Returns the height of the text block.
+	 * 
+	 * @return the height
+	 */
+	public float getHeight();
+
+	/**
+	 * Returns the width of the text block.
+	 * 
+	 * @return the width
+	 */
+	public float getWidth();
+
+	/**
 	 * Renders this text and adapts the visual complexity to the given LOD
 	 * value. A low value indicates that little detail should be used while a
 	 * high value indicates that lots of detail should be used.

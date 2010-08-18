@@ -25,6 +25,20 @@ public interface IDraw3DText {
 	public void dispose();
 
 	/**
+	 * Returns the height of the text block.
+	 * 
+	 * @return the height
+	 */
+	public float getHeight();
+
+	/**
+	 * Returns the width of the text block.
+	 * 
+	 * @return the width
+	 */
+	public float getWidth();
+
+	/**
 	 * Renders this text.
 	 * 
 	 * @throws IllegalStateException if this text chunk is disposed

@@ -41,5 +41,4 @@ public class LwjglMultiFontManager extends MultiFontManager {
 	protected IDraw3DFontManager createVectorFontManager() {
 		return new LwjglVectorFontManager();
 	}
-
 }

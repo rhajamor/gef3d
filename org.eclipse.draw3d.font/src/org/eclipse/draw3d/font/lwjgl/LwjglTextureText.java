@@ -83,6 +83,24 @@ public class LwjglTextureText implements IDraw3DText {
 		m_state = State.DISPOSED;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.font.simple.IDraw3DText#getHeight()
+	 */
+	public float getHeight() {
+		return m_height;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.font.simple.IDraw3DText#getWidth()
+	 */
+	public float getWidth() {
+		return m_width;
+	}
+
 	private void initialize() {
 		Raster data = m_image.getData();
 		m_width = data.getWidth();
