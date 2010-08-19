@@ -45,5 +45,4 @@ public class LwjglTextureFont extends AwtBasedTextureFont {
 	protected IDraw3DText doCreateText(BufferedImage i_image) {
 		return new LwjglTextureText(i_image);
 	}
-
 }

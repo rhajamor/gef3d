@@ -11,3 +11,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.draw3d;bundle-version="0.8.1"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
+Export-Package: org.eclipse.draw3d.font,
+ org.eclipse.draw3d.font.lwjgl,
+ org.eclipse.draw3d.font.multi,
+ org.eclipse.draw3d.font.simple

@@ -147,6 +147,7 @@ public class LwjglTextureText implements IDraw3DText {
 		}
 
 		m_image = null;
+		m_state = State.INITIALIZED;
 	}
 
 	/**

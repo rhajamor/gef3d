@@ -12,15 +12,17 @@ package org.eclipse.draw3d.graphics3d.lwjgl;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw3d.font.lwjgl.LwjglMultiFontManager;
+import org.eclipse.draw3d.font.multi.IDraw3DMultiFont;
+import org.eclipse.draw3d.font.multi.IDraw3DMultiFontManager;
+import org.eclipse.draw3d.font.simple.IDraw3DFont.Flag;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector2f;
@@ -43,10 +45,6 @@ import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
 import org.eclipse.draw3d.graphics3d.ILodHelper;
 import org.eclipse.draw3d.graphics3d.RenderImage;
-import org.eclipse.draw3d.graphics3d.lwjgl.font.GLFontKey;
-import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFont;
-import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFontManager;
-import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglVectorFont;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGradientQuadVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglImageVBO;
 import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglLineVBO;
@@ -61,6 +59,7 @@ import org.eclipse.draw3d.graphics3d.lwjgl.offscreen.LwjglOffscreenBuffersFbo;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.LogGraphics;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.GL11;
@@ -326,14 +325,9 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 	private DisplayListManager m_displayListManager = null;
 
-	private LwjglFontManager m_fontManager;
-
 	private boolean m_log2D;
 
 	private GLUtessellator m_tesselator;
-
-	private Map<GLFontKey, LwjglVectorFont> m_vectorFonts =
-		new HashMap<GLFontKey, LwjglVectorFont>();
 
 	Properties properties = new Properties();
 
@@ -409,22 +403,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		return m_activeGraphics;
 	}
 
-	private LwjglVectorFont getVectorFont(
-		org.eclipse.swt.graphics.Font i_swtFont, int i_numChars,
-		boolean i_antialias) {
-
-		GLFontKey key = new GLFontKey(i_swtFont, i_numChars, i_antialias);
-		LwjglVectorFont vectorFont = m_vectorFonts.get(key);
-		if (vectorFont == null) {
-			vectorFont =
-				new LwjglVectorFont(i_swtFont, i_numChars, i_antialias);
-			vectorFont.initialize();
-			m_vectorFonts.put(key, vectorFont);
-		}
-
-		return vectorFont;
-	}
-
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -455,18 +433,20 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 					vbos.add(new LwjglLineVBO(set));
 				} else if (clazz.isText()) {
 					TextRenderRule textRule = clazz.getRenderRule().asText();
-					LwjglVectorFont vectorFont =
-						getVectorFont(textRule.getFont(), 95, true);
-					LwjglFont textureFont =
-						getFontManager().getFont(textRule.getFont(), 95, true);
+					FontData fontData = textRule.getFont().getFontData()[0];
+					String name = fontData.getName();
+					int height = fontData.getHeight();
+					Flag[] flags = Flag.getFlags(fontData.getStyle());
+					IDraw3DMultiFont font =
+						getFontManager().getFont(name, height, flags);
 
 					final List<TextRenderImage> textImages =
 						new LinkedList<TextRenderImage>();
 
 					for (Primitive primitive : set.getPrimitives()) {
 						TextPrimitive text = (TextPrimitive) primitive;
-						textImages.add(new TextRenderImage(text, vectorFont,
-							textureFont, m_current2DPosition));
+						textImages.add(new TextRenderImage(text, font,
+							m_current2DPosition));
 					}
 
 					vbos.add(new RenderImage() {
@@ -537,6 +517,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		// GL11.glPopAttrib();
 	}
 
+	private IDraw3DMultiFontManager m_fontManager;
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -550,12 +532,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 				m_displayListManager.dispose();
 			if (m_tesselator != null)
 				m_tesselator.gluDeleteTess();
-			if (m_vectorFonts != null) {
-				for (LwjglVectorFont font : m_vectorFonts.values())
-					font.dispose();
-				m_vectorFonts.clear();
-				m_vectorFonts = null;
-			}
 		} catch (Exception ex) {
 			log.warning("Error disposing texture manager: " + ex);
 		}
@@ -583,10 +559,10 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		return m_displayListManager;
 	}
 
-	private LwjglFontManager getFontManager() {
+	private IDraw3DMultiFontManager getFontManager() {
 
 		if (m_fontManager == null)
-			m_fontManager = new LwjglFontManager(getDisplayListManager());
+			m_fontManager = new LwjglMultiFontManager();
 
 		return m_fontManager;
 	}

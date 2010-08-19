@@ -13,8 +13,9 @@ package org.eclipse.draw3d.graphics3d.lwjgl;
 import java.nio.FloatBuffer;
 import java.util.logging.Logger;
 
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.font.multi.IDraw3DMultiFont;
+import org.eclipse.draw3d.font.multi.IDraw3DMultiText;
 import org.eclipse.draw3d.geometry.IMatrix3f;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector3f;
@@ -27,8 +28,6 @@ import org.eclipse.draw3d.graphics.optimizer.primitive.TextRenderRule;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.ILodHelper;
 import org.eclipse.draw3d.graphics3d.RenderImage;
-import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglFont;
-import org.eclipse.draw3d.graphics3d.lwjgl.font.LwjglVectorFont;
 import org.eclipse.draw3d.util.ColorConverter;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.lwjgl.BufferUtils;
@@ -76,29 +75,19 @@ public class TextRenderImage implements RenderImage {
 
 	private Vector3f m_normal = new Vector3fImpl(IVector3f.Z_AXIS_NEG);
 
-	private String m_text;
-
-	private LwjglFont m_textureFont;
+	private IDraw3DMultiText m_text;
 
 	private FloatBuffer m_transformationBuffer;
 
-	private LwjglVectorFont m_vectorFont;
-
-	public TextRenderImage(TextPrimitive i_primitive,
-			LwjglVectorFont i_vectorFont, LwjglFont i_textureFont,
+	public TextRenderImage(TextPrimitive i_primitive, IDraw3DMultiFont i_font,
 			IPosition3D i_position) {
 
-		m_text = i_primitive.getText();
-		m_vectorFont = i_vectorFont;
-		m_textureFont = i_textureFont;
+		m_text = i_font.createText(i_primitive.getText());
 
 		TextRenderRule textRule = i_primitive.getRenderRule().asText();
 
 		ColorConverter.toFloatArray(textRule.getTextColor(),
 			textRule.getAlpha(), m_c);
-
-		Dimension extent = i_primitive.getExtent();
-		// m_absPos.set(extent.width / 2f, extent.height / 2f, 0);
 
 		IMatrix3f t3f = i_primitive.getTransformation();
 		Point p = i_primitive.getPosition();
@@ -192,7 +181,7 @@ public class TextRenderImage implements RenderImage {
 	private void renderLOD(float l) {
 
 		GL11.glColor4f(m_c[0], m_c[1], m_c[2], m_c[3]);
-		m_vectorFont.render(l, m_text);
+		m_text.render(l);
 		// if (l <= LOD_VF) {
 		// // GL11.glColor4f(m_c[0], m_c[1], m_c[2], m_c[3]);
 		// GL11.glColor4f(1, 0, 0, 1);

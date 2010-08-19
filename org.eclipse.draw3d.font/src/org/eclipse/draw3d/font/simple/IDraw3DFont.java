@@ -12,6 +12,8 @@ package org.eclipse.draw3d.font.simple;
 
 import java.awt.Font;
 
+import org.eclipse.swt.SWT;
+
 /**
  * A font that can be used to render text in the Draw3D subsystem. Fonts are
  * used to create instances of {@link IDraw3DText} which are then used to render
@@ -79,6 +81,21 @@ public interface IDraw3DFont {
 			else if (i_italic)
 				return new Flag[] { ITALIC };
 			return new Flag[0];
+		}
+
+		/**
+		 * Returns an array containing the flags that represent the given SWT
+		 * style mask.
+		 * 
+		 * @param i_swtStyle the SWT style mask
+		 * @return the flag array
+		 * @see org.eclipse.swt.graphics.Font
+		 */
+		public static Flag[] getFlags(int i_swtStyle) {
+			boolean bold = (i_swtStyle & SWT.BOLD) != 0;
+			boolean italic = (i_swtStyle & SWT.ITALIC) != 0;
+
+			return getFlags(bold, italic);
 		}
 	}
 

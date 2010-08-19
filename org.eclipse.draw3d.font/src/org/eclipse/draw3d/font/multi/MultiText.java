@@ -30,6 +30,10 @@ import org.eclipse.draw3d.font.simple.IDraw3DFont.Flag;
  */
 public class MultiText implements IDraw3DMultiText {
 
+	@SuppressWarnings("unused")
+	private static final Logger log =
+		Logger.getLogger(MultiText.class.getName());
+
 	private static final float TEXTURE_FONT_TH = 0.09f;
 
 	private IDraw3DText[] m_cache = new IDraw3DText[11];
@@ -44,11 +48,15 @@ public class MultiText implements IDraw3DMultiText {
 
 	private int m_fontSize;
 
+	private float m_height;
+
 	private String m_string;
+
+	private float m_width;
 
 	/**
 	 * Creates a new instance with the given parameters that renders the given
-	 * string.f
+	 * string.
 	 * 
 	 * @param i_string the string to render
 	 * @param i_fontManager the font manager
@@ -77,6 +85,13 @@ public class MultiText implements IDraw3DMultiText {
 		m_fontName = i_fontName;
 		m_fontSize = i_fontSize;
 		m_fontFlags = i_fontFlags;
+
+		IDraw3DFont font =
+			m_fontManager.getTextureFont(m_fontName, m_fontSize, m_fontFlags);
+		IDraw3DText text = font.createText(m_string);
+		m_width = text.getWidth();
+		m_height = text.getHeight();
+		text.dispose();
 	}
 
 	/**
@@ -99,6 +114,24 @@ public class MultiText implements IDraw3DMultiText {
 		m_fontManager = null;
 
 		m_disposed = true;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.font.multi.IDraw3DMultiText#getHeight()
+	 */
+	public float getHeight() {
+		return m_height;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.font.multi.IDraw3DMultiText#getWidth()
+	 */
+	public float getWidth() {
+		return m_width;
 	}
 
 	private int index(float i_scaledLod) {
@@ -130,10 +163,6 @@ public class MultiText implements IDraw3DMultiText {
 	private float scaleLod(float i_lod) {
 		return (float) Math.floor(i_lod * 10) / 10;
 	}
-
-	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(MultiText.class.getName());
 
 	private IDraw3DFont selectFont(float i_sl) {
 		if (i_sl <= TEXTURE_FONT_TH)
