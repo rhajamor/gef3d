@@ -114,6 +114,40 @@ public class Math3DVector3f extends Math3DVector2f {
 	}
 
 	/**
+	 * Returns the distance between the given points.
+	 * 
+	 * @param i_v1 a vector to the first point
+	 * @param i_v2 a vector to the second point
+	 * @return the distance between the two points
+	 */
+	public static float distance(IVector3f i_v1, IVector3f i_v2) {
+		Vector3f d = Math3DCache.getVector3f();
+		try {
+			sub(i_v1, i_v2, d);
+			return d.length();
+		} finally {
+			Math3DCache.returnVector3f(d);
+		}
+	}
+
+	/**
+	 * Returns the squared distance between the given points.
+	 * 
+	 * @param i_v1 a vector to the first point
+	 * @param i_v2 a vector to the second point
+	 * @return the squared distance between the two points
+	 */
+	public static float distanceSquared(IVector3f i_v1, IVector3f i_v2) {
+		Vector3f d = Math3DCache.getVector3f();
+		try {
+			sub(i_v1, i_v2, d);
+			return d.lengthSquared();
+		} finally {
+			Math3DCache.returnVector3f(d);
+		}
+	}
+
+	/**
 	 * Calculates the dot product (scalar product) of the two vectors.
 	 * 
 	 * @param i_left
