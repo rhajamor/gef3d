@@ -183,7 +183,7 @@ public class LwjglVectorFont extends AwtBasedFont {
 		AffineTransform at = new AffineTransform();
 		at.translate(0, bounds.height - lineMetrics.getDescent() - 0.5f);
 
-		double flatness = 1.9d * m_precision + 0.1d;
+		double flatness = 1.9d * (1 - m_precision) + 0.1d;
 		VectorChar[] stringChars = new VectorChar[glyphs.getNumGlyphs()];
 
 		for (int i = 0; i < glyphs.getNumGlyphs(); i++)

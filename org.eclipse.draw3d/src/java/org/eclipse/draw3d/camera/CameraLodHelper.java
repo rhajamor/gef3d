@@ -32,6 +32,8 @@ public class CameraLodHelper implements ILodHelper {
 	private static final Logger log =
 		Logger.getLogger(CameraLodHelper.class.getName());
 
+	private static final float FACTOR = 100f;
+
 	private ICamera m_camera;
 
 	/**
@@ -46,44 +48,34 @@ public class CameraLodHelper implements ILodHelper {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.ILodHelper#getLODFactor(org.eclipse.draw3d.geometry.IVector3f)
+	 * @see org.eclipse.draw3d.graphics3d.ILodHelper#getLinearLOD(org.eclipse.draw3d.geometry.IVector3f)
 	 */
-	public float getLODFactor(IVector3f i_position) {
-		Vector3f cPos = Draw3DCache.getVector3f();
-		Vector3f v = Draw3DCache.getVector3f();
+	public float getLinearLOD(IVector3f i_point) {
+		Vector3f c = Draw3DCache.getVector3f();
 		try {
-			m_camera.getPosition(cPos);
-			Math3D.sub(i_position, cPos, v);
-			return v.length() / m_camera.getFar();
+			m_camera.getPosition(c);
+			float d = Math3D.distanceSquared(c, i_point);
+			float f = m_camera.getFar();
+			return 1f - d / (f * f);
 		} finally {
-			Draw3DCache.returnVector3f(cPos, v);
+			Draw3DCache.returnVector3f(c);
 		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.draw3d.graphics3d.ILodHelper#getLODFactor(org.eclipse.draw3d.geometry.IVector3f,
-	 *      org.eclipse.draw3d.geometry.IVector3f)
+	 * @see org.eclipse.draw3d.graphics3d.ILodHelper#getQuotientLOD(IVector3f)
 	 */
-	public float getLODFactor(IVector3f i_position, IVector3f i_normal) {
-		Vector3f cPos = Draw3DCache.getVector3f();
-		Vector3f v = Draw3DCache.getVector3f();
-		Vector3f vDir = Draw3DCache.getVector3f();
+	public float getQuotientLOD(IVector3f i_point) {
+		Vector3f c = Draw3DCache.getVector3f();
 		try {
-			m_camera.getViewDirection(vDir);
-
-			float cosa = Math3D.dot(vDir, i_normal);
-			if (cosa <= 0)
-				return 1;
-
-			m_camera.getPosition(cPos);
-			Math3D.sub(i_position, cPos, v);
-			float l = v.length() / m_camera.getFar();
-
-			return l / cosa;
+			m_camera.getPosition(c);
+			float d = Math3D.distanceSquared(c, i_point);
+			float m = m_camera.getFar() * m_camera.getFar();
+			return (m - d) / (FACTOR * d + m);
 		} finally {
-			Draw3DCache.returnVector3f(cPos, v, vDir);
+			Draw3DCache.returnVector3f(c);
 		}
 	}
 }

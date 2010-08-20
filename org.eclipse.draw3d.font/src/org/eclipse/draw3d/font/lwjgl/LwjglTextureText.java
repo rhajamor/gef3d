@@ -137,10 +137,8 @@ public class LwjglTextureText implements IDraw3DText {
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, m_width,
 				m_height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, buf);
 
-			// GLU.gluBuild2DMipmaps(m_textureId, 2, m_width,
-			// m_height,
-			// GL_LUMINANCE_ALPHA, GL11.GL_UNSIGNED_BYTE,
-			// buffer);
+			// GLU.gluBuild2DMipmaps(m_textureId, 2, m_width, m_height,
+			// GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, buffer);
 		} finally {
 			Draw3DCache.returnIntBuffer(idBuf);
 			glPopAttrib();
@@ -161,16 +159,27 @@ public class LwjglTextureText implements IDraw3DText {
 		else if (m_state == State.UNINITIALIZED)
 			initialize();
 
-		glBindTexture(GL_TEXTURE_2D, m_textureId);
-		glBegin(GL_QUADS);
-		glTexCoord2f(0, 0);
-		glVertex2f(0, m_height);
-		glTexCoord2f(1, 0);
-		glVertex2f(m_width, m_height);
-		glTexCoord2f(1, 1);
-		glVertex2f(m_width, 0);
-		glTexCoord2f(0, 1);
-		glVertex2f(0, 0);
-		glEnd();
+		glPushAttrib(GL_TEXTURE_BIT | GL_COLOR_BUFFER_BIT);
+		try {
+			glBindTexture(GL_TEXTURE_2D, m_textureId);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+			glBegin(GL_QUADS);
+			glTexCoord2f(0, 0);
+			glVertex2f(0, m_height);
+			glTexCoord2f(1, 0);
+			glVertex2f(m_width, m_height);
+			glTexCoord2f(1, 1);
+			glVertex2f(m_width, 0);
+			glTexCoord2f(0, 1);
+			glVertex2f(0, 0);
+			glEnd();
+		} finally {
+			glPopAttrib();
+		}
 	}
 }

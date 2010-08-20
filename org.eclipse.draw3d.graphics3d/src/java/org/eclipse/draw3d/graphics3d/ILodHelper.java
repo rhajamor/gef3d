@@ -13,10 +13,10 @@ package org.eclipse.draw3d.graphics3d;
 import org.eclipse.draw3d.geometry.IVector3f;
 
 /**
- * Instances of this class calculate an LOD factor (a float between 0 and 1,
- * inclusive) for a given object. This factor can be used as a measure to
- * determine the detail level for that object, where 0 equals full detail and 1
- * equals the least detail.
+ * Instances of this class are used to calculate a LOD value for an object at a
+ * given position. This value is based on the distance between an object and the
+ * camera, but it is not linear. A high LOD value means that the object is close
+ * to the camera and thus should be rendered with a lot of detail.
  * 
  * @author Kristian Duske
  * @version $Revision$
@@ -24,24 +24,31 @@ import org.eclipse.draw3d.geometry.IVector3f;
  */
 public interface ILodHelper {
 	/**
-	 * Returns the LOD factor of a 2D object at the given position with the
-	 * given normal vector.
+	 * Returns an LOD value that is calculated by the following function:
 	 * 
-	 * @param i_position the object's position
-	 * @param i_normal the object's normal vector
-	 * @return a value between 0 and 1, inclusive
-	 * @throws NullPointerException if any of the given arguments is
-	 *             <code>null</code>
-	 */
-	public float getLODFactor(IVector3f i_position, IVector3f i_normal);
-
-	/**
-	 * Returns the LOD factor of an object at the given position.
+	 * <pre>
+	 *           m<sup>2</sup> - d<sup>2</sup>
+	 * f(d) = ------------
+	 *        100 * d<sup>2</sup> + m<sup>2</sup>
+	 * </pre>
 	 * 
-	 * @param i_position the object's position
-	 * @return a value between 0 and 1, inclusive
-	 * @throws NullPointerException if any of the given arguments is
-	 *             <code>null</code>
+	 * where
+	 * <ul>
+	 * <li><b>d</b> is the distance between the given point and the camera</li>
+	 * <li><b>m</b> is the distance after which an object is no longer visible
+	 * at all</li>
+	 * </ul>
+	 * The function has the following invariants:
+	 * <ul>
+	 * <li>f(0) = 1</li>
+	 * <li>f(m) = 0</li>
+	 * <li>f(d) is in [0, 1] for every d >= 0</li>
+	 * </ul>
+	 * The following graphic shows the curve for m = 10000: <br />
+	 * <img src="doc-files/ILodHelper-1.jpg" />
+	 * 
+	 * @param i_point the point
+	 * @return the LOD value
 	 */
-	public float getLODFactor(IVector3f i_position);
+	public float getQuotientLOD(IVector3f i_point);
 }

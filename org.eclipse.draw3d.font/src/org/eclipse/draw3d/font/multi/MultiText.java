@@ -34,25 +34,25 @@ public class MultiText implements IDraw3DMultiText {
 	private static final Logger log =
 		Logger.getLogger(MultiText.class.getName());
 
-	private static final float TEXTURE_FONT_TH = 0.09f;
+	/**
+	 * If the LOD value is smaller than {@link #VECTOR_FONT_TH} and greater or
+	 * equal to this value, texture fonts are used.
+	 */
+	private static final float TEXTURE_FONT_TH = 0.20f;
 
-	private IDraw3DText[] m_cache = new IDraw3DText[11];
+	private static final float VECTOR_FONT_PREC = 1f;
+
+	/**
+	 * If the LOD value is greater or equal to this value, vector fonts are
+	 * used.
+	 */
+	private static final float VECTOR_FONT_TH = 0.87f;
 
 	private boolean m_disposed = false;
 
-	private Flag[] m_fontFlags;
+	private IDraw3DText m_textureText;
 
-	private MultiFontManager m_fontManager;
-
-	private String m_fontName;
-
-	private int m_fontSize;
-
-	private float m_height;
-
-	private String m_string;
-
-	private float m_width;
+	private IDraw3DText m_vectorText;
 
 	/**
 	 * Creates a new instance with the given parameters that renders the given
@@ -80,18 +80,14 @@ public class MultiText implements IDraw3DMultiText {
 		if (i_fontSize <= 0)
 			throw new IllegalArgumentException("font size must be positive");
 
-		m_string = i_string;
-		m_fontManager = i_fontManager;
-		m_fontName = i_fontName;
-		m_fontSize = i_fontSize;
-		m_fontFlags = i_fontFlags;
+		IDraw3DFont textureFont =
+			i_fontManager.getTextureFont(i_fontName, i_fontSize, i_fontFlags);
+		m_textureText = textureFont.createText(i_string);
 
-		IDraw3DFont font =
-			m_fontManager.getTextureFont(m_fontName, m_fontSize, m_fontFlags);
-		IDraw3DText text = font.createText(m_string);
-		m_width = text.getWidth();
-		m_height = text.getHeight();
-		text.dispose();
+		IDraw3DFont vectorFont =
+			i_fontManager.getVectorFont(i_fontName, i_fontSize,
+				VECTOR_FONT_PREC, i_fontFlags);
+		m_vectorText = vectorFont.createText(i_string);
 	}
 
 	/**
@@ -103,15 +99,15 @@ public class MultiText implements IDraw3DMultiText {
 		if (m_disposed)
 			throw new IllegalStateException(this + " is disposed");
 
-		for (IDraw3DText text : m_cache)
-			if (text != null)
-				text.dispose();
+		if (m_textureText != null) {
+			m_textureText.dispose();
+			m_textureText = null;
+		}
 
-		m_cache = null;
-		m_fontFlags = null;
-		m_fontName = null;
-		m_string = null;
-		m_fontManager = null;
+		if (m_vectorText != null) {
+			m_vectorText.dispose();
+			m_vectorText = null;
+		}
 
 		m_disposed = true;
 	}
@@ -122,7 +118,7 @@ public class MultiText implements IDraw3DMultiText {
 	 * @see org.eclipse.draw3d.font.multi.IDraw3DMultiText#getHeight()
 	 */
 	public float getHeight() {
-		return m_height;
+		return m_textureText.getHeight();
 	}
 
 	/**
@@ -131,11 +127,7 @@ public class MultiText implements IDraw3DMultiText {
 	 * @see org.eclipse.draw3d.font.multi.IDraw3DMultiText#getWidth()
 	 */
 	public float getWidth() {
-		return m_width;
-	}
-
-	private int index(float i_scaledLod) {
-		return (int) i_scaledLod * 10;
+		return m_vectorText.getWidth();
 	}
 
 	/**
@@ -147,30 +139,9 @@ public class MultiText implements IDraw3DMultiText {
 		if (m_disposed)
 			throw new IllegalStateException(this + " is disposed");
 
-		float sl = scaleLod(i_lod);
-		int i = index(sl);
-
-		IDraw3DText text = m_cache[i];
-		if (text == null) {
-			IDraw3DFont font = selectFont(sl);
-			text = font.createText(m_string);
-			m_cache[i] = text;
-		}
-
-		text.render();
-	}
-
-	private float scaleLod(float i_lod) {
-		return (float) Math.floor(i_lod * 10) / 10;
-	}
-
-	private IDraw3DFont selectFont(float i_sl) {
-		if (i_sl <= TEXTURE_FONT_TH)
-			return m_fontManager.getTextureFont(m_fontName, m_fontSize,
-				m_fontFlags);
-
-		float p = 1 - (i_sl - TEXTURE_FONT_TH) / (1 - TEXTURE_FONT_TH);
-		return m_fontManager.getVectorFont(m_fontName, m_fontSize, p,
-			m_fontFlags);
+		if (i_lod >= VECTOR_FONT_TH)
+			m_vectorText.render();
+		else if (i_lod >= TEXTURE_FONT_TH)
+			m_textureText.render();
 	}
 }

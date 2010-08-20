@@ -50,20 +50,6 @@ import org.lwjgl.opengl.GL11;
  * @since 29.01.2010
  */
 public class TextRenderImage implements RenderImage {
-	/**
-	 * If distance of text to camera is less this value (but greater
-	 * {@link #LOD_VF}, the text is rendered as bitmap. If distance is greater
-	 * this value, text is not rendered at all.
-	 */
-	private static final float LOD_TF = 0.5f; // 10000f;
-
-	/**
-	 * If distance of text to camera is less this value, the text is rendered
-	 * using vector fonts.
-	 */
-	private static final float LOD_VF = 0.01f; // 1100f;
-
-	private static final float LOD_B = 0.1f;
 
 	@SuppressWarnings("unused")
 	private static final Logger log =
@@ -158,59 +144,19 @@ public class TextRenderImage implements RenderImage {
 	 *      org.eclipse.draw3d.graphics3d.ILodHelper)
 	 */
 	public void render(Graphics3D i_g3d, ILodHelper i_lodHelper) {
-		float l = i_lodHelper.getLODFactor(m_absPos); // , m_normal);
-		if (l <= LOD_TF) {
-			if (m_transformationBuffer != null) {
-				GL11.glMatrixMode(GL11.GL_MODELVIEW);
-				GL11.glPushMatrix();
-				try {
-					GL11.glMultMatrix(m_transformationBuffer);
-					renderLOD(l);
-				} finally {
-					GL11.glPopMatrix();
-				}
-			} else {
-				renderLOD(l);
-			}
-		}
-	}
-
-	/**
-	 * @param l normalized distance to camera
-	 */
-	private void renderLOD(float l) {
-
+		float l = i_lodHelper.getQuotientLOD(m_absPos); // , m_normal);
 		GL11.glColor4f(m_c[0], m_c[1], m_c[2], m_c[3]);
-		m_text.render(l);
-		// if (l <= LOD_VF) {
-		// // GL11.glColor4f(m_c[0], m_c[1], m_c[2], m_c[3]);
-		// GL11.glColor4f(1, 0, 0, 1);
-		// m_vectorFont.render(l, m_text);
-		// } else if (l <= LOD_VF + LOD_B) {
-		// float f = (l - LOD_VF) / LOD_B;
-		//
-		// // GL11.glColor4f(m_c[0], m_c[1], m_c[2], f * m_c[3]);
-		// // GL11.glColor4f(0, 1, 0, 1); // f);
-		// // m_textureFont.renderString(m_text, 0, 0, false);
-		//
-		// GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		// GL11.glPushMatrix();
-		// try {
-		// GL11.glTranslatef(0, 0,
-		// Graphics3DLwjgl.OFFSET_2DCONTENT_SURFACE);
-		// // GL11.glColor4f(m_c[0], m_c[1], m_c[2], (1 - f) * m_c[3]);
-		// GL11.glColor4f(1, 0, 0, 1); //1 - f);
-		// m_vectorFont.render(l, m_text);
-		// } finally {
-		// GL11.glPopMatrix();
-		// }
-		// } else if (l <= LOD_TF - LOD_B) {
-		// GL11.glColor4f(0, 1, 0, 1);
-		// m_textureFont.renderString(m_text, 0, 0, false);
-		// } else {
-		// float f = (LOD_TF - l) / LOD_B;
-		// GL11.glColor4f(0, 1, 0, f);
-		// m_textureFont.renderString(m_text, 0, 0, false);
-		// }
+		if (m_transformationBuffer != null) {
+			GL11.glMatrixMode(GL11.GL_MODELVIEW);
+			GL11.glPushMatrix();
+			try {
+				GL11.glMultMatrix(m_transformationBuffer);
+				m_text.render(l);
+			} finally {
+				GL11.glPopMatrix();
+			}
+		} else {
+			m_text.render(l);
+		}
 	}
 }

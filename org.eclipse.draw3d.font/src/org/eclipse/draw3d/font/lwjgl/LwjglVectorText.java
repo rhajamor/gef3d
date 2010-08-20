@@ -40,13 +40,13 @@ public class LwjglVectorText implements IDraw3DText {
 
 	private float m_height;
 
+	private IntBuffer m_setCnt;
+
+	private IntBuffer m_setIdx;
+
 	private IntBuffer m_stripCnt;
 
 	private IntBuffer m_stripIdx;
-
-	private IntBuffer m_triCnt;
-
-	private IntBuffer m_triIdx;
 
 	private float m_width;
 
@@ -54,6 +54,8 @@ public class LwjglVectorText implements IDraw3DText {
 	 * Creates a new instance that renders the given characters.
 	 * 
 	 * @param i_chars the characters to render
+	 * @param i_width the width of the text block
+	 * @param i_height the height of the text block
 	 * @throws NullPointerException if the given character array is
 	 *             <code>null</code>
 	 */
@@ -67,12 +69,12 @@ public class LwjglVectorText implements IDraw3DText {
 		// create vertex buffer
 		int numFans = 0;
 		int numStrips = 0;
-		int numTris = 0;
+		int numSets = 0;
 		int numVertices = 0;
 		for (int i = 0; i < i_chars.length; i++) {
 			numFans += i_chars[i].getNumFans();
 			numStrips += i_chars[i].getNumStrips();
-			numTris += i_chars[i].getNumSets();
+			numSets += i_chars[i].getNumSets();
 			numVertices += i_chars[i].getNumVertices();
 		}
 
@@ -84,9 +86,9 @@ public class LwjglVectorText implements IDraw3DText {
 			m_stripIdx = BufferUtils.createIntBuffer(numStrips);
 			m_stripCnt = BufferUtils.createIntBuffer(numStrips);
 		}
-		if (numTris > 0) {
-			m_triIdx = BufferUtils.createIntBuffer(numTris);
-			m_triCnt = BufferUtils.createIntBuffer(numTris);
+		if (numSets > 0) {
+			m_setIdx = BufferUtils.createIntBuffer(numSets);
+			m_setCnt = BufferUtils.createIntBuffer(numSets);
 		}
 
 		int i = 0;
@@ -94,7 +96,22 @@ public class LwjglVectorText implements IDraw3DText {
 		for (int j = 0; j < i_chars.length; j++) {
 			i = i_chars[j].compileFans(buf, i, m_fanIdx, m_fanCnt);
 			i = i_chars[j].compileStrips(buf, i, m_stripIdx, m_stripCnt);
-			i = i_chars[j].compileSets(buf, i, m_triIdx, m_triCnt);
+			i = i_chars[j].compileSets(buf, i, m_setIdx, m_setCnt);
+		}
+
+		if (numFans > 0) {
+			m_fanIdx.rewind();
+			m_fanCnt.rewind();
+		}
+
+		if (numStrips > 0) {
+			m_stripIdx.rewind();
+			m_stripCnt.rewind();
+		}
+
+		if (numSets > 0) {
+			m_setIdx.rewind();
+			m_setCnt.rewind();
 		}
 
 		// upload vertex buffer
@@ -164,22 +181,6 @@ public class LwjglVectorText implements IDraw3DText {
 		if (m_disposed)
 			throw new IllegalStateException(this + " is disposed");
 
-		// TODO: move this to initialization if possible
-		if (m_fanIdx != null) {
-			m_fanIdx.rewind();
-			m_fanCnt.rewind();
-		}
-
-		if (m_stripIdx != null) {
-			m_stripIdx.rewind();
-			m_stripCnt.rewind();
-		}
-
-		if (m_triIdx != null) {
-			m_triIdx.rewind();
-			m_triCnt.rewind();
-		}
-
 		glBindBuffer(GL_ARRAY_BUFFER, m_bufferId);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, 0);
@@ -188,8 +189,8 @@ public class LwjglVectorText implements IDraw3DText {
 				glMultiDrawArrays(GL_TRIANGLE_FAN, m_fanIdx, m_fanCnt);
 			if (m_stripIdx != null)
 				glMultiDrawArrays(GL_TRIANGLE_STRIP, m_stripIdx, m_stripCnt);
-			if (m_triIdx != null)
-				glMultiDrawArrays(GL_TRIANGLES, m_triIdx, m_triCnt);
+			if (m_setIdx != null)
+				glMultiDrawArrays(GL_TRIANGLES, m_setIdx, m_setCnt);
 		} finally {
 			glDisableClientState(GL_VERTEX_ARRAY);
 		}
