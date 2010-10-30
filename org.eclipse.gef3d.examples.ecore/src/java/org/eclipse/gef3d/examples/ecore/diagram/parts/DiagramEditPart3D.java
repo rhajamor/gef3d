@@ -80,8 +80,12 @@ import org.eclipse.swt.widgets.Display;
 public class DiagramEditPart3D extends EPackageEditPart { // DiagramEditPart {
 
 	/**
-	 * EPackageCanonicalEditPolicySemanticUpdater
-	 * There should really be more documentation here.
+	 * Policy for reflecting semantic model changes, extends base class in order
+	 * to actually reflect these changes.
+	 * 
+	 * Most of this code is copied from {@link EPackageCanonicalEditPolicy},
+	 * however the functions to update semantic model changes are activated 
+	 * here.
 	 *
 	 * @author 	Jens von Pilgrim
 	 * @version	$Revision$
