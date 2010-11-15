@@ -392,7 +392,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	public Graphics begin2DRendering(Object i_key, IPosition3D i_position,
 		int i_width, int i_height) {
 
-		log.info("activating 2D graphics");
+//		 log.info("activating 2D graphics");
 
 		m_activeGraphics =
 			new RecordingGraphics(new LwjglPrimitiveClassifier());
@@ -467,7 +467,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 		final IPosition3D pos2d = m_current2DPosition;
 
-		log.info("deactivating 2D graphics");
+//		log.info("deactivating 2D graphics");
 		if (m_activeGraphics instanceof RecordingGraphics) {
 			RecordingGraphics og = (RecordingGraphics) m_activeGraphics;
 			List<PrimitiveSet> primiveSets = og.getPrimiveSets();

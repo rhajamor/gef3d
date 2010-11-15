@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
-import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.converter.ColorBufferInfo;
 import org.eclipse.draw3d.util.converter.ImageConverter;
@@ -502,8 +501,8 @@ public class LwjglFont {
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 
 			GL11.glEnable(GL11.GL_BLEND);
-			GL11.glBlendFunc(Graphics3DDraw.GL_SRC_ALPHA,
-				Graphics3DDraw.GL_ONE_MINUS_SRC_ALPHA);
+			GL11.glBlendFunc(GL11.GL_SRC_ALPHA,
+				GL11.GL_ONE_MINUS_SRC_ALPHA);
 
 			GL11.glMatrixMode(GL11.GL_MODELVIEW);
 			GL11.glPushMatrix();
