@@ -13,6 +13,7 @@ package org.eclipse.gef3d.examples.graph.editor.wizard;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IFile;
@@ -222,8 +223,9 @@ public class GraphWizard extends Wizard implements INewWizard {
 
 			page.openEditor(new FileEditorInput(modelFile), editor.getId());
 		} catch (final Exception exception) {
+			log.log(Level.SEVERE, "Error opening editor: " + exception, exception);
 			MessageDialog.openError(workbenchWindow.getShell(),
-				"GEF3D Graph Example", exception.getMessage());
+				"GEF3D Graph Example", exception.getMessage() + " (See log for details)");
 			return false;
 		}
 
