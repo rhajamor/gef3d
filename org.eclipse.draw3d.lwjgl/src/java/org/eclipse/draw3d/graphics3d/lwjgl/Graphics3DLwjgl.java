@@ -395,7 +395,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 			// at least openGL 1.5:
 			float version = openGLVersions(caps);
-			if (version < 5.5f) {
+			if (version < 1.5f) {
 				throw new Graphics3DException(
 					"Need at least OpenGL version 1.5, found only " + version);
 			}
