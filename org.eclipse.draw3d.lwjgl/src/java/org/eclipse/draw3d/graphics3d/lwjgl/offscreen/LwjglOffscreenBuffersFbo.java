@@ -18,11 +18,15 @@ import java.util.logging.Logger;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
 import org.eclipse.draw3d.util.Draw3DCache;
+import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.GL11;
 
 /**
- * Manages a framebuffer object for use as offscreen buffers.
+ * Manages a framebuffer object for use as offscreen buffers. This version
+ * of {@link Graphics3DOffscreenBuffers} requires the FBO extension, i.e.
+ * {@link ContextCapabilities#GL_EXT_framebuffer_object} must be provided
+ * by the OpenGL driver.
  * 
  * @author Kristian Duske
  * @version $Revision$

@@ -14,7 +14,9 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.opengl.GLCanvas;
+import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 
 /**
@@ -154,11 +156,17 @@ public class Graphics3DDescriptor {
 			Graphics3D g3d = (Graphics3D) clazz.newInstance();
 
 			g3d.setDescriptor(this);
-			if (getType() == Graphics3DType.SCREEN)
+			if (getType() == Graphics3DType.SCREEN) 
 				g3d.setGLCanvas(i_context);
-
+			
 			return g3d;
 		} catch (Exception e) {
+			
+			MessageDialog.openError(Display.getCurrent().getActiveShell(),
+				"Error creating 3D renderer",
+				e.getMessage() + " (see log file for details).");
+			
+			Graphics3DPlugin.logError("Failed creating 3D renderer " + strClassname.toString(), e);
 			log.warning("Descriptor failed to create renderer: " + this +
 					 ", cause: " + e);
 			return null;

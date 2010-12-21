@@ -24,6 +24,16 @@ public class Graphics3DException extends RuntimeException {
 	 * @see java.io.Serializable
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	
+
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public Graphics3DException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
 	/**
 	 * @see java.lang.Exception#Exception(Throwable)

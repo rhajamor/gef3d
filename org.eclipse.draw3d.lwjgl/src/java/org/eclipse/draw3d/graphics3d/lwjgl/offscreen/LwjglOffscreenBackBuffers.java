@@ -18,7 +18,8 @@ import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBuffers;
 import org.lwjgl.opengl.GL11;
 
 /**
- * Manages the back buffers for use as offscreen buffers.
+ * Manages the back buffers for use as offscreen buffers. This is a fall-back
+ * solution if FBOs (see {@link LwjglOffscreenBuffersFbo} are not supported.
  * 
  * @author Kristian Duske
  * @version $Revision$

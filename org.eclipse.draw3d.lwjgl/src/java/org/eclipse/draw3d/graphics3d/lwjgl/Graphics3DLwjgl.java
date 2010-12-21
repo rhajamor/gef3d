@@ -76,6 +76,9 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLContext;
@@ -381,6 +384,65 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		}
 	}
 
+	void check() {
+		try {
+			Display.setFullscreen(false);
+			Display.setDisplayMode(new DisplayMode(10,10));
+			Display.create();
+
+			GLContext.useContext(m_context);
+			ContextCapabilities caps = GLContext.getCapabilities();
+
+			// at least openGL 1.5:
+			float version = openGLVersions(caps);
+			if (version < 5.5f) {
+				throw new Graphics3DException(
+					"Need at least OpenGL version 1.5, found only " + version);
+			}
+
+			// 
+
+		} catch (LWJGLException ex) {
+			throw new Graphics3DException(
+				"Cannot retrieve OpenGL capabilies, error creating LWJGL display",
+				ex);
+		} finally {
+			 Display.destroy();
+		}
+	}
+
+	static float openGLVersions(ContextCapabilities caps) {
+		float v = 0.0f;
+		if (caps.OpenGL11)
+			v = 1.1f;
+		if (caps.OpenGL12)
+			v = 1.2f;
+		if (caps.OpenGL13)
+			v = 1.3f;
+		if (caps.OpenGL14)
+			v = 1.4f;
+		if (caps.OpenGL15)
+			v = 1.5f;
+		if (caps.OpenGL20)
+			v = 2.0f;
+		if (caps.OpenGL21)
+			v = 2.1f;
+		if (caps.OpenGL30)
+			v = 3.0f;
+		if (caps.OpenGL31)
+			v = 3.1f;
+		if (caps.OpenGL32)
+			v = 3.2f;
+		if (caps.OpenGL33)
+			v = 3.3f;
+		if (caps.OpenGL40)
+			v = 4.0f;
+		if (caps.OpenGL41)
+			v = 4.1f;
+
+		return v;
+	}
+
 	private IPosition3D m_current2DPosition;
 
 	/**
@@ -392,7 +454,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	public Graphics begin2DRendering(Object i_key, IPosition3D i_position,
 		int i_width, int i_height) {
 
-//		 log.info("activating 2D graphics");
+		// log.info("activating 2D graphics");
 
 		m_activeGraphics =
 			new RecordingGraphics(new LwjglPrimitiveClassifier());
@@ -467,7 +529,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 		final IPosition3D pos2d = m_current2DPosition;
 
-//		log.info("deactivating 2D graphics");
+		// log.info("deactivating 2D graphics");
 		if (m_activeGraphics instanceof RecordingGraphics) {
 			RecordingGraphics og = (RecordingGraphics) m_activeGraphics;
 			List<PrimitiveSet> primiveSets = og.getPrimiveSets();
@@ -1289,7 +1351,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		}
 
 		m_context = i_canvas;
-
+		check();
 	}
 
 	/**

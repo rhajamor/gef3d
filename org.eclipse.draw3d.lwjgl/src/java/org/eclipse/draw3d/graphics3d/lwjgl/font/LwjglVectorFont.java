@@ -36,6 +36,9 @@ import org.lwjgl.util.glu.GLUtessellatorCallbackAdapter;
 /**
  * VectorFont There should really be more documentation here.
  * 
+ * Here, at least OpenGL 1.5 is required due to call to 
+ * {@link GL15#glGenBuffers()} and others.
+ * 
  * @author Kristian Duske
  * @version $Revision$
  * @since 22.01.2010
@@ -290,6 +293,10 @@ public class LwjglVectorFont {
 		}
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	private int generateBufferId() {
 
 		IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
