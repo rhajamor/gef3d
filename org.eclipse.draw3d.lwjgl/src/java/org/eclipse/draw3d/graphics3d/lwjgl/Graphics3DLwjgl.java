@@ -318,18 +318,17 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	/**
 	 * Indicates which attribute groups must be saved prior to using this.
 	 */
-	private static final int ATTRIB_MASK =
-		GL11.GL_LIGHTING_BIT | GL11.GL_CURRENT_BIT | GL11.GL_TRANSFORM_BIT
-			| GL11.GL_LINE_BIT | GL11.GL_POLYGON_BIT | GL11.GL_TEXTURE_BIT
-			| GL11.GL_VIEWPORT_BIT | GL11.GL_DEPTH_BUFFER_BIT
-			| GL11.GL_COLOR_BUFFER_BIT | GL13.GL_MULTISAMPLE_BIT
-			| GL11.GL_ENABLE_BIT;
+	private static final int ATTRIB_MASK = GL11.GL_LIGHTING_BIT
+		| GL11.GL_CURRENT_BIT | GL11.GL_TRANSFORM_BIT | GL11.GL_LINE_BIT
+		| GL11.GL_POLYGON_BIT | GL11.GL_TEXTURE_BIT | GL11.GL_VIEWPORT_BIT
+		| GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT
+		| GL13.GL_MULTISAMPLE_BIT | GL11.GL_ENABLE_BIT;
 
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log =
-		Logger.getLogger(Graphics3DLwjgl.class.getName());
+	private static final Logger log = Logger.getLogger(Graphics3DLwjgl.class
+		.getName());
 
 	/**
 	 * Translation offset for 2D rendering of non-polygon shapes.
@@ -371,6 +370,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 	Properties properties = new Properties();
 
+	static Boolean checked = null;
+
 	/**
 	 * Standard constructor.
 	 */
@@ -385,29 +386,34 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	}
 
 	void check() {
-		try {
-			Display.setFullscreen(false);
-			Display.setDisplayMode(new DisplayMode(10,10));
-			Display.create();
+		if (checked == null) {
+			checked = false;
 
-			GLContext.useContext(m_context);
-			ContextCapabilities caps = GLContext.getCapabilities();
+			try {
+				Display.setFullscreen(false);
+				Display.setDisplayMode(new DisplayMode(10, 10));
+				Display.create();
 
-			// at least openGL 1.5:
-			float version = openGLVersions(caps);
-			if (version < 1.5f) {
+				GLContext.useContext(m_context);
+				ContextCapabilities caps = GLContext.getCapabilities();
+
+				// at least openGL 1.5:
+				float version = openGLVersions(caps);
+				if (version < 1.5f) {
+					throw new Graphics3DException(
+						"Need at least OpenGL version 1.5, found only "
+							+ version);
+				}
+
+				//
+				checked = true;
+			} catch (LWJGLException ex) {
 				throw new Graphics3DException(
-					"Need at least OpenGL version 1.5, found only " + version);
+					"Cannot retrieve OpenGL capabilies, error creating LWJGL display",
+					ex);
+			} finally {
+				Display.destroy();
 			}
-
-			// 
-
-		} catch (LWJGLException ex) {
-			throw new Graphics3DException(
-				"Cannot retrieve OpenGL capabilies, error creating LWJGL display",
-				ex);
-		} finally {
-			 Display.destroy();
 		}
 	}
 
@@ -709,8 +715,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 			IMatrix3f t = textPrimitive.getTransformation();
 			AffineTransform af =
-				new AffineTransform(t.get(0, 0), t.get(0, 1), t.get(1, 0), t
-					.get(1, 1), t.get(2, 0), t.get(2, 1));
+				new AffineTransform(t.get(0, 0), t.get(0, 1), t.get(1, 0),
+					t.get(1, 1), t.get(2, 0), t.get(2, 1));
 
 			Point p = textPrimitive.getPosition();
 			af.translate(p.x, p.y + size);
