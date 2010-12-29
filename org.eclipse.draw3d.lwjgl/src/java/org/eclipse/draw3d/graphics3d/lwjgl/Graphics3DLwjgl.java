@@ -318,17 +318,18 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	/**
 	 * Indicates which attribute groups must be saved prior to using this.
 	 */
-	private static final int ATTRIB_MASK = GL11.GL_LIGHTING_BIT
-		| GL11.GL_CURRENT_BIT | GL11.GL_TRANSFORM_BIT | GL11.GL_LINE_BIT
-		| GL11.GL_POLYGON_BIT | GL11.GL_TEXTURE_BIT | GL11.GL_VIEWPORT_BIT
-		| GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT
-		| GL13.GL_MULTISAMPLE_BIT | GL11.GL_ENABLE_BIT;
+	private static final int ATTRIB_MASK =
+		GL11.GL_LIGHTING_BIT | GL11.GL_CURRENT_BIT | GL11.GL_TRANSFORM_BIT
+			| GL11.GL_LINE_BIT | GL11.GL_POLYGON_BIT | GL11.GL_TEXTURE_BIT
+			| GL11.GL_VIEWPORT_BIT | GL11.GL_DEPTH_BUFFER_BIT
+			| GL11.GL_COLOR_BUFFER_BIT | GL13.GL_MULTISAMPLE_BIT
+			| GL11.GL_ENABLE_BIT;
 
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log = Logger.getLogger(Graphics3DLwjgl.class
-		.getName());
+	private static final Logger log =
+		Logger.getLogger(Graphics3DLwjgl.class.getName());
 
 	/**
 	 * Translation offset for 2D rendering of non-polygon shapes.
@@ -439,12 +440,15 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			v = 3.1f;
 		if (caps.OpenGL32)
 			v = 3.2f;
-		if (caps.OpenGL33)
-			v = 3.3f;
-		if (caps.OpenGL40)
-			v = 4.0f;
-		if (caps.OpenGL41)
-			v = 4.1f;
+		/**
+		 * Only available as of LWJGL version 2.6:
+		 */
+		// if (caps.OpenGL33)
+		// v = 3.3f;
+		// if (caps.OpenGL40)
+		// v = 4.0f;
+		// if (caps.OpenGL41)
+		// v = 4.1f;
 
 		return v;
 	}
@@ -715,8 +719,8 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 
 			IMatrix3f t = textPrimitive.getTransformation();
 			AffineTransform af =
-				new AffineTransform(t.get(0, 0), t.get(0, 1), t.get(1, 0),
-					t.get(1, 1), t.get(2, 0), t.get(2, 1));
+				new AffineTransform(t.get(0, 0), t.get(0, 1), t.get(1, 0), t
+					.get(1, 1), t.get(2, 0), t.get(2, 1));
 
 			Point p = textPrimitive.getPosition();
 			af.translate(p.x, p.y + size);
