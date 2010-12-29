@@ -14,6 +14,8 @@ package org.eclipse.gef3d.examples.uml2.clazz.part;
 
 import java.util.logging.Logger;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw3d.LightweightSystem3D;
 import org.eclipse.draw3d.ui.preferences.ScenePreferenceDistributor;
@@ -443,5 +445,15 @@ public class UMLClassDiagramEditor3D extends UMLDiagramEditor implements
 
 			});
 		}
+	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @todo remove this hack
+	 * @see org.eclipse.gmf.runtime.diagram.ui.resources.editor.parts.DiagramDocumentEditor#handleExceptionOnSave(org.eclipse.core.runtime.CoreException, org.eclipse.core.runtime.IProgressMonitor)
+	 */
+	@Override
+	protected void handleExceptionOnSave(CoreException exception, IProgressMonitor progressMonitor) {
+		performSave(true, progressMonitor);
 	}
 }
