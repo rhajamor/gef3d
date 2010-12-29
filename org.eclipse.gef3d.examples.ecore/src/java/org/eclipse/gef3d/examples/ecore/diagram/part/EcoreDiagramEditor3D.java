@@ -89,7 +89,7 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 	 * A reference to the 3D diagram graphical viewer.
 	 */
 	protected DiagramGraphicalViewer3D viewer3D;
-	
+
 	/**
 	 * The editing domain id, used in {@link #createEditingDomain()} to retrieve
 	 * shared {@link EditingDomain}. The default value is null, if this editor
@@ -173,10 +173,6 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 			ProviderAcceptor.PROVIDER_ACCEPTOR_PROPERTY_KEY, providerAcceptor);
 		getDiagram().eAdapters().add(providerAcceptor);
 	}
-
-	
-
-	
 
 	/**
 	 * {@inheritDoc}
@@ -309,12 +305,14 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 	 * Nested
 	 * **********************************************************************
 	 */
-	
+
 	/**
+	 * {@inheritDoc} Precondition: {@link #setMultiEditor(IMultiEditor)} has
+	 * been set.
 	 * 
-	 * {@inheritDoc}
-	 * Precondition: {@link #setMultiEditor(IMultiEditor)} has been set.
-	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditor#initializeAsNested(org.eclipse.gef.GraphicalViewer, org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory, org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer)
+	 * @see org.eclipse.gef3d.ext.multieditor.INestableEditor#initializeAsNested(org.eclipse.gef.GraphicalViewer,
+	 *      org.eclipse.gef3d.ext.multieditor.MultiEditorPartFactory,
+	 *      org.eclipse.gef3d.ext.multieditor.MultiEditorModelContainer)
 	 */
 	public Object initializeAsNested(GraphicalViewer viewer,
 		MultiEditorPartFactory i_multiEditorPartFactory,
@@ -361,10 +359,11 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 	 */
 	@Override
 	protected void initializeGraphicalViewerContents() {
-
-		// zoom needs to be 1
-		super.initializeGraphicalViewerContents();
-		getZoomManager().setZoom(1.0);
+		if (getGraphicalViewer() != null) {
+			// zoom needs to be 1
+			super.initializeGraphicalViewerContents();
+			getZoomManager().setZoom(1.0);
+		}
 	}
 
 	/**
@@ -402,7 +401,7 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 	public void setEditingDomainID(String i_editingDomainID) {
 		editingDomainID = i_editingDomainID;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -414,6 +413,7 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 
 	/**
 	 * Returns true, if multi editor is set.
+	 * 
 	 * @return
 	 */
 	public boolean isNested() {
