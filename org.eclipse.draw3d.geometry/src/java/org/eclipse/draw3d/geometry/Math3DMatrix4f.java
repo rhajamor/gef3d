@@ -11,7 +11,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.geometry;
 
-
 /**
  * Basic matrix operations
  * 
@@ -31,7 +30,7 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 	 * @return o_result (if not null), or a new instance
 	 */
 	public static Matrix4f add(IMatrix4f i_left, IMatrix4f i_right,
-			Matrix4f o_result) {
+		Matrix4f o_result) {
 		Matrix4fImpl left = Matrix4fImpl.cast(i_left);
 		Matrix4fImpl right = Matrix4fImpl.cast(i_right);
 
@@ -79,7 +78,7 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 	 * @return o_result (if not null), or a new instance
 	 */
 	public static Matrix4f sub(IMatrix4f i_left, IMatrix4f i_right,
-			Matrix4f o_result) {
+		Matrix4f o_result) {
 		Matrix4fImpl left = Matrix4fImpl.cast(i_left);
 		Matrix4fImpl right = Matrix4fImpl.cast(i_right);
 		Matrix4fImpl result;
@@ -128,50 +127,66 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 	 * @see http://en.wikipedia.org/wiki/Matrix_multiplication
 	 */
 	public static Matrix4f mul(IMatrix4f i_left, IMatrix4f i_right,
-			Matrix4f o_result) {
+		Matrix4f o_result) {
 		Matrix4fImpl left = Matrix4fImpl.cast(i_left);
 		Matrix4fImpl right = Matrix4fImpl.cast(i_right);
 		Matrix4fImpl result;
-		if (o_result == null || o_result==left || o_result == right) {
+		if (o_result == null || o_result == left || o_result == right) {
 			result = new Matrix4fImpl();
-			if (o_result==null)
+			if (o_result == null)
 				o_result = result;
 		} else {
 			result = Matrix4fImpl.cast(o_result);
 		}
 
-		result.a11 = left.a11 * right.a11 + left.a21 * right.a12 + left.a31
-				* right.a13 + left.a41 * right.a14;
-		result.a12 = left.a12 * right.a11 + left.a22 * right.a12 + left.a32
-				* right.a13 + left.a42 * right.a14;
-		result.a13 = left.a13 * right.a11 + left.a23 * right.a12 + left.a33
-				* right.a13 + left.a43 * right.a14;
-		result.a14 = left.a14 * right.a11 + left.a24 * right.a12 + left.a34
-				* right.a13 + left.a44 * right.a14;
-		result.a21 = left.a11 * right.a21 + left.a21 * right.a22 + left.a31
-				* right.a23 + left.a41 * right.a24;
-		result.a22 = left.a12 * right.a21 + left.a22 * right.a22 + left.a32
-				* right.a23 + left.a42 * right.a24;
-		result.a23 = left.a13 * right.a21 + left.a23 * right.a22 + left.a33
-				* right.a23 + left.a43 * right.a24;
-		result.a24 = left.a14 * right.a21 + left.a24 * right.a22 + left.a34
-				* right.a23 + left.a44 * right.a24;
-		result.a31 = left.a11 * right.a31 + left.a21 * right.a32 + left.a31
-				* right.a33 + left.a41 * right.a34;
-		result.a32 = left.a12 * right.a31 + left.a22 * right.a32 + left.a32
-				* right.a33 + left.a42 * right.a34;
-		result.a33 = left.a13 * right.a31 + left.a23 * right.a32 + left.a33
-				* right.a33 + left.a43 * right.a34;
-		result.a34 = left.a14 * right.a31 + left.a24 * right.a32 + left.a34
-				* right.a33 + left.a44 * right.a34;
-		result.a41 = left.a11 * right.a41 + left.a21 * right.a42 + left.a31
-				* right.a43 + left.a41 * right.a44;
-		result.a42 = left.a12 * right.a41 + left.a22 * right.a42 + left.a32
-				* right.a43 + left.a42 * right.a44;
-		result.a43 = left.a13 * right.a41 + left.a23 * right.a42 + left.a33
-				* right.a43 + left.a43 * right.a44;
-		result.a44 = left.a14 * right.a41 + left.a24 * right.a42 + left.a34
-				* right.a43 + left.a44 * right.a44;
+		result.a11 =
+			left.a11 * right.a11 + left.a21 * right.a12 + left.a31 * right.a13
+				+ left.a41 * right.a14;
+		result.a12 =
+			left.a12 * right.a11 + left.a22 * right.a12 + left.a32 * right.a13
+				+ left.a42 * right.a14;
+		result.a13 =
+			left.a13 * right.a11 + left.a23 * right.a12 + left.a33 * right.a13
+				+ left.a43 * right.a14;
+		result.a14 =
+			left.a14 * right.a11 + left.a24 * right.a12 + left.a34 * right.a13
+				+ left.a44 * right.a14;
+		result.a21 =
+			left.a11 * right.a21 + left.a21 * right.a22 + left.a31 * right.a23
+				+ left.a41 * right.a24;
+		result.a22 =
+			left.a12 * right.a21 + left.a22 * right.a22 + left.a32 * right.a23
+				+ left.a42 * right.a24;
+		result.a23 =
+			left.a13 * right.a21 + left.a23 * right.a22 + left.a33 * right.a23
+				+ left.a43 * right.a24;
+		result.a24 =
+			left.a14 * right.a21 + left.a24 * right.a22 + left.a34 * right.a23
+				+ left.a44 * right.a24;
+		result.a31 =
+			left.a11 * right.a31 + left.a21 * right.a32 + left.a31 * right.a33
+				+ left.a41 * right.a34;
+		result.a32 =
+			left.a12 * right.a31 + left.a22 * right.a32 + left.a32 * right.a33
+				+ left.a42 * right.a34;
+		result.a33 =
+			left.a13 * right.a31 + left.a23 * right.a32 + left.a33 * right.a33
+				+ left.a43 * right.a34;
+		result.a34 =
+			left.a14 * right.a31 + left.a24 * right.a32 + left.a34 * right.a33
+				+ left.a44 * right.a34;
+		result.a41 =
+			left.a11 * right.a41 + left.a21 * right.a42 + left.a31 * right.a43
+				+ left.a41 * right.a44;
+		result.a42 =
+			left.a12 * right.a41 + left.a22 * right.a42 + left.a32 * right.a43
+				+ left.a42 * right.a44;
+		result.a43 =
+			left.a13 * right.a41 + left.a23 * right.a42 + left.a33 * right.a43
+				+ left.a43 * right.a44;
+		result.a44 =
+			left.a14 * right.a41 + left.a24 * right.a42 + left.a34 * right.a43
+				+ left.a44 * right.a44;
 
 		if (o_result != result)
 			o_result.set(result);
@@ -185,17 +200,18 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 	 * 
 	 * @param f
 	 * @param i_source
-	 * @param o_result
+	 * @param o_result, may be null
 	 * @return
 	 */
-	public static Matrix4f mul(float f, IMatrix4f i_source, Matrix4f o_result) {
+	public static Matrix4f mul(final float f, IMatrix4f i_source, Matrix4f o_result) {
 		Matrix4fImpl m = Matrix4fImpl.cast(i_source);
 		Matrix4fImpl result;
 		if (o_result == null) {
-			result = new Matrix4fImpl();
+			result = new Matrix4fImpl(m);
 			o_result = result;
 		} else {
 			result = Matrix4fImpl.cast(o_result);
+			result.set(m);
 		}
 
 		result.a11 *= f;
@@ -241,9 +257,9 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 
 		// after row 1:
 		return m.a11 * (m.a22 * d34_34 + m.a23 * d34_42 + m.a24 * d34_23) //
-				- m.a12 * (m.a21 * d34_34 + m.a23 * d34_41 + m.a24 * d34_13) //
-				+ m.a13 * (m.a21 * (-d34_42) + m.a22 * d34_41 + m.a24 * d34_12) //
-				- m.a14 * (m.a21 * d34_23 + m.a22 * (-d34_13) + m.a23 * d34_12);
+			- m.a12 * (m.a21 * d34_34 + m.a23 * d34_41 + m.a24 * d34_13) //
+			+ m.a13 * (m.a21 * (-d34_42) + m.a22 * d34_41 + m.a24 * d34_12) //
+			- m.a14 * (m.a21 * d34_23 + m.a22 * (-d34_13) + m.a23 * d34_12);
 
 	}
 
@@ -263,6 +279,12 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 	 * @see http://en.wikipedia.org/wiki/Invertible_matrix
 	 */
 	public static Matrix4f invert(IMatrix4f i_source, Matrix4f o_result) {
+
+		float detSource = determinant(i_source);
+		if (detSource == 0) {
+			return null; // matrix in not invertible!
+		}
+
 		Matrix4fImpl m = Matrix4fImpl.cast(i_source);
 
 		Matrix4fImpl result;
@@ -273,6 +295,7 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 			result = Matrix4fImpl.cast(o_result);
 		}
 
+		// use blockwise inversion
 		// calculate blocks
 		// AB
 		// CD
@@ -283,55 +306,140 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 
 		// A^{-1}
 		Matrix2fImpl Ainv = new Matrix2fImpl();
-		invert(A, Ainv);
+		if (Ainv != null) {
+			invert(A, Ainv);
 
-		// CA^{-1}
-		Matrix2fImpl C_Ainv = new Matrix2fImpl();
-		mul(C, Ainv, C_Ainv);
+			// CA^{-1}
+			Matrix2fImpl C_Ainv = new Matrix2fImpl();
+			mul(C, Ainv, C_Ainv);
 
-		// D−CA^{-1}B
-		Matrix2fImpl SchurInv = new Matrix2fImpl();
-		mul(C_Ainv, B, SchurInv);
-		sub(D, SchurInv, SchurInv);
-		invert(SchurInv, SchurInv);
+			// D−CA^{-1}B
+			Matrix2fImpl SchurInv = new Matrix2fImpl();
+			mul(C_Ainv, B, SchurInv);
+			sub(D, SchurInv, SchurInv);
+			invert(SchurInv, SchurInv);
+			if (SchurInv != null) {
 
-		// A^{-1}B
-		Matrix2fImpl Ainv_B = new Matrix2fImpl();
-		mul(Ainv, B, Ainv_B);
+				// A^{-1}B
+				Matrix2fImpl Ainv_B = new Matrix2fImpl();
+				mul(Ainv, B, Ainv_B);
 
-		// calculate result blocks:
-		mul(Ainv_B, SchurInv, A);
-		negate(A, B); // this is B
-		mul(A, C_Ainv, A);
-		add(Ainv, A, A); // this is A
-		mul(SchurInv, C_Ainv, C);
-		negate(C, C); // this is C
-		D = SchurInv; // this is D
+				// calculate result blocks:
+				mul(Ainv_B, SchurInv, A);
+				negate(A, B); // this is B
+				mul(A, C_Ainv, A);
+				add(Ainv, A, A); // this is A
+				mul(SchurInv, C_Ainv, C);
+				negate(C, C); // this is C
+				D = SchurInv; // this is D
 
-		result.a11 = A.a11;
-		result.a12 = A.a12;
-		result.a21 = A.a21;
-		result.a22 = A.a22;
+				result.a11 = A.a11;
+				result.a12 = A.a12;
+				result.a21 = A.a21;
+				result.a22 = A.a22;
 
-		result.a13 = B.a11;
-		result.a14 = B.a12;
-		result.a23 = B.a21;
-		result.a24 = B.a22;
-		
-		result.a31 = C.a11;
-		result.a32 = C.a12;
-		result.a41 = C.a21;
-		result.a42 = C.a22;
-		
-		result.a33 = D.a11;
-		result.a34 = D.a12;
-		result.a43 = D.a21;
-		result.a44 = D.a22;
+				result.a13 = B.a11;
+				result.a14 = B.a12;
+				result.a23 = B.a21;
+				result.a24 = B.a22;
 
+				result.a31 = C.a11;
+				result.a32 = C.a12;
+				result.a41 = C.a21;
+				result.a42 = C.a22;
+
+				result.a33 = D.a11;
+				result.a34 = D.a12;
+				result.a43 = D.a21;
+				result.a44 = D.a22;
+			} else {
+				invert2(detSource, m, result);
+			}
+		} else {
+			invert2(detSource, m, result);
+		}
 		if (o_result != result)
 			o_result.set(result);
 
 		return o_result;
+	}
+
+	/**
+	 * Generic method if block wise invertation cannot be applied.
+	 * @param det
+	 * @param m
+	 * @param r
+	 * 
+	 * @todo replace with Gauß-Jordan algorithm
+	 */
+	private static void invert2(float det, Matrix4fImpl m, Matrix4fImpl r) {
+
+		r.a11 =
+			m.a23 * m.a34 * m.a42 - m.a24 * m.a33 * m.a42 + m.a24 * m.a32
+				* m.a43 - m.a22 * m.a34 * m.a43 - m.a23 * m.a32 * m.a44 + m.a22
+				* m.a33 * m.a44;
+		r.a12 =
+			m.a14 * m.a33 * m.a42 - m.a13 * m.a34 * m.a42 - m.a14 * m.a32
+				* m.a43 + m.a12 * m.a34 * m.a43 + m.a13 * m.a32 * m.a44 - m.a12
+				* m.a33 * m.a44;
+		r.a13 =
+			m.a13 * m.a24 * m.a42 - m.a14 * m.a23 * m.a42 + m.a14 * m.a22
+				* m.a43 - m.a12 * m.a24 * m.a43 - m.a13 * m.a22 * m.a44 + m.a12
+				* m.a23 * m.a44;
+		r.a14 =
+			m.a14 * m.a23 * m.a32 - m.a13 * m.a24 * m.a32 - m.a14 * m.a22
+				* m.a33 + m.a12 * m.a24 * m.a33 + m.a13 * m.a22 * m.a34 - m.a12
+				* m.a23 * m.a34;
+		r.a21 =
+			m.a24 * m.a33 * m.a41 - m.a23 * m.a34 * m.a41 - m.a24 * m.a31
+				* m.a43 + m.a21 * m.a34 * m.a43 + m.a23 * m.a31 * m.a44 - m.a21
+				* m.a33 * m.a44;
+		r.a22 =
+			m.a13 * m.a34 * m.a41 - m.a14 * m.a33 * m.a41 + m.a14 * m.a31
+				* m.a43 - m.a11 * m.a34 * m.a43 - m.a13 * m.a31 * m.a44 + m.a11
+				* m.a33 * m.a44;
+		r.a23 =
+			m.a14 * m.a23 * m.a41 - m.a13 * m.a24 * m.a41 - m.a14 * m.a21
+				* m.a43 + m.a11 * m.a24 * m.a43 + m.a13 * m.a21 * m.a44 - m.a11
+				* m.a23 * m.a44;
+		r.a24 =
+			m.a13 * m.a24 * m.a31 - m.a14 * m.a23 * m.a31 + m.a14 * m.a21
+				* m.a33 - m.a11 * m.a24 * m.a33 - m.a13 * m.a21 * m.a34 + m.a11
+				* m.a23 * m.a34;
+		r.a31 =
+			m.a22 * m.a34 * m.a41 - m.a24 * m.a32 * m.a41 + m.a24 * m.a31
+				* m.a42 - m.a21 * m.a34 * m.a42 - m.a22 * m.a31 * m.a44 + m.a21
+				* m.a32 * m.a44;
+		r.a32 =
+			m.a14 * m.a32 * m.a41 - m.a12 * m.a34 * m.a41 - m.a14 * m.a31
+				* m.a42 + m.a11 * m.a34 * m.a42 + m.a12 * m.a31 * m.a44 - m.a11
+				* m.a32 * m.a44;
+		r.a33 =
+			m.a12 * m.a24 * m.a41 - m.a14 * m.a22 * m.a41 + m.a14 * m.a21
+				* m.a42 - m.a11 * m.a24 * m.a42 - m.a12 * m.a21 * m.a44 + m.a11
+				* m.a22 * m.a44;
+		r.a34 =
+			m.a14 * m.a22 * m.a31 - m.a12 * m.a24 * m.a31 - m.a14 * m.a21
+				* m.a32 + m.a11 * m.a24 * m.a32 + m.a12 * m.a21 * m.a34 - m.a11
+				* m.a22 * m.a34;
+		r.a41 =
+			m.a23 * m.a32 * m.a41 - m.a22 * m.a33 * m.a41 - m.a23 * m.a31
+				* m.a42 + m.a21 * m.a33 * m.a42 + m.a22 * m.a31 * m.a43 - m.a21
+				* m.a32 * m.a43;
+		r.a42 =
+			m.a12 * m.a33 * m.a41 - m.a13 * m.a32 * m.a41 + m.a13 * m.a31
+				* m.a42 - m.a11 * m.a33 * m.a42 - m.a12 * m.a31 * m.a43 + m.a11
+				* m.a32 * m.a43;
+		r.a43 =
+			m.a13 * m.a22 * m.a41 - m.a12 * m.a23 * m.a41 - m.a13 * m.a21
+				* m.a42 + m.a11 * m.a23 * m.a42 + m.a12 * m.a21 * m.a43 - m.a11
+				* m.a22 * m.a43;
+		r.a44 =
+			m.a12 * m.a23 * m.a31 - m.a13 * m.a22 * m.a31 + m.a13 * m.a21
+				* m.a32 - m.a11 * m.a23 * m.a32 - m.a12 * m.a21 * m.a33 + m.a11
+				* m.a22 * m.a33;
+
+		mul(1 / det, r, r);
 	}
 
 	/**
@@ -456,7 +564,5 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 
 		return o_result;
 	}
-	
-	
 
 }

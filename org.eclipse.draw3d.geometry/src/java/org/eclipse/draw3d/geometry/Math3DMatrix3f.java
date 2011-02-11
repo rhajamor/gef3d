@@ -294,14 +294,15 @@ public class Math3DMatrix3f extends Math3DMatrix2f {
 	 * @param o_result
 	 * @return
 	 */
-	public static Matrix3f mul(float f, IMatrix3f i_source, Matrix3f o_result) {
+	public static Matrix3f mul(final float f, IMatrix3f i_source, Matrix3f o_result) {
 		Matrix3fImpl m = Matrix3fImpl.cast(i_source);
 		Matrix3fImpl result;
 		if (o_result == null) {
-			result = new Matrix3fImpl();
+			result = new Matrix3fImpl(m);
 			o_result = result;
 		} else {
 			result = Matrix3fImpl.cast(o_result);
+			result.set(m);
 		}
 
 		result.a11 *= f;

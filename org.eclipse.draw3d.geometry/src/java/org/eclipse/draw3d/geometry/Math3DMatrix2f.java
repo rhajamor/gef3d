@@ -322,7 +322,7 @@ public class Math3DMatrix2f extends Math3DVector4f {
 	 * @param o_result
 	 * @return
 	 */
-	public static Matrix2f mul(float f, IMatrix2f i_source, Matrix2f o_result) {
+	public static Matrix2f mul(final float f, IMatrix2f i_source, Matrix2f o_result) {
 		Matrix2fImpl m = Matrix2fImpl.cast(i_source);
 		Matrix2fImpl result;
 		if (o_result == null) {
