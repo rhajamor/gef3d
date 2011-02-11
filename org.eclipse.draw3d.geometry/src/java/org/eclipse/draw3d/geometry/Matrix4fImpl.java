@@ -228,6 +228,36 @@ public class Matrix4fImpl implements Matrix4f, Serializable, Cloneable {
 	}
 
 	/**
+	 * Creates this matrix and sets its values, values are given in row major as
+	 * the parameter indices indicate.
+	 * <p>
+	 * This method is basically used for testing, as in the program, matrices
+	 * are rarely created that way.
+	 * </p>
+	 */
+	public Matrix4fImpl(float a11, float a12, float a13, float a14, //
+			float a21, float a22, float a23, float a24, //
+			float a31, float a32, float a33, float a34, //
+			float a41, float a42, float a43, float a44) {
+		this.a11 = a11;
+		this.a12 = a12;
+		this.a13 = a13;
+		this.a14 = a14;
+		this.a21 = a21;
+		this.a22 = a22;
+		this.a23 = a23;
+		this.a24 = a24;
+		this.a31 = a31;
+		this.a32 = a32;
+		this.a33 = a33;
+		this.a34 = a34;
+		this.a41 = a41;
+		this.a42 = a42;
+		this.a43 = a43;
+		this.a44 = a44;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see java.lang.Object#clone()
@@ -698,12 +728,12 @@ public class Matrix4fImpl implements Matrix4f, Serializable, Cloneable {
 	@Override
 	public String toString() {
 
-		return String.format(TO_STRING_FORMAT, String.valueOf(a11),
-			String.valueOf(a12), String.valueOf(a13), String.valueOf(a14),
-			String.valueOf(a21), String.valueOf(a22), String.valueOf(a23),
-			String.valueOf(a24), String.valueOf(a31), String.valueOf(a32),
-			String.valueOf(a33), String.valueOf(a34), String.valueOf(a41),
-			String.valueOf(a42), String.valueOf(a43), String.valueOf(a44));
+		return String.format(TO_STRING_FORMAT, String.valueOf(a11), String
+			.valueOf(a12), String.valueOf(a13), String.valueOf(a14), String
+			.valueOf(a21), String.valueOf(a22), String.valueOf(a23), String
+			.valueOf(a24), String.valueOf(a31), String.valueOf(a32), String
+			.valueOf(a33), String.valueOf(a34), String.valueOf(a41), String
+			.valueOf(a42), String.valueOf(a43), String.valueOf(a44));
 	}
 
 }

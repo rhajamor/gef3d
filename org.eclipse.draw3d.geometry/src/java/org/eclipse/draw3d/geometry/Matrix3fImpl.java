@@ -194,38 +194,6 @@ public class Matrix3fImpl implements Matrix3f, Serializable, Cloneable {
 		}
 	}
 
-	// /**
-	// * {@inheritDoc}
-	// *
-	// * @see org.eclipse.draw3d.geometry.IMatrix3f#get(int)
-	// */
-	// public float get(int i_index) {
-	// switch (i_index) {
-	// case r1c1:
-	// return a11;
-	// case r1c2:
-	// return a12;
-	// case r1c3:
-	// return a13;
-	// case r2c1:
-	// return a21;
-	// case r2c2:
-	// return a22;
-	// case r2c3:
-	// return a23;
-	// case r3c1:
-	// return a31;
-	// case r3c2:
-	// return a32;
-	// case r3c3:
-	// return a33;
-	// default:
-	// throw new IndexOutOfBoundsException(
-	// "Cannot access matrix entry, index out of bounds: "
-	// + i_index);
-	// }
-	// }
-
 	/**
 	 * Creates this matrix and sets its values to the given matrix.
 	 */
@@ -250,6 +218,28 @@ public class Matrix3fImpl implements Matrix3f, Serializable, Cloneable {
 			setRowMajor(af);
 		}
 
+	}
+
+	/**
+	 * Creates this matrix and sets its values, values are given in row major as
+	 * the parameter indices indicate.
+	 * <p>
+	 * This method is basically used for testing, as in the program, matrices
+	 * are rarely created that way.
+	 * </p>
+	 */
+	public Matrix3fImpl(float a11, float a12, float a13, //
+			float a21, float a22, float a23, //
+			float a31, float a32, float a33) {
+		this.a11 = a11;
+		this.a12 = a12;
+		this.a13 = a13;
+		this.a21 = a21;
+		this.a22 = a22;
+		this.a23 = a23;
+		this.a31 = a31;
+		this.a32 = a32;
+		this.a33 = a33;
 	}
 
 	/**
@@ -625,10 +615,10 @@ public class Matrix3fImpl implements Matrix3f, Serializable, Cloneable {
 	@Override
 	public String toString() {
 
-		return String.format(TO_STRING_FORMAT, String.valueOf(a11),
-			String.valueOf(a12), String.valueOf(a13), String.valueOf(a21),
-			String.valueOf(a22), String.valueOf(a23), String.valueOf(a31),
-			String.valueOf(a32), String.valueOf(a33)
+		return String.format(TO_STRING_FORMAT, String.valueOf(a11), String
+			.valueOf(a12), String.valueOf(a13), String.valueOf(a21), String
+			.valueOf(a22), String.valueOf(a23), String.valueOf(a31), String
+			.valueOf(a32), String.valueOf(a33)
 
 		);
 	}

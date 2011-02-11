@@ -118,6 +118,22 @@ public class Matrix2fImpl implements Matrix2f, Serializable, Cloneable {
 	}
 
 	/**
+	 * Creates this matrix and sets its values, values are given in row major as
+	 * the parameter indices indicate.
+	 * <p>
+	 * This method is basically used for testing, as in the program, matrices
+	 * are rarely created that way.
+	 * </p>
+	 */
+	public Matrix2fImpl(float a11, float a12, //
+			float a21, float a22) {
+		this.a11 = a11;
+		this.a12 = a12;
+		this.a21 = a21;
+		this.a22 = a22;
+	}
+
+	/**
 	 * Creates this matrix and sets its values. The values are read in row-major
 	 * or column-major (OpenGL) format, depending on parameter
 	 * <code>i_bColumnMajor</code>.
@@ -490,8 +506,8 @@ public class Matrix2fImpl implements Matrix2f, Serializable, Cloneable {
 	@Override
 	public String toString() {
 
-		return String.format(TO_STRING_FORMAT, String.valueOf(a11),
-			String.valueOf(a12), String.valueOf(a21), String.valueOf(a22));
+		return String.format(TO_STRING_FORMAT, String.valueOf(a11), String
+			.valueOf(a12), String.valueOf(a21), String.valueOf(a22));
 	}
 
 }
