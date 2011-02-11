@@ -10,7 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.geometry;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -131,13 +132,59 @@ public class Math3DMatrix3fTest {
 	}
 
 	/**
-	 * Test method for
-	 * {@link org.eclipse.draw3d.geometry.Math3DMatrix3f#det(float, float, float, float, float, float, float, float, float)}
-	 * .
+	 * Tests calculations of 3x3 matrices.
+	 * Also uses some formulas:
+	 * <ul>
+	 * <li>det(A<sup>-1</sup>) = det(A)<sup>-1</sup></li>
+	 * <li>det A = det A<sup>T</sup></li>
+	 * <li>det A * det B = det (A*B)</li>
+	 * </ul>
 	 */
 	@Test
-	public void testDetFloatFloatFloatFloatFloatFloatFloatFloatFloat() {
-		fail("Not yet implemented");
+	public void testDeterminant() {
+		assertEquals(1, Math3DMatrix3f.determinant(Matrix3f.IDENTITY), PREC);
+		assertEquals(0, Math3DMatrix3f.determinant(Matrix3f.ZERO), PREC);
+		
+		Matrix3f m = new Matrix3fImpl();
+		IMatrix3f i; // inverted
+		IMatrix3f t; // transposed
+		
+		// IDENTITY matrix is default
+		assertEquals(1f, Math3DMatrix3f.determinant(m), PREC);
+		i = Math3DMatrix3f.invert(m, null);
+		assertEquals(1f/1f, Math3DMatrix3f.determinant(i), PREC);
+		t = Math3DMatrix3f.transpose(m, null);
+		assertEquals(1f, Math3DMatrix3f.determinant(t), PREC);
+		
+		// Wikipedia example:
+		// http://en.wikipedia.org/wiki/Determinant
+		m = new Matrix3fImpl( //
+			-2, 2, -3, //
+			-1, 1, 3, //
+			2, 0, -1);
+		assertEquals(18f, Math3DMatrix3f.determinant(m), PREC);
+		
+		i = Math3DMatrix3f.invert(m, null);
+		assertEquals(1f/18f, Math3DMatrix3f.determinant(i), PREC);
+		t = Math3DMatrix3f.transpose(m, null);
+		assertEquals(18f, Math3DMatrix3f.determinant(t), PREC);
+		
+		// Wikipedia example:
+		// http://de.wikipedia.org/wiki/Determinante_(Mathematik)
+		Matrix3f m2 = new Matrix3fImpl( //
+			0,1,2, //
+			3,2,1, //
+			1,1,0);
+		assertEquals(3f, Math3DMatrix3f.determinant(m2), PREC);
+		
+		i = Math3DMatrix3f.invert(m2, null);
+		assertEquals(1f/3f, Math3DMatrix3f.determinant(i), PREC);
+		t = Math3DMatrix3f.transpose(m2, null);
+		assertEquals(3f, Math3DMatrix3f.determinant(t), PREC);
+		
+		Matrix3f p = Math3DMatrix3f.mul(m, m2, null);
+		assertEquals(3f*18f, Math3DMatrix3f.determinant(p), PREC);
+		
 	}
 
 	/**
