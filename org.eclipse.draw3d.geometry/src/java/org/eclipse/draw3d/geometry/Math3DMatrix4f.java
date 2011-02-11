@@ -203,7 +203,8 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 	 * @param o_result, may be null
 	 * @return
 	 */
-	public static Matrix4f mul(final float f, IMatrix4f i_source, Matrix4f o_result) {
+	public static Matrix4f mul(final float f, IMatrix4f i_source,
+		Matrix4f o_result) {
 		Matrix4fImpl m = Matrix4fImpl.cast(i_source);
 		Matrix4fImpl result;
 		if (o_result == null) {
@@ -238,29 +239,84 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 	}
 
 	/**
-	 * Calculates the determinant of a matrix.
+	 * Calculates the determinant of a matrix. This algorithm uses Laplace
+	 * expansion.
+	 * <p>
+	 * <b>Implementation note</b><br/>
+	 * Due to <a href="http://bugs.eclipse.org/336900">bug 446900</a> a long
+	 * documentation: Laplace formular (after i-th row): <center><i>
+	 * <table cellspacing="0" cellpadding="0" border="0">
+	 * <tr>
+	 * <td></td>
+	 * <td><center><sub>n</sub></center></td>
+	 * <td></td>
+	 * </tr>
+	 * <tr>
+	 * <td>det A =</td>
+	 * <td><center>&#8721;</center></td>
+	 * <td>(-1)<sup>i+j</sup>*a<sub>ij</sub>*det A<sub>ij</sub></td>
+	 * </tr>
+	 * <tr>
+	 * <td></td>
+	 * <td><center><sup>j=1</sup></center></td>
+	 * <td></td>
+	 * </tr>
+	 * </table>
+	 * </i></center> det A is calculated after row 1, n is 4 here (4x4 matrix):
+	 * <center><i>
+	 * <table cellspacing="0" cellpadding="0" border="0">
+	 * <tr>
+	 * <td></td>
+	 * <td><center><sub>4</sub></center></td>
+	 * <td></td>
+	 * </tr>
+	 * <tr>
+	 * <td>det A =</td>
+	 * <td><center>&#8721;</center></td>
+	 * <td>(-1)<sup>1+j</sup>*a<sub>1j</sub>*det A<sub>1j</sub></td>
+	 * </tr>
+	 * <tr>
+	 * <td></td>
+	 * <td><center><sup>j=1</sup></center></td>
+	 * <td></td>
+	 * </tr>
+	 * </table>
+	 * =<br/>
+	 * a<sub>11</sub>*det A<sub>11</sub> -a<sub>12</sub>*det A<sub>12</sub>
+	 * +a<sub>13</sub>*det A<sub>13</sub> -a<sub>14</sub>*det A<sub>14</sub>
+	 * </i></center> det A<sub>1j</sub> are similarly calculated, that is the
+	 * determinant of each sub matrix is calculated by its 1st row, which
+	 * actually is the 2nd row of A. That makes 6 sub-determinantes, which are
+	 * 2x2 matrices of the 3rd and 4th row of the original matrix. These
+	 * determinates are directly calculated.
+	 * </p>
 	 * 
 	 * @param i_a the matrix, must not be null
 	 * @return det(a)
 	 * @see http://en.wikipedia.org/wiki/Determinant
+	 * @see http://en.wikipedia.org/wiki/Laplace_expansion
+	 * @see http://de.wikipedia.org/wiki/Determinante_(Mathematik)
 	 */
 
 	public static float determinant(IMatrix4f i_a) {
 		Matrix4fImpl m = Matrix4fImpl.cast(i_a);
 
-		float d34_34 = m.a33 * m.a44 - m.a34 * m.a43;
-		float d34_12 = m.a31 * m.a42 - m.a32 * m.a41;
-		float d34_41 = m.a34 * m.a41 - m.a31 * m.a44;
-		float d34_23 = m.a32 * m.a43 - m.a33 * m.a42;
-		float d34_42 = m.a34 * m.a42 - m.a32 * m.a44;
-		float d34_13 = m.a31 * m.a43 - m.a33 * m.a41;
+		// calculate the determinantes of the 6 sub matrices, the 1st row
+		// of each sub matrix is from the 3rd row of the original matrix, and
+		// the 2nd row of the 4th row.
+		// The index name indicates the columns in the original matrix:
+		float d12 = m.a31 * m.a42 - m.a32 * m.a41;
+		float d13 = m.a31 * m.a43 - m.a33 * m.a41;
+		float d14 = m.a31 * m.a44 - m.a34 * m.a41;
+		float d23 = m.a32 * m.a43 - m.a33 * m.a42;
+		float d24 = m.a32 * m.a44 - m.a34 * m.a42;
+		float d34 = m.a33 * m.a44 - m.a34 * m.a43;
 
-		// after row 1:
-		return m.a11 * (m.a22 * d34_34 + m.a23 * d34_42 + m.a24 * d34_23) //
-			- m.a12 * (m.a21 * d34_34 + m.a23 * d34_41 + m.a24 * d34_13) //
-			+ m.a13 * (m.a21 * (-d34_42) + m.a22 * d34_41 + m.a24 * d34_12) //
-			- m.a14 * (m.a21 * d34_23 + m.a22 * (-d34_13) + m.a23 * d34_12);
-
+		// after row 1, each sub determinant is calculated after row 2
+		return m.a11 * (m.a22 * d34 - m.a23 * d24 + m.a24 * d23) //
+			- m.a12 * (m.a21 * d34 - m.a23 * d14 + m.a24 * d13) //
+			+ m.a13 * (m.a21 * d24 - m.a22 * d14 + m.a24 * d12) //
+			- m.a14 * (m.a21 * d23 - m.a22 * d13 + m.a23 * d12);
 	}
 
 	/**
@@ -366,10 +422,10 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 
 	/**
 	 * Generic method if block wise invertation cannot be applied.
+	 * 
 	 * @param det
 	 * @param m
 	 * @param r
-	 * 
 	 * @todo replace with Gauß-Jordan algorithm
 	 */
 	private static void invert2(float det, Matrix4fImpl m, Matrix4fImpl r) {
