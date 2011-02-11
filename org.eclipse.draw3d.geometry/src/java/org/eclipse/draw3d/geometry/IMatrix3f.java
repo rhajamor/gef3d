@@ -49,6 +49,12 @@ public interface IMatrix3f extends IMatrix {
 	 */
 	public final static IMatrix3f IDENTITY = new Matrix3fImpl(new float[] { 1,
 			0, 0, 0, 1, 0, 0, 0, 1 }, false);
+	
+	/**
+	 * Zero matrix ( (0,0,0), (0,0,0), (0,0,0) ).
+	 */
+	public final static IMatrix3f ZERO = new Matrix3fImpl(new float[] { 0,
+			0, 0, 0, 0, 0, 0, 0, 0 }, false);
 
 
 	/**

@@ -85,7 +85,20 @@ public interface IMatrix4f extends IMatrix {
 	 * created with the identity matrix, by default. We write it here explicitly
 	 * to make it clear (and enable tests).
 	 */
-	public final static IMatrix4f IDENTITY = new Matrix4fImpl();
+	public final static IMatrix4f IDENTITY =
+		new Matrix4fImpl(new float[] { 1, 0, 0, 0, //
+			0, 1, 0, 0, //
+			0, 0, 1, 0, //
+			0, 0, 0, 1 }, false);
+
+	/**
+	 * Zero matrix ( (0,0,0,0), (0,0,0,0), (0,0,0,0), (0,0,0,0) ).
+	 */
+	public final static IMatrix4f ZERO =
+		new Matrix4fImpl(new float[] { 0, 0, 0, 0, //
+			0, 0, 0, 0, //
+			0, 0, 0, 0, //
+			0, 0, 0, 0 }, false);
 
 	/**
 	 * Format used in toString() methods
