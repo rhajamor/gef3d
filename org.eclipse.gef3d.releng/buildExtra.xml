@@ -1,0 +1,35 @@
+<project default="run" name="Project's .releng buildExtra.xml">
+
+	<!-- Note: you can call out to PDE targets like preSetup or postSetup listed in common.releng/builder/all/customTargets.xml -->
+	
+	<target name="init">
+	</target>
+
+	<target name="run">
+	</target>
+
+	<target name="extraPackaging">
+		<!-- build GEF runtime: Draw2D + GEF runtimes, no examples -->
+		<zip destfile="${buildDirectory}/${buildLabel}/GEF-runtime-${buildAlias}.zip" update="true">
+			<zipfileset src="${buildDirectory}/${buildLabel}/${allZip}"
+			            dirmode="775"
+			            filemode="664"
+			            excludes="**/org.eclipse.*.examples*, **/org.eclipse.*.examples*/**, **/org.eclipse.*.sdk*, **/org.eclipse.*.sdk*/**, **/org.eclipse.*.all*, **/org.eclipse.*.all*/**, **/org.eclipse.*.doc*, **/org.eclipse.*.doc*/*, **/org.eclipse.*.source*, **/org.eclipse.*.source*/**, **/*src.zip"
+			>
+				<include name="**/org.eclipse.draw2d*" />
+				<include name="**/org.eclipse.draw2d*/**" />
+				<include name="**/org.eclipse.draw2d*/**/**" />
+				<include name="**/org.eclipse.gef*" />
+				<include name="**/org.eclipse.gef*/**" />
+				<include name="**/org.eclipse.gef*/**/**" />
+			</zipfileset>
+			<zipfileset src="${buildDirectory}/${buildLabel}/${allZip}"
+			            dirmode="775"
+			            filemode="664"
+			            id="rootfiles"
+			            includes="**/eclipse/epl-v10.html, **/eclipse/notice.html"
+			/>
+		</zip>
+	</target>
+
+</project>

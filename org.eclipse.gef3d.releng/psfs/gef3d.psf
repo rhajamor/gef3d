@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<psf version="2.0">
+<provider id="org.tigris.subversion.subclipse.core.svnnature">
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.draw3d,org.eclipse.draw3d"/>
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.draw3d.geometry,org.eclipse.draw3d.geometry"/>
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.draw3d.graphics3d,org.eclipse.draw3d.graphics3d"/>
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.draw3d.lwjgl,org.eclipse.draw3d.lwjgl"/>
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.draw3d.ui,org.eclipse.draw3d.ui"/>
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.gef3d,org.eclipse.gef3d"/>
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.gef3d.examples.ecore,org.eclipse.gef3d.examples.ecore"/>
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.gef3d.examples.graph,org.eclipse.gef3d.examples.graph"/>
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.gef3d.examples.uml2,org.eclipse.gef3d.examples.uml2"/>
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.gef3d.ext,org.eclipse.gef3d.ext"/>
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.gef3d.ext.emf,org.eclipse.gef3d.ext.emf"/>
+<project reference="0.9.3,https://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/org.eclipse.gef3d.gmf,org.eclipse.gef3d.gmf"/>
+</provider>
+</psf>
