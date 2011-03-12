@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description>
+      Tools for Agent Modeling, Execution and Graphics.
+   </description>
+   <feature url="features/org.eclipse.gef3d.feature_0.8.1.jar" id="org.eclipse.gef3d.feature" version="0.8.1">
+      <category name="GEF 3D"/>
+   </feature>
+   <feature url="features/org.eclipse.gef3d.feature.sdk_0.8.1.jar" id="org.eclipse.gef3d.feature.sdk" version="0.8.1">
+      <category name="GEF 3D"/>
+   </feature>
+   <feature url="features/org.eclipse.draw3d.feature_0.9.3.jar" id="org.eclipse.draw3d.feature" version="0.9.3">
+      <category name="GEF 3D"/>
+   </feature>
+   <category-def name="GEF 3D" label="GEF 3D">
+      <description>
+         GEF 3D Components
+      </description>
+   </category-def>
+</site>
