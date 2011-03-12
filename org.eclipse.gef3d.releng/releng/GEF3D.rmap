@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rm:rmap xmlns:bc="http://www.eclipse.org/buckminster/Common-1.0"
 	xmlns:rm="http://www.eclipse.org/buckminster/RMap-1.0">
+	
 	<rm:searchPath name="gef3d">
 		<rm:provider readerType="svn" componentTypes="osgi.bundle,eclipse.feature"
 			mutable="true" source="true">
 			<rm:uri
 				format="http://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/{0}?moduleAfterTag&amp;moduleAfterBranch">
+				<bc:propertyRef key="buckminster.component" />
+			</rm:uri>
+		</rm:provider>
+	</rm:searchPath>
+	
+	<rm:searchPath name="gef3d.feature">
+		<rm:provider readerType="svn" componentTypes="eclipse.feature"
+			mutable="true" source="true">
+			<rm:uri
+				format="http://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/{0}-feature?moduleAfterTag&amp;moduleAfterBranch">
 				<bc:propertyRef key="buckminster.component" />
 			</rm:uri>
 		</rm:provider>
@@ -66,6 +77,8 @@
 		</rm:provider>
 	</rm:searchPath>
 
+	<rm:locator searchPathRef="gef3d.feature" pattern="^org\.eclipse\.gef3d(\..+)?"
+		failOnError="false" />
 	<rm:locator searchPathRef="gef3d" pattern="^org\.eclipse\.gef3d(\..+)?"
 		failOnError="false" />
 	<rm:locator searchPathRef="gef3d-build" pattern="^org\.eclipse\.gef3d(\..+)?" />
