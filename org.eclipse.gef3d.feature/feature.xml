@@ -118,8 +118,14 @@ Java and all Java-based trademarks are trademarks of Sun Microsystems, Inc. in t
 
    <requires>
       <import feature="org.eclipse.gef" version="3.3.1.v20070814"/>
-      <import feature="org.lwjgl" version="1.9.1" match="greaterOrEqual"/>
       <import feature="org.eclipse.draw3d.feature" version="0.9.3"/>
+      <import plugin="org.eclipse.draw2d"/>
+      <import plugin="org.eclipse.draw3d.geometry" version="0.8.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.runtime" version="3.4.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.draw3d.graphics3d" version="0.8.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.draw3d.ui" version="0.8.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.views" version="3.4.1" match="greaterOrEqual"/>
    </requires>
 
    <plugin
@@ -138,13 +144,6 @@ Java and all Java-based trademarks are trademarks of Sun Microsystems, Inc. in t
 
    <plugin
          id="org.eclipse.gef3d.ext"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.gef3d.gmf"
          download-size="0"
          install-size="0"
          version="0.0.0"

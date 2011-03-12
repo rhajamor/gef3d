@@ -1,71 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rmap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.eclipse.org/buckminster/RMap-1.0"
-	xmlns:bc="http://www.eclipse.org/buckminster/Common-1.0" xmlns:mp="http://www.eclipse.org/buckminster/MavenProvider-1.0"
-	xmlns:pmp="http://www.eclipse.org/buckminster/PDEMapProvider-1.0">
-	<property key="checkout.location" value="${workspace.root}/svn" />
-	<property key="eclipse.download" value="http://download.eclipse.org" />
-
-	<searchPath name="gef3d">
-		<provider readerType="svn" componentTypes="osgi.bundle,eclipse.feature" mutable="true" source="true">
-			<uri format="http://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/{0}?moduleAfterTag&amp;moduleAfterBranch">
+<rm:rmap xmlns:bc="http://www.eclipse.org/buckminster/Common-1.0"
+	xmlns:rm="http://www.eclipse.org/buckminster/RMap-1.0">
+	<rm:searchPath name="gef3d">
+		<rm:provider readerType="svn" componentTypes="osgi.bundle,eclipse.feature"
+			mutable="true" source="true">
+			<rm:uri
+				format="http://dev.eclipse.org/svnroot/technology/org.eclipse.gef3d/trunk/{0}?moduleAfterTag&amp;moduleAfterBranch">
 				<bc:propertyRef key="buckminster.component" />
-			</uri>
-		</provider>
-	</searchPath>
+			</rm:uri>
+		</rm:provider>
+	</rm:searchPath>
 
-	<searchPath name="gef3d-build">
-		<provider readerType="svn" componentTypes="osgi.bundle,eclipse.feature" mutable="true" source="true">
-			<uri format="file:///svnroot/technology/org.eclipse.gef3d/trunk/{0}?moduleAfterTag&amp;moduleAfterBranch">
+	<rm:searchPath name="gef3d-build">
+		<rm:provider readerType="svn" componentTypes="osgi.bundle,eclipse.feature"
+			mutable="true" source="true">
+			<rm:uri
+				format="file:///svnroot/technology/org.eclipse.gef3d/trunk/{0}?moduleAfterTag&amp;moduleAfterBranch">
 				<bc:propertyRef key="buckminster.component" />
-			</uri>
-		</provider>
-	</searchPath>
+			</rm:uri>
+		</rm:provider>
+	</rm:searchPath>
+	
+  <rm:searchPath name="orbit">
+    <rm:provider componentTypes="eclipse.feature,osgi.bundle" readerType="p2" source="false" mutable="false">
+      <rm:uri format="{0}/tools/orbit/downloads/drops/S20110304120314/repository">
+        <bc:propertyRef key="eclipse.download"/>
+      </rm:uri>
+    </rm:provider>
+  </rm:searchPath>
 
-	<searchPath name="orbit">
-		<provider componentTypes="eclipse.feature,osgi.bundle" readerType="p2" source="false" mutable="false">
-			<uri format="{0}/tools/orbit/downloads/drops/S20110304120314/repository">
+	<rm:searchPath name="platform">
+		<rm:provider componentTypes="eclipse.feature,osgi.bundle"
+			readerType="p2" source="false" mutable="false">
+			<rm:uri format="{0}/eclipse/updates/3.7milestones">
 				<bc:propertyRef key="eclipse.download" />
-			</uri>
-		</provider>
-	</searchPath>
+			</rm:uri>
+		</rm:provider>
+	</rm:searchPath>
 
-	<searchPath name="platform">
-		<provider componentTypes="eclipse.feature,osgi.bundle" readerType="p2" source="false" mutable="false">
-			<uri format="{0}/eclipse/updates/3.7milestones">
+	<rm:searchPath name="eclipse">
+		<rm:provider readerType="p2" componentTypes="osgi.bundle,eclipse.feature"
+			mutable="false" source="false">
+			<rm:uri format="{0}/releases/indigo?importType=binary">
 				<bc:propertyRef key="eclipse.download" />
-			</uri>
-		</provider>
-	</searchPath>
+			</rm:uri>
+		</rm:provider>
+	</rm:searchPath>
 
-	<searchPath name="eclipse">
-		<provider readerType="p2" componentTypes="osgi.bundle,eclipse.feature" mutable="false" source="false">
-			<uri format="{0}/releases/indigo?importType=binary">
+	<rm:searchPath name="swtbot">
+		<rm:provider readerType="p2" componentTypes="osgi.bundle,eclipse.feature"
+			mutable="false" source="false">
+			<rm:uri
+				format="{0}/technology/swtbot/helios/dev-build/update-site?importType=binary">
 				<bc:propertyRef key="eclipse.download" />
-			</uri>
-		</provider>
-	</searchPath>
+			</rm:uri>
+		</rm:provider>
+	</rm:searchPath>
 
-	<!-- NOTE: ***Not for inclusion in Eclipse provided builds. Provides support for externally hosted plugin dependencies.*** -->
-	<searchPath name="lwjgl">
-		<provider readerType="p2" componentTypes="osgi.bundle" mutable="false" source="false">
-			<uri format="http://lwjgl.org/update" />
-		</provider>
-	</searchPath>
+	<!-- NOTE: * Not for inclusion in Eclipse provided builds. Provides support 
+		for externally hosted plugin dependencies. -->
+	<rm:searchPath name="lwjgl">
+		<rm:provider readerType="p2" componentTypes="osgi.bundle"
+			mutable="false" source="false">
+			<rm:uri format="http://lwjgl.org/update" />
+		</rm:provider>
+	</rm:searchPath>
 
-	<locator searchPathRef="gef3d" pattern="^org\.eclipse\.gef3d(\..+)?" failOnError="false" />
-	<locator searchPathRef="gef3d-build" pattern="^org\.eclipse\.gef3d(\..+)?" />
-	<locator searchPathRef="gef3d" pattern="^org\.eclipse\.draw3d(\..+)?" failOnError="false" />
-	<locator searchPathRef="gef3d-build" pattern="^org\.eclipse\.draw3d(\..+)?" />
+	<rm:locator searchPathRef="gef3d" pattern="^org\.eclipse\.gef3d(\..+)?"
+		failOnError="false" />
+	<rm:locator searchPathRef="gef3d-build" pattern="^org\.eclipse\.gef3d(\..+)?" />
+	<rm:locator searchPathRef="gef3d" pattern="^org\.eclipse\.draw3d(\..+)?"
+		failOnError="false" />
+	<rm:locator searchPathRef="gef3d-build" pattern="^org\.eclipse\.draw3d(\..+)?" />
 
-	<locator searchPathRef="eclipse" pattern="^org\.eclipse(\..+)?$" failOnError="false" />
-	<locator searchPathRef="eclipse" pattern="^org\.junit(\..+)?$" />
-	<locator searchPathRef="eclipse" pattern="^org\.junit4(\..+)?$" />
-	<locator searchPathRef="eclipse" pattern="^com(\..+)?$" failOnError="false" />
-	<locator searchPathRef="eclipse" pattern="^org(\..+)?$" failOnError="false" />
-	<locator searchPathRef="platform" pattern="^org(\..+)?$" failOnError="false" />
+	<rm:locator searchPathRef="eclipse" pattern="^org\.eclipse(\..+)?$"
+		failOnError="false" />
+	<rm:locator searchPathRef="swtbot" pattern="^org\.eclipse\.swtbot(\..+)?$" />
+	<rm:locator searchPathRef="eclipse" pattern="^org\.junit(\..+)?$" />
+	<rm:locator searchPathRef="eclipse" pattern="^org\.junit4(\..+)?$" />
+	<rm:locator searchPathRef="eclipse" pattern="^javax\.servlet(\..+)?$" failOnError="false"/>
+	<rm:locator searchPathRef="platform" pattern="^javax\.servlet(\..+)?$" failOnError="false"/>
+	<rm:locator searchPathRef="eclipse" pattern="^com(\..+)?$"
+		failOnError="false" />
+	<rm:locator searchPathRef="eclipse" pattern="^org(\..+)?$"
+		failOnError="false" />
+	<rm:locator searchPathRef="platform" pattern="^org(\..+)?$"
+		failOnError="false" />
 
-	<!-- Note: Third party *NOT* Eclipse IP approved for providing. Make sure that these don't show up in any delivered builds. -->
-	<locator searchPathRef="lwjgl" pattern="^org\.lwjgl(\..+)?" />
+	<!-- Note: Third party * NOT * Eclipse IP approved for providing. Make sure 
+		that these don ' t show up in any delivered builds. -->
+	<rm:locator searchPathRef="lwjgl" pattern="^org\.lwjgl(\..+)?" />
 
-	<locator searchPathRef="orbit" pattern=".*" />
-</rmap>
+	<rm:locator searchPathRef="orbit" pattern=".*" />
+</rm:rmap>
