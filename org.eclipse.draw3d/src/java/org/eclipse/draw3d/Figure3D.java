@@ -26,6 +26,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.geometry.Translatable;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IHost3D;
+import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
@@ -34,7 +35,6 @@ import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.geometryext.SyncedVector3f;
 import org.eclipse.draw3d.geometryext.SynchronizedPosition3DImpl;
 import org.eclipse.draw3d.picking.Picker;
@@ -54,8 +54,8 @@ public class Figure3D extends Figure implements IFigure3D {
 	/**
 	 * Logger for this class
 	 */
-	protected static final Logger log =
-		Logger.getLogger(Figure3D.class.getName());
+	protected static final Logger log = Logger.getLogger(Figure3D.class
+		.getName());
 
 	/**
 	 * The texture needs to be invalidated every time a child is moved so that
@@ -125,6 +125,20 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * to avoid infinite loop.
 	 */
 	protected boolean updatingBounds = false;
+	
+	// Unfortunately, this is not working. Besides, it requires Draw2D 3.6.
+	// Instead, getBounds() is overridden with a dirty workaround.
+	/*
+	static class ClippingStrategyFigure3D implements IClippingStrategy {
+		public Rectangle[] getClip(IFigure i_childFigure) {
+			return new Rectangle[] { new Rectangle(i_childFigure.getBounds()) {
+				public boolean intersects(Rectangle i_rect) {
+					return true;
+				}
+			}};
+		}
+	}
+	*/
 
 	/**
 	 * Creates and initializes a new 3D figure.
@@ -148,6 +162,7 @@ public class Figure3D extends Figure implements IFigure3D {
 		};
 
 		helper = new Figure3DHelper(friend);
+		// setClippingStrategy(new ClippingStrategyFigure3D());
 	}
 
 	@Override
@@ -250,18 +265,45 @@ public class Figure3D extends Figure implements IFigure3D {
 	}
 
 	// Overriding setBounds instead and update bounds in setSize3D/setLocatoin3D
-	//	
+	//
 	/**
 	 * Returns 2D bounds of this figure. If resolution is not disabled, the
 	 * bounds are converted from the 3D bounds, simply ignoring the z values of
 	 * position and size. Otherwise, the 2D bounds are returned.
-	 * 
+	 * <p>
+	 * Due to a change in Draw2D 3.6, this method contains a dirty workaround
+	 * to solve a problem with clipping. In 3D, clipping is handled completely
+	 * differently, as things like dirty regions do not exists in a 3D scene 
+	 * (the 3D scene is always redrawn completely). Thus, {@link #intersects(Rectangle)}
+	 * always returns true in the 3D version. With Draw2D 3.6, instead of
+	 * calling {@link #intersects(Rectangle)}, a clipping strategy is used. If
+	 * this is not set (which should be true for elder editors, as the 
+	 * interface IClippingStrategy was only introduced with 3.6 and for all
+	 * 3D figures), the bounds of the figure are used. However, this lead
+	 * to a slightly semantic change: instead of calling
+	 * {@link IFigure#intersects(Rectangle)}, {@link Rectangle#intersects(Rectangle)} 
+	 * get called. Thus, the overridden method {@link #intersects(Rectangle)} is
+	 * not called anymore, disabling the workaround implemented there. So we 
+	 * have to add a new workaround here.
+	 * </p>
+	 * @todo Refactor the clipping and dirty region problem.
 	 * @see org.eclipse.draw2d.Figure#getBounds()
 	 */
 	@Override
 	public Rectangle getBounds() {
+		return new Rectangle(super.getBounds()) {
+			private static final long serialVersionUID = -3392742516541083249L;
 
-		return super.getBounds();
+			/** 
+			 * {@inheritDoc}
+			 * @see org.eclipse.draw2d.geometry.Rectangle#intersects(org.eclipse.draw2d.geometry.Rectangle)
+			 */
+			@Override
+			public boolean intersects(Rectangle i_rect) {
+				return true;
+			}
+		};
+		//return super.getBounds();
 	}
 
 	/**
@@ -336,7 +378,6 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * 
 	 * @see org.eclipse.draw3d.IFigure3D#getParaxialBoundingBox(org.eclipse.draw3d.geometry.ParaxialBoundingBox)
 	 */
-	@SuppressWarnings("unchecked")
 	public ParaxialBoundingBox getParaxialBoundingBox(
 		ParaxialBoundingBox o_result) {
 
@@ -455,10 +496,10 @@ public class Figure3D extends Figure implements IFigure3D {
 	 */
 	@Override
 	public boolean intersects(Rectangle i_rect) {
-
 		return true;
 	}
 
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
