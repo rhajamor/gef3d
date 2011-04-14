@@ -371,7 +371,9 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 		if (anchor == startAnchor) {
 			return;
 		}
-		if (!(anchor instanceof ConnectionAnchor3D)) {
+		// Anchor needs an 3D owner, in case that anchor is not null. The
+		// later only occurs if a connection is removed, see bug 342830
+		if (!(anchor instanceof ConnectionAnchor3D) && anchor!=null) {
 			if (Figure3DHelper.getAncestor3D(anchor.getOwner()) == null) {
 				throw new IllegalArgumentException(
 					"Cannot set 2D anchor w/o available 3D owner, you probably"
@@ -419,7 +421,9 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 		if (anchor == endAnchor) {
 			return;
 		}
-		if (!(anchor instanceof ConnectionAnchor3D)) {
+		// Anchor needs an 3D owner, in case that anchor is not null. The
+		// later only occurs if a connection is removed, see bug 342830
+		if (!(anchor instanceof ConnectionAnchor3D) && anchor!=null) {
 			if (Figure3DHelper.getAncestor3D(anchor.getOwner()) == null) {
 				throw new IllegalArgumentException(
 					"Cannot set 2D anchor w/o available 3D owner, you probably"
