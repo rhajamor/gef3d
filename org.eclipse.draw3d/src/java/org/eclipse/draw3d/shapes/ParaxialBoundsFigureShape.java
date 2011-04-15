@@ -16,6 +16,7 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DUtil;
@@ -95,6 +96,7 @@ public class ParaxialBoundsFigureShape implements Shape {
 			return 0;
 		} finally {
 			Draw3DCache.returnVector3f(viewPoint, center, diff);
+			Draw3DCache.returnParaxialBoundingBox(pBounds);
 		}
 	}
 
