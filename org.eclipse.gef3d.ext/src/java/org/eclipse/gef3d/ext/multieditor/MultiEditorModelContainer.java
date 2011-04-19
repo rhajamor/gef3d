@@ -19,7 +19,7 @@ import java.util.List;
 
 
 /**
- * MultiEditorModelContainer There should really be more documentation here.
+ * The content model of a multi editor, storing all nested content objects.
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
