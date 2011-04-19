@@ -43,15 +43,15 @@ import org.eclipse.swt.widgets.Event;
  * package for backward compatibility.
  * </p>
  * 
- * @author Kristian Duske
+ * @author Kristian Duske, Jens von Pilgrim
  * @version $Revision$
  * @since 21.06.2009
  */
 public class EventDispatcher3D extends EventDispatcher {
 
 	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(EventDispatcher3D.class.getName());
+	private static final Logger log = Logger.getLogger(EventDispatcher3D.class
+		.getName());
 
 	private EventDispatcher m_dispatcher;
 
@@ -85,30 +85,24 @@ public class EventDispatcher3D extends EventDispatcher {
 		m_scene = i_scene;
 	}
 
-	private MouseEvent3D convert(MouseEvent i_me) {
+	/**
+	 * Converts the (2D) mouse event into a 3D mouse event. In order to
+	 * calculate a valid coordinate in the 3D scene, the current surface under
+	 * the mouse cursor (see {@link Picker#updateCurrentSurface(int, int)}) is
+	 * used.
+	 * 
+	 * @param i_me
+	 * @return
+	 * @see MouseEvent3D#screenToWorld(ICamera, ISurface, int, int, Vector3f)
+	 */
+	protected MouseEvent3D convert(MouseEvent i_me) {
 
-		Vector3f eye = Draw3DCache.getVector3f();
-		Vector3f point = Draw3DCache.getVector3f();
-		Vector3f direction = Draw3DCache.getVector3f();
-		Point sLocation = Draw3DCache.getPoint();
-		try {
-			Picker picker = getPicker();
-			picker.updateCurrentSurface(i_me.x, i_me.y);
-			ISurface surface = picker.getCurrentSurface();
+		Picker picker = getPicker();
+		picker.updateCurrentSurface(i_me.x, i_me.y);
+		ISurface surface = picker.getCurrentSurface();
+		ICamera camera = m_scene.getCamera();
 
-			ICamera camera = m_scene.getCamera();
-			camera.getPosition(eye);
-			camera.unProject(i_me.x, i_me.y, 0, null, point);
-
-			Math3D.getRayDirection(eye, point, direction);
-			surface.getSurfaceLocation2D(eye, direction, sLocation);
-
-			Vector3f wLocation = surface.getWorldLocation(sLocation, null);
-			return new MouseEvent3D(i_me, sLocation, wLocation);
-		} finally {
-			Draw3DCache.returnVector3f(eye, point, direction);
-			Draw3DCache.returnPoint(sLocation);
-		}
+		return new MouseEvent3D(i_me, surface, camera);
 	}
 
 	/**

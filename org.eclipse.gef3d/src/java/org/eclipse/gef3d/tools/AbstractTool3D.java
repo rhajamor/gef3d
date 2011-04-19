@@ -47,9 +47,9 @@ public abstract class AbstractTool3D extends AbstractTool {
 	 */
 	public class Input3D extends Input {
 
-		Point mLocation = new Point();
+		Point screenLocation = new Point();
 
-		Point sLocation = new Point();
+		Point surfaceLocation = new Point();
 
 		Vector3f wLocation = new Vector3fImpl();
 
@@ -64,7 +64,7 @@ public abstract class AbstractTool3D extends AbstractTool {
 		 */
 		public Point getRealMouseLocation() {
 
-			return mLocation;
+			return screenLocation;
 		}
 
 		/**
@@ -90,21 +90,21 @@ public abstract class AbstractTool3D extends AbstractTool {
 			if (i_me instanceof MouseEvent3D) {
 				MouseEvent3D me3D = (MouseEvent3D) i_me;
 
-				wLocation.set(me3D.worldLoc);
-				sLocation.x = me3D.x;
-				sLocation.y = me3D.y;
-				mLocation.x = me3D.mouseX;
-				mLocation.y = me3D.mouseY;
+				wLocation.set(me3D.worldLocation);
+				surfaceLocation.x = me3D.x;
+				surfaceLocation.y = me3D.y;
+				screenLocation.x = me3D.getScreenLocation().x;
+				screenLocation.y = me3D.getScreenLocation().y;
 			} else {
-				sLocation.x = i_me.x;
-				sLocation.y = i_me.y;
+				surfaceLocation.x = i_me.x;
+				surfaceLocation.y = i_me.y;
 
 				Picker picker = getScene().getPicker();
 				ISurface surface = picker.getCurrentSurface();
-				surface.getWorldLocation(sLocation, wLocation);
+				surface.getWorldLocation(surfaceLocation, wLocation);
 
 				ICamera camera = getScene().getCamera();
-				camera.project(wLocation, mLocation);
+				camera.project(wLocation, screenLocation);
 			}
 		}
 	}
