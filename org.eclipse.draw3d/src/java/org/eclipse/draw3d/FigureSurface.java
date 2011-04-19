@@ -16,15 +16,7 @@ import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.FigureListener;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
-import org.eclipse.draw3d.geometry.IMatrix4f;
-import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Math3DCache;
-import org.eclipse.draw3d.geometry.Matrix4f;
 import org.eclipse.draw3d.geometry.Position3D;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.Vector3fImpl;
-import org.eclipse.draw3d.util.Draw3DCache;
 
 /**
  * A surface that belongs to a 3D figure.
@@ -33,7 +25,7 @@ import org.eclipse.draw3d.util.Draw3DCache;
  * @version $Revision$
  * @since 10.07.2009
  */
-public class FigureSurface extends AbstractSurface {
+public class FigureSurface extends PositionBasedSurface {
 
 	private FigureListener m_figureListener = new FigureListener() {
 
@@ -44,6 +36,16 @@ public class FigureSurface extends AbstractSurface {
 
 	private IFigure3D m_host;
 
+	
+	/**
+	 * Returns the position 3D of its host.
+	 * @see org.eclipse.draw3d.PositionBasedSurface#getPosition3D()
+	 */
+	@Override
+	protected Position3D getPosition3D() {
+		return m_host.getPosition3D();
+	}
+	
 	/**
 	 * Creates a new surface for the given figure.
 	 * 
@@ -56,19 +58,10 @@ public class FigureSurface extends AbstractSurface {
 		m_host = i_host;
 		m_host.addFigureListener(m_figureListener);
 	}
+	
+	
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.AbstractSurface#calculateNormal(org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	@Override
-	protected void calculateNormal(Vector3f io_normal) {
-		io_normal.set(IVector3f.Z_AXIS_NEG);
-		IMatrix4f rotation = m_host.getPosition3D().getAbsoluteRotationMatrix();
-		Math3D.transform(io_normal, rotation, io_normal);
-	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -124,98 +117,7 @@ public class FigureSurface extends AbstractSurface {
 	public IFigure3D getHost() {
 		return m_host;
 	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.AbstractSurface#getOrigin(org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	@Override
-	protected Vector3f getOrigin(Vector3f io_result) {
-		Vector3f result = io_result;
-		if (result == null)
-			result = new Vector3fImpl();
-
-		Position3D position3d = getHost().getPosition3D();
-		IMatrix4f matrix = position3d.getRotationLocationMatrix();
-
-		result.set(IVector3f.NULLVEC3f);
-		result.transform(matrix);
-
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.ISurface#getSurfaceRotation(org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	public Vector3f getSurfaceRotation(Vector3f o_result) {
-		Vector3f result = o_result;
-		if (result == null)
-			result = new Vector3fImpl();
-
-		Position3D absolute = Draw3DCache.getPosition3D();
-		try {
-			m_host.getPosition3D().getAbsolute(absolute);
-			result.set(absolute.getRotation3D());
-
-			return result;
-		} finally {
-			Draw3DCache.returnPosition3D(absolute);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.AbstractSurface#getXAxis(org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	@Override
-	protected Vector3f getXAxis(Vector3f io_result) {
-		Vector3f result = io_result;
-		if (result == null)
-			result = new Vector3fImpl();
-
-		result.set(IVector3f.X_AXIS);
-		rotateVector(result);
-
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.AbstractSurface#getYAxis(org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	@Override
-	protected Vector3f getYAxis(Vector3f io_result) {
-		Vector3f result = io_result;
-		if (result == null)
-			result = new Vector3fImpl();
-
-		result.set(IVector3f.Y_AXIS);
-		rotateVector(result);
-
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.AbstractSurface#getZAxis(org.eclipse.draw3d.geometry.Vector3f)
-	 */
-	@Override
-	protected Vector3f getZAxis(Vector3f io_result) {
-		Vector3f result = io_result;
-		if (result == null)
-			result = new Vector3fImpl();
-
-		result.set(IVector3f.Z_AXIS);
-		rotateVector(result);
-
-		return result;
-	}
+	
 
 	/**
 	 * {@inheritDoc}
@@ -226,17 +128,7 @@ public class FigureSurface extends AbstractSurface {
 		return true;
 	}
 
-	private void rotateVector(Vector3f i_vector) {
-		Matrix4f rot = Math3DCache.getMatrix4f();
-		try {
-			IVector3f angles = m_host.getPosition3D().getRotation3D();
-			Math3D.rotate(angles, IMatrix4f.IDENTITY, rot);
-
-			i_vector.transform(rot);
-		} finally {
-			Math3DCache.returnMatrix4f(rot);
-		}
-	}
+	
 
 	/**
 	 * {@inheritDoc}
