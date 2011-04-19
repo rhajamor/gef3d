@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.gef3d.editpolicies;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ConnectionAnchor;
@@ -23,6 +24,8 @@ import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.LocatorHelper;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.XYZAnchor;
+import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -41,8 +44,8 @@ import org.eclipse.gef.editpolicies.FeedbackHelper;
 public class FeedbackHelper3D extends FeedbackHelper {
 
 	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(FeedbackHelper3D.class.getName());
+	private static final Logger log = Logger.getLogger(FeedbackHelper3D.class
+		.getName());
 
 	/**
 	 * A dummy anchor.
@@ -147,6 +150,10 @@ public class FeedbackHelper3D extends FeedbackHelper {
 	public void updateFeedbackPosition(IFigure3D i_feedback,
 		Point i_surfaceMoveDelta, Dimension i_surfaceSizeDelta) {
 
+		if (log.isLoggable(Level.INFO)) {
+			log.info("move " + i_surfaceMoveDelta); //$NON-NLS-1$
+		}
+
 		if (i_feedback == null)
 			throw new NullPointerException("i_feedback must not be null");
 
@@ -203,6 +210,60 @@ public class FeedbackHelper3D extends FeedbackHelper {
 	}
 
 	/**
+	 * @param i_feedback3d
+	 * @param i_moveDelta3D
+	 * @param i_sizeDelta3D
+	 * @param i_rotationDelta3D
+	 */
+	public void updateFeedbackPosition(IFigure3D i_feedback,
+		IVector3f i_moveDelta3D, IVector3f i_sizeDelta3D,
+		IVector3f i_rotationDelta3D) {
+
+		if (log.isLoggable(Level.INFO)) {
+			log.info("Move " + i_moveDelta3D + ", Rot " + i_rotationDelta3D); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+
+		if (i_feedback == null)
+			throw new NullPointerException("i_feedback must not be null");
+
+		Vector3f newLocation = Draw3DCache.getVector3f();
+		Vector3f size = Draw3DCache.getVector3f();
+		try {
+
+			Position3D dummy = i_feedback.getPosition3D();
+
+			if (i_moveDelta3D != null && i_moveDelta3D != IVector3f.NULLVEC3f) {
+				newLocation.set(dummy.getLocation3D());
+				newLocation.translate(i_moveDelta3D.getX(),
+					i_moveDelta3D.getY(), i_moveDelta3D.getZ());
+				dummy.setLocation3D(newLocation);
+			}
+			if (i_rotationDelta3D != null
+				&& i_rotationDelta3D != IVector3f.NULLVEC3f) {
+				Vector3f v3f = new Vector3fImpl(dummy.getRotation3D());
+				Math3D.add(v3f, i_rotationDelta3D, v3f);
+				dummy.setRotation3D(v3f);
+			}
+
+			// if (i_surfaceSizeDelta != null) {
+			// size.set(dummy.getSize3D());
+			// size.translate(i_surfaceSizeDelta.width,
+			// i_surfaceSizeDelta.height, 0);
+			//
+			// dummy.setSize3D(size);
+			// }
+
+			// log.info(feedbackPosition.toString());
+
+			i_feedback.getPosition3D().setPosition(dummy);
+		} finally {
+			Draw3DCache.returnVector3f(newLocation, size);
+		}
+
+	}
+	
+
+	/**
 	 * Sets the host figure of this feedback helper.
 	 * 
 	 * @param i_hostFigure the host figure
@@ -226,14 +287,36 @@ public class FeedbackHelper3D extends FeedbackHelper {
 	}
 
 	/**
-	 * Sets the bounds of the given feedback figure to the bounds of the host
-	 * figure, expanded by <code>0.01f</code>.
+	 * Calls {@link #setInitialFeedbackPosition(IFigure3D, ISurface)} with the
+	 * current surface under the mouse cursor (i.e. the picker's current
+	 * surface). As the surface is always updated to the current surface under
+	 * the mouse cursor, the feedback figure automatically "jumps" to
+	 * match the position of the new surface. This is the default mechanism
+	 * for most operations, it can be avoided by calling
+	 * {@link #setInitialFeedbackPosition(IFigure3D, ISurface)} with
+	 * a non-changing surface, e.g., the surface of the figure or the
+	 * start surface. 
 	 * 
 	 * @param i_feedback the feedback figure to modify
 	 */
 	public void setInitialFeedbackPosition(IFigure3D i_feedback) {
+		setInitialFeedbackPosition(i_feedback, m_picker.getCurrentSurface());
+	}
 
-		ISurface surface = m_picker.getCurrentSurface();
+	/**
+	 * Sets the bounds of the given feedback figure to the bounds of the host
+	 * figure, expanded by <code>0.01f</code>, relative to the given surface.
+	 * 
+	 * @param i_feedback
+	 * @param surface
+	 */
+	public void setInitialFeedbackPosition(IFigure3D i_feedback,
+		ISurface surface) {
+
+		if (log.isLoggable(Level.INFO)) {
+			log.info("set initial feedback position"); //$NON-NLS-1$
+		}
+
 		ISurface initialSurface =
 			Figure3DHelper.getAncestor3D(m_helper.getReference()).getSurface();
 
@@ -248,30 +331,6 @@ public class FeedbackHelper3D extends FeedbackHelper {
 		}
 
 		i_feedback.getPosition3D().setPosition(refPosition);
-
-		// else
-
-		// if (m_hostFigure instanceof IFigure3D) {
-		// BoundingBox feedbackBounds = Draw3DCache.getBoundingBox();
-		// Vector3f wLocation = Draw3DCache.getVector3f();
-		// Vector3f wSize = Draw3DCache.getVector3f();
-		// try {
-		// IFigure3D hostFigure3D = (IFigure3D) m_hostFigure;
-		// Position3D hostPosition = hostFigure3D.getPosition3D();
-		//
-		// Position3D feedbackPosition = i_feedback.getPosition3D();
-		// feedbackPosition.setPosition(hostPosition);
-		// } finally {
-		// Draw3DCache.returnBoundingBox(feedbackBounds);
-		// Draw3DCache.returnVector3f(wLocation, wSize);
-		// }
-		// } else {
-		// Point sLocation = m_hostFigure.getBounds().getLocation();
-		// m_hostFigure.getParent().translateToAbsolute(sLocation);
-		// Dimension sSize = m_hostFigure.getBounds().getSize();
-		//
-		// setAbsoluteFeedbackBounds(i_feedback, sLocation, sSize);
-		// }
 	}
 
 	/**
@@ -294,7 +353,7 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			Vector3f w = Draw3DCache.getVector3f();
 			try {
 				surface.getWorldLocation(p, w);
-//				log.info(w.toString());
+				// log.info(w.toString());
 				m_dummyAnchor.setLocation3D(w);
 				setAnchor(m_dummyAnchor);
 			} finally {
@@ -302,4 +361,5 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			}
 		}
 	}
+
 }

@@ -58,7 +58,7 @@ public class MouseEvent3D extends MouseEvent {
 	 * The 3D location in world space that has been derived from the mouse
 	 * coordinates.
 	 */
-	public Vector3f worldLocation;
+	protected Vector3f worldLocation;
 
 	/**
 	 * Camera, used to calculate world locations from mouse event

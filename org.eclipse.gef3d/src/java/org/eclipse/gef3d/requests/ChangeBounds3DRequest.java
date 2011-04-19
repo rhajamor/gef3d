@@ -10,11 +10,22 @@
  ******************************************************************************/
 package org.eclipse.gef3d.requests;
 
+import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.gef.Request;
 import org.eclipse.gef.requests.ChangeBoundsRequest;
+import org.eclipse.gef3d.tools.DragEditPartsTracker3D;
 
 /**
- * ChangeBounds3DRequest There should really be more documentation here.
+ * 3D equivalent of {@link ChangeBoundsRequest}, stores additional 3D
+ * information to enable 3D movement and change of depth.
+ * <p>
+ * Note: All 3D locations are in world coordinates. All deltas are computed
+ * using the start surface (set in constructor).
+ * </p>
+ * <h3>Internal notes</h3> This request is created by the
+ * {@link DragEditPartsTracker3D}, which itself is to be created in
+ * {@link org.eclipse.gef.EditPart#getDragTracker(Request)}
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -22,45 +33,77 @@ import org.eclipse.gef.requests.ChangeBoundsRequest;
  */
 public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 
-	IVector3f sizeDelta3D = IVector3f.NULLVEC3f;
-
-	IVector3f moveDelta3D = IVector3f.NULLVEC3f;
-
-	IVector3f location3D = IVector3f.NULLVEC3f;
+	public static enum Modifier3D {
+		NONE, DEPTH, ROTATION
+	}
 
 	/**
-	 * @param i_type
+	 * 3D depth delta.
+	 */
+	protected IVector3f depthDelta3D = null;
+
+	/**
+	 * 3D move delta
+	 */
+	protected IVector3f moveDepthDelta3D = null;
+
+	/**
+	 * 3D location delta
+	 */
+	protected IVector3f location3D = null;
+
+	/**
+	 * 3D rotation delta.
+	 */
+	protected IVector3f rotationDelta3D = null;
+
+	/**
+	 * Modifier indicating change of depth or rotation (or none); set in
+	 * constructor.
+	 */
+	protected Modifier3D modifier3D;
+
+	/**
+	 * The surface when the request had been created
+	 */
+	protected ISurface startSurface;
+
+	/**
+	 * @param i_type type of request, passed to super constructor
 	 */
 	public ChangeBounds3DRequest(Object i_type) {
 		super(i_type);
+		this.modifier3D = Modifier3D.NONE;
 	}
 
 	/**
-	 * @return the sizeDelta3D
+	 * Returns the size delta as set in {@link #setDepthDelta3D(IVector3f)}.
+	 * This is usually the delta 
+	 * @return the depthDelta3D
 	 */
-	public IVector3f getSizeDelta3D() {
-		return sizeDelta3D;
+	public IVector3f getDepthDelta3D() {
+		return depthDelta3D;
 	}
 
 	/**
-	 * @param i_sizeDelta3D the sizeDelta3D to set
+	 * @param i_sizeDelta3D the depthDelta3D to set
 	 */
-	public void setSizeDelta3D(IVector3f i_sizeDelta3D) {
-		sizeDelta3D = i_sizeDelta3D;
+	public void setDepthDelta3D(IVector3f i_depthDelta3D) {
+		depthDelta3D = i_depthDelta3D;
 	}
 
 	/**
-	 * @return the moveDelta3D
+	 * @return the moveDepthDelta3D
 	 */
-	public IVector3f getMoveDelta3D() {
-		return moveDelta3D;
+	public IVector3f getMoveDepthDelta3D() {
+		return moveDepthDelta3D;
 	}
 
 	/**
-	 * @param i_moveDelta3D the moveDelta3D to set
+	 * @param i_moveDelta3D the moveDepthDelta3D to set
 	 */
-	public void setMoveDelta3D(IVector3f i_moveDelta3D) {
-		moveDelta3D = i_moveDelta3D;
+	public void setMoveDepthDelta3D(IVector3f i_moveDelta3D) {
+		moveDepthDelta3D = i_moveDelta3D;
 	}
 
 	/**
@@ -71,31 +114,53 @@ public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 	}
 
 	/**
-	 * @param i_location3D the location3D to set
+	 * @param i_location3d the location3D to set
 	 */
-	public void setLocation3D(IVector3f i_location3D) {
-		location3D = i_location3D;
+	public void setLocation3D(IVector3f i_location3d) {
+		location3D = i_location3d;
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#toString()
+	 * @return the rotationDelta3D
 	 */
-	@Override
-	public String toString() {
-		StringBuffer strb = new StringBuffer("ChangeBounds3DReq. [");
-
-		strb.append("\n  Location: ").append(getLocation()).append("=").append(
-				getLocation3D());
-		strb.append("\n  Move delta: ").append(getMoveDelta()).append("=")
-				.append(getMoveDelta3D());
-		strb.append("\n  Size delta: ").append(getSizeDelta()).append("=")
-				.append(getSizeDelta3D());
-
-		strb.append("]");
-		return strb.toString();
-
+	public IVector3f getRotationDelta3D() {
+		return rotationDelta3D;
 	}
 
+	/**
+	 * @param i_rotationDelta3D the rotationDelta3D to set
+	 */
+	public void setRotationDelta3D(IVector3f i_rotationDelta3D) {
+		rotationDelta3D = i_rotationDelta3D;
+	}
+
+	/**
+	 * @return the modifier3D
+	 */
+	public Modifier3D getModifier3D() {
+		return modifier3D;
+	}
+
+	/**
+	 * @param i_modifier3d the modifier3D to set
+	 */
+	public void setModifier3D(Modifier3D i_modifier3d) {
+		modifier3D = i_modifier3d;
+	}
+	
+	/**
+	 * @param i_startSurface the startSurface to set
+	 */
+	public void setStartSurface(ISurface i_startSurface) {
+		startSurface = i_startSurface;
+	}
+
+	/**
+	 * @return
+	 */
+	public ISurface getStartSurface() {
+		return startSurface;
+	}
+
+	
 }

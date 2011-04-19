@@ -90,7 +90,7 @@ public abstract class AbstractTool3D extends AbstractTool {
 			if (i_me instanceof MouseEvent3D) {
 				MouseEvent3D me3D = (MouseEvent3D) i_me;
 
-				wLocation.set(me3D.worldLocation);
+				wLocation.set(me3D.getWorldLocation());
 				surfaceLocation.x = me3D.x;
 				surfaceLocation.y = me3D.y;
 				screenLocation.x = me3D.getScreenLocation().x;

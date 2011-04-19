@@ -12,7 +12,14 @@
  ******************************************************************************/
 package org.eclipse.gef3d.editpolicies;
 
-import static org.eclipse.draw2d.PositionConstants.*;
+import static org.eclipse.draw2d.PositionConstants.EAST;
+import static org.eclipse.draw2d.PositionConstants.NORTH;
+import static org.eclipse.draw2d.PositionConstants.NORTH_EAST;
+import static org.eclipse.draw2d.PositionConstants.NORTH_WEST;
+import static org.eclipse.draw2d.PositionConstants.SOUTH;
+import static org.eclipse.draw2d.PositionConstants.SOUTH_EAST;
+import static org.eclipse.draw2d.PositionConstants.SOUTH_WEST;
+import static org.eclipse.draw2d.PositionConstants.WEST;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +28,7 @@ import java.util.logging.Logger;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
+import org.eclipse.draw3d.ISurface;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.Handle;
@@ -34,6 +42,8 @@ import org.eclipse.gef3d.handles.IHandleFactory;
 import org.eclipse.gef3d.handles.MoveHandle3DFactory;
 import org.eclipse.gef3d.handles.NonResizableHandle3DFactory;
 import org.eclipse.gef3d.handles.ResizableHandle3DFactory;
+import org.eclipse.gef3d.requests.ChangeBounds3DRequest;
+import org.eclipse.gef3d.requests.ChangeBounds3DRequest.Modifier3D;
 
 /**
  * 3D version of {@link ResizableEditPolicy}, creates 3D handles if used within
@@ -78,8 +88,8 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(ResizableEditPolicy3D.class.getName());
+	private static final Logger log = Logger
+		.getLogger(ResizableEditPolicy3D.class.getName());
 
 	private FeedbackHelper3D m_helper;
 
@@ -135,7 +145,6 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 	 * 
 	 * @see org.eclipse.gef.editpolicies.ResizableEditPolicy#createSelectionHandles()
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	protected List createSelectionHandles() {
 
@@ -232,9 +241,39 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 			super.showChangeBoundsFeedback(request);
 		else {
 			IFigure3D feedback3D = (IFigure3D) feedback;
+
+			if (request instanceof ChangeBounds3DRequest
+				&& ((ChangeBounds3DRequest) request).getModifier3D() != Modifier3D.NONE) {
+				ChangeBounds3DRequest cbr = (ChangeBounds3DRequest) request;
+				ISurface figureSurface = getFigureSurface();
+				if (figureSurface != null) {
+					getFeedbackHelper().setInitialFeedbackPosition(feedback3D,
+						figureSurface);
+					// cbr.getStartSurface());
+
+					getFeedbackHelper().updateFeedbackPosition(feedback3D,
+						cbr.getMoveDepthDelta3D(), cbr.getDepthDelta3D(),
+						cbr.getRotationDelta3D());
+					return;
+				}
+
+			}
+			
+			// default and fall back solution: standard 2D mechanism:
 			getFeedbackHelper().setInitialFeedbackPosition(feedback3D);
 			getFeedbackHelper().updateFeedbackPosition(feedback3D,
 				request.getMoveDelta(), request.getSizeDelta());
+
 		}
+	}
+
+	/**
+	 * Returns the surface of the host's figure. This surface is used in
+	 * 3D interaction to show feedback figure, as in these cases we do not
+	 * want to let the feedback figure "jump" on arbitrary surfaces.
+	 * @return
+	 */
+	protected ISurface getFigureSurface() {
+		return Figure3DHelper.getAncestor3D(getHostFigure()).getSurface();
 	}
 }

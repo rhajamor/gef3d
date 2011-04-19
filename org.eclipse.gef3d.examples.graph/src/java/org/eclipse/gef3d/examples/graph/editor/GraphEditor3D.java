@@ -31,6 +31,7 @@ import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.requests.SimpleFactory;
 import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef3d.editparts.ScalableFreeformRootEditPart3D;
+import org.eclipse.gef3d.editpolicies.Handles3DEditPolicy;
 import org.eclipse.gef3d.examples.graph.editor.actions.ActionBuilder;
 import org.eclipse.gef3d.examples.graph.editor.editparts.GraphEditPartFactory;
 import org.eclipse.gef3d.examples.graph.editor.figures.GraphFigureFactory;
@@ -194,6 +195,12 @@ public class GraphEditor3D extends GraphicalEditor3DWithPalette {
 
 		ScalableFreeformRootEditPart root =
 			new ScalableFreeformRootEditPart3D();
+		
+	    // handles and feedback when moving or resizing a node
+        root.installEditPolicy(
+			Handles3DEditPolicy.CHILD_DECORATOR,
+			new Handles3DEditPolicy(true));
+		
 		getGraphicalViewer().setRootEditPart(root);
 	}
 
