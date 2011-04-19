@@ -368,8 +368,18 @@ public abstract class AbstractPosition3D implements Position3D {
 		StringBuilder result = new StringBuilder();
 		result.append("l=").append(getLocation3D());
 		result.append(", s=").append(getSize3D());
-		result.append(", r=").append(getRotation3D());
-		result.append(", host=").append(getHost());
+		result.append(", r=");
+		
+		result.append((int) (getRotation3D().getX()*180/Math.PI));
+		result.append("°/");
+		result.append((int) (getRotation3D().getY()*180/Math.PI));
+		result.append("°/");
+		result.append((int) (getRotation3D().getZ()*180/Math.PI));
+		result.append("°");
+		if (getHost()!=null) {
+			result.append(", host type ").append(getHost().getClass().getSimpleName());	
+		}
+		
 		return result.toString();
 	}
 
