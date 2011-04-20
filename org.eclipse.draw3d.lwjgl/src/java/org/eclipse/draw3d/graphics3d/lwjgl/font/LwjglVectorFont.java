@@ -286,12 +286,11 @@ public class LwjglVectorFont {
 	}
 
 	public void dispose() {
-
 		IntBuffer idBuffer = Draw3DCache.getIntBuffer(1);
 		try {
-			idBuffer.rewind();
-			idBuffer.put(m_bufferId);
 			
+			idBuffer.put(m_bufferId);
+			idBuffer.rewind();
 
 //			if (log.isLoggable(Level.INFO)) {
 //				log.info("Delete Bufffer  - id=" + m_bufferId); //$NON-NLS-1$
