@@ -37,7 +37,7 @@ public class Export3DAction extends WorkbenchPartAction {
 
 	public final static String ID = Export3DAction.class.getName();
 
-	public final String rendererID;
+	public String rendererID = null;
 
 	public final static String actionID(String rendererID) {
 		return ID + "_" + rendererID;
@@ -55,7 +55,7 @@ public class Export3DAction extends WorkbenchPartAction {
 
 		this.rendererID = i_rendererID;
 		setId(actionID(rendererID));
-		init();
+		init(); // now rendererID is set
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class Export3DAction extends WorkbenchPartAction {
 	 */
 	protected void init() {
 		if (rendererID != null) {
-			super.init();
+			// super.init();
 
 			Graphics3DDescriptor descr = Graphics3DRegistry
 					.getRenderer(rendererID);

@@ -76,7 +76,7 @@ public class ImageConverter {
 
 		if (policy == null)
 			throw new IllegalArgumentException(
-					"no conversion policy registered for " + policy);
+					"no conversion policy registered for " + specs);
 
 		throw new UnsupportedOperationException();
 	}
@@ -169,7 +169,7 @@ public class ImageConverter {
 
 		if (policy == null)
 			throw new IllegalArgumentException(
-					"no conversion policy registered for " + policy);
+					"no conversion policy registered for " + specs);
 
 		return policy.toBuffer(i_info, imageData, io_buffer, i_flip);
 	}

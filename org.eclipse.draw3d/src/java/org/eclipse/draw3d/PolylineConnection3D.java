@@ -131,7 +131,8 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 	@Override
 	public Rectangle getBounds() {
 		if (bounds == null) {
-			super.getBounds();
+			// usually, bounds are already set in super, but one never knows:
+			bounds = super.getBounds(); 
 			for (int i = 0; i < getChildren().size(); i++) {
 				IFigure child = (IFigure) getChildren().get(i);
 				bounds.union(child.getBounds());
@@ -484,7 +485,7 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 	 * 
 	 * @see PolylineConnection.RoutingNotifier
 	 */
-	final class RoutingNotifier implements ConnectionRouter {
+	final static class RoutingNotifier implements ConnectionRouter {
 
 		ConnectionRouter realRouter;
 

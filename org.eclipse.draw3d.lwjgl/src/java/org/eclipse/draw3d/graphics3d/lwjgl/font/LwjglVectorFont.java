@@ -10,6 +10,9 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.font;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static java.awt.geom.PathIterator.*;
 
 import java.awt.Font;
@@ -44,6 +47,11 @@ import org.lwjgl.util.glu.GLUtessellatorCallbackAdapter;
  * @since 22.01.2010
  */
 public class LwjglVectorFont {
+	/**
+	 * Logger for this class
+	 */
+	// @SuppressWarnings("unused") //$NON-NLS-1$
+	private static final Logger log = Logger.getLogger(LwjglVectorFont.class.getName());
 
 	private static class FontCallback extends GLUtessellatorCallbackAdapter {
 
@@ -283,8 +291,12 @@ public class LwjglVectorFont {
 		try {
 			idBuffer.rewind();
 			idBuffer.put(m_bufferId);
+			
 
-			idBuffer.rewind();
+//			if (log.isLoggable(Level.INFO)) {
+//				log.info("Delete Bufffer  - id=" + m_bufferId); //$NON-NLS-1$
+//			}
+			
 			GL15.glDeleteBuffers(idBuffer);
 
 			m_bufferId = 0;
@@ -303,8 +315,16 @@ public class LwjglVectorFont {
 		try {
 			idBuffer.rewind();
 			GL15.glGenBuffers(idBuffer);
-
-			return idBuffer.get(0);
+			
+			int id = idBuffer.get(0); 
+			
+//
+//
+//			if (log.isLoggable(Level.INFO)) {
+//				log.info("Generate Buffer  - id=" + id); //$NON-NLS-1$
+//			}
+			
+			return id;
 		} finally {
 			Draw3DCache.returnIntBuffer(idBuffer);
 		}

@@ -93,7 +93,7 @@ public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPart
 
 	// protected EditPartFactory lastUsedFactory;
 
-	private class WeightedFactory implements Comparable<WeightedFactory> {
+	private static class WeightedFactory implements Comparable<WeightedFactory> {
 		int weight;
 
 		EditPartFactory factory;

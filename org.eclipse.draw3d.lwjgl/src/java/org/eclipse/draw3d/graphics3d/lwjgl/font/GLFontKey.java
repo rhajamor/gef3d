@@ -27,9 +27,9 @@ public class GLFontKey {
 
 		m_hashCode = 17;
 		m_hashCode = 37 * getFontHashCode(i_font);
-		m_hashCode = 37 * m_hashCode + new Character(i_startChar).hashCode();
-		m_hashCode = 37 * m_hashCode + new Character(i_endChar).hashCode();
-		m_hashCode = 37 * m_hashCode + new Boolean(i_antiAliased).hashCode();
+		m_hashCode = 37 * m_hashCode + i_startChar;
+		m_hashCode = 37 * m_hashCode + i_endChar;
+		m_hashCode = 37 * m_hashCode + (i_antiAliased ? 1231 : 1237);
 	}
 
 	/**

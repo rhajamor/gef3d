@@ -122,6 +122,18 @@ public class Edge implements Serializable {
 		}
 		return false;
 	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		int h = 0;
+		if(getSource()!=null) h+=getSource().hashCode();
+		if (getTarget()!=null) h+=(h*31)+getTarget().hashCode();
+		return h;
+	}
 
 
 

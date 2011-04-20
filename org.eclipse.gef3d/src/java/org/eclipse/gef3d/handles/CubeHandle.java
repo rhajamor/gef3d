@@ -149,7 +149,7 @@ public abstract class CubeHandle extends AbstractHandle3D {
 	 */
 	@Override
 	public Color getForegroundColor() {
-		return (isPrimary()) ? ColorConstants.black : ColorConstants.black;
+		return (isPrimary()) ? ColorConstants.red : ColorConstants.black;
 	}
 
 	/**

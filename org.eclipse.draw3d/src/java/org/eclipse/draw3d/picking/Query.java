@@ -246,15 +246,15 @@ public class Query {
 			return null;
 
 		if (m_debug) {
-//			log.info("executing query " + this);
+			// log.info("executing query " + this);
 
-			long start = System.currentTimeMillis();
+			// long start = System.currentTimeMillis();
 			Hit hit =
 				doExecute(m_rootFigure, getBoundingBoxDistance(m_rootFigure));
 
-//			log.info("query executed in "
-//				+ (System.currentTimeMillis() - start) + "ms and returned "
-//				+ hit);
+			// log.info("query executed in "
+			// + (System.currentTimeMillis() - start) + "ms and returned "
+			// + hit);
 
 			return hit;
 		} else

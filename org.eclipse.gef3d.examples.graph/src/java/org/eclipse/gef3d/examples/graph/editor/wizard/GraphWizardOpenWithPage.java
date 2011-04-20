@@ -38,8 +38,6 @@ class GraphWizardOpenWithPage extends WizardPage {
 
 	Button radioButtons[] = null;
 
-	IEditorDescriptor selectedEditor = null;
-
 	public GraphWizardOpenWithPage(GraphWizard graphWizard,
 			final String pageName) {
 		super(pageName);

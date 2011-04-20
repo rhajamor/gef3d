@@ -172,6 +172,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 
 		}
 	}
+	
 
 	/**
 	 * Sets the figure factory of this viewer.

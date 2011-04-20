@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.draw3d.geometry.Math3D;
+
 /**
  * Graph, container for vertices. Observer pattern is implemented using
  * {@link PropertyChangeSupport}.
@@ -161,7 +163,7 @@ public class Graph implements Serializable {
 
 			G.addVertex(v);
 
-			if (x != x0) {
+			if (! Math3D.equals(x, x0, 0.000001f)) {
 				Edge e = new Edge();
 				e.setSource(prev);
 				e.setTarget(v);

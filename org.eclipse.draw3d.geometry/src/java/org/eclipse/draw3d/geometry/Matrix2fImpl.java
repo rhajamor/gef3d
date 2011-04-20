@@ -227,8 +227,7 @@ public class Matrix2fImpl implements Matrix2f, Serializable, Cloneable {
 	 * @see java.lang.Object#clone()
 	 */
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
-
+	public Object clone() throws CloneNotSupportedException {
 		return new Matrix2fImpl(this);
 	}
 

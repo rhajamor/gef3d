@@ -248,7 +248,7 @@ public class Matrix3fImpl implements Matrix3f, Serializable, Cloneable {
 	 * @see java.lang.Object#clone()
 	 */
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
+	public Object clone() throws CloneNotSupportedException {
 
 		return new Matrix3fImpl(this);
 	}

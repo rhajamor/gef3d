@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.offscreen;
 
+import java.util.Arrays;
+
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
 import org.eclipse.draw3d.graphics3d.Graphics3DOffscreenBufferConfig;
@@ -96,7 +98,7 @@ public class LwjglOffscreenBufferConfig implements
 
 		if (i_index > i_args.length - 1)
 			throw new IllegalArgumentException("invalid number of arguments: "
-					+ i_args);
+					+ Arrays.toString(i_args));
 
 		return i_args[i_index];
 	}

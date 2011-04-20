@@ -12,6 +12,7 @@ package org.eclipse.draw3d.graphics3d;
 
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
+import org.osgi.framework.BundleContext;
 
 
 /**
@@ -28,6 +29,32 @@ public class Graphics3DPlugin extends Plugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.eclipse.gef3d.graphics3d";
+	
+	
+	/**
+	 * The constructor
+	 */
+	public Graphics3DPlugin() {
+	}
+
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+	 */
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
+		plugin = this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+	 */
+	public void stop(BundleContext context) throws Exception {
+		plugin = null;
+		super.stop(context);
+	}
 
 	/**
 	 * Returns the shared instance
@@ -38,13 +65,7 @@ public class Graphics3DPlugin extends Plugin {
 		return plugin;
 	}
 
-	/**
-	 * The constructor
-	 */
-	public Graphics3DPlugin() {
-		plugin = this;
-	}
-	
+		
 	public static void logInfo(String msg) {
 		getDefault().getLog().log(new Status(Status.INFO, PLUGIN_ID, msg));
 	}

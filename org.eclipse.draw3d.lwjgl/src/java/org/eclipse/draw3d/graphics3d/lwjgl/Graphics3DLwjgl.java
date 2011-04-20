@@ -652,6 +652,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#dispose()
 	 */
 	public void dispose() {
+		
 		try {
 			if (m_textureManager != null)
 				m_textureManager.dispose();

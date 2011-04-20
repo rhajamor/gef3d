@@ -160,9 +160,9 @@ public class CylinderShape extends PositionableShape {
 		public CylinderConfigKey(int i_segments, float i_radiusProportions) {
 
 			m_hashCode = 17;
-			m_hashCode = 37 * m_hashCode + new Integer(i_segments).hashCode();
+			m_hashCode = 37 * m_hashCode + i_segments;
 			m_hashCode =
-				37 * m_hashCode + new Float(i_radiusProportions).hashCode();
+				37 * m_hashCode + Float.floatToIntBits(i_radiusProportions);
 		}
 
 		/**
@@ -201,7 +201,7 @@ public class CylinderShape extends PositionableShape {
 	 * @version $Revision$
 	 * @since 04.06.2009
 	 */
-	private class CylinderKey {
+	private static class CylinderKey {
 
 		private int m_hashCode;
 
@@ -218,10 +218,10 @@ public class CylinderShape extends PositionableShape {
 				boolean i_outline) {
 
 			m_hashCode = 17;
-			m_hashCode = 37 * m_hashCode + new Integer(i_segments).hashCode();
+			m_hashCode = 37 * m_hashCode + i_segments;
 			m_hashCode =
-				37 * m_hashCode + new Float(i_radiusProportions).hashCode();
-			m_hashCode = 37 * m_hashCode + new Boolean(i_outline).hashCode();
+				37 * m_hashCode + Float.floatToIntBits(i_radiusProportions);
+			m_hashCode = 37 * m_hashCode + (i_outline ? 1231 : 1237);
 		}
 
 		/**
@@ -295,15 +295,15 @@ public class CylinderShape extends PositionableShape {
 
 	private boolean m_fill = true;
 
-	private Color m_fillColor =
-		Display.getCurrent().getSystemColor(SWT.COLOR_WHITE);
+	private Color m_fillColor = Display.getCurrent().getSystemColor(
+		SWT.COLOR_WHITE);
 
 	private CylinderKey m_fillKey;
 
 	private boolean m_outline = true;
 
-	private Color m_outlineColor =
-		Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
+	private Color m_outlineColor = Display.getCurrent().getSystemColor(
+		SWT.COLOR_BLACK);
 
 	private CylinderKey m_outlineKey;
 

@@ -1040,8 +1040,8 @@ public class LwjglGraphics extends StatefulGraphics {
 		float start = (float) Math.toRadians(i_offset);
 		float length = (float) Math.toRadians(i_length);
 
-		float xFactor = i_w / 2;
-		float yFactor = i_h / 2;
+		float xFactor = ((float)i_w) / 2f;
+		float yFactor = ((float)i_h) / 2f;
 
 		float avgRadius = (xFactor + yFactor) / 2;
 		float arcLength = ARC_LENGTH_FACTOR * avgRadius / length;
@@ -1141,8 +1141,8 @@ public class LwjglGraphics extends StatefulGraphics {
 		int y2 = y1 + i_r.height;
 		int w = i_arcWidth;
 		int h = i_arcHeight;
-		float w2 = w / 2;
-		float h2 = h / 2;
+		float w2 = ((float)w) / 2f;
+		float h2 = ((float)h) / 2f;
 
 		// left
 		float s = 0;

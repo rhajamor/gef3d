@@ -35,7 +35,6 @@ public class GEF3DGraphExamplePlugin extends AbstractUIPlugin {
 	 * The constructor
 	 */
 	public GEF3DGraphExamplePlugin() {
-		plugin = this;
 	}
 
 	/*
@@ -46,6 +45,7 @@ public class GEF3DGraphExamplePlugin extends AbstractUIPlugin {
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
+		plugin = this;
 	}
 
 	/*

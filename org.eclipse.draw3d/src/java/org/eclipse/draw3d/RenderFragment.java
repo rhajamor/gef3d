@@ -69,7 +69,8 @@ public interface RenderFragment {
 		 * @version $Revision$
 		 * @since 16.08.2009
 		 */
-		private class FragmentComparator implements Comparator<RenderFragment> {
+		private static class FragmentComparator implements
+				Comparator<RenderFragment> {
 
 			private Map<RenderFragment, Float> m_cache =
 				new HashMap<RenderFragment, Float>();

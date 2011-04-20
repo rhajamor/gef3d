@@ -11,13 +11,14 @@
 package org.eclipse.draw3d.graphics3d;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,7 +31,7 @@ import java.util.logging.Logger;
  */
 public class DisplayListManager {
 
-	private class DisplayList {
+	private static class DisplayList {
 		private int m_id;
 
 		private int[] m_subIds;
@@ -60,8 +61,8 @@ public class DisplayListManager {
 	}
 
 	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(DisplayListManager.class.getName());
+	private static final Logger log = Logger.getLogger(DisplayListManager.class
+		.getName());
 
 	private static final int RANGE = 10;
 
@@ -146,14 +147,15 @@ public class DisplayListManager {
 			throw new IllegalStateException(
 				"cannot create a display list while another list is being created");
 
-//		if (log.isLoggable(Level.FINE))
-//			log.fine("creating display list with key '" + i_key + "'");
+		// if (log.isLoggable(Level.FINE))
+		// log.fine("creating display list with key '" + i_key + "'");
 
-		DisplayList list = doCreateDisplayList(i_key, i_runnable);
+		// DisplayList list = 
+		doCreateDisplayList(i_key, i_runnable);
 
-//		if (log.isLoggable(Level.FINE))
-//			log.fine("display list with key '" + i_key + "' created under id "
-//				+ list.getId());
+		// if (log.isLoggable(Level.FINE))
+		// log.fine("display list with key '" + i_key + "' created under id "
+		// + list.getId());
 	}
 
 	public void createDisplayLists(Map<Object, Runnable> i_requests) {
@@ -165,15 +167,15 @@ public class DisplayListManager {
 			throw new IllegalStateException(
 				"cannot create a display list while another list is being created");
 
-//		if (log.isLoggable(Level.FINE))
-//			log.fine("creating " + i_requests.size()
-//				+ " display lists with keys '" + i_requests.keySet() + "'");
+		// if (log.isLoggable(Level.FINE))
+		// log.fine("creating " + i_requests.size()
+		// + " display lists with keys '" + i_requests.keySet() + "'");
 
 		for (Entry<Object, Runnable> entry : i_requests.entrySet())
 			doCreateDisplayList(entry.getKey(), entry.getValue());
 
-//		if (log.isLoggable(Level.FINE))
-//			log.fine(i_requests.size() + " display lists created");
+		// if (log.isLoggable(Level.FINE))
+		// log.fine(i_requests.size() + " display lists created");
 	}
 
 	/**
@@ -184,8 +186,8 @@ public class DisplayListManager {
 		if (m_disposed)
 			return;
 
-//		if (log.isLoggable(Level.FINE))
-//			log.info("disposing display list manager " + this);
+		// if (log.isLoggable(Level.FINE))
+		// log.info("disposing display list manager " + this);
 
 		clear();
 		m_baseIds = null;
@@ -213,10 +215,10 @@ public class DisplayListManager {
 		if (subListIds.size() > 1) {
 			id = getNewId();
 
-//			if (log.isLoggable(Level.FINE))
-//				log.fine("merging " + subListIds.size()
-//					+ " display lists with ids " + subListIds
-//					+ " into one list with key '" + i_key + "' and id " + id);
+			// if (log.isLoggable(Level.FINE))
+			// log.fine("merging " + subListIds.size()
+			// + " display lists with ids " + subListIds
+			// + " into one list with key '" + i_key + "' and id " + id);
 
 			m_graphics3D.glNewList(id, Graphics3DDraw.GL_COMPILE);
 			for (Integer subListId : subListIds)
@@ -242,11 +244,11 @@ public class DisplayListManager {
 		for (Object key : i_keys) {
 			DisplayList list = m_displayLists.get(key);
 			if (list == null)
-				throw new IllegalArgumentException("list with key '" + i_keys
-					+ "' does not exist");
+				throw new IllegalArgumentException("list with key '"
+					+ Arrays.toString(i_keys) + "' does not exist");
 
-//			if (log.isLoggable(Level.FINE))
-//				log.fine("deleting display list with key '" + key + "'");
+			// if (log.isLoggable(Level.FINE))
+			// log.fine("deleting display list with key '" + key + "'");
 
 			deleteDisplayList(list.getId());
 			int[] subIds = list.getSubIds();
@@ -347,10 +349,10 @@ public class DisplayListManager {
 		if (!m_creationStack.isEmpty()) {
 			Integer id = getNewId();
 
-//			if (log.isLoggable(Level.FINE))
-//				log.fine("resuming creation of display list with id "
-//					+ m_creationStack.getLast().getLast() + " under new id "
-//					+ id);
+			// if (log.isLoggable(Level.FINE))
+			// log.fine("resuming creation of display list with id "
+			// + m_creationStack.getLast().getLast() + " under new id "
+			// + id);
 
 			m_creationStack.getLast().add(id);
 			m_graphics3D.glNewList(id, Graphics3DDraw.GL_COMPILE);

@@ -140,6 +140,15 @@ public class Vector2fImpl implements Vector2f, Cloneable, Serializable {
 	public Vector2fImpl(final float[] i_arrayOfFloat, int i_iOffset) {
 		this(i_arrayOfFloat[i_iOffset++], i_arrayOfFloat[i_iOffset++]);
 	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see java.lang.Object#clone()
+	 */
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		return new Vector2fImpl(this);
+	}
 
 	/**
 	 * {@inheritDoc}

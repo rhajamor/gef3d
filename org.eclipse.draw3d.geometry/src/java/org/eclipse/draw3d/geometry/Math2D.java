@@ -254,7 +254,8 @@ public class Math2D {
 		int i = low;
 		int j = high;
 
-		int x = points[2 * indices[(low + high) / 2]];
+		// http://googleresearch.blogspot.com/2006/06/extra-extra-read-all-about-it-nearly.html
+		int x = points[2 * indices[(low+high) >>> 1]];
 
 		while (i <= j) {
 			while (points[2 * indices[i]] < x)

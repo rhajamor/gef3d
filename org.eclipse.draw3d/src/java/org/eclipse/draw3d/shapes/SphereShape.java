@@ -52,7 +52,7 @@ public class SphereShape extends PositionableShape {
 	 * @version $Revision$
 	 * @since 05.06.2009
 	 */
-	private class SphereKey {
+	private static class SphereKey {
 
 		private int m_hashCode;
 
@@ -65,10 +65,9 @@ public class SphereShape extends PositionableShape {
 		 *            is for the display list that fills the cylinder
 		 */
 		public SphereKey(int i_precision, boolean i_outline) {
-
 			m_hashCode = 17;
-			m_hashCode = 37 * m_hashCode + new Integer(i_precision).hashCode();
-			m_hashCode = 37 * m_hashCode + new Boolean(i_outline).hashCode();
+			m_hashCode = 37 * m_hashCode + i_precision;
+			m_hashCode = 37 * m_hashCode + (i_outline ? 1231 : 1237);
 		}
 
 		/**
@@ -134,19 +133,17 @@ public class SphereShape extends PositionableShape {
 
 	private boolean m_fill = true;
 
-	private Color m_fillColor =
-		Display.getCurrent().getSystemColor(SWT.COLOR_WHITE);
+	private Color m_fillColor = Display.getCurrent().getSystemColor(
+		SWT.COLOR_WHITE);
 
 	private SphereKey m_fillKey;
 
 	private boolean m_outline = true;
 
-	private Color m_outlineColor =
-		Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
+	private Color m_outlineColor = Display.getCurrent().getSystemColor(
+		SWT.COLOR_BLACK);
 
 	private SphereKey m_outlineKey;
-
-	private int m_precision;
 
 	private SphereTriangle[][] m_stripes;
 
@@ -176,6 +173,7 @@ public class SphereShape extends PositionableShape {
 		super(i_position3D);
 
 		m_superimposed = i_superimposed;
+		
 		m_stripes = STRIPE_CACHE.get(i_precision);
 
 		if (m_stripes == null) {
@@ -243,9 +241,8 @@ public class SphereShape extends PositionableShape {
 
 			STRIPE_CACHE.put(i_precision, m_stripes);
 		}
-
-		m_outlineKey = new SphereKey(m_precision, true);
-		m_fillKey = new SphereKey(m_precision, false);
+		m_outlineKey = new SphereKey(i_precision, true);
+		m_fillKey = new SphereKey(i_precision, false);
 	}
 
 	/**

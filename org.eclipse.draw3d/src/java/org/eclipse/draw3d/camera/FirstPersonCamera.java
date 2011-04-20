@@ -52,7 +52,7 @@ public class FirstPersonCamera extends AbstractCamera {
 	 * @version $Revision$
 	 * @since 28.07.2009
 	 */
-	private class Projection {
+	private static class Projection {
 
 		private float m_depth;
 

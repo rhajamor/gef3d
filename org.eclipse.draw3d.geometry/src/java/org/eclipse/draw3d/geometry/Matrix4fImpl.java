@@ -263,7 +263,7 @@ public class Matrix4fImpl implements Matrix4f, Serializable, Cloneable {
 	 * @see java.lang.Object#clone()
 	 */
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
+	public Object clone() throws CloneNotSupportedException {
 
 		return new Matrix4fImpl(this);
 	}

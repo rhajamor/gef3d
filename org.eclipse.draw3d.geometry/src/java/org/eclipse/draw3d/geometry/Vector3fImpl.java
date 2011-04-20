@@ -142,6 +142,15 @@ public class Vector3fImpl implements Vector3f, Cloneable, Serializable {
 		this(i_arrayOfFloat[i_iOffset++], i_arrayOfFloat[i_iOffset++],
 				i_arrayOfFloat[i_iOffset]);
 	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see java.lang.Object#clone()
+	 */
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		return new Vector3fImpl(this);
+	}
 
 	/**
 	 * {@inheritDoc}

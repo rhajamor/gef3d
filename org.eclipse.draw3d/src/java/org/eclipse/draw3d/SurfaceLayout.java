@@ -41,7 +41,7 @@ public class SurfaceLayout extends XYLayout implements DelegatingLayoutManager {
 	 * @since 28.04.2008
 	 * @see $HeadURL$
 	 */
-	public class SurfaceConstraint {
+	public static class SurfaceConstraint {
 		/**
 		 * Indicates whether the Z position of a figure should be corrected.
 		 */
