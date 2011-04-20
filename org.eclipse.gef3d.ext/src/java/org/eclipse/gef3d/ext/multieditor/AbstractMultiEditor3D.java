@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -80,13 +81,13 @@ public abstract class AbstractMultiEditor3D extends
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log =
-		Logger.getLogger(AbstractMultiEditor3D.class.getName());
+	private static final Logger log = Logger
+		.getLogger(AbstractMultiEditor3D.class.getName());
 
 	protected MultiEditorModelContainer m_container;
 
 	protected MultiEditorPartFactory m_multiFactory;
-	
+
 	protected NestedEditorInfoList nestedEditors;
 
 	protected Set<IMultiEditorListener> multiEditorListeners;
@@ -129,12 +130,12 @@ public abstract class AbstractMultiEditor3D extends
 	public boolean addEditor(IEditorInput i_editorInput) {
 		if (i_editorInput == null)
 			return false;
-		
+
 		NestedEditorInfo info = new NestedEditorInfo(i_editorInput, this);
 		if (!nestedEditors.add(info)) { // input already added
 			return false;
 		}
-		
+
 		try {
 
 			// find appropriate editor
@@ -167,7 +168,7 @@ public abstract class AbstractMultiEditor3D extends
 					nestedEditor.initializeAsNested(getGraphicalViewer(),
 						m_multiFactory, m_container);
 				info.setContents(editorContent);
-				
+
 				addNestedPalette(nestedEditor.createPaletteDrawer());
 				fireMultiEditorChangeEvent(new MultiEditorChangeEvent(this,
 					nestedEditor, editorContent, Type.added));
@@ -180,7 +181,7 @@ public abstract class AbstractMultiEditor3D extends
 			return true;
 
 		} finally {
-			if (info.getState()!=State.active)
+			if (info.getState() != State.active)
 				nestedEditors.remove(info);
 		}
 	}
@@ -247,12 +248,18 @@ public abstract class AbstractMultiEditor3D extends
 		Map<String, Class> editorClasses =
 			findNestableEditorClasses(i_editorInput);
 		Class clazz = null;
-		for (String id : editorClasses.keySet()) {
+		String id = null;
+
+		for (Entry<String, Class> editorClass : editorClasses.entrySet()) {
+			id = editorClass.getKey();
+			clazz = editorClass.getValue();
+
 			try {
-				clazz = editorClasses.get(id);
 				INestableEditor editor = (INestableEditor) clazz.newInstance();
-				NestedEditorInfo info = nestedEditors.getByEditorInput(i_editorInput);
-				if (info!=null) info.setEditorID(id);
+				NestedEditorInfo info =
+					nestedEditors.getByEditorInput(i_editorInput);
+				if (info != null)
+					info.setEditorID(id);
 				return editor;
 			} catch (InstantiationException ex) {
 				log.warning("Cannot create nested editor " //$NON-NLS-1$
@@ -462,7 +469,7 @@ public abstract class AbstractMultiEditor3D extends
 	 */
 	@Override
 	public boolean isDirty() {
-		for (INestedEditorInfo info: nestedEditors) {
+		for (INestedEditorInfo info : nestedEditors) {
 			if (info.getNestableEditor().isDirty())
 				return true;
 		}
@@ -479,7 +486,7 @@ public abstract class AbstractMultiEditor3D extends
 			return null;
 
 		INestedEditorInfo info = nestedEditors.getByContents(part.getModel());
-		if (info!=null)
+		if (info != null)
 			return info.getNestableEditor();
 
 		INestableEditor editor = findEditorByEditPart(part.getParent());
