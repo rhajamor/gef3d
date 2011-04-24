@@ -37,8 +37,6 @@ public class GraphPartGeneric extends AbstractGraphPart {
 	 */
 	@Override
 	protected void createEditPolicies() {
-		installEditPolicy(ShowLayoutFeedbackEditPolicy3D.ROLE,
-			new ShowLayoutFeedbackEditPolicy3D());
 		installEditPolicy(EditPolicy.LAYOUT_ROLE, new Graph3DLayoutPolicy());
 
 	}

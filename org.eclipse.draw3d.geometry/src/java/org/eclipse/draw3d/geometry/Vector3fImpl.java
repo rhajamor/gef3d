@@ -9,11 +9,11 @@
  *    Jens von Pilgrim - initial API and implementation
  ******************************************************************************/
 
-
 package org.eclipse.draw3d.geometry;
 
 import java.io.Serializable;
 import java.nio.FloatBuffer;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 /**
@@ -46,19 +46,22 @@ public class Vector3fImpl implements Vector3f, Cloneable, Serializable {
 	 */
 
 	public float z;
-	
+
 	/**
 	 * @see java.io.Serializable
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
+	protected final static DecimalFormat DECIMAL_FORMAT = new DecimalFormat(
+		"0.##");
+
 	/**
-	 * Casts any {@link IVector3f} matrix into a {@link Vector3fImpl},
-	 * either by casting or copying. The returned object is of type
-	 * {@link Vector3fImpl} and thus it is mutable. Since the object may
-	 * be identical to the given, immutable one, the client of this method
-	 * must ensure not to modify the returned object. This method is
-	 * heavily used in {@link Math3D} for performance issues.
+	 * Casts any {@link IVector3f} matrix into a {@link Vector3fImpl}, either by
+	 * casting or copying. The returned object is of type {@link Vector3fImpl}
+	 * and thus it is mutable. Since the object may be identical to the given,
+	 * immutable one, the client of this method must ensure not to modify the
+	 * returned object. This method is heavily used in {@link Math3D} for
+	 * performance issues.
 	 * 
 	 * @param i_sourceVector3f The source vector.
 	 * @return Vector3fImpl which is equals to given IVector3f
@@ -70,7 +73,6 @@ public class Vector3fImpl implements Vector3f, Cloneable, Serializable {
 			return new Vector3fImpl(i_sourceVector3f);
 		}
 	}
-	
 
 	/**
 	 * The standard constructor, all fields are set to zero.
@@ -99,7 +101,7 @@ public class Vector3fImpl implements Vector3f, Cloneable, Serializable {
 	 */
 	public Vector3fImpl(final IVector3f i_sourceVector3f) {
 		this(i_sourceVector3f.getX(), i_sourceVector3f.getY(), i_sourceVector3f
-				.getZ());
+			.getZ());
 	}
 
 	/**
@@ -140,11 +142,12 @@ public class Vector3fImpl implements Vector3f, Cloneable, Serializable {
 	 */
 	public Vector3fImpl(final float[] i_arrayOfFloat, int i_iOffset) {
 		this(i_arrayOfFloat[i_iOffset++], i_arrayOfFloat[i_iOffset++],
-				i_arrayOfFloat[i_iOffset]);
+			i_arrayOfFloat[i_iOffset]);
 	}
-	
-	/** 
+
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see java.lang.Object#clone()
 	 */
 	@Override
@@ -239,8 +242,8 @@ public class Vector3fImpl implements Vector3f, Cloneable, Serializable {
 		if (v == null)
 			return false;
 		return Math.abs(x - v.getX()) <= epsilon && //
-				Math.abs(y - v.getY()) <= epsilon && //
-				Math.abs(z - v.getZ()) <= epsilon;
+			Math.abs(y - v.getY()) <= epsilon && //
+			Math.abs(z - v.getZ()) <= epsilon;
 	}
 
 	/**
@@ -328,12 +331,14 @@ public class Vector3fImpl implements Vector3f, Cloneable, Serializable {
 	 */
 	@Override
 	public String toString() {
-		return String.format(TO_STRING_FORMAT, String.valueOf(x), String
-				.valueOf(y), String.valueOf(z));
+
+		return String.format(TO_STRING_FORMAT, DECIMAL_FORMAT.format(x),
+			DECIMAL_FORMAT.format(y), DECIMAL_FORMAT.format(z));
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override

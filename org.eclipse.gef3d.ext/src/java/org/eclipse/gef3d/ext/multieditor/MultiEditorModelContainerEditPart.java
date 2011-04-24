@@ -13,7 +13,6 @@ package org.eclipse.gef3d.ext.multieditor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -21,7 +20,10 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.StackLayout3D;
 import org.eclipse.gef.EditPart;
+import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
+import org.eclipse.gef3d.editpolicies.XY3DLayoutPolicy;
+import org.eclipse.gef3d.editpolicies.XYZConstraintLayoutPolicy;
 import org.eclipse.gef3d.ext.intermodel.UndirectConnectionEditPart3D;
 
 /**
@@ -59,15 +61,16 @@ public class MultiEditorModelContainerEditPart extends
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * A {@link XYZConstraintLayoutPolicy} is installed in order to make
+	 * 3D figures, that is the planes with the diagrams, moveable. Of course,
+	 * the new locations are not stored.
+	 * 
 	 * 
 	 * @see org.eclipse.gef.editparts.AbstractEditPart#createEditPolicies()
 	 */
 	@Override
 	protected void createEditPolicies() {
-
-		// TODO implement method
-		// MultiEditorModelContainerEditPart.createEditPolicies
+		installEditPolicy(EditPolicy.LAYOUT_ROLE, new XYZConstraintLayoutPolicy());
 	}
 
 	/**

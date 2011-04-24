@@ -33,6 +33,7 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.Handle;
 import org.eclipse.gef.RequestConstants;
+import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.ConstrainedLayoutEditPolicy;
 import org.eclipse.gef.editpolicies.NonResizableEditPolicy;
 import org.eclipse.gef.editpolicies.ResizableEditPolicy;
@@ -258,7 +259,7 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 				}
 
 			}
-			
+
 			// default and fall back solution: standard 2D mechanism:
 			getFeedbackHelper().setInitialFeedbackPosition(feedback3D);
 			getFeedbackHelper().updateFeedbackPosition(feedback3D,
@@ -268,12 +269,39 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 	}
 
 	/**
-	 * Returns the surface of the host's figure. This surface is used in
-	 * 3D interaction to show feedback figure, as in these cases we do not
-	 * want to let the feedback figure "jump" on arbitrary surfaces.
+	 * Returns the surface of the host's figure. This surface is used in 3D
+	 * interaction to show feedback figure, as in these cases we do not want to
+	 * let the feedback figure "jump" on arbitrary surfaces.
+	 * 
 	 * @return
 	 */
 	protected ISurface getFigureSurface() {
 		return Figure3DHelper.getAncestor3D(getHostFigure()).getSurface();
 	}
+
+	/**
+	 * If given request is an instance of {@link ChangeBounds3DRequest}, the
+	 * temporarily created request forwarded to the host's parent is a
+	 * {@link ChangeBounds3DRequest} as well, including all the 3D information.
+	 * 
+	 * @see org.eclipse.gef.editpolicies.NonResizableEditPolicy#getMoveCommand(org.eclipse.gef.requests.ChangeBoundsRequest)
+	 */
+	@Override
+	protected Command getMoveCommand(ChangeBoundsRequest request) {
+		if (request instanceof ChangeBounds3DRequest) {
+			ChangeBounds3DRequest request3D = (ChangeBounds3DRequest) request;
+
+			ChangeBounds3DRequest req =
+				new ChangeBounds3DRequest(REQ_MOVE_CHILDREN);
+			req.setEditParts(getHost());
+			
+			req.set(request3D);
+
+			// from super:
+			return getHost().getParent().getCommand(req);
+		} else {
+			return super.getMoveCommand(request);
+		}
+	}
+
 }

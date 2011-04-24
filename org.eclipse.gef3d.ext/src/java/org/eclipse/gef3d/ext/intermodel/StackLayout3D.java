@@ -26,10 +26,10 @@ public class StackLayout3D extends org.eclipse.draw3d.StackLayout3D {
 	 * is not an instance of {@link InterModelDiagramFigure}. This way, 
 	 * inter models do not cause "gaps" in the stack.
 	 * 
-	 * @see org.eclipse.draw3d.StackLayout3D#layoutChild(java.lang.Object)
+	 * @see org.eclipse.draw3d.StackLayout3D#isChildStacked(java.lang.Object)
 	 */
 	@Override
-	protected boolean layoutChild(Object i_child) {
+	protected boolean isChildStacked(Object i_child) {
 		return (i_child instanceof IFigure3D)
 			&& !(i_child instanceof InterModelDiagramFigure);
 	}

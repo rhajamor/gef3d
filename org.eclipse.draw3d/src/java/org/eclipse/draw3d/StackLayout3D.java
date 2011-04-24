@@ -10,30 +10,31 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
-import java.util.List;
-
-import org.eclipse.draw2d.AbstractLayout;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.util.Draw3DCache;
+import org.eclipse.draw3d.geometry.Vector3fImpl;
 
 /**
- * A layout that stacks 3D figures along the Z axis in a configurable distance.
- * The X and Y position is set to 0. 2D children are ignored. The size and
- * rotation of the children are not changed. Only children with surfaces are
- * stacked, other children are ignored (see {@link #layoutChild(Object)}.
+ * A layout similar to XYZLayout, except that 3D figures with surfaces are
+ * positioned along the Z axis in a configurable distance, if no explicit
+ * constraint is set. If no explicit constraint value is given, the X and Y
+ * position is set to 0, the size and rotation of the children are not changed.
+ * Only children with surfaces are stacked, other children are layouted similar
+ * to {@link XYZLayout}.
  * 
  * @author Kristian Duske, Jens von Pilgrim
  * @version $Revision$
  * @since 06.09.2009
  */
-public class StackLayout3D extends AbstractLayout {
+public class StackLayout3D extends XYZLayout {
 
 	/**
 	 * The distance between two layers
 	 */
 	protected float m_distance;
+
+	protected Vector3f m_lastStackLocation;
 
 	/**
 	 * Creates a stack layout with a layer distance of 1000
@@ -49,6 +50,7 @@ public class StackLayout3D extends AbstractLayout {
 	 */
 	public StackLayout3D(float i_distance) {
 		m_distance = i_distance;
+		m_lastStackLocation = new Vector3fImpl(0, 0, 0);
 	}
 
 	/**
@@ -71,47 +73,41 @@ public class StackLayout3D extends AbstractLayout {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Layouts the children of the given figure similar to {@link XYZLayout},
+	 * except if no constraint is provided and {@link #isChildStacked(Object)}
+	 * returns true, a constraint is created in order to stack the children
+	 * along the z axis.
 	 * 
-	 * @see org.eclipse.draw2d.AbstractLayout#calculatePreferredSize(org.eclipse.draw2d.IFigure,
-	 *      int, int)
+	 * @see org.eclipse.draw3d.XYZLayout#layout(org.eclipse.draw2d.IFigure)
 	 */
 	@Override
-	protected Dimension calculatePreferredSize(IFigure i_container,
-		int i_wHint, int i_hHint) {
+	public void layout(IFigure parent) {
+		Point offset = getOrigin(parent);
+		ISurface surface = null;
+		if (parent instanceof IFigure2DHost3D) {
+			surface = ((IFigure2DHost3D) parent).getSurface();
+		}
 
-		return i_container.getPreferredSize(i_wHint, i_hHint);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw2d.LayoutManager#layout(org.eclipse.draw2d.IFigure)
-	 */
-	public void layout(IFigure i_container) {
-
-		Vector3f location = Draw3DCache.getVector3f();
-		try {
-			location.set(0, 0, 0);
-			List children = i_container.getChildren();
-			for (Object child : children) {
-				if (!(child instanceof IFigure3D))
+		for (Object child : parent.getChildren()) {
+			IFigure f = (IFigure) child;
+			Object constraint = getConstraint(f);
+			if (constraint == null) {
+				if (isChildStacked(f)) {
+					constraint = new Vector3fImpl(m_lastStackLocation);
+					setConstraint(f, constraint);
+					m_lastStackLocation.translate(0, 0, m_distance);
+				} else {
 					continue;
-
-				if (layoutChild(child)) {
-					IFigure3D child3D = (IFigure3D) child;
-					child3D.getPosition3D().setLocation3D(location);
-
-					location.translate(0, 0, m_distance);
 				}
 			}
-		} finally {
-			Draw3DCache.returnVector3f(location);
+			layoutChild(f, constraint, offset, surface);
+
 		}
+
 	}
 
 	/**
-	 * Returns true if the given child is to be layouted, that is if it is a
+	 * Returns true if the given child is to be stacked, that is if it is a
 	 * layer added to the stacks. The default implementation returns true if and
 	 * only if the child is a {@link IFigure3D} and
 	 * {@link IFigure3D#getSurface()} is not null. Subclasses may override this
@@ -120,7 +116,7 @@ public class StackLayout3D extends AbstractLayout {
 	 * @param i_child
 	 * @return
 	 */
-	protected boolean layoutChild(Object i_child) {
+	protected boolean isChildStacked(Object i_child) {
 		if (i_child instanceof IFigure3D) {
 			return ((IFigure3D) i_child).getSurface() != null;
 		}

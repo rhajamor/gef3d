@@ -33,8 +33,8 @@ public class Math3DVector3f extends Math3DVector2f {
 
 		if (io_result == null)
 			io_result =
-				new Vector3fImpl(Math.abs(i_source.getX()),
-					Math.abs(i_source.getY()), Math.abs(i_source.getZ()));
+				new Vector3fImpl(Math.abs(i_source.getX()), Math.abs(i_source
+					.getY()), Math.abs(i_source.getZ()));
 		else
 			io_result.set(Math.abs(i_source.getX()), Math.abs(i_source.getY()),
 				Math.abs(i_source.getZ()));
@@ -97,11 +97,11 @@ public class Math3DVector3f extends Math3DVector2f {
 
 		// a x b = (a2b3 − a3b2, a3b1 − a1b3, a1b2 − a2b1)
 
-		float x = i_left.getY() * i_right.getZ() // 
+		float x = i_left.getY() * i_right.getZ() //
 			- i_left.getZ() * i_right.getY();
-		float y = i_left.getZ() * i_right.getX() // 
+		float y = i_left.getZ() * i_right.getX() //
 			- i_left.getX() * i_right.getZ();
-		float z = i_left.getX() * i_right.getY() // 
+		float z = i_left.getX() * i_right.getY() //
 			- i_left.getY() * i_right.getX();
 
 		if (o_result == null) {
@@ -338,7 +338,7 @@ public class Math3DVector3f extends Math3DVector2f {
 			result = new Vector3fImpl();
 
 		result.set( //
-			Math.max(i_v0.getX(), i_v1.getX()), // 
+			Math.max(i_v0.getX(), i_v1.getX()), //
 			Math.max(i_v0.getY(), i_v1.getY()), //
 			Math.max(i_v0.getZ(), i_v1.getZ()));
 
@@ -362,7 +362,7 @@ public class Math3DVector3f extends Math3DVector2f {
 			result = new Vector3fImpl();
 
 		result.set( //
-			Math.min(i_v0.getX(), i_v1.getX()), // 
+			Math.min(i_v0.getX(), i_v1.getX()), //
 			Math.min(i_v0.getY(), i_v1.getY()), //
 			Math.min(i_v0.getZ(), i_v1.getZ()));
 
@@ -487,10 +487,53 @@ public class Math3DVector3f extends Math3DVector2f {
 			return new Vector3fImpl(x + i_source.getX(), y + i_source.getY(), z
 				+ i_source.getZ());
 		} else {
-			o_result.set(x + i_source.getX(), y + i_source.getY(), z
-				+ i_source.getZ());
+			o_result.set(x + i_source.getX(), y + i_source.getY(),
+				z + i_source.getZ());
 			return o_result;
 		}
+	}
+
+	/**
+	 * Calculates the {@link Math#IEEEremainder(double, double)} for all
+	 * components of the vector, using the same divisor. This is especially
+	 * useful for "normalizing" a rotation by calling this method with divisor =
+	 * 2 * {@link Math#PI}.
+	 * 
+	 * @param io_rotationVector
+	 * @param divisor
+	 * @param o_result may be null
+	 */
+	public static Vector3f IEEERemainder(IVector3f i_source, float divisor,
+		Vector3f o_result) {
+		if (o_result == null)
+			o_result = new Vector3fImpl();
+
+		o_result.set((float) Math.IEEEremainder(i_source.getX(), divisor),
+			(float) Math.IEEEremainder(i_source.getY(), divisor),
+			(float) Math.IEEEremainder(i_source.getZ(), divisor));
+
+		return o_result;
+	}
+
+	/**
+	 * Returns a string representation of the given vector, interpreted as
+	 * degrees. This is often easier to read than the direct radian
+	 * representation.
+	 * 
+	 * @param i_rotation
+	 * @return
+	 */
+	public static String toStringDegree(IVector3f i_rotation) {
+		if (i_rotation == null)
+			return "null";
+		StringBuilder result = new StringBuilder();
+		result.append((int) (i_rotation.getX() * 180 / Math.PI));
+		result.append("°/");
+		result.append((int) (i_rotation.getY() * 180 / Math.PI));
+		result.append("°/");
+		result.append((int) (i_rotation.getZ() * 180 / Math.PI));
+		result.append("°");
+		return result.toString();
 	}
 
 }

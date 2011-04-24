@@ -12,6 +12,11 @@ package org.eclipse.gef3d.requests;
 
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Math3DBase;
+import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.geometry.Vector3f;
+import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.requests.ChangeBoundsRequest;
 import org.eclipse.gef3d.tools.DragEditPartsTracker3D;
@@ -34,7 +39,7 @@ import org.eclipse.gef3d.tools.DragEditPartsTracker3D;
 public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 
 	public static enum Modifier3D {
-		NONE, DEPTH, ROTATION
+		NONE, DEPTH, ROTATION;
 	}
 
 	/**
@@ -78,7 +83,8 @@ public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 
 	/**
 	 * Returns the size delta as set in {@link #setDepthDelta3D(IVector3f)}.
-	 * This is usually the delta 
+	 * This is usually the delta
+	 * 
 	 * @return the depthDelta3D
 	 */
 	public IVector3f getDepthDelta3D() {
@@ -147,7 +153,7 @@ public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 	public void setModifier3D(Modifier3D i_modifier3d) {
 		modifier3D = i_modifier3d;
 	}
-	
+
 	/**
 	 * @param i_startSurface the startSurface to set
 	 */
@@ -162,5 +168,67 @@ public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 		return startSurface;
 	}
 
-	
+	/**
+	 * @param io_pos
+	 */
+	public void getTransformedPosition(Position3D io_pos) {
+		Vector3f v = Draw3DCache.getVector3f();
+		try {
+			switch (modifier3D) {
+			case ROTATION:
+				Math3D.add(io_pos.getRotation3D(), getRotationDelta3D(), v);
+				Math3D.IEEERemainder(v, Math3DBase._2PI, v);
+				io_pos.setRotation3D(v);
+				return;
+			case DEPTH:
+				Math3D.add(io_pos.getLocation3D(), getMoveDepthDelta3D(), v);
+				io_pos.setLocation3D(v);
+				return;
+			default:
+				io_pos.setLocation3D(getLocation3D());
+				return;
+			}
+		} finally {
+			Draw3DCache.returnVector3f(v);
+		}
+
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		result.append(modifier3D).append(": l=").append(getLocation3D())
+			.append(", md=").append(getMoveDepthDelta3D()).append(", r=")
+			.append(Math3D.toStringDegree(rotationDelta3D));
+		return result.toString();
+
+	}
+
+	/**
+	 * Sets 2D and 3D values according to given 3D request. 
+	 * 
+	 * @param i_request3d
+	 */
+	public void set(ChangeBounds3DRequest i_request3d) {
+
+		// 2D information
+		setMoveDelta(i_request3d.getMoveDelta());
+		setSizeDelta(i_request3d.getSizeDelta());
+		setLocation(i_request3d.getLocation());
+		setExtendedData(i_request3d.getExtendedData());
+
+		// 3D information
+		setLocation3D(i_request3d.getLocation3D());
+		setRotationDelta3D(i_request3d.getRotationDelta3D());
+		setDepthDelta3D(i_request3d.getDepthDelta3D());
+		setMoveDepthDelta3D(i_request3d.getMoveDepthDelta3D());
+		setModifier3D(i_request3d.getModifier3D());
+
+		
+	}
 }

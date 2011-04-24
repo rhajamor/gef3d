@@ -23,6 +23,17 @@ package org.eclipse.draw3d.geometry;
  * @since 19.10.2008
  */
 public class Math3DBase {
+	
+	/**
+	 * Float version of {@link Math#PI}.
+	 */
+	public final static float PI = (float) Math.PI;
+	
+	/**
+	 * 2 * PI (180°), used for radian operations.
+	 */
+	public final static float _2PI = (float) (Math.PI*2);
+	
 
 	/**
 	 * In

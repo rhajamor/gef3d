@@ -25,7 +25,7 @@ public interface IVector3f extends Serializable, Cloneable {
 	/**
 	 * Number format of a single entry value of vectors or matrices.
 	 */
-	final static String NF = "%12s";
+	final static String NF = "%s";
 
 	/**
 	 * Constant null vector (0,0,0), all vectors are created with (0,0,0).
