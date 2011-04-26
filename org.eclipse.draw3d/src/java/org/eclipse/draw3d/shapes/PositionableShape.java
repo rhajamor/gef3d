@@ -13,8 +13,11 @@ package org.eclipse.draw3d.shapes;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.eclipse.draw3d.Figure3D;
+import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.RenderFragment;
+import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector3f;
@@ -37,18 +40,30 @@ import org.eclipse.draw3d.util.Draw3DCache;
 public abstract class PositionableShape implements Shape {
 
 	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(PositionableShape.class.getName());
+	private static final Logger log = Logger.getLogger(PositionableShape.class
+		.getName());
 
+	/**
+	 * Position of the shape, usually a shared instance contained by the
+	 * {@link IFigure3D} (i.e. a {@link ShapeFigure3D}).
+	 */
 	private IPosition3D m_position3D;
 
 	/**
 	 * Creates a new positionable shape with the given position.
+	 * <p>
+	 * The position of the shape may be a shared instance contained in the
+	 * {@link Figure3D}, usually a {@link ShapeFigure3D}. Thus, changing the
+	 * figure's shape also changes the position of the shape without further
+	 * method calls (as they both use the same position instance).
+	 * </p>
 	 * 
-	 * @param i_position3D the position of this shape
+	 * @param i_position3D the position of this shape, must not be null
 	 * @throws NullPointerException if the given position is <code>null</code>
 	 */
 	public PositionableShape(IPosition3D i_position3D) {
+		if (i_position3D == null) // parameter precondition
+			throw new NullPointerException("i_position3D must not be null");
 
 		m_position3D = i_position3D;
 	}
@@ -84,7 +99,8 @@ public abstract class PositionableShape implements Shape {
 		Map<Object, Object> i_context) {
 
 		if (m_position3D == null
-			|| m_position3D.getTransformationMatrix().equals(IMatrix4f.IDENTITY))
+			|| m_position3D.getTransformationMatrix()
+				.equals(IMatrix4f.IDENTITY))
 			return doGetDistance(i_rayOrigin, i_rayDirection, i_context);
 
 		Vector3f newOrigin = Draw3DCache.getVector3f();
@@ -182,7 +198,8 @@ public abstract class PositionableShape implements Shape {
 			Graphics3D g3d = i_renderContext.getGraphics3D();
 			boolean useModelMatrix =
 				m_position3D != null
-					&& !IMatrix4f.IDENTITY.equals(m_position3D.getTransformationMatrix());
+					&& !IMatrix4f.IDENTITY.equals(m_position3D
+						.getTransformationMatrix());
 
 			g3d.glMatrixMode(Graphics3DDraw.GL_MODELVIEW);
 

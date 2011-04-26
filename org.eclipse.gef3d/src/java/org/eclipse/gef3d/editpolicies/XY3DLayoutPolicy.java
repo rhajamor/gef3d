@@ -12,8 +12,14 @@ package org.eclipse.gef3d.editpolicies;
 
 import java.util.logging.Logger;
 
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw3d.geometry.IBoundingBox;
+import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
+import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editpolicies.ResizableEditPolicy;
 import org.eclipse.gef.editpolicies.XYLayoutEditPolicy;
 
@@ -56,6 +62,33 @@ public abstract class XY3DLayoutPolicy extends XYLayoutEditPolicy {
 			ret = new ResizableEditPolicy3D();
 
 		return ret;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Overridden as the 3D version may not only handle constraints of type
+	 * {@link Rectangle}, but {@link Position3D}, {@link IBoundingBox} and
+	 * {@link IVector3f} as well, and this might cause class cast exceptions in
+	 * the 2D methods.
+	 * </p>
+	 * 
+	 * @param child the child
+	 * @return the current constraint if it is defined and of type
+	 *         {@link Rectangle}, null otherwise.
+	 * @see org.eclipse.gef.editpolicies.XYLayoutEditPolicy#getCurrentConstraintFor(org.eclipse.gef.GraphicalEditPart)
+	 */
+	@Override
+	protected Rectangle getCurrentConstraintFor(GraphicalEditPart child) {
+		IFigure fig = child.getFigure();
+		Object constraint =
+			fig.getParent().getLayoutManager().getConstraint(fig);
+		if (constraint instanceof Rectangle) {
+			return (Rectangle) fig.getParent().getLayoutManager()
+				.getConstraint(fig);
+		}
+
+		return null;
 	}
 
 }

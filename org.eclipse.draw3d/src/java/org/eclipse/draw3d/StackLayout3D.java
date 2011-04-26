@@ -12,6 +12,10 @@ package org.eclipse.draw3d;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Position3D;
+import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 
@@ -94,6 +98,17 @@ public class StackLayout3D extends XYZLayout {
 			if (constraint == null) {
 				if (isChildStacked(f)) {
 					constraint = new Vector3fImpl(m_lastStackLocation);
+
+					// this is only for testing purposes (didn't want
+					// to remove it yet):
+					// Position3D p = ((IFigure3D) f).getPosition3D();
+					// Position3D a = Position3DUtil.createAbsolutePosition();
+					// a.setPosition(p);
+					// a.setLocation3D((IVector3f) constraint);
+					// a.setRotation3D(new Vector3fImpl(0, Math3D.PI / 4f,
+					// Math3D.PI / 4f));
+					// constraint = a;
+
 					setConstraint(f, constraint);
 					m_lastStackLocation.translate(0, 0, m_distance);
 				} else {

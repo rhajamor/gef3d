@@ -47,8 +47,8 @@ public class RelativeLocator3D extends RelativeLocator {
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log =
-		Logger.getLogger(RelativeLocator3D.class.getName());
+	private static final Logger log = Logger.getLogger(RelativeLocator3D.class
+		.getName());
 
 	/**
 	 * Contains the relative offset factors.
@@ -177,14 +177,23 @@ public class RelativeLocator3D extends RelativeLocator {
 				Vector3f size = Draw3DCache.getVector3f();
 				try {
 					IFigure3D target3D = (IFigure3D) i_target;
+
 					Position3D refPosition = m_helper.getReferencePosition3D();
+					// refPosition is relative to ref's parent
 
+					// calculate location offset to appropriate vertex/edge:
 					Math3D.scale(m_factors, refPosition.getSize3D(), location);
-					Math3D.add(location, refPosition.getLocation3D(), location);
-
+					// slightly correct position with targets half size
+					// we want to locate the center of the target on the
+					// intended vertex/edge:
 					Math3D.scale(1 / 2f, target3D.getPreferredSize3D(), size);
 					Math3D.sub(location, size, location);
 
+					// "move" target to calculated location and
+					// handle rotation
+					Math3D.rotate(refPosition.getRotation3D(), location, location);
+					Math3D.add(location, refPosition.getLocation3D(), location);
+					
 					refPosition.setLocation3D(location);
 					refPosition.setSize3D(target3D.getPreferredSize3D());
 

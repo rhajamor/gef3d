@@ -21,12 +21,14 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.MouseEvent3D;
 import org.eclipse.draw3d.PlaneSurface;
-import org.eclipse.draw3d.camera.ICamera;
+import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.ShapeFigure3D;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
+import org.eclipse.draw3d.shapes.CuboidFigureShape;
+import org.eclipse.draw3d.shapes.Shape;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.GraphicalEditPart;
@@ -35,8 +37,11 @@ import org.eclipse.gef.requests.ChangeBoundsRequest;
 import org.eclipse.gef.tools.DragEditPartsTracker;
 import org.eclipse.gef3d.requests.ChangeBounds3DRequest;
 import org.eclipse.gef3d.requests.ChangeBounds3DRequest.Modifier3D;
+import org.eclipse.gef3d.ui.parts.GraphicalViewer3DImpl;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * DragEditPartsTracker3D There should really be more documentation here. The
@@ -83,7 +88,6 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 			MODIFIER_3DDRAG = SWT.ALT;
 	}
 
-	
 	/**
 	 * The mouse sensitivity used when computing the rotation based on mouse
 	 * movement
@@ -121,10 +125,27 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 	protected PlaneSurface depthSurface;
 
 	/**
+	 * Debug figure
+	 */
+	protected ShapeFigure3D debugDepthSurfaceFigure = new ShapeFigure3D() {
+		@Override
+		protected Shape createShape() {
+			return new CuboidFigureShape(this, false);
+		}
+	};
+
+	/**
 	 * @param i_sourceEditPart
 	 */
 	public DragEditPartsTracker3D(EditPart i_sourceEditPart) {
 		super(i_sourceEditPart);
+
+		// configure the debug figure
+		Color c = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
+		debugDepthSurfaceFigure.setForegroundColor(c);
+		c = Display.getCurrent().getSystemColor(SWT.COLOR_MAGENTA);
+		debugDepthSurfaceFigure.setBackgroundColor(c);
+		debugDepthSurfaceFigure.setAlpha(0x77);
 	}
 
 	/**
@@ -169,14 +190,44 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 			startWorldLocation = currentMouseEvent3D.getWorldLocation();
 			startScreenLocation = currentMouseEvent3D.getScreenLocation();
 
+			
+			
+			
+			
 			Vector3f depthRotation = startSurface.getSurfaceRotation(null);
-			depthRotation.setX((float) (depthRotation.getX()+Math.PI/2));
-			depthRotation.setZ((float) (depthRotation.getZ()+Math.PI/2));
+			
+			Vector3f b = new Vector3fImpl(0,0,-1);
+			IVector3f no = startSurface.getNormal();
+			
+			Math3D.eulerAngles(no, b, depthRotation);
+			depthRotation.setX((float) (depthRotation.getX() - Math.PI / 2f));
+//			depthRotation.setY((float) (depthRotation.getY() + Math.PI / 2f));
+////			depthRotation.setZ((float) (depthRotation.getZ() + Math.PI / 2f));
 
+			if (Math3D.equals(depthRotation, IVector3f.NULLVEC3f, 0.001f)) {
+				depthRotation.setX(Math3D.PI/2f);
+			}
+			
 			depthSurface = new PlaneSurface();
 			depthSurface.getPosition3D().setLocation3D(startWorldLocation);
 			depthSurface.getPosition3D().setRotation3D(depthRotation);
-			
+			depthSurface.getPosition3D().setSize3D(
+				new Vector3fImpl(20, 40, 5));
+
+			if (getCurrentViewer() instanceof GraphicalViewer3DImpl) {
+				GraphicalViewer3DImpl v =
+					(GraphicalViewer3DImpl) getCurrentViewer();
+				if (v.getLightweightSystem3D().isDebug()) {
+					debugDepthSurfaceFigure.getPosition3D().setPosition(
+						depthSurface.getPosition3D());
+					debugDepthSurfaceFigure.setVisible(true);
+
+					v.getLightweightSystem3D().addDebugFigure(
+						debugDepthSurfaceFigure);
+				}
+
+			}
+
 			if (log.isLoggable(Level.INFO)) {
 				log.info("depthSurface=" + depthSurface + ", startSurface=" + startSurface); //$NON-NLS-1$
 			}
@@ -189,8 +240,15 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 		}
 		super.setStartLocation(i_p);
 	}
-	
-	
+
+	public void deactivate() {
+		if (getCurrentViewer() instanceof GraphicalViewer3DImpl) {
+			GraphicalViewer3DImpl v =
+				(GraphicalViewer3DImpl) getCurrentViewer();
+			v.getLightweightSystem3D().removeDebugFigure(
+				debugDepthSurfaceFigure);
+		}
+	};
 
 	/**
 	 * {@inheritDoc}
@@ -291,7 +349,7 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 				// clear 2D deltas
 				cbr.setMoveDelta(NO_DELTA);
 				cbr.setSizeDelta(NO_DELTA_SIZE);
-				
+
 				switch (cbr.getModifier3D()) {
 				case DEPTH:
 					cbr.setMoveDepthDelta3D(computeDepthDelta3D());
@@ -327,22 +385,24 @@ public class DragEditPartsTracker3D extends DragEditPartsTracker {
 	 * @return
 	 */
 	protected IVector3f computeDepthDelta3D() {
+		if (log.isLoggable(Level.INFO)) {
+			log.info("compute depth with depthSurface=" + depthSurface); //$NON-NLS-1$
+		}
+
 		Vector3f end =
 			currentMouseEvent3D.computeWorldLocation(
 				currentMouseEvent3D.getScreenLocation(), depthSurface);
-		
+
 		startSurface.getSurfaceLocation3D(end, end);
-		
+
 		if (log.isLoggable(Level.INFO)) {
 			log.info("new depth: " + end.getZ()); //$NON-NLS-1$
 		}
 		// end.setZ(end.getZ()-depthSurface.getPosition3D().getLocation3D().getZ());
 		end.setY(0);
 		end.setX(0);
-		
-		// startSurface.getWorldLocation(end, end);
-		
-		
+
+//		startSurface.getWorldLocation(end, end);
 
 		return end;
 	}

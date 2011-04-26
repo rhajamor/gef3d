@@ -11,9 +11,12 @@
 package org.eclipse.draw3d;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -88,17 +91,17 @@ public class LightweightSystem3D extends LightweightSystem implements
 
 		private ParaxialBoundingBox m_paraxialBounds;
 
-		private ISurface m_surface =
-			new VoidSurface(this, LightweightSystem3D.this, 0.1f);
+		private ISurface m_surface = new VoidSurface(this,
+			LightweightSystem3D.this, 0.1f);
 
 		// the position of the root is the universe.. the root is the universe
 		private Position3DImpl universe = new NullPosition3D(this);
 
+		
 		/**
 		 * Creates and initializes a 3D new root figure.
 		 */
 		RootFigure3D() {
-
 			helper = new Figure3DHelper(new Figure3DFriend(this) {
 
 				@Override
@@ -240,6 +243,23 @@ public class LightweightSystem3D extends LightweightSystem implements
 		/**
 		 * {@inheritDoc}
 		 * 
+		 * @see org.eclipse.draw2d.Figure#getChildren()
+		 */
+		@Override
+		public List getChildren() {
+
+			if (isDebug()) {
+				List children = new ArrayList(super.getChildren());
+				children.addAll(m_debugFigures);
+				return children;
+			} else {
+				return super.getChildren();
+			}
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * 
 		 * @see org.eclipse.draw3d.IFigure2DHost3D#getChildren2D()
 		 */
 		public List<IFigure> getChildren2D() {
@@ -253,7 +273,6 @@ public class LightweightSystem3D extends LightweightSystem implements
 		 * @see org.eclipse.draw3d.IFigure3D#getChildren3D()
 		 */
 		public List<IFigure3D> getChildren3D() {
-
 			return helper.getChildren3D();
 		}
 
@@ -616,8 +635,8 @@ public class LightweightSystem3D extends LightweightSystem implements
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(LightweightSystem3D.class.getName());
+	private static final Logger log = Logger
+		.getLogger(LightweightSystem3D.class.getName());
 
 	private ICamera m_camera;
 
@@ -629,6 +648,8 @@ public class LightweightSystem3D extends LightweightSystem implements
 	private final float[] m_clearColor = new float[] { 0.6f, 0.6f, 0.6f, 1 };
 
 	private boolean m_debug = false;
+
+	private Set<IFigure3D> m_debugFigures = new HashSet<IFigure3D>();
 
 	private boolean m_drawAxes;
 
@@ -694,7 +715,21 @@ public class LightweightSystem3D extends LightweightSystem implements
 		RootFigure f = new RootFigure3D();
 		f.addNotify();
 		f.setOpaque(true);
-		f.setLayoutManager(new StackLayout());
+		f.setLayoutManager(new StackLayout() {
+			/**
+			 * @see org.eclipse.draw2d.LayoutManager#layout(IFigure)
+			 */
+			public void layout(IFigure figure) {
+				org.eclipse.draw2d.geometry.Rectangle r = figure.getClientArea();
+				List children = figure.getChildren();
+				IFigure child;
+				for (int i = 0; i < children.size(); i++) {
+					child = (IFigure) children.get(i);
+					if (! m_debugFigures.contains(child))
+						child.setBounds(r);
+				}
+			}
+		});
 		return f;
 	}
 
@@ -980,4 +1015,17 @@ public class LightweightSystem3D extends LightweightSystem implements
 		getRenderContext().dispose();
 
 	}
+
+	/**
+	 * @param i_fig
+	 */
+	public void addDebugFigure(IFigure3D i_fig) {
+		m_debugFigures.add(i_fig);
+		i_fig.setParent(this.getRootFigure());
+	}
+
+	public void removeDebugFigure(IFigure3D i_fig) {
+		m_debugFigures.remove(i_fig);
+	}
+
 }

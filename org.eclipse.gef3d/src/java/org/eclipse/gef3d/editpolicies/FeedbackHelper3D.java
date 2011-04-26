@@ -33,6 +33,7 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.editpolicies.FeedbackHelper;
+import org.eclipse.gef3d.requests.ChangeBounds3DRequest;
 
 /**
  * FeedbackHelper3D There should really be more documentation here.
@@ -146,13 +147,15 @@ public class FeedbackHelper3D extends FeedbackHelper {
 	 * @param i_feedback the feedback figure
 	 * @param i_surfaceMoveDelta the move delta
 	 * @param i_surfaceSizeDelta the size delta
+	 * @see XYZConstraintLayoutPolicy#getConstraintFor(org.eclipse.gef.requests.ChangeBoundsRequest,
+	 *      org.eclipse.gef.GraphicalEditPart)
 	 */
 	public void updateFeedbackPosition(IFigure3D i_feedback,
 		Point i_surfaceMoveDelta, Dimension i_surfaceSizeDelta) {
 
-		if (log.isLoggable(Level.INFO)) {
-			log.info("move " + i_surfaceMoveDelta); //$NON-NLS-1$
-		}
+		// if (log.isLoggable(Level.INFO)) {
+		//			log.info("move " + i_surfaceMoveDelta); //$NON-NLS-1$
+		// }
 
 		if (i_feedback == null)
 			throw new NullPointerException("i_feedback must not be null");
@@ -166,14 +169,16 @@ public class FeedbackHelper3D extends FeedbackHelper {
 				Figure3DHelper.getAncestor3D(m_helper.getReference())
 					.getSurface();
 
-			Position3D dummy; // = m_helper.getReferencePosition3D();
+			Position3D newPos; // = m_helper.getReferencePosition3D();
 
-			if (surface != initialSurface
-				&& !(m_helper.getReference() instanceof IFigure3D)) {
-				dummy = m_helper.getReferencePosition3D(surface.getHost());
-			} else {
-				dummy = m_helper.getReferencePosition3D();
-			}
+			// TODO use surface or initialSurface to enable or prevent jumping
+			
+			// if (surface != initialSurface
+			// && !(m_helper.getReference() instanceof IFigure3D)) {
+			newPos = m_helper.getReferencePosition3D(surface.getHost());
+			// } else {
+			// dummy = m_helper.getReferencePosition3D();
+			// }
 			// else
 			{
 
@@ -186,82 +191,69 @@ public class FeedbackHelper3D extends FeedbackHelper {
 				// dummy.setPosition(feedbackPosition);
 				//
 				if (i_surfaceMoveDelta != null) {
-					surfaceRelativeLocation.set(dummy.getLocation3D());
+					surfaceRelativeLocation.set(newPos.getLocation3D());
 					surfaceRelativeLocation.translate(i_surfaceMoveDelta.x,
 						i_surfaceMoveDelta.y, 0);
-					dummy.setLocation3D(surfaceRelativeLocation);
+					newPos.setLocation3D(surfaceRelativeLocation);
 				}
 
 				if (i_surfaceSizeDelta != null) {
-					size.set(dummy.getSize3D());
+					size.set(newPos.getSize3D());
 					size.translate(i_surfaceSizeDelta.width,
 						i_surfaceSizeDelta.height, 0);
 
-					dummy.setSize3D(size);
+					newPos.setSize3D(size);
 				}
 
 				// log.info(feedbackPosition.toString());
 			}
 
-			i_feedback.getPosition3D().setPosition(dummy);
+			i_feedback.getPosition3D().setPosition(newPos);
 		} finally {
 			Draw3DCache.returnVector3f(surfaceRelativeLocation, size);
 		}
 	}
 
 	/**
+	 * Update feedback position in case of rotation or 3D move.
+	 * 
 	 * @param i_feedback3d
-	 * @param i_moveDelta3D
+	 * @param i_newPosition in world coordinates
 	 * @param i_sizeDelta3D
 	 * @param i_rotationDelta3D
+	 * @param i_surface the surface to which the depth move delta is relative
+	 * @see ChangeBounds3DRequest#getTransformedPosition(Position3D)
 	 */
 	public void updateFeedbackPosition(IFigure3D i_feedback,
-		IVector3f i_moveDelta3D, IVector3f i_sizeDelta3D,
-		IVector3f i_rotationDelta3D) {
+		IVector3f i_newPosition, IVector3f i_rotationDelta3D) {
 
 		if (log.isLoggable(Level.INFO)) {
-			log.info("Move " + i_moveDelta3D + ", Rot " + i_rotationDelta3D); //$NON-NLS-1$ //$NON-NLS-2$
+			log.info("Move to " + i_newPosition + ", Rot " + i_rotationDelta3D); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 
 		if (i_feedback == null)
 			throw new NullPointerException("i_feedback must not be null");
 
-		Vector3f newLocation = Draw3DCache.getVector3f();
-		Vector3f size = Draw3DCache.getVector3f();
 		try {
 
-			Position3D dummy = i_feedback.getPosition3D();
+			Position3D rotatedNewPosition = i_feedback.getPosition3D();
 
-			if (i_moveDelta3D != null && i_moveDelta3D != IVector3f.NULLVEC3f) {
-				newLocation.set(dummy.getLocation3D());
-				newLocation.translate(i_moveDelta3D.getX(),
-					i_moveDelta3D.getY(), i_moveDelta3D.getZ());
-				dummy.setLocation3D(newLocation);
+			if (i_newPosition != null) { // && i_moveDelta3D !=
+											// IVector3f.NULLVEC3f) {
+				rotatedNewPosition.setLocation3D(i_newPosition);
 			}
 			if (i_rotationDelta3D != null
 				&& i_rotationDelta3D != IVector3f.NULLVEC3f) {
-				Vector3f v3f = new Vector3fImpl(dummy.getRotation3D());
+				Vector3f v3f =
+					new Vector3fImpl(rotatedNewPosition.getRotation3D());
 				Math3D.add(v3f, i_rotationDelta3D, v3f);
-				dummy.setRotation3D(v3f);
+				rotatedNewPosition.setRotation3D(v3f);
 			}
-
-			// if (i_surfaceSizeDelta != null) {
-			// size.set(dummy.getSize3D());
-			// size.translate(i_surfaceSizeDelta.width,
-			// i_surfaceSizeDelta.height, 0);
-			//
-			// dummy.setSize3D(size);
-			// }
-
-			// log.info(feedbackPosition.toString());
-
-			i_feedback.getPosition3D().setPosition(dummy);
+			i_feedback.getPosition3D().setPosition(rotatedNewPosition);
 		} finally {
-			Draw3DCache.returnVector3f(newLocation, size);
 		}
 
 	}
-	
 
 	/**
 	 * Sets the host figure of this feedback helper.
@@ -290,12 +282,12 @@ public class FeedbackHelper3D extends FeedbackHelper {
 	 * Calls {@link #setInitialFeedbackPosition(IFigure3D, ISurface)} with the
 	 * current surface under the mouse cursor (i.e. the picker's current
 	 * surface). As the surface is always updated to the current surface under
-	 * the mouse cursor, the feedback figure automatically "jumps" to
-	 * match the position of the new surface. This is the default mechanism
-	 * for most operations, it can be avoided by calling
-	 * {@link #setInitialFeedbackPosition(IFigure3D, ISurface)} with
-	 * a non-changing surface, e.g., the surface of the figure or the
-	 * start surface. 
+	 * the mouse cursor, the feedback figure automatically "jumps" to match the
+	 * position of the new surface. This is the default mechanism for most
+	 * operations, it can be avoided by calling
+	 * {@link #setInitialFeedbackPosition(IFigure3D, ISurface)} with a
+	 * non-changing surface, e.g., the surface of the figure or the start
+	 * surface.
 	 * 
 	 * @param i_feedback the feedback figure to modify
 	 */
@@ -313,9 +305,9 @@ public class FeedbackHelper3D extends FeedbackHelper {
 	public void setInitialFeedbackPosition(IFigure3D i_feedback,
 		ISurface surface) {
 
-		if (log.isLoggable(Level.INFO)) {
-			log.info("set initial feedback position"); //$NON-NLS-1$
-		}
+		// if (log.isLoggable(Level.INFO)) {
+		//			log.info("set initial feedback position"); //$NON-NLS-1$
+		// }
 
 		ISurface initialSurface =
 			Figure3DHelper.getAncestor3D(m_helper.getReference()).getSurface();

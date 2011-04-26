@@ -103,6 +103,11 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 
 		if (delta.x != 0 || delta.y != 0)
 			host.setBounds(newBounds);
+		
+		// This forces the synced bounds update the location vector.
+		// While this has no direct effect here, a client may has cached
+		// the location vector.
+		getLocation3D();
 
 		invalidate();
 
@@ -136,6 +141,11 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 		if (delta.x != 0 || delta.y != 0)
 			host.setBounds(newBounds);
 
+		// This forces the synced bounds update the location vector.
+		// While this has no direct effect here, a client may has cached
+		// the size vector.
+		getLocation3D();
+		
 		invalidate();
 
 		firePositionChanged(PositionHint.SIZE, delta);

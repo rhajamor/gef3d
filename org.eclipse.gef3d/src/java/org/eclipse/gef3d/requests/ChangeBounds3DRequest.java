@@ -10,6 +10,10 @@
  ******************************************************************************/
 package org.eclipse.gef3d.requests;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
@@ -19,6 +23,7 @@ import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.requests.ChangeBoundsRequest;
+import org.eclipse.gef3d.editpolicies.FeedbackHelper3D;
 import org.eclipse.gef3d.tools.DragEditPartsTracker3D;
 
 /**
@@ -37,6 +42,11 @@ import org.eclipse.gef3d.tools.DragEditPartsTracker3D;
  * @since Mar 31, 2008
  */
 public class ChangeBounds3DRequest extends ChangeBoundsRequest {
+	/**
+	 * Logger for this class
+	 */
+	// @SuppressWarnings("unused") //$NON-NLS-1$
+	private static final Logger log = Logger.getLogger(ChangeBounds3DRequest.class.getName());
 
 	public static enum Modifier3D {
 		NONE, DEPTH, ROTATION;
@@ -170,6 +180,7 @@ public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 
 	/**
 	 * @param io_pos
+	 * @see FeedbackHelper3D#updateFeedbackPosition(IFigure3D, IVector3f, IVector3f)
 	 */
 	public void getTransformedPosition(Position3D io_pos) {
 		Vector3f v = Draw3DCache.getVector3f();
@@ -181,7 +192,12 @@ public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 				io_pos.setRotation3D(v);
 				return;
 			case DEPTH:
-				Math3D.add(io_pos.getLocation3D(), getMoveDepthDelta3D(), v);
+				if (getStartSurface() != null) {
+					getStartSurface()
+						.getWorldLocation(getMoveDepthDelta3D(), v);
+					Math3D.sub(v, getStartSurface().getHost().getPosition3D().getLocation3D(), v);
+				} 
+				Math3D.add(io_pos.getLocation3D(), v, v);
 				io_pos.setLocation3D(v);
 				return;
 			default:
@@ -210,7 +226,7 @@ public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 	}
 
 	/**
-	 * Sets 2D and 3D values according to given 3D request. 
+	 * Sets 2D and 3D values according to given 3D request.
 	 * 
 	 * @param i_request3d
 	 */
@@ -228,7 +244,7 @@ public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 		setDepthDelta3D(i_request3d.getDepthDelta3D());
 		setMoveDepthDelta3D(i_request3d.getMoveDepthDelta3D());
 		setModifier3D(i_request3d.getModifier3D());
+		setStartSurface(i_request3d.getStartSurface());
 
-		
 	}
 }

@@ -26,9 +26,12 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw3d.Figure3D;
 import org.eclipse.draw3d.Figure3DHelper;
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.Handle;
@@ -243,21 +246,36 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 		else {
 			IFigure3D feedback3D = (IFigure3D) feedback;
 
-			if (request instanceof ChangeBounds3DRequest
-				&& ((ChangeBounds3DRequest) request).getModifier3D() != Modifier3D.NONE) {
+			if (request instanceof ChangeBounds3DRequest) {
 				ChangeBounds3DRequest cbr = (ChangeBounds3DRequest) request;
-				ISurface figureSurface = getFigureSurface();
-				if (figureSurface != null) {
-					getFeedbackHelper().setInitialFeedbackPosition(feedback3D,
-						figureSurface);
-					// cbr.getStartSurface());
+				if (((ChangeBounds3DRequest) request).getModifier3D() != Modifier3D.NONE) {
 
-					getFeedbackHelper().updateFeedbackPosition(feedback3D,
-						cbr.getMoveDepthDelta3D(), cbr.getDepthDelta3D(),
-						cbr.getRotationDelta3D());
-					return;
-				}
+					ISurface figureSurface = getFigureSurface();
+					if (figureSurface != null) {
+						getFeedbackHelper().setInitialFeedbackPosition(
+							feedback3D, figureSurface);
 
+						Vector3f newPos = null;
+						if (cbr.getModifier3D() == Modifier3D.DEPTH
+							&& getHostFigure() instanceof IFigure3D) {
+
+							newPos =
+								cbr.getStartSurface().getWorldLocation(
+									cbr.getMoveDepthDelta3D(), newPos);
+							Math3D.sub(newPos, cbr.getStartSurface().getHost()
+								.getPosition3D().getLocation3D(), newPos);
+							Math3D.add(((Figure3D) getHostFigure())
+								.getPosition3D().getLocation3D(), newPos,
+								newPos);
+
+						}
+
+						getFeedbackHelper().updateFeedbackPosition(feedback3D,
+							newPos, cbr.getRotationDelta3D());
+						return;
+					}
+
+				} 
 			}
 
 			// default and fall back solution: standard 2D mechanism:
@@ -294,7 +312,7 @@ public class ResizableEditPolicy3D extends ResizableEditPolicy {
 			ChangeBounds3DRequest req =
 				new ChangeBounds3DRequest(REQ_MOVE_CHILDREN);
 			req.setEditParts(getHost());
-			
+
 			req.set(request3D);
 
 			// from super:
