@@ -35,6 +35,35 @@ public class Position3DImpl extends AbstractPosition3D {
 		host = i_host;
 		bounds3D = new BoundingBoxImpl();
 	}
+	
+	/**
+	 * Host class used for absolute positions.
+	 *
+	 * @author 	Jens von Pilgrim (developer@jevopi.de)
+	 * @version	$Revision$
+	 * @since 	Apr 26, 2011
+	 */	
+	protected class NoHost extends AbstractHost3D {
+
+		public NoHost() {
+			super(null);
+		}
+		
+		public Position3D getPosition3D() {
+			return Position3DImpl.this;
+		}
+		
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "no host";
+		}
+		
+	}
 
 	/**
 	 * Creates a position with a dummy host, i.e. {@link #getHost()} will no
@@ -44,22 +73,7 @@ public class Position3DImpl extends AbstractPosition3D {
 	 */
 	public Position3DImpl() {
 		bounds3D = new BoundingBoxImpl();
-		host = new AbstractHost3D(null) {
-			public Position3D getPosition3D() {
-				return Position3DImpl.this;
-			}
-
-			/**
-			 * {@inheritDoc}
-			 * 
-			 * @see java.lang.Object#toString()
-			 */
-			@Override
-			public String toString() {
-				return "no host, absolute position";
-			}
-
-		};
+		host = new NoHost();
 	}
 
 	/**

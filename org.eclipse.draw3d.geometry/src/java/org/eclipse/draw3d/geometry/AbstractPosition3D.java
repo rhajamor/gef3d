@@ -311,6 +311,7 @@ public abstract class AbstractPosition3D implements Position3D {
 		Position3D absParent = Math3DCache.getPosition3D();
 		Vector3f location = Math3DCache.getVector3f();
 		Vector3f rotation = Math3DCache.getVector3f();
+		Matrix4f inv = Math3DCache.getMatrix4f();
 		try {
 			i_position3D.getAbsolute(absNew);
 			location.set(absNew.getLocation3D());
@@ -320,7 +321,7 @@ public abstract class AbstractPosition3D implements Position3D {
 			if (parentPosition != null) {
 
 				IMatrix4f m = parentPosition.getRotationLocationMatrix();
-				IMatrix4f inv = Math3D.invert(m, null);
+				Math3D.invert(m, inv);
 
 				location.transform(inv);
 
@@ -334,6 +335,7 @@ public abstract class AbstractPosition3D implements Position3D {
 		} finally {
 			Math3DCache.returnPosition3D(absNew, absParent);
 			Math3DCache.returnVector3f(location, rotation);
+			Math3DCache.returnMatrix4f(inv);
 		}
 	}
 
@@ -370,11 +372,20 @@ public abstract class AbstractPosition3D implements Position3D {
 		result.append(", s=").append(getSize3D());
 		result.append(", r=");
 		result.append(Math3D.toStringDegree(getRotation3D()));
-		
-		if (getHost()!=null) {
-			result.append(", host type ").append(getHost().getClass().getSimpleName());	
+
+		if (getHost() != null) {
+			result.append(", host type ");
+			String s = getHost().getClass().getSimpleName();
+			if (s.length() < 1) {
+				s = getHost().getClass().getName();
+				if (s.startsWith("org.eclipse.")) {
+					s = "o.e." + s.substring("org.eclipse.".length());
+				}
+			}
+
+			result.append(s);
 		}
-		
+
 		return result.toString();
 	}
 
@@ -418,7 +429,8 @@ public abstract class AbstractPosition3D implements Position3D {
 
 				// Math3D.translate(parent.getRotationLocationMatrix(),
 				// getLocation3D(), m_rotationLocationMatrix);
-				m_absoluteRotationMatrix.set(parent.getAbsoluteRotationMatrix());
+				m_absoluteRotationMatrix
+					.set(parent.getAbsoluteRotationMatrix());
 			} else {
 				Math3D.translate(IMatrix4f.IDENTITY, getLocation3D(),
 					m_rotationLocationMatrix);

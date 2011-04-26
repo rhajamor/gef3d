@@ -249,6 +249,36 @@ public class Math3DMatrixOps extends Math3DMatrix4f {
 	}
 
 	/**
+	 * Returns the source vector rotated by the given angles. First, the
+	 * rotation about the Y axis is applied, then the rotation about the Z axis
+	 * and finally the rotation about the X axis.
+	 * <p>
+	 * This operation is rather expensive, as a temporary rotation matrix has to
+	 * be calculated.
+	 * </p>
+	 * 
+	 * @param i_angles the rotation angles, in radians
+	 * @param i_source the matrix that is to be transformed
+	 * @param o_result the result matrix, if null, a new vector will created on
+	 *            the fly
+	 * @return
+	 */
+	public static Vector3f rotate(IVector3f i_angles, IVector3f i_source,
+		Vector3f o_result) {
+		if (o_result == null) {
+			o_result = new Vector3fImpl();
+		}
+		Matrix4f rotationMatrix = Math3DCache.getMatrix4f();
+		try {
+			Math3D.rotate(i_angles, IMatrix4f.IDENTITY, rotationMatrix);
+			Math3D.transform(i_source, rotationMatrix, o_result);
+		} finally {
+			Math3DCache.returnMatrix4f(rotationMatrix);
+		}
+		return o_result;
+	}
+
+	/**
 	 * Scales the first three rows with the appropriate values of the scale
 	 * vector, i.e. row 1 with x, row 2 with y, and row 3 with z. Row 4 is not
 	 * changed.
