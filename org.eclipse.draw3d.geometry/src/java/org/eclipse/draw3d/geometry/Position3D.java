@@ -61,8 +61,8 @@ public interface Position3D extends IPosition3D {
 
 	/**
 	 * Sets rotation of figure, i.e. angles for X, Y and Z axis. Rotations are
-	 * applied in the following order: Y first, then Z and finally X. Rotation
-	 * is clockwise.
+	 * applied in the following order: Y first (heading), then Z
+	 * (elevation) and finally X (bank). Rotation is clockwise.
 	 * 
 	 * @param i_rotation must not be <code>null</code>
 	 */

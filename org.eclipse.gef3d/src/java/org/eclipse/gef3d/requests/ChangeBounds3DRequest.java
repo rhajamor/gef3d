@@ -15,9 +15,11 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.ISurface;
+import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Math3DBase;
+import org.eclipse.draw3d.geometry.Matrix4f;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.util.Draw3DCache;
@@ -187,9 +189,15 @@ public class ChangeBounds3DRequest extends ChangeBoundsRequest {
 		try {
 			switch (modifier3D) {
 			case ROTATION:
-				Math3D.add(io_pos.getRotation3D(), getRotationDelta3D(), v);
-				Math3D.IEEERemainder(v, Math3DBase._2PI, v);
-				io_pos.setRotation3D(v);
+				
+				
+				Matrix4f deltaMatrix = Math3D.rotate(getRotationDelta3D(), IMatrix4f.IDENTITY, null);
+				Math3D.mul( io_pos.getAbsoluteRotationMatrix(), deltaMatrix, deltaMatrix);
+				Vector3f relV = Math3D.rotationMatrixToEulerAngles(deltaMatrix, null);
+				
+				// Math3D.add(io_pos.getRotation3D(), getRotationDelta3D(), v);
+				Math3D.IEEERemainder(relV, Math3DBase._2PI, relV);
+				io_pos.setRotation3D(relV);
 				return;
 			case DEPTH:
 				if (getStartSurface() != null) {

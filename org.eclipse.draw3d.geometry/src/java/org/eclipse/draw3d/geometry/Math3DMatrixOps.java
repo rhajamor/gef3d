@@ -214,6 +214,50 @@ public class Math3DMatrixOps extends Math3DMatrix4f {
 	}
 
 	/**
+	 * Converts a rotation matrix into euler vectors. The matrix is expected
+	 * to be a simple rotation matrix without scale or translate information,
+	 * that is the most left and bottom row of the rotation matrix are ignored.
+	 * For that manner a {@link IMatrix3f} would be sufficient, however 
+	 * most classes return a {@link IMatrix4f}.
+	 * The euler angle rotations are
+	 * applied in the following order: Y first (heading), then Z
+	 * (elevation) and finally X (bank). Rotation is clockwise. 
+	 * 
+	 * @param i_matrix
+	 * @param o_result
+	 * @return
+	 * @see http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToEuler/index.htm
+	 * @see http://www.gregslabaugh.name/publications/euler.pdf
+	 * @see #eulerAngles(IVector3f, IVector3f, Vector3f)
+	 * 
+	 */
+	public static Vector3f rotationMatrixToEulerAngles(IMatrix4f i_matrix,
+		Vector3f o_result) {
+		if (o_result == null)
+			o_result = new Vector3fImpl();
+
+		if (i_matrix.get(0, 1) > 0.998f) {
+			o_result.setX(0);
+			o_result.setY((float) Math.atan2(i_matrix.get(2, 0),
+				i_matrix.get(2, 2)));
+			o_result.setZ(Math3D.PI_2);
+			
+		} else if (i_matrix.get(0, 1) < -0.998f) {
+			o_result.setX(0);
+			o_result.setY((float) Math.atan2(i_matrix.get(2, 0),
+				i_matrix.get(2, 2)));
+			o_result.setZ(-Math3D.PI_2);
+		} else {
+			o_result.setX((float) Math.atan2(-i_matrix.get(2, 1),
+				i_matrix.get(1, 1)));
+			o_result.setY((float) Math.atan2(-i_matrix.get(0, 2),
+				i_matrix.get(0, 0)));
+			o_result.setZ((float) Math.asin(i_matrix.get(0, 1)));
+		}
+		return o_result;
+	}
+
+	/**
 	 * Returns the given matrix by the given angles. First, the rotation about
 	 * the Y axis is applied, then the rotation about the Z axis and finally the
 	 * rotation about the X axis.

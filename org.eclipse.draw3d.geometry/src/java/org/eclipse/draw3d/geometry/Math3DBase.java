@@ -34,6 +34,11 @@ public class Math3DBase {
 	 */
 	public final static float _2PI = (float) (Math.PI*2);
 	
+	
+	/**
+	 * PI / 2 (90°) 
+	 */
+	public final static float PI_2 = (float) (Math.PI/2);
 
 	/**
 	 * In

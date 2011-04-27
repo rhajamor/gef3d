@@ -24,8 +24,11 @@ import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.LocatorHelper;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.XYZAnchor;
+import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Matrix4f;
+import org.eclipse.draw3d.geometry.Matrix4fImpl;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -244,10 +247,21 @@ public class FeedbackHelper3D extends FeedbackHelper {
 			}
 			if (i_rotationDelta3D != null
 				&& i_rotationDelta3D != IVector3f.NULLVEC3f) {
-				Vector3f v3f =
-					new Vector3fImpl(rotatedNewPosition.getRotation3D());
-				Math3D.add(v3f, i_rotationDelta3D, v3f);
-				rotatedNewPosition.setRotation3D(v3f);
+				
+				// i_rotationDelta3D is a rotation around the world x/y/z-axis
+				// we want to rotate around the figure relative x/y/z axis
+				
+				Matrix4f deltaMatrix = Math3D.rotate(i_rotationDelta3D, IMatrix4f.IDENTITY, null);
+				Math3D.mul( i_feedback.getPosition3D().getAbsoluteRotationMatrix(), deltaMatrix, deltaMatrix);
+				Vector3f relV = Math3D.rotationMatrixToEulerAngles(deltaMatrix, null);
+				
+				rotatedNewPosition.setRotation3D( relV);
+				
+				
+//				Vector3f v3f =
+//					new Vector3fImpl(rotatedNewPosition.getRotation3D());
+//				Math3D.add(v3f, i_rotationDelta3D, v3f);
+//				rotatedNewPosition.setRotation3D(v3f);
 			}
 			i_feedback.getPosition3D().setPosition(rotatedNewPosition);
 		} finally {

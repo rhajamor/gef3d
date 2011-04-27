@@ -181,8 +181,8 @@ public class Math3DVector3f extends Math3DVector2f {
 	 * Returns the Euler angles for a rotation that orients a given vector into
 	 * the direction specified by a given reference vector.<br />
 	 * The result vector contains the rotations about the x, y and z axes. The
-	 * rotations must be applied in the following order: Y first, then Z, and
-	 * finally X.
+	 * rotations must be applied in the following order: Y first (heading), then
+	 * Z (elevation), and finally (bank). Rotation is clockwise. *
 	 * 
 	 * @param i_vector the vector that is to be oriented, must be normalised
 	 * @param i_reference the reference vector, must be normalised
