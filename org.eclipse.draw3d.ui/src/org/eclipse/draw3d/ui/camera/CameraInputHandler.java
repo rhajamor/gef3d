@@ -10,14 +10,24 @@
  ******************************************************************************/
 package org.eclipse.draw3d.ui.camera;
 
+import java.util.logging.Level;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 import java.util.logging.Logger;
 
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.IScene;
+import org.eclipse.draw3d.camera.CameraPosition;
 import org.eclipse.draw3d.camera.ICamera;
+import org.eclipse.draw3d.camera.tracking.LinearMove;
+import org.eclipse.draw3d.camera.tracking.TrackingShot;
+import org.eclipse.draw3d.camera.tracking.TrackingUtil;
 import org.eclipse.draw3d.geometry.IVector3f;
+import org.eclipse.draw3d.geometry.Math3D;
+import org.eclipse.draw3d.geometry.Vector3fImpl;
 import org.eclipse.draw3d.picking.Hit;
 import org.eclipse.draw3d.picking.Picker;
 import org.eclipse.jface.bindings.keys.KeySequence;
@@ -53,16 +63,15 @@ public class CameraInputHandler {
 	private final static float FACTOR_ORBIT = 0.0009f;
 
 	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(CameraInputHandler.class.getName());
+	private static final Logger log = Logger.getLogger(CameraInputHandler.class
+		.getName());
 
 	@SuppressWarnings("unused")
-	private static final Logger logger =
-		Logger.getLogger(CameraInputHandler.class.getName());
+	private static final Logger logger = Logger
+		.getLogger(CameraInputHandler.class.getName());
 
-	private static final int MODIFIER_MASK =
-		SWT.ALT | SWT.SHIFT | SWT.CONTROL | SWT.MOD1 | SWT.MOD2 | SWT.MOD3
-			| SWT.MOD4;
+	private static final int MODIFIER_MASK = SWT.ALT | SWT.SHIFT | SWT.CONTROL
+		| SWT.MOD1 | SWT.MOD2 | SWT.MOD3 | SWT.MOD4;
 
 	/**
 	 * The key sequence to center the camera.
@@ -178,6 +187,11 @@ public class CameraInputHandler {
 	private float m_wheelSpeed = 20;
 
 	/**
+	 * The timer used for camera trackings
+	 */
+	Timer timer = null;
+
+	/**
 	 * Handles a mouse button down event.
 	 * 
 	 * @param i_button the mouse button
@@ -186,9 +200,18 @@ public class CameraInputHandler {
 	 * @param i_y the mouse Y coordinate
 	 */
 	public void buttonDown(int i_button, int i_stateMask, int i_x, int i_y) {
-
+		stopCameraTracking();
 		int modifiers = getModifiers(i_stateMask);
 		doButtonDown(i_button, modifiers, i_x, i_y);
+	}
+
+	/**
+	 * 
+	 */
+	protected void stopCameraTracking() {
+		if (timer != null)
+			timer.cancel();
+		timer = null;
 	}
 
 	/**
@@ -348,7 +371,7 @@ public class CameraInputHandler {
 	 * @param i_event the key down event
 	 */
 	public void keyDown(KeyEvent i_event) {
-
+		stopCameraTracking();
 		m_currentModifiers = getModifiers(i_event.stateMask);
 
 		float speed = m_keySpeed;
@@ -459,6 +482,66 @@ public class CameraInputHandler {
 	private float moveSpeed(int i_speed) {
 
 		return i_speed * m_sensitivity * FACTOR_MOVE;
+	}
+
+	/**
+	 * Handles double click, that is activates a camera track to figure under
+	 * cursor.
+	 * 
+	 * @param i_button
+	 * @param i_stateMask
+	 * @param i_x
+	 * @param i_y
+	 */
+	public void doubleClick(int i_button, int i_stateMask, int i_mx, int i_my) {
+		stopCameraTracking();
+		Picker picker = getScene().getPicker();
+		Hit hit = picker.getHit(i_mx, i_my);
+		CameraPosition cameraPos = null;
+		if (hit != null) {
+			IFigure figure = hit.getSearchResult();
+			cameraPos = TrackingUtil.figureToScreen(figure, getCamera());
+		} else {
+			cameraPos = new CameraPosition();
+
+			if ((i_stateMask & m_orbitModifiers) != 0) {
+				if ((i_stateMask & SWT.SHIFT) == 0) {
+					cameraPos.setViewDirection(new Vector3fImpl(1, 0, 0));
+					cameraPos.setPosition(new Vector3fImpl(-1000, 0, 0));
+				} else {
+					cameraPos.setViewDirection(new Vector3fImpl(0, 1, 0));
+					cameraPos.setUpVector(new Vector3fImpl(0,0,1));
+					cameraPos.setPosition(new Vector3fImpl(0, -1000, 0));
+				}
+			}
+
+		}
+		if (cameraPos != null) {
+
+			LinearMove move = new LinearMove();
+			move.init(getCamera().getCameraPosition(null), cameraPos);
+
+			float moveLength =
+				Math3D.distance(getCamera().getCameraPosition(null)
+					.getPosition(), cameraPos.getPosition());
+
+			long duration = (long) (Math.log(moveLength * moveLength) * 50);
+
+			if (log.isLoggable(Level.INFO)) {
+				log.info("duration=" + duration); //$NON-NLS-1$
+			}
+
+			if (duration > 2000)
+				duration = 2000;
+			if (duration < 0)
+				duration = 100;
+
+			TrackingShot shot = new TrackingShot(duration, getCamera(), move);
+			timer=new Timer();
+			timer.schedule(shot, 0, 50);
+
+		}
+
 	}
 
 	/**
@@ -670,4 +753,5 @@ public class CameraInputHandler {
 
 		m_wheelSpeed = i_wheelSpeed;
 	}
+
 }

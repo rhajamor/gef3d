@@ -32,8 +32,8 @@ import org.eclipse.draw3d.util.Draw3DCache;
 public class GeometryPicker implements Picker {
 
 	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(GeometryPicker.class.getName());
+	private static final Logger log = Logger.getLogger(GeometryPicker.class
+		.getName());
 
 	private ISurface m_currentSurface;
 
@@ -160,9 +160,12 @@ public class GeometryPicker implements Picker {
 			ICamera camera = m_scene.getCamera();
 			camera.getPosition(rayOrigin);
 
-			if (rayOrigin.equals(i_rayPoint))
-				throw new IllegalArgumentException(
-					"rayOrigin must not be equal to the camera position");
+			if (rayOrigin.equals(i_rayPoint)) {
+				// throw new IllegalArgumentException(
+				// "rayPoint must not be equal to the camera position");
+				log.warning("rayPoint must not be equal to the camera position");
+				return null;
+			}
 
 			Math3D.getRayDirection(rayOrigin, i_rayPoint, rayDirection);
 			return getHit(rayOrigin, rayDirection, i_search);

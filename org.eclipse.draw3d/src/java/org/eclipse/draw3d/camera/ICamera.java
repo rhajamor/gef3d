@@ -11,7 +11,9 @@
 
 package org.eclipse.draw3d.camera;
 
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
@@ -74,6 +76,24 @@ public interface ICamera {
 	 * @return the distance of the viewing plane
 	 */
 	public float getNear();
+
+	/**
+	 * Returns the current camera position.
+	 * 
+	 * @param result if not null, this result object is used and returned.
+	 * @return
+	 */
+	public ICameraPosition getCameraPosition(CameraPosition result);
+
+	/**
+	 * Sets the camera's position, view direction, and up/right vector according
+	 * to the given camera position. Since different camera implementations may
+	 * restrict the possible values of these properties, the values provided by
+	 * the camera positions are only used as hints.
+	 * 
+	 * @param cameraPosition, must not be null
+	 */
+	public void setCameraPosition(ICameraPosition cameraPosition);
 
 	/**
 	 * Returns the camera's current position.
@@ -150,19 +170,10 @@ public interface ICamera {
 	/**
 	 * Moves the camera to the given position.
 	 * 
-	 * @param i_x the X coordinate of the new position
-	 * @param i_y the Y coordinate of the new position
-	 * @param i_z the Z coordinate of the new position
-	 */
-	public void moveTo(float i_x, float i_y, float i_z);
-
-	/**
-	 * Moves the camera to the given position.
-	 * 
-	 * @param i_viewPoint the new view point
+	 * @param i_Position the new view point
 	 * @throws NullPointerException if the given vector is <code>null</code>
 	 */
-	public void moveTo(IVector3f i_viewPoint);
+	public void moveTo(IVector3f i_position);
 
 	/**
 	 * Moves the camera around a location (called orbit center) by a given
@@ -239,6 +250,12 @@ public interface ICamera {
 	 * @param i_height the height of the viewport
 	 */
 	public void setViewport(int i_x, int i_y, int i_width, int i_height);
+	
+	/**
+	 * Returns the dimension of the view port. 
+	 * @return
+	 */
+	public Dimension getViewPortSize();
 
 	/**
 	 * Transfers all registered camera listeners from this camera to the given

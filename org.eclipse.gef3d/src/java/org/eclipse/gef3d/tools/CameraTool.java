@@ -159,6 +159,21 @@ public class CameraTool extends AbstractTool3D {
 
         return true;
     }
+    
+    /** 
+     * {@inheritDoc}
+     * @see org.eclipse.gef.tools.AbstractTool#handleDoubleClick(int)
+     */
+    @Override
+    protected boolean handleDoubleClick(int i_button) {
+    	
+    	m_handler.setScene(getScene());
+    	Input3D input = getCurrentInput3D();
+    	m_handler.doubleClick(i_button, getStateMask(input),
+    		input.getRealMouseLocation().x, input.getRealMouseLocation().y);
+    		
+    	return true;
+    }
 
     /**
      * {@inheritDoc}

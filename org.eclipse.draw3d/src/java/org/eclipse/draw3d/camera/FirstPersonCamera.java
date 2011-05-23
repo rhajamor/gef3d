@@ -14,6 +14,7 @@ package org.eclipse.draw3d.camera;
 import java.nio.FloatBuffer;
 import java.util.logging.Logger;
 
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.RenderContext;
@@ -468,28 +469,18 @@ public class FirstPersonCamera extends AbstractCamera {
 	}
 
 	/**
-	 * Sets the position of this camera. {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.camera.ICamera#moveTo(float, float, float)
-	 */
-	public void moveTo(float i_x, float i_y, float i_z) {
-
-		m_position.set(i_x, i_y, i_z);
-
-		fireCameraChanged();
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.eclipse.draw3d.camera.ICamera#moveTo(org.eclipse.draw3d.geometry.IVector3f)
 	 */
-	public void moveTo(IVector3f i_viewPoint) {
+	public void moveTo(IVector3f i_Position) {
 
-		if (i_viewPoint == null)
+		if (i_Position == null)
 			throw new NullPointerException("i_viewPoint must not be null");
 
-		moveTo(i_viewPoint.getX(), i_viewPoint.getY(), i_viewPoint.getZ());
+		m_position.set(i_Position);
+		
+		fireCameraChanged();
 	}
 
 	/**
@@ -633,6 +624,22 @@ public class FirstPersonCamera extends AbstractCamera {
 
 		fireCameraChanged();
 	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.camera.ICamera#setCameraPosition(org.eclipse.draw3d.camera.ICameraPosition)
+	 */
+	public void setCameraPosition(ICameraPosition i_cameraPosition) {
+		if (i_cameraPosition == null) // parameter precondition
+			throw new NullPointerException("i_cameraPosition must not be null");
+		
+		i_cameraPosition.getPosition(m_position);
+		i_cameraPosition.getUpVector(m_up);
+		i_cameraPosition.getViewDirection(m_viewDir);
+		i_cameraPosition.getRightVector(m_right);
+		
+		fireCameraChanged();
+	}
 
 	public void rotate(float i_roll, float i_pitch, float i_yaw) {
 
@@ -670,6 +677,14 @@ public class FirstPersonCamera extends AbstractCamera {
 		m_viewport.setSize(i_width, i_height);
 
 		fireCameraChanged();
+	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.camera.ICamera#getViewPortSize()
+	 */
+	public Dimension getViewPortSize() {
+		return new Dimension(m_viewport.width, m_viewport.height);
 	}
 
 	/**
@@ -710,4 +725,20 @@ public class FirstPersonCamera extends AbstractCamera {
 			Math3DCache.returnMatrix4f(inversion);
 		}
 	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.camera.ICamera#getCameraPosition(org.eclipse.draw3d.camera.CameraPosition)
+	 */
+	public ICameraPosition getCameraPosition(CameraPosition o_result) {
+		if (o_result==null) {
+			o_result = new CameraPosition();
+		}
+		o_result.setPosition(m_position);
+		o_result.setUpVector(m_up);
+		o_result.setViewDirection(m_viewDir);
+		return o_result;
+	}
+	
+	
 }

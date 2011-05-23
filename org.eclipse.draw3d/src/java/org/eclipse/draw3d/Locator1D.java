@@ -93,17 +93,17 @@ public interface Locator1D {
 		private float m_weight;
 
 		/**
-		 * Creates a new relative locator with the given weight. The weight
+		 * Creates a new relative locator with the given weights. The weights
 		 * specifies the relative offset between 0 and 1.
 		 * 
-		 * @param i_weight the weight, must be greater or equal to 0 and less or
+		 * @param i_weight the weights, must be greater or equal to 0 and less or
 		 *            equal to 1
 		 */
 		public Relative(float i_weight) {
 
 			if (i_weight < 0 || i_weight > 1)
 				throw new IllegalArgumentException(
-					"weight must be 0 <= weight <= 1, was " + i_weight);
+					"weights must be 0 <= weights <= 1, was " + i_weight);
 
 			m_weight = i_weight;
 		}

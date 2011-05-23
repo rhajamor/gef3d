@@ -41,7 +41,7 @@ public abstract class AbstractSurface implements ISurface {
 	private Vector3f[] m_cachedProjection;
 
 	/**
-	 * The surface normal.
+	 * The surface normal in world coordinates.
 	 */
 	private Vector3f m_normal = new Vector3fImpl();
 
@@ -49,6 +49,16 @@ public abstract class AbstractSurface implements ISurface {
 	 * Indicates whether the surface normal is still valid.
 	 */
 	private boolean m_normalValid = false;
+
+	/**
+	 * The up vector in world coordinates.
+	 */
+	private Vector3f m_upVector = new Vector3fImpl();
+
+	/**
+	 * Indicates whether the up vector is still valid.
+	 */
+	private boolean m_upVectorValid = false;
 
 	/**
 	 * The matrix that transforms a vector given in surface coordinates to world
@@ -75,6 +85,18 @@ public abstract class AbstractSurface implements ISurface {
 	protected abstract void calculateNormal(Vector3f io_normal);
 
 	/**
+	 * Calculates the up vector of this surface. As the up vector is usually the
+	 * y-axis, this method calls {@link #getYAxis(Vector3f)} by default and
+	 * negates the result.
+	 * 
+	 * @param i_upVector
+	 */
+	protected void calculateUpVector(Vector3f o_upVector) {
+		getYAxis(o_upVector);
+		Math3D.negate(o_upVector, o_upVector);
+	}
+
+	/**
 	 * This method must be called whenever the surface coordinate system has
 	 * changed.
 	 */
@@ -83,6 +105,7 @@ public abstract class AbstractSurface implements ISurface {
 		m_surfaceToWorldValid = false;
 		m_worldToSurfaceValid = false;
 		m_normalValid = false;
+		m_upVectorValid = false;
 		m_cachedProjection = null;
 	}
 
@@ -99,6 +122,20 @@ public abstract class AbstractSurface implements ISurface {
 		}
 
 		return m_normal;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw3d.ISurface#getUpVector()
+	 */
+	public IVector3f getUpVector() {
+		if (!m_upVectorValid) {
+			calculateUpVector(m_upVector);
+			m_upVectorValid = true;
+		}
+
+		return m_upVector;
 	}
 
 	/**

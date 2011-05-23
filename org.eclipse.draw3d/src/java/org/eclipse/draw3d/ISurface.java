@@ -51,11 +51,21 @@ public interface ISurface {
 	public IFigure3D getHost();
 
 	/**
-	 * Returns the normal vector of this surface.
+	 * Returns the normal vector of this surface in world coordinates.
 	 * 
 	 * @return the normal vector
 	 */
 	public IVector3f getNormal();
+
+	/**
+	 * Returns the up vector of this surface in world coordinates. The up vector
+	 * of a surface is similar to the up vector of a camera, much like the
+	 * (negated) normal vector corresponds to the normal vector of the camera.
+	 * Usually, the up vector is the normalized y-axis.
+	 * 
+	 * @return
+	 */
+	public IVector3f getUpVector();
 
 	/**
 	 * Returns the 2D surface coordinates of a point specified in world

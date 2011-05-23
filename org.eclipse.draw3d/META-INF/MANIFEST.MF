@@ -23,6 +23,7 @@ Export-Package: org.eclipse.draw3d;
    org.eclipse.draw3d.shapes,
    org.eclipse.swt.widgets",
  org.eclipse.draw3d.camera;uses:="org.eclipse.draw3d.geometry",
+ org.eclipse.draw3d.camera.tracking,
  org.eclipse.draw3d.geometryext;uses:="org.eclipse.draw3d.geometry,org.eclipse.draw2d.geometry",
  org.eclipse.draw3d.graphics,
  org.eclipse.draw3d.graphics.optimizer,

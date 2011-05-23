@@ -110,7 +110,7 @@ public class VoidSurface extends AbstractSurface implements ISceneListener {
 
 			sLocation.setLocation(i_sx, i_sy);
 			currentSurface.getWorldLocation(sLocation, rayPoint);
-
+			
 			Hit hit = picker.getHit(rayPoint, i_search);
 			if (hit != null)
 				return hit.getSearchResult();

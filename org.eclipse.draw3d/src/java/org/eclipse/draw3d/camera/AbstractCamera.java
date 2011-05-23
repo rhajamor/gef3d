@@ -81,4 +81,6 @@ public abstract class AbstractCamera implements ICamera {
 			i_newCamera.addCameraListener(listener);
 		}
 	}
+	
+	
 }
