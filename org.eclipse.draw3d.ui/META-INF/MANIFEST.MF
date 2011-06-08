@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Graphical Editing Framework 3D, Draw3D User Interface
 Bundle-SymbolicName: org.eclipse.draw3d.ui;singleton:=true
-Bundle-Version: 0.8.1
+Bundle-Version: 0.8.1.qualifier
 Bundle-Activator: org.eclipse.draw3d.ui.Draw3DUIPlugin
 Bundle-Vendor: Eclipse.org
 Require-Bundle: org.eclipse.ui,

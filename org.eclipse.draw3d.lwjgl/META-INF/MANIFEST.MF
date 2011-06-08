@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Graphics3D implementation using LWJGL Plug-in
 Bundle-SymbolicName: org.eclipse.draw3d.lwjgl;singleton:=true
-Bundle-Version: 0.8.1
+Bundle-Version: 0.8.1.qualifier
 Bundle-Activator: org.eclipse.draw3d.lwjgl.Activator
 Bundle-Vendor: Eclipse.org
 Require-Bundle: org.eclipse.ui,

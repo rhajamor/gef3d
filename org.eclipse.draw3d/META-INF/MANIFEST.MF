@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Graphical Editing Framework 3D, Draw3D
 Bundle-SymbolicName: org.eclipse.draw3d
-Bundle-Version: 0.8.1
+Bundle-Version: 0.8.1.qualifier
 Bundle-Vendor: Eclipse.org
 Require-Bundle: org.eclipse.draw2d;visibility:=reexport,
  org.eclipse.draw3d.geometry;bundle-version="0.8.0";visibility:=reexport,
