@@ -11,6 +11,18 @@
             name="Ecore Tools Editor 3D">
       </editor>
    </extension>
+   
+   
+   <extension point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.gef3d.examples.ecore.diagram.part.MultiEcoreGraphicalEditor3D"
+            default="false"
+            extensions="ecorediag"
+            id="org.eclipse.gef3d.examples.ecore.diagram.part.MultiEcoreGraphicalEditor3D"
+            name="Multi Ecore Tools Editor 3D">
+      </editor>
+   </extension>
+   
    <extension
          point="org.eclipse.gmf.runtime.diagram.ui.editpartProviders">
       <editpartProvider
