@@ -20,7 +20,7 @@ package org.eclipse.gef3d.ext.multieditor;
  */
 public class MultiEditorChangeEvent {
 
-	enum Type {
+	public static enum Type {
 		added, removed
 	}
 

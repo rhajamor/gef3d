@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.gef3d.ext.multieditor;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.gef.EditPart;
 import org.eclipse.ui.IEditorInput;
 
@@ -22,7 +23,7 @@ import org.eclipse.ui.IEditorInput;
  * @version $Revision$
  * @since Apr 15, 2009
  */
-public interface IMultiEditor {
+public interface IMultiEditor extends IAdaptable {
 
 	/**
 	 * Indicates whether this multi editor accepts the given editor input.

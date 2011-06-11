@@ -17,3 +17,5 @@ Export-Package: org.eclipse.gef3d.ext,
  org.eclipse.gef3d.ext.multieditor.dnd,
  org.eclipse.gef3d.ext.reverselookup
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Import-Package: org.eclipse.core.resources,
+ org.eclipse.ui.part

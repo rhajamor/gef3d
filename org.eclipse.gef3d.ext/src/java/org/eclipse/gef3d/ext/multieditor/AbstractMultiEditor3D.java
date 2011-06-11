@@ -438,7 +438,7 @@ public abstract class AbstractMultiEditor3D extends
 	protected void installDragAndDrop() {
 		GraphicalViewer viewer = getGraphicalViewer();
 		viewer.addDropTargetListener(new EditorInputTransferDropTargetListener(
-			this, viewer));
+			this));
 		viewer.getContents().installEditPolicy(
 			EditorInputDropPolicy.EDITOR_INPUT_ROLE,
 			new EditorInputDropPolicy());
