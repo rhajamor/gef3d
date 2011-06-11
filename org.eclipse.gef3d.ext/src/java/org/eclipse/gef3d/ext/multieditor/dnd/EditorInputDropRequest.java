@@ -12,9 +12,6 @@ package org.eclipse.gef3d.ext.multieditor.dnd;
 
 import java.util.List;
 
-import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.gef.Request;
-import org.eclipse.gef.requests.DropRequest;
 import org.eclipse.gef3d.ext.multieditor.IMultiEditor;
 import org.eclipse.ui.IEditorInput;
 
@@ -29,39 +26,37 @@ import org.eclipse.ui.IEditorInput;
  * @version $Revision$
  * @since Apr 15, 2009
  */
-public class EditorInputDropRequest extends Request implements DropRequest {
+public class EditorInputDropRequest extends AbstractDropOnMultiEditorRequest {
 
-	protected Point location;
-
+	/**
+	 * The editor inputs, get/set via getter/setter.
+	 */
 	protected List<IEditorInput> editorInputs;
 
-	protected IMultiEditor multiEditor;
-
 	public static String UNDEF_TYPE = "UNDEF_TYPE";
-	
+
 	/**
-	 * Consructs this request and set type to {@link #UNDEF_TYPE}.
+	 * Constructs this request and set type to {@link #UNDEF_TYPE}.
 	 */
-	public EditorInputDropRequest() {
-		this(UNDEF_TYPE);
+	public EditorInputDropRequest(IMultiEditor i_multiEditor) {
+		this(i_multiEditor, UNDEF_TYPE);
 	}
 
 	/**
-	 * Constructs this request and set s type.
-	 * The type should not be null since some policies may throw
-	 * a {@link NullPointerException} in that case.
+	 * Constructs this request and set s type. The type should not be null since
+	 * some policies may throw a {@link NullPointerException} in that case.
 	 * 
 	 * @param type type of this request, should not be null.
 	 * @see https://bugs.eclipse.org/bugs/show_bug.cgi?id=285741
 	 */
-	public EditorInputDropRequest(Object type) {
-		super(type);
+	public EditorInputDropRequest(IMultiEditor i_multiEditor, Object type) {
+		super(i_multiEditor, type);
 	}
 
 	/**
-	 * Returns the {@link IEditorInput}s which were dropped onto the
-	 * editor, i.e. the figure. This value is set after the mouse has been
-	 * released and the drop actually occurred.
+	 * Returns the {@link IEditorInput}s which were dropped onto the editor,
+	 * i.e. the figure. This value is set after the mouse has been released and
+	 * the drop actually occurred.
 	 * 
 	 * @return the editorInputs
 	 */
@@ -80,63 +75,23 @@ public class EditorInputDropRequest extends Request implements DropRequest {
 	}
 
 	/**
-	 * Returns the multi editor in which context this request has been created,
-	 * that is on which the {@link IEditorInput} was been dropped.
-	 * 
-	 * @return the dropableMultiEditor
-	 */
-	public IMultiEditor getMultiEditor() {
-		return multiEditor;
-	}
-
-	/**
-	 * Called by {@link EditorInputTransferDropTargetListener} when the request
-	 * is created.
-	 * 
-	 * @param i_multiEditor the dropableMultiEditor to set
-	 */
-	protected void setMultiEditor(IMultiEditor i_multiEditor) {
-		multiEditor = i_multiEditor;
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.eclipse.gef.requests.DropRequest#getLocation()
-	 */
-	public Point getLocation() {
-		return location;
-	}
-
-	/**
-	 * Called by {@link EditorInputTransferDropTargetListener} when the request
-	 * is created or updated.
-	 * 
-	 * @param i_location the location to set
-	 */
-	protected void setLocation(Point i_location) {
-		location = i_location;
-	}
-
-	/** 
-	 * {@inheritDoc}
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append("EditorInputRequest");
-		if (location!=null) {
-			result.append(" at ").append(location.toString());
+		if (getLocation() != null) {
+			result.append(" at ").append(getLocation().toString());
 		}
-		if (editorInputs!=null) {
+		if (editorInputs != null) {
 			result.append(" with input ").append(editorInputs.toString());
 		} else {
 			result.append(" w/o input information");
 		}
 		return result.toString();
 	}
-	
-	
 
 }

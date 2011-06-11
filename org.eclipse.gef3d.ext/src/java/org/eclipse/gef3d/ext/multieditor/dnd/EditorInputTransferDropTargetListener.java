@@ -11,15 +11,11 @@
 package org.eclipse.gef3d.ext.multieditor.dnd;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.Request;
-import org.eclipse.gef.dnd.AbstractTransferDropTargetListener;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
 import org.eclipse.gef3d.ext.multieditor.IMultiEditor;
 import org.eclipse.swt.dnd.DND;
@@ -30,152 +26,105 @@ import org.eclipse.ui.part.EditorInputTransfer.EditorInputData;
 
 /**
  * Drop target listener to be used by a multi editor to enable opening new
- * diagrams (or models) in the editor by simply droping the editor input onto
+ * diagrams (or models) in the editor by simply dropping the editor input onto
  * the 3D scene. This listener is to be added to the viewer during
  * configuration, i.e. in {@link GraphicalEditor#configureGraphicalViewer()}
  * just like that:
  * <p>
  * <code><pre>
  * getGraphicalViewer().addDropTargetListener(
- * 		new EditorInputTransferDropTargetListener(this,
- * 		getGraphicalViewer()));
+ * 		new EditorInputTransferDropTargetListener(this));
  * </pre></code>
  * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since Apr 15, 2009
+ * @see ResourceTransferDropTargetListener
  */
 public class EditorInputTransferDropTargetListener extends
-		AbstractTransferDropTargetListener {
-	/**
-	 * Logger for this class
-	 */
-	private static final Logger log =
-		Logger.getLogger(EditorInputTransferDropTargetListener.class.getName());
-
-	private IMultiEditor graphicalEditor;
+		AbstractDropOnMultiEditorTargetListener {
 
 	/**
-	 * @param i_graphicalEditor
-	 * @param i_viewer
+	 * @param i_multiEditor, viewer is retrieved via
+	 *            {@link IAdaptable#getAdapter(Class)}
 	 */
-	public EditorInputTransferDropTargetListener(
-			IMultiEditor i_graphicalEditor, EditPartViewer i_viewer) {
-		super(i_viewer, EditorInputTransfer.getInstance());
-		graphicalEditor = i_graphicalEditor;
+	public EditorInputTransferDropTargetListener(IMultiEditor i_multiEditor) {
+		super(i_multiEditor, EditorInputTransfer.getInstance());
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef.dnd.AbstractTransferDropTargetListener#updateTargetRequest()
-	 */
-	@Override
-	protected void updateTargetRequest() {
-		EditorInputDropRequest request =
-			(EditorInputDropRequest) getTargetRequest();
-		DropTargetEvent event = getCurrentEvent();
-		request.setLocation(new Point(event.x, event.y));
-	}
-
-	/**
-	 * {@inheritDoc}
+	 * {@inheritDoc}. Creates an {@link EditorInputDropRequest} and sets
+	 * location of event if possible.
 	 * 
 	 * @see org.eclipse.gef.dnd.AbstractTransferDropTargetListener#createTargetRequest()
 	 */
 	@Override
 	protected Request createTargetRequest() {
-		EditorInputDropRequest request = new EditorInputDropRequest();
+		EditorInputDropRequest request =
+			new EditorInputDropRequest(getMultiEditor());
 		DropTargetEvent event = getCurrentEvent();
-		request.setLocation(new Point(event.x, event.y));
-		request.setMultiEditor(graphicalEditor);
+		if (event != null) {
+			request.setLocation(new Point(event.x, event.y));
+		}
 		return request;
 	}
 
-	private boolean editorAccepts(DropTargetEvent i_event) {
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.ext.multieditor.dnd.AbstractDropOnMultiEditorTargetListener#acceptEvent(org.eclipse.swt.dnd.DropTargetEvent)
+	 */
+	@Override
+	protected int acceptEvent(DropTargetEvent i_event) {
 
 		if (i_event.data instanceof EditorInputTransfer.EditorInputData[]) {
 			EditorInputTransfer.EditorInputData[] editorInputsData =
 				(EditorInputData[]) i_event.data;
 
 			for (EditorInputTransfer.EditorInputData data : editorInputsData)
-				if (!graphicalEditor.acceptsInput(data.input))
-					return false;
-		} else
-			return false;
-
-		return true;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef.dnd.AbstractTransferDropTargetListener#handleDragOver()
-	 */
-	@Override
-	protected void handleDragOver() {
-		// if (log.isLoggable(Level.INFO)) {
-		//			log.info("handleDragOver"); //$NON-NLS-1$
-		// }
-
-		DropTargetEvent event = getCurrentEvent();
-		event.detail = DND.DROP_COPY;
-
-		super.handleDragOver();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef.dnd.AbstractTransferDropTargetListener#handleDrop()
-	 */
-	@Override
-	protected void handleDrop() {
-		if (log.isLoggable(Level.INFO)) {
-			log.info("handleDrop"); //$NON-NLS-1$
+				if (!getMultiEditor().acceptsInput(data.input)) {
+					return DND.DROP_NONE;
+				}
+		} else {
+			return DND.DROP_NONE;
 		}
 
-		DropTargetEvent event = getCurrentEvent();
+		return DND.DROP_COPY;
+	}
 
-		boolean accept = editorAccepts(event);
-		event.detail = accept ? DND.DROP_COPY : DND.DROP_NONE;
-
-		if (!accept)
-			return;
-
+	/**
+	 * {@inheritDoc}.
+	 * <p>
+	 * Returns true if at least one editor input could be retrieved from the
+	 * given event.
+	 * 
+	 * @see org.eclipse.gef3d.ext.multieditor.dnd.AbstractDropOnMultiEditorTargetListener#retrieveEventData(org.eclipse.swt.dnd.DropTargetEvent)
+	 */
+	@Override
+	protected boolean retrieveEventData(DropTargetEvent i_event) {
 		EditorInputDropRequest request =
 			(EditorInputDropRequest) getTargetRequest();
 
-		List<IEditorInput> editorInputs = retrieveEditorInput(event);
-		if (!editorInputs.isEmpty())
-			request.setEditorInputs(editorInputs);
+		List<IEditorInput> editorInputs = null;
 
-		try {
-			super.handleDrop();
-		} catch (Exception ex) {
-			// TODO Implement catch block for Exception
-			ex.printStackTrace();
-		}
-
-	}
-
-	/**
-	 * @param event
-	 */
-	private List<IEditorInput> retrieveEditorInput(DropTargetEvent event) {
-		if (event.data instanceof EditorInputTransfer.EditorInputData[]) {
-			List<IEditorInput> editorInputs = new ArrayList<IEditorInput>();
+		if (i_event.data instanceof EditorInputTransfer.EditorInputData[]) {
+			editorInputs = new ArrayList<IEditorInput>();
 			EditorInputTransfer.EditorInputData[] editorInputsData =
-				(EditorInputData[]) event.data;
+				(EditorInputData[]) i_event.data;
 			for (EditorInputTransfer.EditorInputData data : editorInputsData) {
 				editorInputs.add(data.input);
 
 			}
-			return editorInputs;
 		}
-		return Collections.emptyList();
+
+		if (editorInputs == null || editorInputs.isEmpty()) {
+			return false;
+		}
+
+		request.setEditorInputs(editorInputs);
+		return true;
+
 	}
 
-	
 }

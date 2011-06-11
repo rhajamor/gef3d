@@ -11,18 +11,19 @@
 
 /**
  * Drag-n-drop support for multi editors. The classes provided by this package
- * enable opening new diagrams in a mutli editor by simply droping the file
+ * enable opening new diagrams in a mutli editor by simply dropping the file
  * (from the eclipse package view) onto the 3D scene of the multi editor.
  * Several tasks are necessary to achieve that:
  * <ol> 
- * <li>Install listener, see {@link EditorInputTransferDropTargetListener} on how
- * to do that</li>
- * <li>Install the {@link EditorInputDropPolicy} at the content edit part of the
+ * <li>Install listener, see {@link EditorInputTransferDropTargetListener} and 
+ * {@link org.eclipse.gef3d.ext.multieditor.dnd.ResourceTransferDropTargetListener} 
+ * on how to do that</li>
+ * <li>Install the {@link EditorInputDropPolicy} and/or {@link ResourceDropProlicy} the content edit part of the
  * multi editor, see policy on details</li>
  * <li>The multi editor has to implement the interface 
  * {@link org.eclipse.gef3d.ext.multieditor.IMultiEditor}, this interface
  * is used by the created request and command to pass the 
- * {@link org.eclipse.ui.IEditorInput} to the editor.
+ * editor input or resources to the editor or viewer.
  * </ol>
  *  
  * @see <a href="http://www.eclipse.org/articles/Article-GEF-dnd/GEF-dnd.html">
