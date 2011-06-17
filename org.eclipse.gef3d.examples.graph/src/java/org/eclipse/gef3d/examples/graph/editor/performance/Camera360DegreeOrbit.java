@@ -57,7 +57,7 @@ public class Camera360DegreeOrbit extends TimerTask {
 		center = new Vector3fImpl  (400, 400, 10000);
 		
 		camera = scene.getCamera();
-		camera.moveTo(startPos.getX(), startPos.getY(), startPos.getZ());
+		camera.moveTo(startPos);
 		camera.lookAt(center, upVector);
 		angle = 0;
 		startTime = System.currentTimeMillis();
