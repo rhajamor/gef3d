@@ -36,6 +36,9 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Path;
+import org.eclipse.swt.graphics.Pattern;
+import org.eclipse.swt.graphics.TextLayout;
 import org.eclipse.swt.widgets.Display;
 
 /**
@@ -463,4 +466,162 @@ public class RecordingGraphics extends StatefulGraphics {
 
 		addPrimitive(new PolygonPrimitive(getState(), vertices, i_fill));
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#fillPath(org.eclipse.swt.graphics.Path)
+	 */
+	@Override
+	public void fillPath(Path i_path) {
+		if (i_path == null) // parameter precondition
+			throw new NullPointerException("i_path must not be null");
+		if (i_path.handle == null) // parameter precondition
+			throw new NullPointerException("i_path.handle must not be null");
+
+		// TODO improve that, this is just a quick hack to avoid exceptions
+		PointList pointList = pathToPointList(i_path);
+		fillPolygon(pointList);
+	}
+
+	/**
+	 * @todo this is a dirty hack, and is more a placeholder than a real implementation
+	 * @param i_path
+	 * @return
+	 */
+	private PointList pathToPointList(Path i_path) {
+		float[] points = i_path.getPathData().points;
+		
+		PointList pointList  = new PointList(points.length/2);
+		
+		for (int i=0; i<points.length-1; i+=2) {
+			pointList.addPoint(new Point((int)points[i], (int)points[i+1]));
+		}
+		
+		return pointList;
+	}
+
+	
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#clipPath(org.eclipse.swt.graphics.Path)
+	 */
+	@Override
+	public void clipPath(Path i_path) {
+		if (i_path == null) // parameter precondition
+			throw new NullPointerException("i_path must not be null");
+		if (i_path.handle == null) // parameter precondition
+			throw new NullPointerException("i_path.handle must not be null");
+
+		// TODO improve that, this is just a quick hack to avoid exceptions
+		PointList pointList = pathToPointList(i_path);
+		// TODO improve that, this is just a quick hack to avoid exceptions
+		Rectangle rect = pointList.getBounds();
+		clipRect(rect);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setClip(org.eclipse.swt.graphics.Path)
+	 */
+	@Override
+	public void setClip(Path i_path) {
+		// TODO implement method RecordingGraphics.setClip
+
+		// super.setClip(i_path);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#drawPath(org.eclipse.swt.graphics.Path)
+	 */
+	@Override
+	public void drawPath(Path i_path) {
+		if (i_path == null) // parameter precondition
+			throw new NullPointerException("i_path must not be null");
+		if (i_path.handle == null) // parameter precondition
+			throw new NullPointerException("i_path.handle must not be null");
+
+		// TODO improve that, this is just a quick hack to avoid exceptions
+		PointList pointList = pathToPointList(i_path);
+		drawPolygon(pointList);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#drawText(java.lang.String, int, int,
+	 *      int)
+	 */
+	@Override
+	public void drawText(String i_s, int i_x, int i_y, int i_style) {
+		// TODO style is ignored at the moment
+		drawText(i_s, i_x, i_y);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#drawTextLayout(org.eclipse.swt.graphics.TextLayout,
+	 *      int, int, int, int, org.eclipse.swt.graphics.Color,
+	 *      org.eclipse.swt.graphics.Color)
+	 */
+	@Override
+	public void drawTextLayout(TextLayout i_layout, int i_x, int i_y,
+		int i_selectionStart, int i_selectionEnd, Color i_selectionForeground,
+		Color i_selectionBackground) {
+
+		// TODO style is ignored at the moment
+
+		String s = i_layout.getText();
+		i_selectionEnd = Math.min(s.length(), i_selectionEnd);
+		if (i_selectionStart > 0) {
+			String s0 = s.substring(0, i_selectionStart);
+
+			TextPrimitive p0 =
+				new TextPrimitive(getState(), s0, false, new Point(i_x, i_y));
+			addPrimitive(p0);
+			i_x += p0.getExtent().width;
+		}
+
+		if (i_selectionStart < i_selectionEnd) {
+			Color background = getBackgroundColor();
+			Color foreground = getForegroundColor();
+			setBackgroundColor(i_selectionBackground);
+			setForegroundColor(i_selectionForeground);
+
+			String s1 = s.substring(i_selectionStart, i_selectionEnd);
+			TextPrimitive p1 =
+				new TextPrimitive(getState(), s1, false, new Point(i_x, i_y));
+			addPrimitive(p1);
+			i_x += p1.getExtent().width;
+
+			setBackgroundColor(background);
+			setForegroundColor(foreground);
+		}
+
+		if (i_selectionEnd < s.length()) {
+			String s2 = s.substring(i_selectionStart, i_selectionEnd);
+			TextPrimitive p2 =
+				new TextPrimitive(getState(), s2, false, new Point(i_x, i_y));
+			addPrimitive(p2);
+			// i_x += p2.getExtent().width;
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.draw2d.Graphics#setForegroundPattern(org.eclipse.swt.graphics.Pattern)
+	 */
+	@Override
+	public void setForegroundPattern(Pattern i_pattern) {
+		// TODO implement method RecordingGraphics.setForegroundPattern
+		// super.setForegroundPattern(i_pattern);
+	}
+
 }
