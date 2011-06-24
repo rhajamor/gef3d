@@ -476,9 +476,7 @@ public class RecordingGraphics extends StatefulGraphics {
 	public void fillPath(Path i_path) {
 		if (i_path == null) // parameter precondition
 			throw new NullPointerException("i_path must not be null");
-		if (i_path.handle == null) // parameter precondition
-			throw new NullPointerException("i_path.handle must not be null");
-
+		
 		// TODO improve that, this is just a quick hack to avoid exceptions
 		PointList pointList = pathToPointList(i_path);
 		fillPolygon(pointList);
@@ -512,8 +510,6 @@ public class RecordingGraphics extends StatefulGraphics {
 	public void clipPath(Path i_path) {
 		if (i_path == null) // parameter precondition
 			throw new NullPointerException("i_path must not be null");
-		if (i_path.handle == null) // parameter precondition
-			throw new NullPointerException("i_path.handle must not be null");
 
 		// TODO improve that, this is just a quick hack to avoid exceptions
 		PointList pointList = pathToPointList(i_path);
@@ -543,9 +539,7 @@ public class RecordingGraphics extends StatefulGraphics {
 	public void drawPath(Path i_path) {
 		if (i_path == null) // parameter precondition
 			throw new NullPointerException("i_path must not be null");
-		if (i_path.handle == null) // parameter precondition
-			throw new NullPointerException("i_path.handle must not be null");
-
+		
 		// TODO improve that, this is just a quick hack to avoid exceptions
 		PointList pointList = pathToPointList(i_path);
 		drawPolygon(pointList);
