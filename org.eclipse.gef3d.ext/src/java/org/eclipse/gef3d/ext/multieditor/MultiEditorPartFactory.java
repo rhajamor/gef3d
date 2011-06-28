@@ -59,15 +59,18 @@ import org.eclipse.gef.EditPartFactory;
  * {@link #createMultiContainerEditPart()}. If you need other another edit part
  * to be created for the container, set the type of the edit part created for
  * the container in setMultiEditorContainerEditPartType() (sorry for that long
- * method name). This usually is the case if you need to define a different
- * layout for the container, which is set in the container's edit part.
+ * method name) at the end of {@link GraphicalEditor#configureGraphicalViewer()}
+ * (after calling super method which registers this factory). This usually is
+ * the case if you need to define a different layout for the container, which is
+ * set in the container's edit part.
  * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
  * @since 14.01.2008
  */
-public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPartFactory {
+public class MultiEditorPartFactory implements EditPartFactory,
+		IMultiEditorPartFactory {
 
 	/**
 	 * The factory indicator strategy defines how the factory to be used for
@@ -89,7 +92,6 @@ public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPart
 	public static enum FactoryIndicatorStrategy {
 		FIND_BY_PARENT, POLICY_AT_CONNECTIONS, POLICY
 	}
-
 
 	// protected EditPartFactory lastUsedFactory;
 
@@ -163,8 +165,8 @@ public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPart
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log =
-		Logger.getLogger(MultiEditorPartFactory.class.getName());
+	private static final Logger log = Logger
+		.getLogger(MultiEditorPartFactory.class.getName());
 
 	Map<EditPart, FactorySet> m_delegatedFactories;
 
@@ -250,17 +252,21 @@ public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPart
 
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
-	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditorPartFactory#prepare(java.lang.Object, org.eclipse.gef.EditPartFactory)
+	 * 
+	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditorPartFactory#prepare(java.lang.Object,
+	 *      org.eclipse.gef.EditPartFactory)
 	 */
 	public void prepare(Object model, EditPartFactory i_factory) {
 		prepare(model, i_factory, LOWEST_PRIORITY);
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
-	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditorPartFactory#prepare(java.lang.Object, org.eclipse.gef.EditPartFactory, int)
+	 * 
+	 * @see org.eclipse.gef3d.ext.multieditor.IMultiEditorPartFactory#prepare(java.lang.Object,
+	 *      org.eclipse.gef.EditPartFactory, int)
 	 */
 	public void prepare(Object model, EditPartFactory i_factory, int i_weight) {
 		if (i_factory == null) {
@@ -326,6 +332,7 @@ public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPart
 			return part;
 		}
 
+		FactorySet contextFactorySet = null;
 		FactorySet fs = null;
 		EditPart part = null;
 		FactoryIndicationEditPolicy factoryIndicationEditPolicy = null;
@@ -342,8 +349,8 @@ public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPart
 					factoryIndicationEditPolicy.getFactory().createEditPart(
 						i_context, i_model);
 				if (part != null) {
-					installFactoryIndicator(part, factoryIndicationEditPolicy
-						.getFactory());
+					installFactoryIndicator(part,
+						factoryIndicationEditPolicy.getFactory());
 				}
 
 				if (log.isLoggable(Level.INFO)) {
@@ -351,10 +358,10 @@ public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPart
 				}
 			} else {
 				// no factory indicator, so we have to find the factory set:
-				fs = findFactoriesByContext(i_context);
+				contextFactorySet = findFactoriesByContext(i_context);
 
-				if (fs != null) {
-					part = fs.createEditPart(i_context, i_model);
+				if (contextFactorySet != null) {
+					part = contextFactorySet.createEditPart(i_context, i_model);
 					// if (log.isLoggable(Level.INFO)) {
 					// log.info("create part by context"); //$NON-NLS-1$
 					// }
@@ -374,6 +381,7 @@ public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPart
 			// for that:
 			// this is usually the case with modelContainer, i.e. the real root
 			// models
+
 			fs = m_preparedFactories.get(i_model);
 			if (fs != null) {
 				part = fs.createEditPart(i_context, i_model);
@@ -397,14 +405,18 @@ public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPart
 					// }
 
 				}
-
 			}
 		}
 
-		if (fs == null && factoryIndicationEditPolicy == null) {
-			throw new IllegalStateException("No root context or "
-				+ "factory found for model " + i_model + "; context "
-				+ i_context);
+		if (part == null) {
+			if (fs == null && contextFactorySet == null
+				&& factoryIndicationEditPolicy == null) {
+				throw new IllegalStateException("No root context or "
+					+ "factory found for model " + i_model + "; context "
+					+ i_context);
+			}
+
+			log.warning("Cannot create edit part for " + i_model + "(" + i_model.getClass() + ")"); //$NON-NLS-1$
 		}
 
 		// if (part == null) {
@@ -421,7 +433,10 @@ public class MultiEditorPartFactory implements EditPartFactory, IMultiEditorPart
 	 * Creates the edit part for the multi editor container, this method is only
 	 * called by {@link #createEditPart(EditPart, Object)}. This is a
 	 * {@link MultiEditorModelContainerEditPart} by default, if you need another
-	 * editpart class, set the new type in
+	 * editpart class, set the new type via
+	 * {@link #setMultiEditorContainerEditPartType(Class)} at the end of
+	 * {@link GraphicalEditor#configureGraphicalViewer()} (after calling super
+	 * method which registers this factory).
 	 * 
 	 * @return the edit part for the multi container
 	 */
