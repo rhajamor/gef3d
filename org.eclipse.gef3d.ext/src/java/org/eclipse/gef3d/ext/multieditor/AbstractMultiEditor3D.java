@@ -41,6 +41,8 @@ import org.eclipse.gef3d.ext.multieditor.MultiEditorChangeEvent.Type;
 import org.eclipse.gef3d.ext.multieditor.NestedEditorInfo.NestedEditorInfoList;
 import org.eclipse.gef3d.ext.multieditor.dnd.EditorInputDropPolicy;
 import org.eclipse.gef3d.ext.multieditor.dnd.EditorInputTransferDropTargetListener;
+import org.eclipse.gef3d.factories.DisplayMode;
+import org.eclipse.gef3d.factories.IFigureFactoryProvider;
 import org.eclipse.gef3d.tools.CameraTool;
 import org.eclipse.gef3d.ui.parts.GraphicalEditor3DWithFlyoutPalette;
 import org.eclipse.ui.IEditorInput;
@@ -206,7 +208,10 @@ public abstract class AbstractMultiEditor3D extends
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * {@inheritDoc}.
+	 * <p>
+	 * A {@link MultiEditorPartFactory} and a {@link MultiEditorFigureFactory}
+	 * are registered to the graphical viewer.
 	 * 
 	 * @see org.eclipse.gef3d.examples.graph.editor.GraphEditor3D#configureGraphicalViewer()
 	 */
@@ -219,8 +224,15 @@ public abstract class AbstractMultiEditor3D extends
 		RootEditPart root = createRootEditPart();
 		getGraphicalViewer().setRootEditPart(root);
 
+		if (getGraphicalViewer() instanceof IFigureFactoryProvider.Mutable) {
+			((IFigureFactoryProvider.Mutable) getGraphicalViewer())
+				.setFigureFactory(new MultiEditorFigureFactory(
+					DisplayMode.Projected));
+		}
+
 		m_multiFactory = createMultiFactory();
 		getGraphicalViewer().setEditPartFactory(m_multiFactory);
+
 	}
 
 	/**
