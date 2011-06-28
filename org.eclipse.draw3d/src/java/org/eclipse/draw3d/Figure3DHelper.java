@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.ConnectionLayer;
+import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.TreeSearch;
@@ -186,8 +187,8 @@ public class Figure3DHelper {
 	 * Logger for this class
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(Figure3DHelper.class.getName());
+	private static final Logger log = Logger.getLogger(Figure3DHelper.class
+		.getName());
 
 	/**
 	 * Converts 2D bounds to 3D bounds.
@@ -380,7 +381,6 @@ public class Figure3DHelper {
 			i_graphics.setFont(font);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void doGetDescendants3D(List<IFigure3D> o_list, IFigure i_fig) {
 
 		for (Iterator iter = i_fig.getChildren().iterator(); iter.hasNext();) {
@@ -393,22 +393,19 @@ public class Figure3DHelper {
 	}
 
 	/**
-	 * @param children2D
-	 * @param host
-	 * @param graphics
+	 * Paints 2D children and 2D connections on the surface of this 3D figure.
+	 * 
+	 * @param children2D the 2D children to be painted
+	 * @param host the 3D ancestor (parent) of the children
+	 * @param graphics the graphics object used for rendering
 	 */
-	private void doPaintChildren2D(Collection<IFigure> children2D,
-		IFigure3D host, Graphics graphics) {
+	private void doPaintChildrenAndConnections2D(IFigure3D host,
+		Collection<IFigure> children2D, Graphics graphics) {
 		graphics.pushState();
 		try {
-			for (IFigure child2D : children2D) {
-				graphics.clipRect(child2D.getBounds());
-				child2D.paint(graphics);
-				graphics.restoreState();
-			}
+			doPaintChildren2D(host, children2D, graphics);
 
 			ConnectionLayer connectionLayer = host.getConnectionLayer(null);
-
 			// paint the connections
 			if (connectionLayer != null) {
 				connectionLayer.paint(graphics);
@@ -418,6 +415,34 @@ public class Figure3DHelper {
 			log.severe("Error painting 2d children: " + er);
 		} finally {
 			graphics.popState();
+		}
+	}
+
+	/**
+	 * Paints 2D children, this method is rather similar to
+	 * {@link Figure#paintChildren(Graphics)}. However, it is still using the
+	 * GEF 3.5 version's clipping strategy.
+	 * 
+	 * @param host the 3D ancestor (parent) of the children
+	 * @param children2D
+	 * @param graphics
+	 */
+	protected void doPaintChildren2D(IFigure3D host,
+		Collection<IFigure> children2D, Graphics graphics) {
+
+		for (IFigure child : children2D) {
+			if (child.isVisible()) {
+				// determine clipping areas for child
+				Rectangle clipping = child.getBounds();
+
+				// child may now paint inside the clipping areas
+				if (clipping.intersects(graphics.getClip(Rectangle.SINGLETON))) {
+					graphics.clipRect(clipping);
+					child.paint(graphics);
+					graphics.restoreState();
+				}
+
+			}
 		}
 	}
 
@@ -548,6 +573,13 @@ public class Figure3DHelper {
 		paintChildren2D(i_graphics);
 		paintChildren3D(i_graphics);
 	}
+	
+	public void disposeImage() {
+		if (m_image != null) {
+			m_image.dispose();
+			m_image = null;
+		}
+	}
 
 	/**
 	 * Paints the given 2D figures. This method was extracted from
@@ -583,7 +615,8 @@ public class Figure3DHelper {
 			Graphics3D g3d = renderContext.getGraphics3D();
 
 			if (surface != null && surface.is2DHost()) {
-				if ((renderContext.isRedraw2DContent() || m_figuresFriend.is2DContentDirty())) {
+				if ((renderContext.isRedraw2DContent() || m_figuresFriend
+					.is2DContentDirty())) {
 
 					if (m_image != null) {
 						m_image.dispose();
@@ -598,7 +631,8 @@ public class Figure3DHelper {
 					try {
 						graphics.setFont(i_graphics.getFont());
 						configureGraphics(graphics);
-						doPaintChildren2D(children2D, figure, graphics);
+						doPaintChildrenAndConnections2D(figure, children2D,
+							graphics);
 					} finally {
 						m_image = g3d.deactivateGraphics2D();
 						m_image.initialize(g3d);
@@ -616,7 +650,7 @@ public class Figure3DHelper {
 				Graphics graphics = i_graphics;
 				graphics.setFont(i_graphics.getFont());
 				configureGraphics(graphics);
-				doPaintChildren2D(children2D, figure, i_graphics);
+				doPaintChildrenAndConnections2D(figure, children2D, i_graphics);
 			}
 		}
 	}

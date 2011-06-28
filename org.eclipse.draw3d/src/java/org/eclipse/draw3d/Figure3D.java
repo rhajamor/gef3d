@@ -116,7 +116,8 @@ public class Figure3D extends Figure implements IFigure3D {
 	protected SyncedVector3f preferredSize3D;
 
 	/**
-	 * In
+	 * Used to determine whether 2D content is to be rendered again.
+	 * {@link #isRepaint2DComponents()}
 	 */
 	protected boolean repaint2DComponents = true;
 
@@ -154,16 +155,42 @@ public class Figure3D extends Figure implements IFigure3D {
 				return Figure3D.this.getLocalFont();
 			}
 
+			/** 
+			 * {@inheritDoc}
+			 * @see org.eclipse.draw3d.Figure3DFriend#is2DContentDirty()
+			 */
 			@Override
 			public boolean is2DContentDirty() {
-
-				return repaint2DComponents;
+				return Figure3D.this.isRepaint2DComponents();
 			}
 		};
 
-		helper = new Figure3DHelper(friend);
+		helper = createFigure3DHelper(friend);
+		
 		// setClippingStrategy(new ClippingStrategyFigure3D());
 	}
+	
+	
+
+	/**
+	 * @return
+	 */
+	protected boolean isRepaint2DComponents() {
+		return repaint2DComponents;
+	}
+
+
+
+	/**
+	 * Called exactly once by constructor, override by sub class if
+	 * a different {@link Figure3DHelper} is required.
+	 * @return
+	 */
+	protected Figure3DHelper createFigure3DHelper(Figure3DFriend friend) {
+		return new Figure3DHelper(friend);
+	}
+
+
 
 	@Override
 	public void add(IFigure i_figure, Object i_constraint, int i_index) {
@@ -598,7 +625,8 @@ public class Figure3D extends Figure implements IFigure3D {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Calls helper's {@link Figure3DHelper#paintChildren(Graphics)} and
+	 * sets {@link #repaint2DComponents} to false.
 	 * 
 	 * @see org.eclipse.draw2d.Figure#paintChildren(org.eclipse.draw2d.Graphics)
 	 */
