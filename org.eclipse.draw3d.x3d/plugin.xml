@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.draw3d.graphics3d">
+         <renderer 
+         	id="org.eclipse.draw3d.graphics3d.x3d.Graphics3DX3D"
+         	class="org.eclipse.draw3d.graphics3d.x3d.Graphics3DX3D" 
+         	type="EXPORT">
+            <name>
+               X3D
+            </name>
+            <description>
+               Exporter for X3D format.
+            </description>
+         </renderer>
+         
+   </extension>
+
+</plugin>
