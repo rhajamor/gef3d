@@ -85,12 +85,18 @@ public class EditorInputTransferDropTargetListener extends
 			for (EditorInputTransfer.EditorInputData data : editorInputsData)
 				if (!getMultiEditor().acceptsInput(data.input)) {
 					return DND.DROP_NONE;
+				} else {
+					return DND.DROP_COPY;
 				}
+		}
+
+		if (EditorInputTransfer.getInstance().isSupportedType(
+			i_event.currentDataType)) {
+			return DND.DROP_COPY;
 		} else {
 			return DND.DROP_NONE;
 		}
 
-		return DND.DROP_COPY;
 	}
 
 	/**
