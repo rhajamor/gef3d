@@ -10,11 +10,9 @@
  ******************************************************************************/
 package org.eclipse.draw3d.ui.camera;
 
-import java.util.logging.Level;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.IFigure;
@@ -186,11 +184,7 @@ public class CameraInputHandler {
 
 	private float m_wheelSpeed = 20;
 
-	/**
-	 * The timer used for camera trackings
-	 */
-	Timer timer = null;
-
+	
 	/**
 	 * Handles a mouse button down event.
 	 * 
@@ -204,14 +198,14 @@ public class CameraInputHandler {
 		int modifiers = getModifiers(i_stateMask);
 		doButtonDown(i_button, modifiers, i_x, i_y);
 	}
+	
+	
 
 	/**
 	 * 
 	 */
 	protected void stopCameraTracking() {
-		if (timer != null)
-			timer.cancel();
-		timer = null;
+		getCamera().cancelTrackingShot();
 	}
 
 	/**
@@ -267,6 +261,7 @@ public class CameraInputHandler {
 
 		return camera;
 	}
+	
 
 	/**
 	 * Return the key strokes represented by the given SWT key event.
@@ -517,7 +512,8 @@ public class CameraInputHandler {
 
 		}
 		if (cameraPos != null) {
-
+			getCamera().cancelTrackingShot();
+			
 			LinearMove move = new LinearMove();
 			move.init(getCamera().getCameraPosition(null), cameraPos);
 
@@ -537,8 +533,8 @@ public class CameraInputHandler {
 				duration = 100;
 
 			TrackingShot shot = new TrackingShot(duration, getCamera(), move);
-			timer=new Timer();
-			timer.schedule(shot, 0, 50);
+			
+			getCamera().scheduleTrackingShot(shot);
 
 		}
 

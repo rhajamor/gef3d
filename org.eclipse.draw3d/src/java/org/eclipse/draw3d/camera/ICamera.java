@@ -11,10 +11,12 @@
 
 package org.eclipse.draw3d.camera;
 
+import java.util.Timer;
+
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.camera.tracking.TrackingShot;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Vector3f;
@@ -250,9 +252,10 @@ public interface ICamera {
 	 * @param i_height the height of the viewport
 	 */
 	public void setViewport(int i_x, int i_y, int i_width, int i_height);
-	
+
 	/**
-	 * Returns the dimension of the view port. 
+	 * Returns the dimension of the view port.
+	 * 
 	 * @return
 	 */
 	public Dimension getViewPortSize();
@@ -284,4 +287,17 @@ public interface ICamera {
 	 */
 	public Vector3f unProject(int i_mx, int i_my, float i_d,
 		IMatrix4f i_modelMatrix, Vector3f io_result);
+
+	/**
+	 * Schedules a new tracking shot, possibly running tracking shots are
+	 * canceled. While camera tracks could be run using a separated
+	 * {@link Timer}, it is recommended to use the camera's timer in order to
+	 * enable canceling of tracking shots via {@link #cancelTrackingShot()}.
+	 */
+	public void scheduleTrackingShot(TrackingShot shot);
+
+	/**
+	 * Cancels a possibly running tracking shot.
+	 */
+	public void cancelTrackingShot();
 }

@@ -12,12 +12,14 @@
 package org.eclipse.draw3d.camera;
 
 import java.nio.FloatBuffer;
+import java.util.Timer;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.RenderContext;
+import org.eclipse.draw3d.camera.tracking.TrackingShot;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
@@ -251,15 +253,16 @@ public class FirstPersonCamera extends AbstractCamera {
 	 * The current viewport.
 	 */
 	protected final Rectangle m_viewport = new Rectangle();
+	
+	protected Timer timer;
 
 	/**
 	 * Creates and initializes a first person camera.
 	 */
 	public FirstPersonCamera() {
-
 		reset();
 	}
-
+	
 	private IMatrix4f calculateInversionMatrix(IMatrix4f i_modelMatrix,
 		Matrix4f io_result) {
 
@@ -738,6 +741,37 @@ public class FirstPersonCamera extends AbstractCamera {
 		o_result.setUpVector(m_up);
 		o_result.setViewDirection(m_viewDir);
 		return o_result;
+	}
+
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.camera.ICamera#scheduleTrackingShot(org.eclipse.draw3d.camera.tracking.TrackingShot, long, long)
+	 */
+	public void scheduleTrackingShot(TrackingShot i_shot) {
+		
+		if (timer!=null) {
+			cancelTrackingShot();
+		}
+		
+		timer = new Timer();
+		timer.scheduleAtFixedRate(i_shot, 0, 50);
+		
+	}
+	
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.draw3d.camera.ICamera#cancelTrackingShot()
+	 */
+	public void cancelTrackingShot() {
+		if (timer!=null) {
+			try {
+				timer.cancel();
+			} catch (Exception ex) {
+				// TODO: handle exception
+			}
+			timer = null;
+		}
+		
 	}
 	
 	

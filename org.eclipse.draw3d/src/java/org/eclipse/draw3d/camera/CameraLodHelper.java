@@ -79,21 +79,26 @@ public class CameraLodHelper implements ILodHelper {
 		Vector3f v = Draw3DCache.getVector3f();
 		Vector3f vDir = Draw3DCache.getVector3f();
 		try {
-			v.setX(i_position.getX() + i_size.getX() / 2);
-			v.setY(i_position.getY() + i_size.getY() / 2);
+			// v is center of the figure we are looking to
+			v.setX(i_position.getX() + i_size.getX() / 2f);
+			v.setY(i_position.getY() + i_size.getY() / 2f);
 			v.setZ(i_position.getZ());
 
-			m_camera.getViewDirection(vDir);
 			m_camera.getPosition(cPos);
 			Math3D.sub(v, cPos, v);
+			// distance between camera and center of figure
+			float distance = v.length();
 
-			float d = v.length();
+//			if (distance<1500)
+				return distance;
+			
+//			m_camera.getViewDirection(vDir);
+//			double cosa = Math3D.dot(vDir, i_normal);
+//			
+//			if (cosa == 0)
+//				return Float.MAX_VALUE;
 
-			float cosa = Math3D.dot(vDir, i_normal);
-			if (cosa == 0)
-				return Float.MAX_VALUE;
-
-			return d / Math.abs(cosa);
+//			return (float) (distance / Math.abs(cosa));
 		} finally {
 			Draw3DCache.returnVector3f(cPos, v, vDir);
 		}
