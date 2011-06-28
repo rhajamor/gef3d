@@ -185,6 +185,10 @@ public class GraphEditor3D extends GraphicalEditor3DWithPalette {
 		return root;
 	}
 
+	/** 
+	 * {@inheritDoc}
+	 * @see org.eclipse.gef.ui.parts.GraphicalEditor#configureGraphicalViewer()
+	 */
 	@Override
 	protected void configureGraphicalViewer() {
 		super.configureGraphicalViewer();

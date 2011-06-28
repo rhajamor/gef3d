@@ -14,7 +14,7 @@ package org.eclipse.draw3d.geometry;
  * Stores location, size, and rotation of an 3D object. Immutable triple of
  * position properties for 3D objects, that is location, size (scale), and
  * rotation. These three properties can be combined in a so called
- * transformation matrix, which can then be passed to OpenGL or renderes able to
+ * transformation matrix, which can then be passed to OpenGL or renderer able to
  * handle these kind of information.
  * <p>
  * This interface and its subinterfaces and implementations were created in
@@ -36,13 +36,15 @@ package org.eclipse.draw3d.geometry;
 public interface IPosition3D {
 
 	/**
-	 * Hint passed in events, see Host3D#positionChanged
+	 * Hint passed in events indicating which component (location, rotatoin,
+	 * size) of the position had been changed.
 	 * 
 	 * @author Jens von Pilgrim
 	 * @version $Revision$
 	 * @since Jan 21, 2009
+	 * @see Host3D#positionChanged
 	 */
-	public enum PositionHint {
+	public static enum PositionHint {
 		/**
 		 * Location has changed.
 		 */
@@ -112,9 +114,12 @@ public interface IPosition3D {
 	public IVector3f getCenter3D();
 
 	/**
-	 * Returns the host (or context) of this position
+	 * Returns the host (or context) of this position.
+	 * <code>{@link #getHost()}.{@link IHost3D#getPosition3D()}==this</code>
+	 * must always be true.
 	 * 
 	 * @return returns the host, must not be null
+	 * @see IHost3D#getPosition3D()
 	 */
 	public IHost3D getHost();
 

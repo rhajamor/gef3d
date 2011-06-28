@@ -10,59 +10,51 @@
  ******************************************************************************/
 package org.eclipse.gef3d.gmf.runtime.diagram.ui.parts;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
-import org.eclipse.draw2d.ExclusionSearch;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LightweightSystem;
-import org.eclipse.draw2d.TreeSearch;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw3d.Draw3DCanvas;
-import org.eclipse.draw3d.IFigure3D;
-import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.LightweightSystem3D;
-import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Math3DCache;
-import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.picking.Hit;
-import org.eclipse.draw3d.picking.Picker;
-import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.Handle;
-import org.eclipse.gef.LayerConstants;
-import org.eclipse.gef.EditPartViewer.Conditional;
-import org.eclipse.gef.editparts.LayerManager;
+import org.eclipse.gef3d.factories.IFigureFactory;
+import org.eclipse.gef3d.factories.IFigureFactoryProvider;
 import org.eclipse.gef3d.gmf.runtime.core.service.IProviderAcceptorProvider;
 import org.eclipse.gef3d.gmf.runtime.core.service.ProviderAcceptor;
 import org.eclipse.gef3d.ui.parts.GraphicalViewer3D;
 import org.eclipse.gef3d.ui.parts.GraphicalViewer3DHelper;
 import org.eclipse.gmf.runtime.common.ui.services.editor.IEditorProvider;
 import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.opengl.GLCanvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 /**
- * 3D diagram graphical viewer.
+ * 3D diagram graphical viewer. It also implements
+ * {@link org.eclipse.gef3d.factories.IFigureFactoryProvider.Mutable} for
+ * convenience reasons.
  * 
  * @author Kristian Duske
  * @version $Revision$
  * @since Apr 7, 2009
  */
 public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
-		GraphicalViewer3D, IProviderAcceptorProvider {
+		GraphicalViewer3D, IProviderAcceptorProvider,
+		IFigureFactoryProvider.Mutable {
 
 	/**
 	 * Helper, implementing most methods needed in this implementation. The
 	 * methods in this class delegate to the helper methods.
 	 */
 	protected GraphicalViewer3DHelper m_ViewerHelper;
-	
+
+	/**
+	 * The figure factory.
+	 */
+	protected IFigureFactory m_FigureFactory = null;
+
 	/**
 	 * Creates this viewer and adds a {@link ProviderAcceptor} to its
 	 * properties. This provider selector is also attached as viewer to the
@@ -81,7 +73,7 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 	 * @param providerAcceptor
 	 */
 	public DiagramGraphicalViewer3D(ProviderAcceptor providerAcceptor) {
-		if (m_ViewerHelper==null) {
+		if (m_ViewerHelper == null) {
 			m_ViewerHelper = new GraphicalViewer3DHelper(this);
 		}
 		setProperty(ProviderAcceptor.PROVIDER_ACCEPTOR_PROPERTY_KEY,
@@ -120,7 +112,7 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 	 */
 	@Override
 	protected LightweightSystem createLightweightSystem() {
-		if (m_ViewerHelper==null) {
+		if (m_ViewerHelper == null) {
 			m_ViewerHelper = new GraphicalViewer3DHelper(this);
 		}
 		return m_ViewerHelper.createLightweightSystem();
@@ -198,8 +190,6 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 
 		return (ProviderAcceptor) getProperty(ProviderAcceptor.PROVIDER_ACCEPTOR_PROPERTY_KEY);
 	}
-	
-	
 
 	/**
 	 * {@inheritDoc}
@@ -239,6 +229,24 @@ public class DiagramGraphicalViewer3D extends DiagramGraphicalViewer implements
 
 		super.setRootFigure(i_figure);
 		getLightweightSystem().setContents(i_figure);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.factories.IFigureFactoryProvider.Mutable#setFigureFactory(org.eclipse.gef3d.factories.IFigureFactory)
+	 */
+	public void setFigureFactory(IFigureFactory i_factory) {
+		m_FigureFactory = i_factory;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.factories.IFigureFactoryProvider#getFigureFactory()
+	 */
+	public IFigureFactory getFigureFactory() {
+		return m_FigureFactory;
 	}
 
 }

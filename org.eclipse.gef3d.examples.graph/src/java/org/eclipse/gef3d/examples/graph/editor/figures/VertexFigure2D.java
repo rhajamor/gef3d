@@ -88,7 +88,14 @@ public class VertexFigure2D extends Figure {
 //	}
 	
 	
-	
+	/** 
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return super.toString() + " label=" + ((Label)(getChildren().get(0))).getText();
+	}
 	
 
 }

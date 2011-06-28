@@ -38,8 +38,8 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 		GraphicalViewer3D, IFigureFactoryProvider.Mutable {
 
 	@SuppressWarnings("unused")
-	private static final Logger log =
-		Logger.getLogger(GraphicalViewer3DImpl.class.getName());
+	private static final Logger log = Logger
+		.getLogger(GraphicalViewer3DImpl.class.getName());
 
 	protected IFigureFactory m_FigureFactory = null;
 
@@ -53,7 +53,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	 * 
 	 */
 	public GraphicalViewer3DImpl() {
-		if (m_ViewerHelper==null) {
+		if (m_ViewerHelper == null) {
 			m_ViewerHelper = new GraphicalViewer3DHelper(this);
 		}
 	}
@@ -97,7 +97,7 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 	 */
 	@Override
 	protected LightweightSystem createLightweightSystem() {
-		if (m_ViewerHelper==null) {
+		if (m_ViewerHelper == null) {
 			m_ViewerHelper = new GraphicalViewer3DHelper(this);
 		}
 		return m_ViewerHelper.createLightweightSystem();
@@ -124,15 +124,6 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 		Collection i_exclude, final Conditional i_condition) {
 		return m_ViewerHelper.findObjectAtExcluding(i_sLocation, i_exclude,
 			i_condition);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.gef3d.factories.IFigureFactoryProvider#getFigureFactory()
-	 */
-	public IFigureFactory getFigureFactory() {
-		return m_FigureFactory;
 	}
 
 	/**
@@ -172,16 +163,24 @@ public class GraphicalViewer3DImpl extends GraphicalViewerImpl implements
 
 		}
 	}
-	
 
 	/**
-	 * Sets the figure factory of this viewer.
+	 * {@inheritDoc}
 	 * 
-	 * @param i_factory
+	 * @see org.eclipse.gef3d.factories.IFigureFactoryProvider.Mutable#setFigureFactory(org.eclipse.gef3d.factories.IFigureFactory)
 	 */
 	public void setFigureFactory(IFigureFactory i_factory) {
 
 		m_FigureFactory = i_factory;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.eclipse.gef3d.factories.IFigureFactoryProvider#getFigureFactory()
+	 */
+	public IFigureFactory getFigureFactory() {
+		return m_FigureFactory;
 	}
 
 }

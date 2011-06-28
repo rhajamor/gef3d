@@ -14,6 +14,10 @@
  * These classes are used with GEF3D, their functionality is very similar
  * to Java3D's vecmath package or LWJGL's vector package<sup>1)</sup>.
  * 
+ * This package/plugin does not depend from any other non-JDK package, in
+ * particular it does not depend from any Eclipse (SWT, GEF, Draw2D) plugins.
+ * This it can be used standalone as well. 
+ * 
  * <h3>Contained Classes</h3>
  * This package contains 3D geometry classes such as
  * <ul>
@@ -49,15 +53,15 @@
  * Point.negate() negates the values of the object itself, while Point.getNegated()
  * returns a new instance with negated values. In Draw3D we simply provide a single
  * operation, that is Math3D.abs(IVector3f, Vector3f) 
- * (or Math3D.negate(IVector3f, Vector3f) resp.), see below for further details.
+ * (or Math3D.negate(IVector3f, Vector3f) respectively), see below for further details.
  * </small>
  * </p>
  * 
  * Especially for use within Draw3D, the following classes are defined:
  * <ul>
- * 	<li>SyncedVector3f -- a vector3f based on a {@ling org.eclpise.draw2d.geometry.Vector2f}</li>
+ * 	<li>SyncedVector3f -- a vector3f based on a {@link org.eclpise.draw2d.geometry.Vector2f}</li>
  *  <li>BoundingBox (with immutable and mutable interfaces)</li>
- *  <li>SyncedBounds3D -- a bounding box based on {@ling org.eclpise.draw2d.geometry.Rectangle}</li>
+ *  <li>SyncedBounds3D -- a bounding box based on {@link org.eclpise.draw2d.geometry.Rectangle}</li>
  * </ul>
  * The synchronized classes only stores the delta of a 3D vector and a 2D vector,
  * that is the floating values of the x and y attributes and the z value. 
@@ -68,7 +72,10 @@
  * 2D object (which would cause no problem), but the reference (of the
  * attribute) is also changed (see {@link org.eclipse.draw3d.Figure3D#getPreferredSize3D()}
  * and its implementation, especially  {@link org.eclipse.draw2d.Figure#getPreferredSize(int, int)}
- * Thus, the synced classes cannot implement the mutable interface!
+ * Thus, the synced classes cannot implement the mutable interface! Since 
+ * the draw3d.geometry package is not intended to have dependencies from
+ * any other Eclipse plugins, these synchronization classes are implemented
+ * in plugin draw3D.
  * </p>
  * 
  * 

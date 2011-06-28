@@ -23,6 +23,13 @@ import org.eclipse.draw3d.geometry.Vector3fImpl;
  * Mutable implementation of {@link Position3D}, based on a synchronized bounds
  * object. That is the properties of this 3D position object is synchronized via
  * {@link SyncedBounds3D} with a 2D object.
+ * <p>
+ * Note hat
+ * {@link IHost3D#positionChanged(java.util.EnumSet, org.eclipse.draw3d.geometry.IVector3f)}
+ * is only called this object had been changed by calling a setter defined in
+ * {@link Position3D}, and not by changing the backing 2D {@link Rectangle}
+ * object.
+ * </p>
  * 
  * @author Jens von Pilgrim
  * @version $Revision$
@@ -59,6 +66,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 
 	/**
 	 * {@inheritDoc}
+	 * This will always return an {@link SyncHost3D}.
 	 * 
 	 * @see org.eclipse.draw3d.geometry.IPosition3D#getHost()
 	 */
@@ -103,7 +111,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 
 		if (delta.x != 0 || delta.y != 0)
 			host.setBounds(newBounds);
-		
+
 		// This forces the synced bounds update the location vector.
 		// While this has no direct effect here, a client may has cached
 		// the location vector.
@@ -145,7 +153,7 @@ public class SynchronizedPosition3DImpl extends AbstractPosition3D {
 		// While this has no direct effect here, a client may has cached
 		// the size vector.
 		getLocation3D();
-		
+
 		invalidate();
 
 		firePositionChanged(PositionHint.SIZE, delta);
