@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cq:componentQuery xmlns:cq="http://www.eclipse.org/buckminster/CQuery-1.0" resourceMap="GEF3D.rmap" properties="local.properties">
-    <cq:rootRequest name="org.eclipse.gef3d.build" componentType="eclipse.feature"/>
-    <cq:advisorNode namePattern="^org\.eclipse\.gef3d\.releng$" useMaterialization="false" useWorkspace="false"/>
-        <cq:advisorNode namePattern="^org\.eclipse\.gef3d([\.].+)+\.source$" skipComponent="true"/>
-</cq:componentQuery>
