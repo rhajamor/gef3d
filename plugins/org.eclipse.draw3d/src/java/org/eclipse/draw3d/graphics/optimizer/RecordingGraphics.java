@@ -506,7 +506,7 @@ public class RecordingGraphics extends StatefulGraphics {
 	 * 
 	 * @see org.eclipse.draw2d.Graphics#clipPath(org.eclipse.swt.graphics.Path)
 	 */
-	@Override
+	// @Override -- is a new method, may not be present in elder GEF versions
 	public void clipPath(Path i_path) {
 		if (i_path == null) // parameter precondition
 			throw new NullPointerException("i_path must not be null");
