@@ -14,12 +14,12 @@
 	<groupId>org.eclipse.gef3d</groupId>
 	<artifactId>plugins</artifactId>
 	<packaging>pom</packaging>
-	<version>0.8.1.qualifier</version><!-- 0.9.0-SNAPSHOT -->
+	<version>0.8.1-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.eclipse.gef3d</groupId>
 		<artifactId>parent</artifactId>
-	   <version>0.8.1.qualifier</version>
+	   <version>0.8.1-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
 

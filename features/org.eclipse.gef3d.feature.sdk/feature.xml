@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.eclipse.gef3d.sdk"
-      label="GEF3D SDK (Source, Doc)"
-      version="0.8.1"
+      label="GEF3D SDK Feature (Source, Doc)"
+      version="0.8.1.qualifier"
       provider-name="Eclipse.org">
 
    <description url="http://eclipse.org/gef3d">
@@ -120,23 +120,76 @@ Java and all Java-based trademarks are trademarks of Sun Microsystems, Inc. in t
       <discovery label="GEF3D Project Site" url="http://eclipse.org/gef3d"/>
    </url>
 
+    <plugin
+         id="org.eclipse.draw3d.source"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false" />
+
+    <plugin
+         id="org.eclipse.draw3d.geometry.source"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false" />
+
+    <plugin
+         id="org.eclipse.draw3d.graphics3d.source"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false" />
+
+    <plugin
+         id="org.eclipse.draw3d.lwjgl.source"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false" />
+
+    <plugin
+         id="org.eclipse.draw3d.ui.source"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false" />
+
    <plugin
          id="org.eclipse.gef3d.source"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
-
+         version="0.0.0"
+         unpack="false"/>
+         
    <plugin
-         id="org.eclipse.gef3d.doc"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.eclipse.draw3d.test"
+         id="org.eclipse.gef3d.ext.source"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-
+         
+    <plugin
+         id="org.eclipse.gef3d.ext.emf.source"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+         
+    <plugin
+         id="org.eclipse.gef3d.gmf.source"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+         
+         
+<!--
+   <plugin
+         id="org.eclipse.gef3d.doc"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+-->
 </feature>

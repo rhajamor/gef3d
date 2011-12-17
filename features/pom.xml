@@ -14,12 +14,12 @@
 	<groupId>org.eclipse.gef3d</groupId>
 	<artifactId>features</artifactId>
 	<packaging>pom</packaging>
-	<version>0.8.1.qualifier</version><!-- 0.9.0-SNAPSHOT -->
+	<version>0.8.1-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.eclipse.gef3d</groupId>
 		<artifactId>parent</artifactId>
-	   <version>0.8.1.qualifier</version>
+	   <version>0.8.1-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -27,8 +27,9 @@
 	        <module>org.eclipse.draw3d.feature</module>
 	        <module>org.eclipse.gef3d.feature</module>
             <module>org.eclipse.gef3d.feature.examples</module>
+            <module>org.eclipse.gef3d.feature.sdk</module>
 	<!-- not handled yet
-        <module>org.eclipse.gef3d.feature.sdk</module>
+
         <module>org.eclipse.gef3d.feature.test</module>
         -->
 	</modules>
