@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * Copyright (c) 2011 Jens von Pilgrim and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">	
+    <modelVersion>4.0.0</modelVersion>
+	<groupId>org.eclipse.gef3d</groupId>
+	<artifactId>parent</artifactId>
+	<version>0.8.1.qualifier</version><!-- 0.9.0-SNAPSHOT -->
+	<packaging>pom</packaging>
+	<name>Parent project for GEF3D build</name>
+	<description>Parent project for GEF3D build</description>
+
+	<prerequisites>
+		<maven>3.0</maven>
+	</prerequisites>
+
+	<properties>
+		<tycho-version>0.13.0</tycho-version>
+	</properties>
+
+	<modules>
+		<module>plugins</module>
+		<module>examples</module>		
+		<module>features</module>
+		<module>repository</module>
+		<!--
+
+		<module>doc</module>
+		<module>tests</module>
+		-->
+	</modules>
+
+	<mailingLists>
+		<mailingList>
+			<name>GEF3D Project developer mailing list</name>
+			<post>gef3d-dev@eclipse.org</post>
+			<subscribe>https://dev.eclipse.org/mailman/listinfo/gef3d-dev</subscribe>
+			<unsubscribe>https://dev.eclipse.org/mailman/listinfo/gef3d-dev</unsubscribe>
+			<archive>http://dev.eclipse.org/mhonarc/lists/gef3d-dev/</archive>
+		</mailingList>
+	</mailingLists>
+
+	<issueManagement>
+		<url>https://bugs.eclipse.org/bugs/buglist.cgi?classification=Technology;product=GEF3D</url>
+		<system>Bugzilla</system>
+	</issueManagement>
+
+	<licenses>
+		<license>
+			<name>Eclipse Public License v1.0</name>
+			<comments>Copyright (c) 2011 Jens von Pilgrim and others. All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse Public License v1.0 which accompanies this distribution, and is available at http://www.eclipse.org/legal/epl-v10.html </comments>
+		</license>
+	</licenses>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<resolver>p2</resolver>
+					<environments>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86_64</arch>
+						</environment>
+					</environments>
+				</configuration>
+			</plugin>
+			<plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-source-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <executions>
+          <execution>
+            <id>plugin-source</id>
+            <goals>
+              <goal>plugin-source</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+		</plugins>
+	</build>
+	
+	<repositories>
+					<repository>
+					<id>Galileo</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/releases/galileo</url>
+				</repository>				
+<!--
+				<repository>
+					<id>Helios</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/releases/helios</url>
+				</repository>				
+	
+-->
+
+<repository>
+				<id>lwjgl.org</id>
+				<layout>p2</layout>
+				<url>file:/Users/jpilgrim/Desktop/x/LWJGL/eclipse-update/org.lwjgl.build/build/plugins/org.lwjgl.updatesite</url>
+			</repository>	
+		</repositories>
+	<profiles>
+    	<profile>
+			<id>galileo</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<repositories>
+				<repository>
+					<id>Galileo</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/releases/galileo</url>
+				</repository>				
+			</repositories>
+		</profile>
+		<profile>
+			<id>helios</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<repositories>
+				<repository>
+					<id>Helios</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/releases/helios</url>
+				</repository>				
+			</repositories>
+		</profile>
+		
+	</profiles>
+
+</project>
