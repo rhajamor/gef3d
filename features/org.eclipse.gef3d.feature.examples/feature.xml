@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.eclipse.gef3d.feature.examples"
+      id="org.eclipse.gef3d.examples"
       label="GEF3D Examples"
-      version="0.8.1"
+      version="0.8.1.qualifier"
       provider-name="Eclipse.org">
 
-   <description url="http://eclpise.org/gef3d">
+   <description url="http://eclipse.org/gef3d">
       GEF3D is an Eclipse GEF extension bringing 3D to diagram editing.
 This feature contains some sample editors:
 - a simple graph editor implemented to display and edit a labeled
@@ -121,7 +121,12 @@ Java and all Java-based trademarks are trademarks of Sun Microsystems, Inc. in t
 
    <url>
       <discovery label="GEF3D Project Site" url="http://eclipse.org/gef3d"/>
+      
    </url>
+
+    <requires>
+      <import feature="org.eclipse.gef3d" version="0.8.1.qualifier"/>
+   </requires>
 
    <plugin
          id="org.eclipse.gef3d.examples.graph"
@@ -136,12 +141,12 @@ Java and all Java-based trademarks are trademarks of Sun Microsystems, Inc. in t
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-
+   <!--
    <plugin
          id="org.eclipse.gef3d.examples.uml2"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-
+    -->
 </feature>

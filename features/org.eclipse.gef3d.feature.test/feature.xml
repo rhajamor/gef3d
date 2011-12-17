@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.eclipse.gef3d.feature.test"
+      id="org.eclipse.gef3d.test"
       label="GEF3D Test Fetaure"
       version="0.9.3"
       provider-name="Eclipse.org">

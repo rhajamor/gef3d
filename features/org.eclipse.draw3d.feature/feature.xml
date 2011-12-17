@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.eclipse.draw3d.feature"
+      id="org.eclipse.draw3d"
       label="Draw3D Feature"
-      version="0.9.3"
+      version="0.8.1.qualifier"
       provider-name="Eclipse.org">
 
    <description url="http://www.example.com/description">
@@ -19,8 +19,9 @@
 
    <requires>
       <import feature="org.eclipse.draw2d" version="3.5.2.v20100111-1352-4417w311A223702A19"/>
+      <import feature="org.lwjgl" version="2.7.1" />
    </requires>
-
+   
    <plugin
          id="org.eclipse.draw3d"
          download-size="0"
