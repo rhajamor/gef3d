@@ -335,6 +335,7 @@ public class LwjglVectorFont {
 	}
 
 	private int m_listBaseId;
+	private int m_offsetBaseId_StartChar;
 
 	public void initialize() {
 
@@ -459,6 +460,7 @@ public class LwjglVectorFont {
 				// TODO possible creates marginally more lists than need (e.g.
 				// for space char)
 				m_listBaseId = GL11.glGenLists(charCount);
+				m_offsetBaseId_StartChar = m_listBaseId - m_startChar;
 				for (int i = 0; i < charCount; i++) {
 					int listId = m_listBaseId + i;
 					GL11.glNewList(listId, GL11.GL_COMPILE);
@@ -505,11 +507,16 @@ public class LwjglVectorFont {
 
 			try {
 				listIdBuffer.rewind();
-				for (int i = 0; i < i_string.length(); i++) {
-					char c = i_string.charAt(i);
+				final int l = i_string.length();
+				char c;
+				// final int offset = m_listBaseId - m_startChar;
+				for (int i = 0; i < l; i++) {
+					c = i_string.charAt(i);
 					// TODO: what if c cannot be rendered
 					if (c >= m_startChar && c <= m_endChar)
-						listIdBuffer.put(m_listBaseId + c - m_startChar);
+						listIdBuffer.put(m_offsetBaseId_StartChar + c);
+					else
+						listIdBuffer.put(m_offsetBaseId_StartChar + '_');
 				}
 
 				listIdBuffer.limit(listIdBuffer.position());
