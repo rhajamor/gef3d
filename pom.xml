@@ -26,19 +26,18 @@
 
     <properties>
 		<tycho-version>0.13.0</tycho-version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.encoding>UTF-8</project.build.encoding>
 	</properties>
 
 
 	<modules>
 		<module>plugins</module>
 		<module>examples</module>		
+		<module>doc</module>
 		<module>features</module>
 		<module>repository</module>
-		<!--
-
-		<module>doc</module>
 		<module>tests</module>
-		-->
 	</modules>
 
 	<mailingLists>
@@ -141,31 +140,19 @@
 	</build>
 	
 	<repositories>
-					<repository>
-					<id>Galileo</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/releases/galileo</url>
-				</repository>				
-<!--
-				<repository>
-					<id>Helios</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/releases/helios</url>
-				</repository>				
-	
--->
-
-<repository>
-				<id>lwjgl.org</id>
-				<layout>p2</layout>
-				<url>file:/Users/jpilgrim/Desktop/x/LWJGL/eclipse-update/org.lwjgl.build/build/plugins/org.lwjgl.updatesite</url>
-			</repository>	
-		</repositories>
+        <!-- eclipse repositories defined in profiles -->
+        <repository>
+            <id>lwjgl.org</id>
+            <layout>p2</layout>
+            <url>file:/Users/jpilgrim/Desktop/x/LWJGL/eclipse-update/org.lwjgl.build/build/plugins/org.lwjgl.updatesite</url>
+        </repository>	
+    </repositories>
+		
 	<profiles>
     	<profile>
 			<id>galileo</id>
 			<activation>
-				<activeByDefault>false</activeByDefault>
+				<activeByDefault>true</activeByDefault>
 			</activation>
 			<repositories>
 				<repository>
@@ -187,6 +174,50 @@
 					<url>http://download.eclipse.org/releases/helios</url>
 				</repository>				
 			</repositories>
+		</profile>
+		
+		<profile>
+			<id>javadoc</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<!-- 
+					   TODO: 
+					       1) define this in doc plugin? also see discussion in tycho-user mailing list
+					       2) do not generate in doc directly, but instead in target somehow
+					       3) ignore test classes
+					       4) maybe build has to be executed twice
+                    -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>2.8</version>
+						<configuration>
+							<minmemory>128m</minmemory>
+		          			<maxmemory>1g</maxmemory>
+						</configuration>
+						<executions>
+							<execution>
+								<id>aggregate</id>
+								<goals>
+									<goal>aggregate</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<minmemory>128m</minmemory>
+		          					<maxmemory>1024m</maxmemory>
+		          					<reportOutputDirectory>doc/org.eclipse.gef3d.doc/reference</reportOutputDirectory>
+		          					<destDir>api</destDir>
+									<excludePackageNames>*.internal:*.internal.*:*.tests:*.tests.*:*.examples:*.examples.*</excludePackageNames>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					
+						</plugins>
+			</build>
 		</profile>
 		
 	</profiles>

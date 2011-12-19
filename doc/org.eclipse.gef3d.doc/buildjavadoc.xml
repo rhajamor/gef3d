@@ -12,6 +12,9 @@
  	****************************************************************************
 -->
 
+<!-- 
+    THIS BUILD SCRIPT IS NO LONGER USED, INSTEAD, TYCHO/MAVEN IS CREATING THE DOCUMENTATION
+-->
 
 <!---
 	Build script for Ant, generate JavaDoc for _all_ Gef3D projects.
