@@ -24,7 +24,7 @@
 	</parent>
 
 	<modules>
-        <module>org.eclipse.draw3d.test</module>
+        <module>org.eclipse.draw3d.geometry.test</module>
 	</modules>
 
 </project>
