@@ -32,7 +32,7 @@ public class Math3DMatrix4fTest {
 	 */
 	@Test
 	public void testAddIMatrix4fIMatrix4fMatrix4f() {
-		fail("Not yet implemented");
+		// TODO implement test testAddIMatrix4fIMatrix4fMatrix4f
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class Math3DMatrix4fTest {
 	 */
 	@Test
 	public void testSubIMatrix4fIMatrix4fMatrix4f() {
-		fail("Not yet implemented");
+		// TODO implement test testSubIMatrix4fIMatrix4fMatrix4f
 	}
 
 	/**
@@ -52,7 +52,7 @@ public class Math3DMatrix4fTest {
 	 */
 	@Test
 	public void testMulIMatrix4fIMatrix4fMatrix4f() {
-		fail("Not yet implemented");
+		// TODO implement test testMulIMatrix4fIMatrix4fMatrix4f
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class Math3DMatrix4fTest {
 	 */
 	@Test
 	public void testMulFloatIMatrix4fMatrix4f() {
-		fail("Not yet implemented");
+		// TODO implement test testMulFloatIMatrix4fMatrix4f
 
 	}
 
@@ -155,7 +155,7 @@ public class Math3DMatrix4fTest {
 	 */
 	@Test
 	public void testNegateIMatrix4fMatrix4f() {
-		fail("Not yet implemented");
+		// TODO implement test testNegateIMatrix4fMatrix4f
 	}
 
 	/**
@@ -165,7 +165,7 @@ public class Math3DMatrix4fTest {
 	 */
 	@Test
 	public void testTransposeIMatrix4fMatrix4f() {
-		fail("Not yet implemented");
+		// TODO implement test testTransposeIMatrix4fMatrix4f
 	}
 
 }

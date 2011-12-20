@@ -24,7 +24,7 @@ import java.util.Arrays;
  * @version $Revision$
  * @since Dec 16, 2008
  */
-public class Vector4fImpl implements Vector4f, Serializable, Cloneable {
+public final class Vector4fImpl implements Vector4f, Serializable, Cloneable {
 	/**
 	 * x attribute, made public for fast access. Usually, clients should use
 	 * getters/setters as defined in {@link IVector4f} and {@link Vector4f}.
@@ -321,6 +321,18 @@ public class Vector4fImpl implements Vector4f, Serializable, Cloneable {
 		if (v==null) return false;
 		return x==v.getX() && y==v.getY() && z==v.getZ() && w==v.getW();
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object i_obj) {
+		if (i_obj == null || !(i_obj instanceof IVector4f))
+			return false;
+		return equals((IVector4f) i_obj);
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -345,7 +357,7 @@ public class Vector4fImpl implements Vector4f, Serializable, Cloneable {
 	 */
 	@Override
 	public int hashCode() {
-		float[] af = new float[3];
+		float[] af = new float[4];
 		toArray(af);
 		return Arrays.hashCode(af);
 	}

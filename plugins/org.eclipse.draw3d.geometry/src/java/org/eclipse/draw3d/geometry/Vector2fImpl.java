@@ -26,7 +26,7 @@ import java.util.Arrays;
  * @version $Revision$
  * @since Jun 3, 2009
  */
-public class Vector2fImpl implements Vector2f, Cloneable, Serializable {
+public final class Vector2fImpl implements Vector2f, Cloneable, Serializable {
 
 	/**
 	 * x attribute, made public for fast access. Usually, clients should use

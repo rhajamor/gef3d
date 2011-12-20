@@ -11,6 +11,8 @@
 
 package org.eclipse.draw3d.geometry;
 
+import java.util.Random;
+
 import junit.framework.TestCase;
 
 /**
@@ -1108,35 +1110,34 @@ public class Math3DTest extends TestCase {
 	 * .
 	 */
 	public void testTranslateIVector3fIMatrix4fMatrix4f() {
-		Matrix4fImpl m0 = GeometryTests.getRandomMatrix4f();
-		Vector3fImpl v1 = GeometryTests.getRandomVector3f();
-		Matrix4fImpl m1 = new Matrix4fImpl(m0);
 
-		m1.a41 += m0.a11 * v1.x + m0.a21 * v1.y + m0.a31 * v1.z;
-		m1.a42 += m0.a12 * v1.x + m0.a22 * v1.y + m0.a32 * v1.z;
-		m1.a43 += m0.a13 * v1.x + m0.a23 * v1.y + m0.a33 * v1.z;
-		m1.a44 += m0.a14 * v1.x + m0.a24 * v1.y + m0.a34 * v1.z;
+		// translating with null vector must not change matrix
+		Matrix4f mAct =
+			Math3D.translate(IMatrix4f.IDENTITY, IVector3f.NULLVEC3f, null);
+		assertEquals(mAct, IMatrix4f.IDENTITY);
 
-		Matrix4f m2 = Math3D.translate(m0, v1, null);
+		// test simple translation
+		Vector3fImpl vTransl = new Vector3fImpl(2, 3, 5); // GeometryTests.getRandomVector3f();
 
-		if (!m1.equals(m2)) {
-			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
-				+ m1.toString() + " " + m2.toString());
-		}
+		Matrix4fImpl mExp = new Matrix4fImpl(IMatrix4f.IDENTITY);
+		mExp.set(3, 0, mExp.get(0, 3) + vTransl.getX());
+		mExp.set(3, 1, mExp.get(1, 3) + vTransl.getY());
+		mExp.set(3, 2, mExp.get(2, 3) + vTransl.getZ());
 
-		m2.set(m0);
-		Math3D.translate(m0, v1, m2);
-		if (!m1.equals(m2)) {
-			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
-				+ m1.toString() + " " + m2.toString());
-		}
+		Matrix4f mtrans = new Matrix4fImpl();
+		mtrans.set(3, 0, vTransl.getX());
+		mtrans.set(3, 1, vTransl.getY());
+		mtrans.set(3, 2, vTransl.getZ());
 
-		m2.set(m0);
-		m2 = Math3D.translate(m0, v1, m0);
-		if (!m1.equals(m2) || !m1.equals(m0)) {
-			fail("testTransposeIMatrix4fMatrix4f - Expected values do not match: "
-				+ m1.toString() + " " + m2.toString());
-		}
+		mAct = Math3D.translate(IMatrix4f.IDENTITY, vTransl, null);
+		assertEquals(mExp, mAct);
+
+		// check supposed effect:
+		Vector3f v = GeometryTests.getRandomVector3f();
+		Vector3f vExp = Math3D.add(v, vTransl, null);
+		Vector3f vAct = Math3D.transform(v, mAct, null);
+		assertEquals(vExp, vAct);
+
 	}
 
 	/**

@@ -32,16 +32,16 @@ public class AbstractPosition3DTest {
 	 */
 	@Test
 	public void testGetAbsolute() {
-		Position3D parent = Position3DUtil.createAbsolutePosition();
-		Position3D pos =
-			Position3DUtil.createRelativePosition(parent.getHost());
+		IHost3D host = Position3DUtil.createAbsolutePosition().getHost();
+		Position3D parent = host.getPosition3D();
+		Position3D pos = Position3DUtil.createRelativePosition(host);
 
 		parent.setLocation3D(new Vector3fImpl(1, 1, 0));
-		pos.setLocation3D(new Vector3fImpl(0, 0, 0));
+		pos.setLocation3D(new Vector3fImpl(1, 0, 0));
 
 		Position3D abs = pos.getAbsolute(null);
 		IVector3f v = abs.getLocation3D();
-		assertEquals(1, v.getX(), EPS);
+		assertEquals(2, v.getX(), EPS);
 		assertEquals(1, v.getY(), EPS);
 		assertEquals(0, v.getZ(), EPS);
 
@@ -50,16 +50,16 @@ public class AbstractPosition3DTest {
 
 		abs = pos.getAbsolute(null);
 		v = abs.getLocation3D();
-		assertEquals(3, v.getX(), EPS);
-		assertEquals(0, v.getY(), EPS);
+		assertEquals(1, v.getX(), EPS);
+		assertEquals(2, v.getY(), EPS);
 		assertEquals(0, v.getZ(), EPS);
 
 		pos.setLocation3D(new Vector3fImpl(3, 1, 0));
 
 		abs = pos.getAbsolute(null);
 		v = abs.getLocation3D();
-		assertEquals(2, v.getX(), EPS);
-		assertEquals(3, v.getY(), EPS);
+		assertEquals(0, v.getX(), EPS);
+		assertEquals(4, v.getY(), EPS);
 		assertEquals(0, v.getZ(), EPS);
 
 		v = abs.getRotation3D();
@@ -74,9 +74,9 @@ public class AbstractPosition3DTest {
 	 */
 	@Test
 	public void testSetPosition() {
-		Position3D parent = Position3DUtil.createAbsolutePosition();
-		Position3D pos =
-			Position3DUtil.createRelativePosition(parent.getHost());
+		IHost3D host = Position3DUtil.createAbsolutePosition().getHost();
+		Position3D parent = host.getPosition3D();
+		Position3D pos = Position3DUtil.createRelativePosition(host);
 
 		parent.setLocation3D(new Vector3fImpl(1, 1, 0));
 		parent.setSize3D(new Vector3fImpl(3, 1, 1));
@@ -89,8 +89,8 @@ public class AbstractPosition3DTest {
 
 		pos.setPosition(absPos);
 		IVector3f r = pos.getLocation3D();
-		assertEquals(3, r.getX(), EPS);
-		assertEquals(1, r.getY(), EPS);
+		assertEquals(2, r.getX(), EPS);
+		assertEquals(-1, r.getY(), EPS);
 		assertEquals(0, r.getZ(), EPS);
 
 		Position3D abs = pos.getAbsolute(null);
@@ -118,8 +118,8 @@ public class AbstractPosition3DTest {
 			Position3D absPos = Position3DUtil.createAbsolutePosition();
 			absPos.setLocation3D(new Vector3fImpl((float) Math.random(),
 				(float) Math.random(), (float) Math.random()));
-//			absPos.setSize3D(new Vector3fImpl(20000,
-//				20000, 20000));
+			// absPos.setSize3D(new Vector3fImpl(20000,
+			// 20000, 20000));
 
 			absPos.setSize3D(new Vector3fImpl((float) Math.random(),
 				(float) Math.random(), (float) Math.random()));
@@ -127,12 +127,12 @@ public class AbstractPosition3DTest {
 				(float) Math.random(), (float) Math.random()));
 			pos.setPosition(absPos);
 			Position3D posAbsPos = pos.getAbsolute(null);
-			assertEquals(absPos.getLocation3D().getX(), posAbsPos.getLocation3D()
-				.getX(), EPS);
-			assertEquals(absPos.getLocation3D().getY(), posAbsPos.getLocation3D()
-				.getY(), EPS);
-			assertEquals(absPos.getLocation3D().getZ(), posAbsPos.getLocation3D()
-				.getZ(), EPS);
+			assertEquals(absPos.getLocation3D().getX(), posAbsPos
+				.getLocation3D().getX(), EPS);
+			assertEquals(absPos.getLocation3D().getY(), posAbsPos
+				.getLocation3D().getY(), EPS);
+			assertEquals(absPos.getLocation3D().getZ(), posAbsPos
+				.getLocation3D().getZ(), EPS);
 		}
 	}
 

@@ -47,7 +47,7 @@ import java.util.Arrays;
  * @version $Revision$
  * @since Dec 15, 2008
  */
-public class Matrix2fImpl implements Matrix2f, Serializable, Cloneable {
+public final class Matrix2fImpl implements Matrix2f, Serializable, Cloneable {
 	/**
 	 * @see java.io.Serializable
 	 */
@@ -244,6 +244,18 @@ public class Matrix2fImpl implements Matrix2f, Serializable, Cloneable {
 			return false;
 		Matrix2fImpl sm = cast(i_anotherMatrix2f);
 		return a11 == sm.a11 && a12 == sm.a12 && a21 == sm.a21 && a22 == sm.a22;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object i_obj) {
+		if (i_obj == null || !(i_obj instanceof IMatrix2f))
+			return false;
+		return equals((IMatrix2f) i_obj);
 	}
 
 	/**

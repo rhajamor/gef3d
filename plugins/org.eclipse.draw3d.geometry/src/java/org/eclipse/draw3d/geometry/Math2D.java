@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.geometry;
 
-import java.util.Comparator;
 
 /**
  * Math2D There should really be more documentation here.
@@ -21,29 +20,7 @@ import java.util.Comparator;
  */
 public class Math2D {
 
-	private static class VertexComparator implements Comparator<Integer> {
-
-		private int[] m_vertices;
-
-		public VertexComparator(int[] i_vertices) {
-
-			m_vertices = i_vertices;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-		 */
-		public int compare(Integer index1, Integer index2) {
-
-			int x1 = m_vertices[2 * index1];
-			int x2 = m_vertices[2 * index2];
-
-			return x1 - x2;
-		}
-
-	}
+	
 
 	private static void checkPoints(int[] i_p, String i_name) {
 
@@ -78,9 +55,7 @@ public class Math2D {
 		checkPoints(points, "points");
 
 		int n = points.length / 2;
-		if (n > Integer.MAX_VALUE)
-			throw new IllegalArgumentException("array contains too many points");
-
+		
 		int[] sorted = new int[n];
 
 		for (int i = 0; i < n; i++)

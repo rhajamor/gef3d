@@ -602,7 +602,7 @@ public class Math3DMatrixOps extends Math3DMatrix4f {
 	}
 
 	/**
-	 * Translates a matrix by a given vector.
+	 * Adds a translation defined by a given vector to a transformation matrix.
 	 * 
 	 * @param i_source the matrix to be translated, in homogeneous coordinates
 	 * @param i_vector the translation vector

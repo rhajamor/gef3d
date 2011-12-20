@@ -56,7 +56,7 @@ import java.util.Arrays;
  * @version $Revision$
  * @since Dec 16, 2008
  */
-public class Matrix4fImpl implements Matrix4f, Serializable, Cloneable {
+public final class Matrix4fImpl implements Matrix4f, Serializable, Cloneable {
 
 	/**
 	 * @see java.io.Serializable
@@ -281,10 +281,22 @@ public class Matrix4fImpl implements Matrix4f, Serializable, Cloneable {
 			return false;
 		Matrix4fImpl sm = cast(i_anotherMatrix4f);
 		return a11 == sm.a11 && a12 == sm.a12 && a13 == sm.a13 && a14 == sm.a14
-			&& // 
+			&& //
 			a21 == sm.a21 && a22 == sm.a22 && a23 == sm.a23 && a24 == sm.a24 && //
 			a31 == sm.a31 && a32 == sm.a32 && a33 == sm.a33 && a34 == sm.a34 && //
 			a41 == sm.a41 && a42 == sm.a42 && a43 == sm.a43 && a44 == sm.a44;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object i_obj) {
+		if (i_obj == null || !(i_obj instanceof IMatrix4f))
+			return false;
+		return equals((IMatrix4f) i_obj);
 	}
 
 	/**
@@ -728,12 +740,12 @@ public class Matrix4fImpl implements Matrix4f, Serializable, Cloneable {
 	@Override
 	public String toString() {
 
-		return String.format(TO_STRING_FORMAT, String.valueOf(a11), String
-			.valueOf(a12), String.valueOf(a13), String.valueOf(a14), String
-			.valueOf(a21), String.valueOf(a22), String.valueOf(a23), String
-			.valueOf(a24), String.valueOf(a31), String.valueOf(a32), String
-			.valueOf(a33), String.valueOf(a34), String.valueOf(a41), String
-			.valueOf(a42), String.valueOf(a43), String.valueOf(a44));
+		return String.format(TO_STRING_FORMAT, String.valueOf(a11),
+			String.valueOf(a12), String.valueOf(a13), String.valueOf(a14),
+			String.valueOf(a21), String.valueOf(a22), String.valueOf(a23),
+			String.valueOf(a24), String.valueOf(a31), String.valueOf(a32),
+			String.valueOf(a33), String.valueOf(a34), String.valueOf(a41),
+			String.valueOf(a42), String.valueOf(a43), String.valueOf(a44));
 	}
 
 }

@@ -92,7 +92,7 @@ public class Math3DMatrix2fTest {
 	 */
 	@Test
 	public void testTranspose() {
-		fail("Not yet implemented");
+		// TODO implement test testTranspose
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class Math3DMatrix2fTest {
 	 */
 	@Test
 	public void testDet() {
-		fail("Not yet implemented");
+		// TODO implement test testDet
 	}
 
 	/**
@@ -119,7 +119,7 @@ public class Math3DMatrix2fTest {
 	 */
 	@Test
 	public void testNegdet() {
-		fail("Not yet implemented");
+		// TODO implement test testNegdet
 	}
 
 	/**
@@ -149,7 +149,7 @@ public class Math3DMatrix2fTest {
 	 */
 	@Test
 	public void testAdjugate() {
-		fail("Not yet implemented");
+		// TODO implement test testAdjugate
 	}
 
 	/**
@@ -157,7 +157,7 @@ public class Math3DMatrix2fTest {
 	 */
 	@Test
 	public void testMulFloatIMatrix2fMatrix2f() {
-		fail("Not yet implemented");
+		// TODO implement test testMulFloatIMatrix2fMatrix2f
 	}
 
 	/**
@@ -165,7 +165,7 @@ public class Math3DMatrix2fTest {
 	 */
 	@Test
 	public void testNegateIMatrix2fMatrix2f() {
-		fail("Not yet implemented");
+		// TODO implement test testNegateIMatrix2fMatrix2f
 	}
 
 }

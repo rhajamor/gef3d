@@ -25,7 +25,7 @@ import java.util.Arrays;
  * @version $Revision$
  * @since Dec 16, 2008
  */
-public class Vector3fImpl implements Vector3f, Cloneable, Serializable {
+public final class Vector3fImpl implements Vector3f, Cloneable, Serializable {
 
 	/**
 	 * x attribute, made public for fast access. Usually, clients should use

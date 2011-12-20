@@ -12,6 +12,7 @@
 package org.eclipse.draw3d.geometry;
 
 import java.nio.FloatBuffer;
+import java.text.DecimalFormat;
 
 import junit.framework.TestCase;
 
@@ -252,13 +253,13 @@ public class Vector3fTest extends TestCase {
 		// check equality to itself
 		if (!v0.equals(v0)) {
 			fail("testEqualsIVector3f - Equality to self failed with vector: "
-					+ v0.toString());
+				+ v0.toString());
 		}
 
 		// check equality to vector with same x,y,z values
 		if (!v0.equals(v1)) {
 			fail("testEqualsIVector3f - Equality from " + v0.toString()
-					+ " to " + v1.toString() + " failed");
+				+ " to " + v1.toString() + " failed");
 		}
 
 		// check unequality to vector with different x,y,z values
@@ -267,7 +268,7 @@ public class Vector3fTest extends TestCase {
 
 		if (v0.equals(v1)) {
 			fail("testEqualsIVector3f - Unequality from " + v0.toString()
-					+ " to " + v1.toString() + " failed");
+				+ " to " + v1.toString() + " failed");
 		}
 
 		v1.set(v0);
@@ -276,7 +277,7 @@ public class Vector3fTest extends TestCase {
 
 		if (v0.equals(v1)) {
 			fail("testEqualsIVector3f - Unequality from " + v0.toString()
-					+ " to " + v1.toString() + " failed");
+				+ " to " + v1.toString() + " failed");
 		}
 
 		v1.set(v0);
@@ -285,7 +286,7 @@ public class Vector3fTest extends TestCase {
 
 		if (v0.equals(v1)) {
 			fail("testEqualsIVector3f - Unequality from " + v0.toString()
-					+ " to " + v1.toString() + " failed");
+				+ " to " + v1.toString() + " failed");
 		}
 
 		// Test unequality to completely different vector
@@ -295,7 +296,7 @@ public class Vector3fTest extends TestCase {
 
 		if (v0.equals(v1)) {
 			fail("testEqualsIVector3f - Unequality from " + v0.toString()
-					+ " to " + v1.toString() + " failed");
+				+ " to " + v1.toString() + " failed");
 		}
 	}
 
@@ -309,20 +310,21 @@ public class Vector3fTest extends TestCase {
 		float z = GeometryTests.getRandomFloat();
 		float epsilon = GeometryTests.getRandomFloat();
 		IVector3f v0 = new Vector3fImpl(x, y, z);
-		Vector3f v1 = new Vector3fImpl(x + (epsilon / 2), y - (epsilon / 3), z
+		Vector3f v1 =
+			new Vector3fImpl(x + (epsilon / 2), y - (epsilon / 3), z
 				- (epsilon / 4));
 
 		// check equality to itself, which is independent from epsilon
 		if (!v0.equals(v0, GeometryTests.getRandomFloat())) {
 			fail("testEqualsIVector3fFloat - Equality to self failed with vector "
-					+ v0.toString() + ", epsilon " + epsilon);
+				+ v0.toString() + ", epsilon " + epsilon);
 		}
 
 		// check equality to vector with x,y,z within limits
 		if (!v0.equals(v1, epsilon)) {
 			fail("testEqualsIVector3fFloat - Equality from " + v0.toString()
-					+ " to " + v1.toString() + " with epsilon " + epsilon
-					+ "failed");
+				+ " to " + v1.toString() + " with epsilon " + epsilon
+				+ "failed");
 		}
 
 		// check unequality to vector with x,y,z values outside the limits
@@ -330,8 +332,8 @@ public class Vector3fTest extends TestCase {
 
 		if (v0.equals(v1, epsilon)) {
 			fail("testEqualsIVector3fFloat - Unequality from " + v0.toString()
-					+ " to " + v1.toString() + " with epsilon " + epsilon
-					+ "failed");
+				+ " to " + v1.toString() + " with epsilon " + epsilon
+				+ "failed");
 		}
 
 		v1.set(v0);
@@ -339,8 +341,8 @@ public class Vector3fTest extends TestCase {
 
 		if (v0.equals(v1, epsilon)) {
 			fail("testEqualsIVector3fFloat - Unequality from " + v0.toString()
-					+ " to " + v1.toString() + " with epsilon " + epsilon
-					+ "failed");
+				+ " to " + v1.toString() + " with epsilon " + epsilon
+				+ "failed");
 		}
 
 		v1.set(v0);
@@ -348,8 +350,8 @@ public class Vector3fTest extends TestCase {
 
 		if (v0.equals(v1, epsilon)) {
 			fail("testEqualsIVector3fFloat - Unequality from " + v0.toString()
-					+ " to " + v1.toString() + " with epsilon " + epsilon
-					+ "failed");
+				+ " to " + v1.toString() + " with epsilon " + epsilon
+				+ "failed");
 		}
 
 		// Test unequality to completely different vector
@@ -359,8 +361,8 @@ public class Vector3fTest extends TestCase {
 
 		if (v0.equals(v1, epsilon)) {
 			fail("testEqualsIVector3fFloat - Unequality from " + v0.toString()
-					+ " to " + v1.toString() + " with epsilon " + epsilon
-					+ "failed");
+				+ " to " + v1.toString() + " with epsilon " + epsilon
+				+ "failed");
 		}
 
 		// check with epsilon 0
@@ -369,14 +371,14 @@ public class Vector3fTest extends TestCase {
 
 		if (!v0.equals(v1, epsilon)) {
 			fail("testEqualsIVector3fFloat - Equality from " + v0.toString()
-					+ " to " + v1.toString() + " with epsilon " + epsilon
-					+ "failed");
+				+ " to " + v1.toString() + " with epsilon " + epsilon
+				+ "failed");
 		}
 
 		if (!v0.equals(v0, epsilon)) {
 			fail("testEqualsIVector3fFloat - Equality from " + v0.toString()
-					+ " to " + v1.toString() + " with epsilon " + epsilon
-					+ "failed");
+				+ " to " + v1.toString() + " with epsilon " + epsilon
+				+ "failed");
 		}
 
 		// check exact match
@@ -387,8 +389,8 @@ public class Vector3fTest extends TestCase {
 
 		if (!v0.equals(v0, epsilon)) {
 			fail("testEqualsIVector3fFloat - Equality from " + v0.toString()
-					+ " to " + v1.toString() + " with epsilon " + epsilon
-					+ "failed");
+				+ " to " + v1.toString() + " with epsilon " + epsilon
+				+ "failed");
 		}
 
 	}
@@ -517,7 +519,7 @@ public class Vector3fTest extends TestCase {
 		// check correct storage in array
 		if (arr[offset] != x || arr[offset + 1] != y || arr[offset + 2] != z) {
 			fail("testToArrayFloatArray - Failed with vector " + v0.toString()
-					+ ", capacity " + capacity + ", offset " + offset);
+				+ ", capacity " + capacity + ", offset " + offset);
 		}
 	}
 
@@ -537,7 +539,7 @@ public class Vector3fTest extends TestCase {
 
 		// check correct content and position
 		if (buf.position() != 3 || buf.get(0) != x || buf.get(1) != y
-				|| buf.get(2) != z) {
+			|| buf.get(2) != z) {
 			fail("testToBuffer - Failed with vector " + v0.toString());
 		}
 	}
@@ -553,11 +555,17 @@ public class Vector3fTest extends TestCase {
 
 		IVector3f v0 = new Vector3fImpl(x, y, z);
 		String s = v0.toString();
+		assertNotNull(s);
 
-		if (s == null || !s.contains(String.valueOf(x))
-				|| !s.contains(String.valueOf(y))
-				|| !s.contains(String.valueOf(z))) {
-			fail("testToString - Failed with vector " + v0.toString());
+		DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##");
+		String[] descr = { "x", "y", "z" };
+		String[] exp =
+			{ DECIMAL_FORMAT.format(x), DECIMAL_FORMAT.format(y),
+				DECIMAL_FORMAT.format(z) };
+
+		for (int i = 0; i < descr.length; i++) {
+			assertTrue(descr[i] + " not found in vector string",
+				s.contains(exp[i]));
 		}
 
 	}
@@ -579,7 +587,7 @@ public class Vector3fTest extends TestCase {
 
 		if (!v0.equals(v1)) {
 			fail("testTranslate - Result not as expected: " + v0.toString()
-					+ v1.toString());
+				+ v1.toString());
 		}
 	}
 
@@ -607,7 +615,7 @@ public class Vector3fTest extends TestCase {
 
 		if (!v0.equals(v1)) {
 			fail("testTransform - Result not as expected: " + v0.toString()
-					+ v1.toString() + m0.toString());
+				+ v1.toString() + m0.toString());
 		}
 	}
 
@@ -626,7 +634,7 @@ public class Vector3fTest extends TestCase {
 
 		if (!v0.equals(v1)) {
 			fail("testScale - Result not as expected: " + v0.toString()
-					+ v1.toString());
+				+ v1.toString());
 		}
 	}
 }

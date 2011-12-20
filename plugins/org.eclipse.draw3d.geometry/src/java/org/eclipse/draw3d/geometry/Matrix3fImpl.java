@@ -48,7 +48,7 @@ import java.util.Arrays;
  * @version $Revision$
  * @since Dec 15, 2008
  */
-public class Matrix3fImpl implements Matrix3f, Serializable, Cloneable {
+public final class Matrix3fImpl implements Matrix3f, Serializable, Cloneable {
 
 	/**
 	 * @see java.io.Serializable
@@ -269,6 +269,19 @@ public class Matrix3fImpl implements Matrix3f, Serializable, Cloneable {
 			&& a22 == sm.a22 && a23 == sm.a23 && a31 == sm.a31 && a32 == sm.a32
 			&& a33 == sm.a33;
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object i_obj) {
+		if (i_obj == null || !(i_obj instanceof IMatrix3f))
+			return false;
+		return equals((IMatrix3f) i_obj);
+	}
+
 
 	/**
 	 * {@inheritDoc}

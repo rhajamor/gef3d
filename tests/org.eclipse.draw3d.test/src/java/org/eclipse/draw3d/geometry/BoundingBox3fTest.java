@@ -11,6 +11,8 @@
 
 package org.eclipse.draw3d.geometry;
 
+import java.text.DecimalFormat;
+
 import junit.framework.TestCase;
 
 /**
@@ -73,12 +75,12 @@ public class BoundingBox3fTest extends TestCase {
 
 		if (!v0.equals(b1.getLocation(null))) {
 			fail("testBoundingBox3fImplIBoundingBox3f - Source position vector not stored correctly: "
-					+ v0.toString() + " " + b1.getLocation(null).toString());
+				+ v0.toString() + " " + b1.getLocation(null).toString());
 		}
 
 		if (!v1.equals(b1.getSize(null))) {
 			fail("testBoundingBox3fImplIBoundingBox3f - Source position vector not stored correctly: "
-					+ v0.toString() + " " + b1.getSize(null).toString());
+				+ v0.toString() + " " + b1.getSize(null).toString());
 		}
 	}
 
@@ -93,14 +95,20 @@ public class BoundingBox3fTest extends TestCase {
 		IBoundingBox b0 = new BoundingBoxImpl(v0, v1);
 		String s = b0.toString();
 
-		if (!s.contains(String.valueOf(v0.getX()))
-				|| !s.contains(String.valueOf(v0.getY()))
-				|| !s.contains(String.valueOf(v0.getZ()))
-				|| !s.contains(String.valueOf(v1.getX()))
-				|| !s.contains(String.valueOf(v1.getY()))
-				|| !s.contains(String.valueOf(v1.getZ()))) {
-			fail("testToString - Not all values of position and size found in String: "
-					+ s + v0.toString() + v1.toString());
+		DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##");
+
+		String[] descr =
+			{ "pos.x", "pos.y", "pos.z", "size.x", "size.y", "size.z" };
+		String[] exp =
+			{ DECIMAL_FORMAT.format(v0.getX()),
+				DECIMAL_FORMAT.format(v0.getY()),
+				DECIMAL_FORMAT.format(v0.getZ()),
+				DECIMAL_FORMAT.format(v1.getX()),
+				DECIMAL_FORMAT.format(v1.getY()),
+				DECIMAL_FORMAT.format(v1.getZ()) };
+		
+		for (int i=0; i<descr.length; i++) {
+			assertTrue(descr[i] + " not found in bounding box string", s.contains(exp[i]));
 		}
 	}
 
@@ -123,7 +131,7 @@ public class BoundingBox3fTest extends TestCase {
 
 		if (!v0.equals(b0.getSize(null))) {
 			fail("testResizeFloatFloatFloat - Size vector not equals to expected: "
-					+ v0.toString() + b0.toString());
+				+ v0.toString() + b0.toString());
 		}
 	}
 
@@ -143,12 +151,12 @@ public class BoundingBox3fTest extends TestCase {
 
 		if (!v0.equals(b0.getLocation(null))) {
 			fail("testExpand - Position vector not equals to expected: "
-					+ v0.toString() + b0.getLocation(null).toString());
+				+ v0.toString() + b0.getLocation(null).toString());
 		}
 
 		if (!v1.equals(b0.getSize(null))) {
 			fail("testExpand - Size vector not equals to expected: "
-					+ v0.toString() + b0.getSize(null).toString());
+				+ v0.toString() + b0.getSize(null).toString());
 		}
 	}
 
@@ -168,9 +176,7 @@ public class BoundingBox3fTest extends TestCase {
 
 		if (!v0.equals(b0.getSize(null))) {
 			fail("testResizeFloatFloatFloat - Size vector not equals to expected: "
-					+ v0.toString()
-					+ v0.toString()
-					+ b0.getSize(null).toString());
+				+ v0.toString() + v0.toString() + b0.getSize(null).toString());
 		}
 	}
 
@@ -189,14 +195,14 @@ public class BoundingBox3fTest extends TestCase {
 		IVector3f v1 = b1.getSize(null);
 		if (!v0.equals(v1)) {
 			fail("testSet - Size vectors to not match between source and destination: "
-					+ v0.toString() + v1.toString());
+				+ v0.toString() + v1.toString());
 		}
 
 		v0 = b0.getLocation(null);
 		v1 = b1.getLocation(null);
 		if (!v0.equals(v1)) {
 			fail("testSet - Position vectors to not match between source and destination: "
-					+ v0.toString() + v1.toString());
+				+ v0.toString() + v1.toString());
 		}
 	}
 
@@ -214,7 +220,7 @@ public class BoundingBox3fTest extends TestCase {
 
 		if (!v0.equals(v1)) {
 			fail("testSetLocation - Position vector not equal to source: "
-					+ v0.toString() + v1.toString());
+				+ v0.toString() + v1.toString());
 		}
 	}
 
@@ -237,7 +243,7 @@ public class BoundingBox3fTest extends TestCase {
 
 		if (!v0.equals(b0.getLocation(null))) {
 			fail("testTranslateFloatFloatFloat - Size vector not equals to expected: "
-					+ v0.toString() + b0.toString());
+				+ v0.toString() + b0.toString());
 		}
 	}
 
@@ -257,9 +263,7 @@ public class BoundingBox3fTest extends TestCase {
 
 		if (!v0.equals(b0.getLocation(null))) {
 			fail("testResizeFloatFloatFloat - Size vector not equals to expected: "
-					+ v0.toString()
-					+ v1.toString()
-					+ b0.getSize(null).toString());
+				+ v0.toString() + v1.toString() + b0.getSize(null).toString());
 		}
 	}
 
@@ -281,14 +285,14 @@ public class BoundingBox3fTest extends TestCase {
 		IVector3f v3 = b0.getCenter(null);
 		if (!v0.equals(v3)) {
 			fail("testGetCenter - Expected values do not match: "
-					+ v0.toString() + v3.toString());
+				+ v0.toString() + v3.toString());
 		}
 
 		Vector3f v4 = new Vector3fImpl();
 		b0.getCenter(v4);
 		if (!v0.equals(v4)) {
 			fail("testGetCenter - Expected values do not match: "
-					+ v0.toString() + v4.toString());
+				+ v0.toString() + v4.toString());
 		}
 	}
 
@@ -305,14 +309,14 @@ public class BoundingBox3fTest extends TestCase {
 		IVector3f v2 = b0.getLocation(null);
 		if (!v0.equals(v2)) {
 			fail("testGetPosition - Expected values do not match: "
-					+ v0.toString() + v2.toString());
+				+ v0.toString() + v2.toString());
 		}
 
 		Vector3f v3 = new Vector3fImpl();
 		b0.getLocation(v3);
 		if (!v0.equals(v3)) {
 			fail("testGetCenter - Expected values do not match: "
-					+ v0.toString() + v3.toString());
+				+ v0.toString() + v3.toString());
 		}
 	}
 
@@ -329,14 +333,14 @@ public class BoundingBox3fTest extends TestCase {
 		IVector3f v2 = b0.getSize(null);
 		if (!v1.equals(v2)) {
 			fail("testGetSize - Expected values do not match: " + v1.toString()
-					+ v2.toString());
+				+ v2.toString());
 		}
 
 		Vector3f v3 = new Vector3fImpl();
 		b0.getSize(v3);
 		if (!v1.equals(v3)) {
 			fail("testGetSize - Expected values do not match: " + v1.toString()
-					+ v3.toString());
+				+ v3.toString());
 		}
 	}
 
@@ -354,7 +358,7 @@ public class BoundingBox3fTest extends TestCase {
 
 		if (!v0.equals(b0.getSize(null))) {
 			fail("testScale - Size vector not as expected: " + v0.toString()
-					+ b0.getSize(null));
+				+ b0.getSize(null));
 		}
 	}
 
@@ -379,7 +383,7 @@ public class BoundingBox3fTest extends TestCase {
 
 		if (!v0.equals(b0.getLocation(null))) {
 			fail("testTransform - Position vector not as expected: "
-					+ v0.toString() + b0.getLocation(null));
+				+ v0.toString() + b0.getLocation(null));
 		}
 	}
 }
