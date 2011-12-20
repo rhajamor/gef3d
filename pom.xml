@@ -37,7 +37,7 @@
 		<module>doc</module>
 		<module>features</module>
 		<module>repository</module>
-		<module>tests</module>
+	<!--	<module>tests</module> -->
 	</modules>
 
 	<mailingLists>
@@ -144,7 +144,7 @@
         <repository>
             <id>lwjgl.org</id>
             <layout>p2</layout>
-            <url>file:/Users/jpilgrim/Desktop/x/LWJGL/eclipse-update/org.lwjgl.build/build/plugins/org.lwjgl.updatesite</url>
+            <url>http://jevopi.de/updatesite/org.lwjgl.updatesite</url>
         </repository>	
     </repositories>
 		
@@ -175,7 +175,7 @@
 				</repository>				
 			</repositories>
 		</profile>
-		
+
 		<profile>
 			<id>javadoc</id>
 			<activation>
@@ -183,7 +183,7 @@
 			</activation>
 			<build>
 				<plugins>
-					<!-- 
+					<!--
 					   TODO: 
 					       1) define this in doc plugin? also see discussion in tycho-user mailing list
 					       2) do not generate in doc directly, but instead in target somehow
@@ -215,11 +215,10 @@
 							</execution>
 						</executions>
 					</plugin>
-					
-						</plugins>
+				</plugins>
 			</build>
 		</profile>
-		
+
 	</profiles>
 
 </project>
