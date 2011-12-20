@@ -11,17 +11,18 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">	
     <modelVersion>4.0.0</modelVersion>
-	<groupId>org.eclipse.gef3d.examples</groupId>
-	<artifactId>org.eclipse.gef3d.examples.graph</artifactId>
+	<groupId>org.eclipse.gef3d.doc</groupId>
+	<artifactId>org.eclipse.gef3d.doc</artifactId>
 	<version>0.8.1-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 
 	<parent>
 		<groupId>org.eclipse.gef3d</groupId>
-		<artifactId>examples</artifactId>
+		<artifactId>doc</artifactId>
 		<version>0.8.1-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
 	
 	
+
 </project>
