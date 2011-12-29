@@ -11,8 +11,6 @@
 
 package org.eclipse.draw3d.geometry;
 
-import java.util.Random;
-
 import junit.framework.TestCase;
 
 /**
@@ -25,7 +23,11 @@ import junit.framework.TestCase;
  */
 public class Math3DTest extends TestCase {
 
-	public static float PREC = 0.0001f;
+	/**
+	 * Precision used in {@link Math3D#equals(float, float, float)}
+	 * @todo increase precision (i.e., reduce this value)
+	 */
+	public static float PREC = 0.0002f;
 
 	/**
 	 * {@inheritDoc}
@@ -1225,7 +1227,7 @@ public class Math3DTest extends TestCase {
 	 * {@link org.eclipse.draw3d.geometryext.Math3D#determinant(org.eclipse.draw3d.geometryext.IMatrix4f)}
 	 * .
 	 */
-	public void testDeterminantIMatrix4f() {
+	public void testDeterminantIMatrix4fRandom() {
 		Matrix4fImpl m0 = GeometryTests.getRandomMatrix4f();
 		Matrix4fImpl m1 = GeometryTests.getRandomMatrix4f();
 
@@ -1252,7 +1254,40 @@ public class Math3DTest extends TestCase {
 			fail("testDeterminantIMatrix4f - Test with transposed matrix failed: detA "
 				+ detA + ", detB " + detB + m0.toString());
 		}
+	}
 
+	public void testDeterminantIMatrix4fFixed() {
+
+		Matrix4fImpl m0 =
+			new Matrix4fImpl(0.641808f, 0.6173171f, 0.3888759f, 0.3780973f,
+				0.6113494f, 0.33735108f, 0.5189923f, 0.44364285f, 0.8764232f,
+				0.17627525f, 0.6259386f, 0.8142215f, 0.2934872f, 0.98154485f,
+				0.86022735f, 0.0f);
+		Matrix4fImpl m1 = GeometryTests.getRandomMatrix4f();
+
+		float detA = Math3D.determinant(m0) * Math3D.determinant(m1);
+		float detB = Math3D.determinant(Math3D.mul(m0, m1, null));
+
+		if (!Math3D.equals(detA, detB, PREC)) {
+			fail("testDeterminantIMatrix4f - Test for multiplicative transformation failed: detA "
+				+ detA + ", detB " + detB + m0.toString() + m1.toString());
+		}
+
+		detA = Math3D.determinant(Math3D.invert(m0, null));
+		detB = (float) Math.pow(Math3D.determinant(m0), -1);
+
+		if (!Math3D.equals(detA, detB, PREC)) {
+			fail("testDeterminantIMatrix4f - Test with inverted matrix failed: detA "
+				+ detA + ", detB " + detB + m0.toString());
+		}
+
+		detA = Math3D.determinant(m0);
+		detB = Math3D.determinant(Math3D.transpose(m0, null));
+
+		if (!Math3D.equals(detA, detB, PREC)) {
+			fail("testDeterminantIMatrix4f - Test with transposed matrix failed: detA "
+				+ detA + ", detB " + detB + m0.toString());
+		}
 	}
 
 	/**

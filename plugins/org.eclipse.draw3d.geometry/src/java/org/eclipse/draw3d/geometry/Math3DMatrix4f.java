@@ -330,7 +330,7 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 	 * </p>
 	 * 
 	 * @param i_source must not be null
-	 * @param o_result may be null
+	 * @param o_result may be null, if matrix cannot be inverted 
 	 * @return o_result (if not null), or a new instance
 	 * @see http://en.wikipedia.org/wiki/Invertible_matrix
 	 */
@@ -362,58 +362,52 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 
 		// A^{-1}
 		Matrix2fImpl Ainv = new Matrix2fImpl();
-		if (Ainv != null) {
-			invert(A, Ainv);
 
-			// CA^{-1}
-			Matrix2fImpl C_Ainv = new Matrix2fImpl();
-			mul(C, Ainv, C_Ainv);
+		invert(A, Ainv);
 
-			// D−CA^{-1}B
-			Matrix2fImpl SchurInv = new Matrix2fImpl();
-			mul(C_Ainv, B, SchurInv);
-			sub(D, SchurInv, SchurInv);
-			invert(SchurInv, SchurInv);
-			if (SchurInv != null) {
+		// CA^{-1}
+		Matrix2fImpl C_Ainv = new Matrix2fImpl();
+		mul(C, Ainv, C_Ainv);
 
-				// A^{-1}B
-				Matrix2fImpl Ainv_B = new Matrix2fImpl();
-				mul(Ainv, B, Ainv_B);
+		// D−CA^{-1}B
+		Matrix2fImpl SchurInv = new Matrix2fImpl();
+		mul(C_Ainv, B, SchurInv);
+		sub(D, SchurInv, SchurInv);
+		invert(SchurInv, SchurInv);
 
-				// calculate result blocks:
-				mul(Ainv_B, SchurInv, A);
-				negate(A, B); // this is B
-				mul(A, C_Ainv, A);
-				add(Ainv, A, A); // this is A
-				mul(SchurInv, C_Ainv, C);
-				negate(C, C); // this is C
-				D = SchurInv; // this is D
+		// A^{-1}B
+		Matrix2fImpl Ainv_B = new Matrix2fImpl();
+		mul(Ainv, B, Ainv_B);
 
-				result.a11 = A.a11;
-				result.a12 = A.a12;
-				result.a21 = A.a21;
-				result.a22 = A.a22;
+		// calculate result blocks:
+		mul(Ainv_B, SchurInv, A);
+		negate(A, B); // this is B
+		mul(A, C_Ainv, A);
+		add(Ainv, A, A); // this is A
+		mul(SchurInv, C_Ainv, C);
+		negate(C, C); // this is C
+		D = SchurInv; // this is D
 
-				result.a13 = B.a11;
-				result.a14 = B.a12;
-				result.a23 = B.a21;
-				result.a24 = B.a22;
+		result.a11 = A.a11;
+		result.a12 = A.a12;
+		result.a21 = A.a21;
+		result.a22 = A.a22;
 
-				result.a31 = C.a11;
-				result.a32 = C.a12;
-				result.a41 = C.a21;
-				result.a42 = C.a22;
+		result.a13 = B.a11;
+		result.a14 = B.a12;
+		result.a23 = B.a21;
+		result.a24 = B.a22;
 
-				result.a33 = D.a11;
-				result.a34 = D.a12;
-				result.a43 = D.a21;
-				result.a44 = D.a22;
-			} else {
-				invert2(detSource, m, result);
-			}
-		} else {
-			invert2(detSource, m, result);
-		}
+		result.a31 = C.a11;
+		result.a32 = C.a12;
+		result.a41 = C.a21;
+		result.a42 = C.a22;
+
+		result.a33 = D.a11;
+		result.a34 = D.a12;
+		result.a43 = D.a21;
+		result.a44 = D.a22;
+
 		if (o_result != result)
 			o_result.set(result);
 

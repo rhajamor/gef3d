@@ -35,7 +35,10 @@ public class PerformanceTest extends TestCase {
 	
 	static String message = "%20s, Field: %8d, Array: %8d, Buffer: %8d";
 
-	public void testFieldsVsArrayMatrix() {
+	/**
+	 * No real test, only a console output test for manual evaluation.
+	 */
+	public void runFieldsVsArrayMatrix() {
 
 		Matrix3fImpl fieldMatrix;
 		Matrix3fAsArray arrayMatrix;
@@ -170,9 +173,9 @@ public class PerformanceTest extends TestCase {
 
 	long doTestDeterminant(IMatrix3f matrix) {
 		start();
-		float f;
+		
 		for (int i = 0; i < LOOPCOUNT; i++) {
-			f = Math3D.determinant(matrix);
+			Math3D.determinant(matrix);
 		}
 		return stop();
 	}
