@@ -6,6 +6,11 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
 -->
+
+<!-- 
+Run tests and build repository:
+mvn -B clean install
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
@@ -36,8 +41,11 @@
 		<module>examples</module>		
 		<module>doc</module>
 		<module>features</module>
-		<module>repository</module>
-	<!--	<module>tests</module> -->
+		
+		
+        <module>tests</module>
+        
+        <module>repository</module>
 	</modules>
 
 	<mailingLists>
@@ -63,8 +71,8 @@
 	</licenses>
 
 	<build>
+	   
 		<plugins>
-			
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-maven-plugin</artifactId>
@@ -197,6 +205,42 @@
 						<configuration>
 							<minmemory>128m</minmemory>
 		          			<maxmemory>1g</maxmemory>
+		          			<failOnError>false</failOnError>
+		          			<quiet>true</quiet> 
+		          			<links>
+                                <link>http://docs.oracle.com/javase/6/docs/api/</link>
+                                <link>http://www.lwjgl.org/javadoc/</link>
+                            </links>
+							<offlineLinks>
+    							<!--
+								<offlineLink>
+                                    <url>http://docs.oracle.com/javase/6/docs/api/</url>
+                                    <location>${basedir}/releng/package-lists/java6/</location>
+                                </offlineLink>
+                                -->
+    		          			<offlineLink>
+                                    <url>http://help.eclipse.org/galileo/topic/org.eclipse.draw2d.doc.isv/reference/api/</url>
+                                    <location>${basedir}/releng/package-lists/draw2d/</location>
+                                </offlineLink>
+    		          			<offlineLink>
+                                    <url>http://help.eclipse.org/galileo/topic/org.eclipse.gef.doc.isv/reference/api/</url>
+                                    <location>${basedir}/releng/package-lists/gef/</location>
+                                </offlineLink>
+                                <offlineLink>
+                                    <url>http://help.eclipse.org/galileo/topic/org.eclipse.gmf.doc/reference/api/runtime/</url>
+                                    <location>${basedir}/releng/package-lists/gmf/</location>
+                                </offlineLink>
+                                <offlineLink>
+                                    <url>http://help.eclipse.org/galileo/topic/org.eclipse.emf.doc/references/javadoc/</url>
+                                    <location>${basedir}/releng/package-lists/emf/</location>
+                                </offlineLink>
+                                <!--
+                                <offlineLink>
+                                    <url>http://www.lwjgl.org/javadoc/</url>
+                                    <location>${basedir}/releng/package-lists/lwjgl/</location>
+                                </offlineLink>
+                                -->
+                            </offlineLinks>
 						</configuration>
 						<executions>
 							<execution>

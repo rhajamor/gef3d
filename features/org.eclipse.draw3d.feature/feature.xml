@@ -6,7 +6,9 @@
       provider-name="Eclipse.org">
 
    <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
+      Draw3D is the 3D version of draw2d. 
+      Important notice: At least one OpenGL wrapper library is required, actually this Draw3D version requires LWJGL. Due to IP issues, no such library is included in this feature, it has to be installed previously. You can install the LWJGL library using the update site at
+        http://lwjgl.org/update 
    </description>
 
    <copyright url="http://www.example.com/copyright">

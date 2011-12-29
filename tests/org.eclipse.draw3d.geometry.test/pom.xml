@@ -12,44 +12,35 @@
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">	
     <modelVersion>4.0.0</modelVersion>
 	<groupId>org.eclipse.gef3d.plugins</groupId>
-	<artifactId>org.eclipse.draw3d.test</artifactId>
+	<artifactId>org.eclipse.draw3d.geometry.test</artifactId>
 	<version>0.8.1-SNAPSHOT</version>
 	<packaging>eclipse-test-plugin</packaging>
-
+		
 	<parent>
 		<groupId>org.eclipse.gef3d</groupId>
-		<artifactId>plugins</artifactId>
+		<artifactId>tests</artifactId>
 		<version>0.8.1-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
 	
 	<build>
-		<plugins>
+        <plugins>
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-source-plugin</artifactId>
+				<artifactId>tycho-surefire-plugin</artifactId>
 				<version>${tycho-version}</version>
-				<executions>
-					<execution>
-						<id>attach-source</id>
-						<goals>
-							<goal>plugin-source</goal>
-						</goals>
-					</execution>
-				</executions>
+				<configuration>
+					<excludes>
+						<!-- in this project, we only have PojoTests -->
+						<exclude>**/Test*.class</exclude>
+					</excludes>
+					<useUIHarness>false</useUIHarness>
+					<useUIThread>false</useUIThread>
+				</configuration>
 			</plugin>
-			<plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>tycho-surefire-plugin</artifactId>
-                <version>${tycho-version}</version>
-                <configuration>
-                    <testSuite>org.eclipse.draw3d.test</testSuite>
-                    <!--
-                    <testClass>FullyQualifiedNameOfTheTestClass</testClass>
-                    -->
-                </configuration>
-            </plugin>
 		</plugins>
 	</build>
+	
+	
 
 </project>
