@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.geometry;
 
+import org.junit.Test;
+
 import junit.framework.TestCase;
 
 /**
@@ -30,15 +32,16 @@ public class PerformanceTest extends TestCase {
 	long stop() {
 		return System.currentTimeMillis() - start;
 	}
-	
+
 	static final int LOOPCOUNT = 1000000;
-	
+
 	static String message = "%20s, Field: %8d, Array: %8d, Buffer: %8d";
 
 	/**
 	 * No real test, only a console output test for manual evaluation.
 	 */
-	public void runFieldsVsArrayMatrix() {
+	@Test
+	public void testFieldsVsArrayMatrix() {
 
 		Matrix3fImpl fieldMatrix;
 		Matrix3fAsArray arrayMatrix;
@@ -52,7 +55,7 @@ public class PerformanceTest extends TestCase {
 		long timeArray;
 		long timeBuffer;
 
-		////////////////////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////
 		// Empty Constructor
 		start();
 		for (int i = 0; i < LOOPCOUNT; i++) {
@@ -72,10 +75,10 @@ public class PerformanceTest extends TestCase {
 		}
 		timeBuffer = stop();
 
-		System.out.println(String.format(message, "Constructor", timeField,
-				timeArray, timeBuffer));
+		out(String.format(message, "Constructor", timeField, timeArray,
+			timeBuffer));
 
-		////////////////////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////
 		// Copy Constructor
 		start();
 		for (int i = 0; i < LOOPCOUNT; i++) {
@@ -95,10 +98,10 @@ public class PerformanceTest extends TestCase {
 		}
 		timeBuffer = stop();
 
-		System.out.println(String.format(message, "Copy-Constructor",
-				timeField, timeArray, timeBuffer));
+		out(String.format(message, "Copy-Constructor", timeField, timeArray,
+			timeBuffer));
 
-		////////////////////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////
 		// Set
 		fieldMatrix = new Matrix3fImpl();
 		arrayMatrix = new Matrix3fAsArray();
@@ -108,10 +111,9 @@ public class PerformanceTest extends TestCase {
 		timeArray = doTestSet(arrayMatrix, arrayMatrixSrc);
 		timeBuffer = doTestSet(bufferMatrix, bufferMatrixSrc);
 
-		System.out.println(String.format(message, "set", timeField, timeArray,
-				timeBuffer));
+		out(String.format(message, "set", timeField, timeArray, timeBuffer));
 
-		////////////////////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////
 		// Set with different type
 		fieldMatrix = new Matrix3fImpl();
 		arrayMatrix = new Matrix3fAsArray();
@@ -123,28 +125,27 @@ public class PerformanceTest extends TestCase {
 		timeArray = doTestSet(arrayMatrix, fieldMatrixSrc);
 		timeBuffer = doTestSet(bufferMatrix, fieldMatrixSrc);
 
-		System.out.println(String.format(message, "set(different type)",
-				timeField, timeArray, timeBuffer));
+		out(String.format(message, "set(different type)", timeField, timeArray,
+			timeBuffer));
 
-		////////////////////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////
 		// setIdentity
 		timeField = doTestSetIdentity(fieldMatrix);
 		timeArray = doTestSetIdentity(arrayMatrix);
 		timeBuffer = doTestSetIdentity(bufferMatrix);
 
-		System.out.println(String.format(message, "setIdentity", timeField,
-				timeArray, timeBuffer));
+		out(String.format(message, "setIdentity", timeField, timeArray,
+			timeBuffer));
 
-		////////////////////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////
 		// setZero
 		timeField = doTestSetZero(fieldMatrix);
 		timeArray = doTestSetZero(arrayMatrix);
 		timeBuffer = doTestSetZero(bufferMatrix);
 
-		System.out.println(String.format(message, "setZero", timeField,
-				timeArray, timeBuffer));
+		out(String.format(message, "setZero", timeField, timeArray, timeBuffer));
 
-		////////////////////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////
 		// setEquals (same type)
 
 		arrayMatrixSrc.set(fieldMatrixSrc);
@@ -156,24 +157,31 @@ public class PerformanceTest extends TestCase {
 		timeArray = doTestEquals(arrayMatrix, arrayMatrixSrc);
 		timeBuffer = doTestEquals(bufferMatrix, bufferMatrixSrc);
 
-		System.out.println(String.format(message, "equals (same type)",
-				timeField, timeArray, timeBuffer));
+		out(String.format(message, "equals (same type)", timeField, timeArray,
+			timeBuffer));
 
-		////////////////////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////
 		// Math3D.determinant
 
 		timeField = doTestDeterminant(fieldMatrix);
 		timeArray = doTestDeterminant(arrayMatrix);
 		timeBuffer = doTestDeterminant(bufferMatrix);
-		
-		System.out.println(String.format(message, "determinante", timeField,
-				timeArray, timeBuffer));
 
+		out(String.format(message, "determinante", timeField, timeArray,
+			timeBuffer));
+
+	}
+
+	/**
+	 * @param i_format
+	 */
+	private void out(String msg) {
+		// System.out.println(msg);
 	}
 
 	long doTestDeterminant(IMatrix3f matrix) {
 		start();
-		
+
 		for (int i = 0; i < LOOPCOUNT; i++) {
 			Math3D.determinant(matrix);
 		}
