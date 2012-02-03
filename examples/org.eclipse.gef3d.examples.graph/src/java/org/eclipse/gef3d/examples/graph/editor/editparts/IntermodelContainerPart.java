@@ -18,6 +18,7 @@ import java.util.List;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
+import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.gef3d.examples.graph.editor.figures.IntermodelContainerFigure;
 import org.eclipse.gef3d.examples.graph.model.IntermodelContainer;
 
@@ -29,7 +30,7 @@ import org.eclipse.gef3d.examples.graph.model.IntermodelContainer;
  * @version $Revision$
  * @since 04.04.2008
  */
-public class IntermodelContainerPart extends AbstractConnectionEditPart
+public class IntermodelContainerPart extends AbstractGraphicalEditPart
 		implements PropertyChangeListener {
 
 	/**
