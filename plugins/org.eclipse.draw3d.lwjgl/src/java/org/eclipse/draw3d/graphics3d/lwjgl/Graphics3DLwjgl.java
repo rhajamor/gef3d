@@ -10,7 +10,9 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl;
 
-import static java.awt.geom.PathIterator.*;
+import static java.awt.geom.PathIterator.SEG_CLOSE;
+import static java.awt.geom.PathIterator.SEG_LINETO;
+import static java.awt.geom.PathIterator.SEG_MOVETO;
 
 import java.awt.Font;
 import java.awt.Shape;
@@ -77,8 +79,6 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.ContextCapabilities;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLContext;
@@ -391,10 +391,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 			checked = false;
 
 			try {
-				Display.setFullscreen(false);
-				Display.setDisplayMode(new DisplayMode(10, 10));
-				Display.create();
-
+				m_context.setCurrent();
 				GLContext.useContext(m_context);
 				ContextCapabilities caps = GLContext.getCapabilities();
 
@@ -412,9 +409,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 				throw new Graphics3DException(
 					"Cannot retrieve OpenGL capabilies, error creating LWJGL display",
 					ex);
-			} finally {
-				Display.destroy();
-			}
+			} 
 		}
 	}
 
@@ -1140,16 +1135,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		org.lwjgl.opengl.GL11.glNormal3f(nx, ny, nz);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DDraw#glNormal3f(int, int,
-	 *      int)
-	 */
-	public void glNormal3f(int nx, int ny, int nz) {
-		org.lwjgl.opengl.GL11.glNormal3f(nx, ny, nz);
-	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -1275,19 +1261,19 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		org.lwjgl.util.glu.GLU.gluPerspective(fovy, aspect, zNear, zFar);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.eclipse.draw3d.graphics3d.Graphics3DUtil#gluUnProject(int, int,
-	 *      float, java.nio.FloatBuffer, java.nio.FloatBuffer,
-	 *      java.nio.IntBuffer, java.nio.FloatBuffer)
-	 */
-	public void gluUnProject(int winx, int winy, float winz,
-		FloatBuffer modelMatrix, FloatBuffer projMatrix, IntBuffer viewport,
-		FloatBuffer obj_pos) {
-		org.lwjgl.util.glu.GLU.gluUnProject(winx, winy, winz, modelMatrix,
-			projMatrix, viewport, obj_pos);
-	}
+//	/**
+//	 * {@inheritDoc}
+//	 * 
+//	 * @see org.eclipse.draw3d.graphics3d.Graphics3DUtil#gluUnProject(int, int,
+//	 *      float, java.nio.FloatBuffer, java.nio.FloatBuffer,
+//	 *      java.nio.IntBuffer, java.nio.FloatBuffer)
+//	 */
+//	public void gluUnProject(int winx, int winy, float winz,
+//		FloatBuffer modelMatrix, FloatBuffer projMatrix, IntBuffer viewport,
+//		FloatBuffer obj_pos) {
+//		org.lwjgl.util.glu.GLU.gluUnProject(winx, winy, winz, modelMatrix,
+//			projMatrix, viewport, obj_pos);
+//	}
 
 	/**
 	 * {@inheritDoc}
