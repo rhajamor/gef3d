@@ -24,3 +24,4 @@ Export-Package: org.eclipse.gef3d.gmf,
  org.eclipse.gef3d.gmf.runtime.diagram.ui.services.editpart,
  org.eclipse.gef3d.gmf.runtime.diagram.ui.services.editpolicy,
  org.eclipse.gef3d.gmf.runtime.draw2d.ui.internal.figures.ConnectionLayerEx
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
