@@ -13,7 +13,9 @@
 
 /**
  * This package defines the Graphics3D interface and provides the management
- * between the available implementations in the Graphics3DRegistry.
+ * between the available implementations in the Graphics3DRegistry. The following
+ * figure shows the interfaces and classes defined in this package:
+ * <img src="doc-files/cd_package.svg" width="100%" />
  * <p>
  * The interface consists of several interface types:
  * </p>

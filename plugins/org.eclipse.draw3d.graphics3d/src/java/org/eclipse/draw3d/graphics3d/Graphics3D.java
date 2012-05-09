@@ -29,7 +29,7 @@ import org.eclipse.swt.opengl.GLCanvas;
  * efficiently.
  * </p>
  * 
- * @author Matthias Thiele
+ * @author Matthias Thiele, Jens von Pilgrim
  * @version $Revision$
  * @since 16.12.2008
  */

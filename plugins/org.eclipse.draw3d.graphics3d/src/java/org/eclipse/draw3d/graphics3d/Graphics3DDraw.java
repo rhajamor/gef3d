@@ -19,6 +19,7 @@ import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.opengl.GLCanvas;
 
 /**
  * The Graphics3DDraw interface defines common 3D draw operations in OpenGL
@@ -28,7 +29,7 @@ import org.eclipse.swt.graphics.Color;
  * @version $Revision$
  * @since 06.12.2008
  */
-public interface Graphics3DDraw {
+public interface Graphics3DDraw extends Graphics3DConst {
 
 	/*
 	 * These are render methods which were already abstracted from the original
@@ -45,326 +46,28 @@ public interface Graphics3DDraw {
 	 * 
 	 * @param position
 	 */
+	/**
+	 * @param position
+	 */
 	void setPosition(IPosition3D position);
 
-	/*
-	 * Some GL drawing constants, mainly used for controlling the drawing
-	 * methods. As the default renderer is an OpenGL implementation, these
-	 * constant have the corresponding values. Other renderer implementations
-	 * have to interpret their meaning towards their specifics.
+	
+	/**
+	 * 
+	 * @return the platform constant
+	 * @see Graphics3DConst#PLATFORM_WINDOWS
+	 * @see Graphics3DConst#PLATFORM_MACOSX
+	 * @see Graphics3DConst#PLATFORM_LINUX
 	 */
-
-	public static final float PI = (float) Math.PI;
-
-	public static final int GL_ONE = 0x1;
-
-	public static final int GL_ZERO = 0x0;
-
-	public static final int GL_FILL = 0x1b02; // org.lwjgl.opengl.GL11.GL_FILL;
-
-	public static final int GL_LINE = 0x1b01;
-
-	public static final int GL_FRONT_AND_BACK = 0x408; // org.lwjgl.opengl.GL11.
-
-	// GL_FRONT_AND_BACK;
-
-	public static final int GL_LINES = 0x1; // org.lwjgl.opengl.GL11.GL_LINES;
-
-	public static final int GL_LINE_STIPPLE = 0xb24; // org.lwjgl.opengl.GL11.
-
-	// GL_LINE_STIPPLE;
-
-	public static final int GL_LINE_STRIP = 0x3; // org.lwjgl.opengl.GL11.
-
-	// GL_LINE_STRIP;
-
-	public static final int GL_MODELVIEW = 0x1700; // org.lwjgl.opengl.GL11.
-
-	// GL_MODELVIEW;
-
-	public static final int GL_QUADS = 0x7; // org.lwjgl.opengl.GL11.GL_QUADS;
-
-	public static final int GL_POLYGON = 0x9;
-
-	// /TODO implement in X3D
-	public static final int GL_TRIANGLES = 0x4;
-
-	// TODO: implement in X3D
-	public static final int GL_TRIANGLE_STRIP = 0x5;
-
-	// TODO: implement in X3D
-	public static final int GL_TRIANGLE_FAN = 0x6;
-
-	public static final int GL_REPLACE = 0x1e01; // org.lwjgl.opengl.GL11.
-
-	// GL_REPLACE;
-
-	public static final int GL_RGBA = 0x1908; // org.lwjgl.opengl.GL11.GL_RGBA;
-
-	public static final int GL_TEXTURE_2D = 0xde1; // org.lwjgl.opengl.GL11.
-
-	// GL_TEXTURE_2D;
-
-	public static final int GL_TEXTURE_ENV = 0x2300; // org.lwjgl.opengl.GL11.
-
-	// GL_TEXTURE_ENV;
-
-	public static final int GL_TEXTURE_ENV_MODE = 0x2200; // org.lwjgl.opengl.GL11
-
-	// .
-	// GL_TEXTURE_ENV_MODE
-	// ;
-
-	public static final int GL_UNSIGNED_BYTE = 0x1401; // org.lwjgl.opengl.GL11.
-
-	// GL_UNSIGNED_BYTE;
-
-	public static final int GL_UNPACK_ALIGNMENT = 0xcf5; // org.lwjgl.opengl.GL11
-
-	// .
-	// GL_UNPACK_ALIGNMENT
-	// ;
-
-	public static final int GL_VERSION = 0x1f02; // org.lwjgl.opengl.GL11.
-
-	// GL_VERSION;
-
-	public static final int GL_DEPTH_TEST = 0xb71; // org.lwjgl.opengl.GL11.
-
-	// GL_DEPTH_TEST;
-
-	public static final int GL_PROJECTION = 0x1701; // org.lwjgl.opengl.GL11.
-
-	// GL_PROJECTION;
-
-	public static final int GL_LUMINANCE_ALPHA = 0x190a; // org.lwjgl.opengl.GL11
-
-	// .
-	// GL_LUMINANCE_ALPHA
-	// ;
-
-	public static final int GL_BLEND = 0xbe2; // org.lwjgl.opengl.GL11.GL_BLEND;
-
-	public static final int GL_COMPILE = 0x1300; // org.lwjgl.opengl.GL11.
-
-	// GL_COMPILE;
-
-	public static final int GL_COLOR_BUFFER_BIT = 0x4000; // org.lwjgl.opengl.GL11
-
-	// .
-	// GL_COLOR_BUFFER_BIT
-	// ;
-
-	public static final int GL_DEPTH_BUFFER_BIT = 0x100; // org.lwjgl.opengl.GL11
-
-	// .
-	// GL_DEPTH_BUFFER_BIT
-	// ;
-
-	public static final int GL_DEPTH_COMPONENT = 0x1902; // org.lwjgl.opengl.GL11
-
-	// .
-	// GL_DEPTH_COMPONENT
-	// ;
-
-	public static final int GL_RGB = 0x1907; // org.lwjgl.opengl.GL11.GL_RGB;
-
-	public static final int GL_FLOAT = 0x1406; // org.lwjgl.opengl.GL11.GL_FLOAT;
-
-	public static final int GL_DITHER = 0xbd0; // org.lwjgl.opengl.GL11.GL_DITHER
-
-	// ;
-
-	public static final int GL_MULTISAMPLE = 0x809d; // org.lwjgl.opengl.GL13.
-
-	// GL_MULTISAMPLE;
-
-	public static final int GL_LINE_LOOP = 0x2; // org.lwjgl.opengl.GL11.
-
-	// GL_LINE_LOOP;
-
-	public static final int GL_FLAT = 0x1d00; // org.lwjgl.opengl.GL11.GL_FLAT;
-
-	public static final int GL_CULL_FACE = 0xb44; // org.lwjgl.opengl.GL11.
-
-	// GL_CULL_FACE;
-
-	public static final int GL_LINE_SMOOTH_HINT = 0xc52; // org.lwjgl.opengl.GL11
-
-	// .
-	// GL_LINE_SMOOTH_HINT
-	// ;
-
-	public static final int GL_NICEST = 0x1102; // org.lwjgl.opengl.GL11.GL_NICEST
-
-	// ;
-
-	public static final int GL_LINE_SMOOTH = 0xb20; // org.lwjgl.opengl.GL11.
-
-	// GL_LINE_SMOOTH;
-
-	public static final int GL_VIEWPORT = 0xba2; // org.lwjgl.opengl.GL11.
-
-	// GL_VIEWPORT;
-
-	public static final int GL_PROJECTION_MATRIX = 0xba7; // org.lwjgl.opengl.GL11
-
-	// .
-	// GL_PROJECTION_MATRIX
-	// ;
-
-	public static final int GL_MODELVIEW_MATRIX = 0xba6; // org.lwjgl.opengl.GL11
-
-	// .
-	// GL_MODELVIEW_MATRIX
-	// ;
-
-	public static final int PLATFORM_LINUX = 1;
-
-	public static final int PLATFORM_MACOSX = 2;
-
-	public static final int PLATFORM_WINDOWS = 3;
-
-	// PLATFORM_WINDOWS;
-
-	public static final int GL_SRC_ALPHA = 0x302; // org.lwjgl.opengl.GL11.
-
-	// GL_SRC_ALPHA;
-
-	public static final int GL_ONE_MINUS_SRC_ALPHA = 0x303; // org.lwjgl.opengl.
-
-	// GL11.
-	// GL_ONE_MINUS_SRC_ALPHA
-	// ;
-
-	public static final int GL_PACK_ALIGNMENT = 0xd05; // org.lwjgl.opengl.GL11.
-
-	// GL_PACK_ALIGNMENT;
-
-	public static final int GL_BGR = 0x80e0; // org.lwjgl.opengl.GL12.GL_BGR;
-
-	public static final int GL_COLOR_INDEX = 0x1900; // org.lwjgl.opengl.GL11.
-
-	// GL_COLOR_INDEX;
-
-	public static final int GL_RED = 0x1903; // org.lwjgl.opengl.GL11.GL_RED;
-
-	public static final int GL_GREEN = 0x1904; // org.lwjgl.opengl.GL11.GL_GREEN;
-
-	public static final int GL_BLUE = 0x1905; // org.lwjgl.opengl.GL11.GL_BLUE;
-
-	public static final int GL_ALPHA = 0x1906; // org.lwjgl.opengl.GL11.GL_ALPHA;
-
-	public static final int GL_LUMINANCE = 0x1909; // org.lwjgl.opengl.GL11.
-
-	// GL_LUMINANCE;
-
-	public static final int GL_STENCIL_INDEX = 0x1901; // org.lwjgl.opengl.GL11.
-
-	// GL_STENCIL_INDEX;
-
-	public static final int GL_BYTE = 0x1400; // org.lwjgl.opengl.GL11.GL_BYTE;
-
-	public static final int GL_UNSIGNED_SHORT = 0x1403; // org.lwjgl.opengl.GL11.
-
-	// GL_UNSIGNED_SHORT;
-
-	public static final int GL_SHORT = 0x1402; // org.lwjgl.opengl.GL11.GL_SHORT;
-
-	public static final int GL_UNSIGNED_INT = 0x1405; // org.lwjgl.opengl.GL11.
-
-	// GL_UNSIGNED_INT;
-
-	public static final int GL_INT = 0x1404; // org.lwjgl.opengl.GL11.GL_INT;
-
-	public static final int GL_BGRA = 0x80e1; // org.lwjgl.opengl.GL12.GL_BGRA;
-
-	public static final int GL_UNSIGNED_BYTE_3_3_2 = 0x8032; // org.lwjgl.opengl.
-
-	// GL12.
-	// GL_UNSIGNED_BYTE_3_3_2
-	// ;
-
-	public static final int GL_UNSIGNED_BYTE_2_3_3_REV = 0x8362; // org.lwjgl.
-
-	// opengl
-	// .GL12.
-	// GL_UNSIGNED_BYTE_2_3_3_REV
-	// ;
-
-	public static final int GL_UNSIGNED_SHORT_5_6_5 = 0x8363; // org.lwjgl.opengl
-
-	// .GL12.
-	// GL_UNSIGNED_SHORT_5_6_5
-	// ;
-
-	public static final int GL_UNSIGNED_SHORT_5_6_5_REV = 0x8364; // org.lwjgl.
-
-	// opengl
-	// .GL12.
-	// GL_UNSIGNED_SHORT_5_6_5_REV
-	// ;
-
-	public static final int GL_UNSIGNED_SHORT_4_4_4_4 = 0x8033; // org.lwjgl.
-
-	// opengl.GL12.
-	// GL_UNSIGNED_SHORT_4_4_4_4
-	// ;
-
-	public static final int GL_UNSIGNED_SHORT_4_4_4_4_REV = 0x8365; // org.lwjgl.
-
-	// opengl
-	// .GL12.
-	// GL_UNSIGNED_SHORT_4_4_4_4_REV
-	// ;
-
-	public static final int GL_UNSIGNED_SHORT_5_5_5_1 = 0x8034; // org.lwjgl.
-
-	// opengl.GL12.
-	// GL_UNSIGNED_SHORT_5_5_5_1
-	// ;
-
-	public static final int GL_UNSIGNED_SHORT_1_5_5_5_REV = 0x8366; // org.lwjgl.
-
-	// opengl
-	// .GL12.
-	// GL_UNSIGNED_SHORT_1_5_5_5_REV
-	// ;
-
-	public static final int GL_UNSIGNED_INT_8_8_8_8 = 0x8035; // org.lwjgl.opengl
-
-	// .GL12.
-	// GL_UNSIGNED_INT_8_8_8_8
-	// ;
-
-	public static final int GL_UNSIGNED_INT_8_8_8_8_REV = 0x8367; // org.lwjgl.
-
-	// opengl
-	// .GL12.
-	// GL_UNSIGNED_INT_8_8_8_8_REV
-	// ;
-
-	public static final int GL_UNSIGNED_INT_10_10_10_2 = 0x8036; // org.lwjgl.
-
-	// opengl
-	// .GL12.
-	// GL_UNSIGNED_INT_10_10_10_2
-	// ;
-
-	public static final int GL_UNSIGNED_INT_2_10_10_10_REV = 0x8368; // org.lwjgl
-
-	// .
-	// opengl
-	// .
-	// GL12.
-	// GL_UNSIGNED_INT_2_10_10_10_REV
-	// ;
-
-	public static final int GL_POINTS = 0x0; // org.lwjgl.opengl.GL11.GL_POINTS;
-
-	public static final int GL_QUAD_STRIP = 0x8; // org.lwjgl.opengl.GL11.
-
-	// GL_QUAD_STRIP;
+	public abstract int getPlatform();
+	
+	/**
+	 * @param context, usually a {@link GLCanvas}
+	 * @throws Graphics3DException
+	 */
+	public void useContext(Object context) throws Graphics3DException;
+	
+	
 
 	/*
 	 * These are the 3D drawing methods. As the default renderer implementation
@@ -373,108 +76,332 @@ public interface Graphics3DDraw {
 	 * methods according to their specifics.
 	 */
 
+	/**
+	 * @param mode
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glBegin.xml">http://www.opengl.org/sdk/docs/man/xhtml/glBegin.xml</a>
+	 */
 	public abstract void glBegin(int mode);
 
+	/**
+	 * @param target
+	 * @param texture
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glBindTexture.xml">http://www.opengl.org/sdk/docs/man/xhtml/glBindTexture.xml</a>
+	 */
 	public abstract void glBindTexture(int target, int texture);
 
+	/**
+	 * @param red
+	 * @param green
+	 * @param blue
+	 * @param alpha
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml">http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml</a>
+	 */
 	public abstract void glColor4f(float red, float green, float blue,
 		float alpha);
 
+	/**
+	 * @param i_color
+	 * @param i_alpha
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml">http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml</a>
+	 */
 	public abstract void glColor(Color i_color, int i_alpha);
 
+	/**
+	 * @param i_color
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml">http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml</a>
+	 */
 	public abstract void glColor(Color i_color);
 
+	/**
+	 * @param rgba
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml">http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml</a>
+	 */
 	public abstract void glColor4f(float[] rgba);
 
+	/**
+	 * @param cap
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glDisable.xml">http://www.opengl.org/sdk/docs/man/xhtml/glDisable.xml</a>
+	 */
 	public abstract void glDisable(int cap);
 
+	/**
+	 * @param cap
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glEnable.xml">http://www.opengl.org/sdk/docs/man/xhtml/glEnable.xml</a>
+	 */
 	public abstract void glEnable(int cap);
 
+	/**
+	 * 
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glEnd.xml">http://www.opengl.org/sdk/docs/man/xhtml/glEnd.xml</a>
+	 */
 	public abstract void glEnd();
 
+	/**
+	 * @param target
+	 * @param pname
+	 * @param param
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glTexEnvi.xml">http://www.opengl.org/sdk/docs/man/xhtml/glTexEnvi.xml</a>
+	 */
 	public abstract void glTexEnvi(int target, int pname, int param);
 
+	/**
+	 * @param s
+	 * @param t
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glTexCoord.xml">http://www.opengl.org/sdk/docs/man/xhtml/glTexCoord.xml</a>
+	 */
 	public abstract void glTexCoord2f(float s, float t);
 
+	/**
+	 * @param coords
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glTexCoord.xml">http://www.opengl.org/sdk/docs/man/xhtml/glTexCoord.xml</a>
+	 */
 	public abstract void glTexCoord2f(IVector2f coords);
 
+	/**
+	 * @param face
+	 * @param mode
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glPolygonMode.xml">http://www.opengl.org/sdk/docs/man/xhtml/glPolygonMode.xml</a>
+	 */
 	public abstract void glPolygonMode(int face, int mode);
 
+	/**
+	 * @param x
+	 * @param y
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glVertex.xml">http://www.opengl.org/sdk/docs/man/xhtml/glVertex.xml</a>
+	 */
 	public abstract void glVertex2f(float x, float y);
 
+	/**
+	 * @param vertex
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glVertex.xml">http://www.opengl.org/sdk/docs/man/xhtml/glVertex.xml</a>
+	 */
 	public abstract void glVertex2f(IVector2f vertex);
 
+	/**
+	 * @param mode
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glMatrixMode.xml">http://www.opengl.org/sdk/docs/man/xhtml/glMatrixMode.xml</a>
+	 */
 	public abstract void glMatrixMode(int mode);
 
+	/**
+	 * 
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glPushMatrix.xml">http://www.opengl.org/sdk/docs/man/xhtml/glPushMatrix.xml</a>
+	 */
 	public abstract void glPushMatrix();
 
+	/**
+	 * 
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glPopMatrix.xml">http://www.opengl.org/sdk/docs/man/xhtml/glPopMatrix.xml</a>
+	 */
 	public abstract void glPopMatrix();
 
+	/**
+	 * @param factor
+	 * @param pattern
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glLineStipple.xml">http://www.opengl.org/sdk/docs/man/xhtml/glLineStipple.xml</a>
+	 */
 	public abstract void glLineStipple(int factor, short pattern);
 
+	/**
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glTranslatef.xml">http://www.opengl.org/sdk/docs/man/xhtml/glTranslatef.xml</a>
+	 */
 	public abstract void glTranslatef(float x, float y, float z);
 
+	/**
+	 * @param name
+	 * @return
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glGet.xml">http://www.opengl.org/sdk/docs/man/xhtml/glGet.xml</a>
+	 */
 	public abstract String glGetString(int name);
 
+	/**
+	 * @param pname
+	 * @param params
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glGet.xml">http://www.opengl.org/sdk/docs/man/xhtml/glGet.xml</a>
+	 */
 	public abstract void glGetFloat(int pname, FloatBuffer params);
 
+	/**
+	 * @param pname
+	 * @param params
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glGet.xml">http://www.opengl.org/sdk/docs/man/xhtml/glGet.xml</a>
+	 */
 	public abstract void glGetInteger(int pname, IntBuffer params);
 
+	/**
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glViewport.xml">http://www.opengl.org/sdk/docs/man/xhtml/glViewport.xml</a>
+	 */
 	public abstract void glViewport(int x, int y, int width, int height);
 
+	/**
+	 * 
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glLoadIdentity.xml">http://www.opengl.org/sdk/docs/man/xhtml/glLoadIdentity.xml</a>
+	 */
 	public abstract void glLoadIdentity();
 
+	/**
+	 * @param range
+	 * @return
+	 */
 	public abstract int glGenLists(int range);
 
+	/**
+	 * @param list
+	 * @param range
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glDeleteLists.xml">http://www.opengl.org/sdk/docs/man/xhtml/glDeleteLists.xml</a>
+	 */
 	public abstract void glDeleteLists(int list, int range);
 
+	/**
+	 * @param list
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glCallList.xml">http://www.opengl.org/sdk/docs/man/xhtml/glCallList.xml</a>
+	 */
 	public abstract void glCallList(int list);
 
+	/**
+	 * @param list
+	 * @param mode
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glNewList.xml">http://www.opengl.org/sdk/docs/man/xhtml/glNewList.xml</a>
+	 */
 	public abstract void glNewList(int list, int mode);
 
+	/**
+	 * 
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glEndList.xml">http://www.opengl.org/sdk/docs/man/xhtml/glEndList.xml</a>
+	 */
 	public abstract void glEndList();
 
+	/**
+	 * @param cap
+	 * @return
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glEndList.xml">http://www.opengl.org/sdk/docs/man/xhtml/glIsEnabled</a>
+	 */
 	public abstract boolean glIsEnabled(int cap);
 
+	/**
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glVertex.xml">http://www.opengl.org/sdk/docs/man/xhtml/glVertex.xml</a>
+	 */
 	public abstract void glVertex3f(float x, float y, float z);
 
+	/**
+	 * @param vertex
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glVertex.xml">http://www.opengl.org/sdk/docs/man/xhtml/glVertex.xml</a>
+	 */
 	public abstract void glVertex3f(IVector3f vertex);
 
-	public abstract void glNormal3f(int nx, int ny, int nz);
-
+	/**
+	 * 
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glFlush.xml">http://www.opengl.org/sdk/docs/man/xhtml/glFlush.xml</a>
+	 */
 	public abstract void glFlush();
 
+	/**
+	 * @param mode
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glShadeModel.xml">http://www.opengl.org/sdk/docs/man/xhtml/glShadeModel.xml</a>
+	 */
 	public abstract void glShadeModel(int mode);
 
+	/**
+	 * @param target
+	 * @param mode
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glHint.xml">http://www.opengl.org/sdk/docs/man/xhtml/glHint.xml</a>
+	 */
 	public abstract void glHint(int target, int mode);
 
+	/**
+	 * @param red
+	 * @param green
+	 * @param blue
+	 * @param alpha
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glClearColor.xml">http://www.opengl.org/sdk/docs/man/xhtml/glClearColor.xml</a>
+	 */
 	public abstract void glClearColor(float red, float green, float blue,
 		float alpha);
 
+	/**
+	 * @param mask
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glClear.xml">http://www.opengl.org/sdk/docs/man/xhtml/glClear.xml</a>
+	 */
 	public abstract void glClear(int mask);
 
-	public abstract int getPlatform();
+	
 
+	/**
+	 * @param sfactor
+	 * @param dfactor
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glBlendFunc.xml">http://www.opengl.org/sdk/docs/man/xhtml/glBlendFunc.xml</a>
+	 */
 	public abstract void glBlendFunc(int sfactor, int dfactor);
 
+	/**
+	 * @param depth
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glClearDepth.xml">http://www.opengl.org/sdk/docs/man/xhtml/glClearDepth.xml</a>
+	 */
 	public abstract void glClearDepth(double depth);
 
+	/**
+	 * @param pname
+	 * @param param
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glPixelStorei.xml">http://www.opengl.org/sdk/docs/man/xhtml/glPixelStorei.xml</a>
+	 */
 	public abstract void glPixelStorei(int pname, int param);
 
+	/**
+	 * @param width
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glLineWidth.xml">http://www.opengl.org/sdk/docs/man/xhtml/glLineWidth.xml</a>
+	 */
 	public abstract void glLineWidth(float width);
 
+	/**
+	 * @param size
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glPointSize.xml">http://www.opengl.org/sdk/docs/man/xhtml/glPointSize.xml</a>
+	 */
 	public abstract void glPointSize(float size);
 
+	/**
+	 * @param red
+	 * @param green
+	 * @param blue
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml">http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml</a>
+	 */
 	public abstract void glColor3f(float red, float green, float blue);
 
+	/**
+	 * @param rgb
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml">http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml</a>
+	 */
 	public abstract void glColor3f(float[] rgb);
 
+	/**
+	 * 
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glFinish.xml">http://www.opengl.org/sdk/docs/man/xhtml/glFinish.xml</a>
+	 */
 	public abstract void glFinish();
 
+	/**
+	 * @param nx
+	 * @param ny
+	 * @param nz
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glNormal.xml">http://www.opengl.org/sdk/docs/man/xhtml/glNormal.xml</a>
+	 */
 	public abstract void glNormal3f(float nx, float ny, float nz);
 
+	/**
+	 * @param normal
+	 * @see <a href="http://www.opengl.org/sdk/docs/man/xhtml/glNormal.xml">http://www.opengl.org/sdk/docs/man/xhtml/glNormal.xml</a>
+	 */
 	public abstract void glNormal3f(IVector3f normal);
 
-	public void useContext(Object context) throws Graphics3DException;
+	
 
 }
