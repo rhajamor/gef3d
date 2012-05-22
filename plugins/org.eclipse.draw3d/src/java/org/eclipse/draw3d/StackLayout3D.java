@@ -12,10 +12,6 @@ package org.eclipse.draw3d;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Position3D;
-import org.eclipse.draw3d.geometry.Position3DUtil;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
 

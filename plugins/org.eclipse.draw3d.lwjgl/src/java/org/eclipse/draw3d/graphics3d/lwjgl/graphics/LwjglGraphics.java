@@ -182,7 +182,7 @@ public class LwjglGraphics extends StatefulGraphics {
 		SWT.LINE_SOLID | SWT.LINE_DASH | SWT.LINE_DOT | SWT.LINE_DASHDOT
 			| SWT.LINE_DASHDOTDOT;
 
-	@SuppressWarnings("unused")
+	// @SuppressWarnings("unused")
 	private static final Logger log =
 		Logger.getLogger(LwjglGraphics.class.getName());
 

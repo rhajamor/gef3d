@@ -619,7 +619,7 @@ public class CylinderShape extends PositionableShape {
 		}
 	}
 
-	private void renderFill(Graphics3D g3d) {
+	void renderFill(Graphics3D g3d) {
 
 		g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
 			Graphics3DDraw.GL_FILL);
@@ -661,7 +661,7 @@ public class CylinderShape extends PositionableShape {
 		}
 	}
 
-	private void renderOutline(Graphics3D g3d) {
+	void renderOutline(Graphics3D g3d) {
 
 		g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
 			Graphics3DDraw.GL_LINE);

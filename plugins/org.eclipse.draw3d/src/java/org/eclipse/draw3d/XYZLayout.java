@@ -14,7 +14,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.LayoutManager;
 import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
@@ -22,7 +21,6 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.util.Draw3DCache;
 
@@ -100,24 +98,25 @@ public class XYZLayout extends XYLayout {
 	 * @param offset
 	 * @param surface
 	 */
-	protected void layoutChild(IFigure f, Object constraint, Point offset,
+	protected void layoutChild(IFigure f, Object i_constraint, Point offset,
 		ISurface surface) {
-		if (constraint instanceof IPosition3D) {
+		Object processedConstraint = i_constraint;
+		if (processedConstraint instanceof IPosition3D) {
 			if (f instanceof IFigure3D) {
 				((IFigure3D) f).getPosition3D().setPosition(
-					(IPosition3D) constraint);
+					(IPosition3D) processedConstraint);
 				return;
 			} else {
-				constraint =
-					toRectangle(((IPosition3D) constraint).getBounds3D(),
+				processedConstraint =
+					toRectangle(((IPosition3D) processedConstraint).getBounds3D(),
 						surface);
 			}
-		} else if (constraint instanceof IBoundingBox) {
+		} else if (processedConstraint instanceof IBoundingBox) {
 			if (f instanceof IFigure3D) {
 				Vector3f location = Draw3DCache.getVector3f();
 				Vector3f size = Draw3DCache.getVector3f();
 				try {
-					IBoundingBox boundingBox = ((IBoundingBox) constraint);
+					IBoundingBox boundingBox = ((IBoundingBox) processedConstraint);
 					boundingBox.getLocation(location);
 					boundingBox.getSize(size);
 					((IFigure3D) f).getPosition3D().setLocation3D(location);
@@ -127,31 +126,31 @@ public class XYZLayout extends XYLayout {
 				}
 				return;
 			} else {
-				constraint = toRectangle((IBoundingBox) constraint, surface);
+				processedConstraint = toRectangle((IBoundingBox) processedConstraint, surface);
 			}
-		} else if (constraint instanceof IVector3f) {
+		} else if (processedConstraint instanceof IVector3f) {
 			if (f instanceof IFigure3D) {
 				((IFigure3D) f).getPosition3D().setLocation3D(
-					(IVector3f) constraint);
+					(IVector3f) processedConstraint);
 				return;
 			} else {
-				constraint = toRectangle((IVector3f) constraint, surface);
+				processedConstraint = toRectangle((IVector3f) processedConstraint, surface);
 			}
 		}
 
-		if (constraint instanceof Rectangle) {
+		if (processedConstraint instanceof Rectangle) {
 			// 2D figure, use layout algorithm of XYLayout
-			Rectangle bounds = (Rectangle) constraint;
+			Rectangle bounds = (Rectangle) processedConstraint;
 
 			// layout "algorithm", 1:1 copy from XYLayout:
 			if (bounds.width == -1 || bounds.height == -1) {
-				Dimension preferredSize =
+				Dimension figuresPreferredSize =
 					f.getPreferredSize(bounds.width, bounds.height);
 				bounds = bounds.getCopy();
 				if (bounds.width == -1)
-					bounds.width = preferredSize.width;
+					bounds.width = figuresPreferredSize.width;
 				if (bounds.height == -1)
-					bounds.height = preferredSize.height;
+					bounds.height = figuresPreferredSize.height;
 			}
 			bounds = bounds.getTranslated(offset);
 			f.setBounds(bounds);
@@ -160,7 +159,7 @@ public class XYZLayout extends XYLayout {
 
 		if (log.isLoggable(Level.INFO)) {
 			log.info("Cannot handle constraint type " //$NON-NLS-1$
-				+ constraint.getClass() + " for " //$NON-NLS-1$
+				+ processedConstraint.getClass() + " for " //$NON-NLS-1$
 				+ f.getClass());
 		}
 	}

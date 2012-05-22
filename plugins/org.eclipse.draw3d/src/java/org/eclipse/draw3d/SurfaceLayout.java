@@ -97,6 +97,7 @@ public class SurfaceLayout extends XYLayout implements DelegatingLayoutManager {
 	 * 
 	 * @see org.eclipse.draw2d.LayoutManager#getConstraint(org.eclipse.draw2d.IFigure)
 	 */
+	@Override
 	public Object getConstraint(IFigure i_child) {
 
 		if (m_delegate == null)
@@ -121,6 +122,7 @@ public class SurfaceLayout extends XYLayout implements DelegatingLayoutManager {
 	 * @see org.eclipse.draw2d.LayoutManager#getMinimumSize(org.eclipse.draw2d.IFigure,
 	 *      int, int)
 	 */
+	@Override
 	public Dimension getMinimumSize(IFigure i_container, int i_hint, int i_hint2) {
 
 		if (m_delegate == null)
@@ -135,6 +137,7 @@ public class SurfaceLayout extends XYLayout implements DelegatingLayoutManager {
 	 * @see org.eclipse.draw2d.LayoutManager#getPreferredSize(org.eclipse.draw2d.IFigure,
 	 *      int, int)
 	 */
+	@Override
 	public Dimension getPreferredSize(IFigure i_container, int i_hint,
 			int i_hint2) {
 
@@ -149,6 +152,7 @@ public class SurfaceLayout extends XYLayout implements DelegatingLayoutManager {
 	 * 
 	 * @see org.eclipse.draw2d.LayoutManager#invalidate()
 	 */
+	@Override
 	public void invalidate() {
 
 		if (m_delegate != null)
@@ -160,6 +164,7 @@ public class SurfaceLayout extends XYLayout implements DelegatingLayoutManager {
 	 * 
 	 * @see org.eclipse.draw2d.LayoutManager#layout(org.eclipse.draw2d.IFigure)
 	 */
+	@Override
 	public void layout(IFigure i_container) {
 
 		if (m_delegate != null)
@@ -194,6 +199,7 @@ public class SurfaceLayout extends XYLayout implements DelegatingLayoutManager {
 	 * 
 	 * @see org.eclipse.draw2d.LayoutManager#remove(org.eclipse.draw2d.IFigure)
 	 */
+	@Override
 	public void remove(IFigure i_child) {
 
 		if (m_delegate != null)
@@ -206,6 +212,7 @@ public class SurfaceLayout extends XYLayout implements DelegatingLayoutManager {
 	 * @see org.eclipse.draw2d.LayoutManager#setConstraint(org.eclipse.draw2d.IFigure,
 	 *      java.lang.Object)
 	 */
+	@Override
 	public void setConstraint(IFigure i_child, Object i_constraint) {
 
 		if (i_constraint instanceof SurfaceConstraint) {

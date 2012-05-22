@@ -12,7 +12,6 @@
 
 package org.eclipse.draw3d.geometry;
 
-import java.io.Serializable;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
@@ -26,7 +25,7 @@ import java.util.Arrays;
  * @version $Revision$
  * @since Jun 3, 2009
  */
-public final class Vector2fImpl implements Vector2f, Cloneable, Serializable {
+public final class Vector2fImpl implements Vector2f /* includes Cloneable and Serializable */ {
 
 	/**
 	 * x attribute, made public for fast access. Usually, clients should use
@@ -138,7 +137,7 @@ public final class Vector2fImpl implements Vector2f, Cloneable, Serializable {
 	 *            Get the array elements starting from this offset.
 	 */
 	public Vector2fImpl(final float[] i_arrayOfFloat, int i_iOffset) {
-		this(i_arrayOfFloat[i_iOffset++], i_arrayOfFloat[i_iOffset++]);
+		this(i_arrayOfFloat[i_iOffset], i_arrayOfFloat[i_iOffset+1]);
 	}
 	
 	/** 
@@ -281,8 +280,8 @@ public final class Vector2fImpl implements Vector2f, Cloneable, Serializable {
 	 * @see org.eclipse.draw3d.geometry.IVector2f#toArray(float[], int)
 	 */
 	public void toArray(final float[] o_arrayOfFloat, int i_iOffset) {
-		o_arrayOfFloat[i_iOffset++] = x;
-		o_arrayOfFloat[i_iOffset] = y;
+		o_arrayOfFloat[i_iOffset] = x;
+		o_arrayOfFloat[i_iOffset+1] = y;
 	}
 
 	/**

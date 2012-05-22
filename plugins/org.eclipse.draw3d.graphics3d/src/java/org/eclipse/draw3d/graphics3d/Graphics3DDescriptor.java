@@ -151,9 +151,10 @@ public class Graphics3DDescriptor {
 	public Graphics3D createInstance(GLCanvas i_context) {
 		try {
 			Bundle bundle = Platform.getBundle(getContributorName());
-			Class clazz = bundle.loadClass(strClassname);
+			@SuppressWarnings("unchecked")
+			Class<Graphics3D> clazz = (Class<Graphics3D>) bundle.loadClass(strClassname);
 			
-			Graphics3D g3d = (Graphics3D) clazz.newInstance();
+			Graphics3D g3d = clazz.newInstance();
 
 			g3d.setDescriptor(this);
 			if (getType() == Graphics3DType.SCREEN) 

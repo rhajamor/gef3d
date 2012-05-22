@@ -68,6 +68,12 @@ public class FirstPersonCamera extends AbstractCamera {
 		private Vector3f m_wLocation = new Vector3fImpl();
 
 		/**
+		 * 
+		 */
+		Projection() {
+		}
+
+		/**
 		 * Returns the cached mouse location.
 		 * 
 		 * @param io_result the result point, if <code>null</code>, a new point
@@ -734,13 +740,14 @@ public class FirstPersonCamera extends AbstractCamera {
 	 * @see org.eclipse.draw3d.camera.ICamera#getCameraPosition(org.eclipse.draw3d.camera.CameraPosition)
 	 */
 	public ICameraPosition getCameraPosition(CameraPosition o_result) {
-		if (o_result==null) {
-			o_result = new CameraPosition();
+		CameraPosition cameraPosition = o_result;
+		if (cameraPosition==null) {
+			cameraPosition = new CameraPosition();
 		}
-		o_result.setPosition(m_position);
-		o_result.setUpVector(m_up);
-		o_result.setViewDirection(m_viewDir);
-		return o_result;
+		cameraPosition.setPosition(m_position);
+		cameraPosition.setUpVector(m_up);
+		cameraPosition.setViewDirection(m_viewDir);
+		return cameraPosition;
 	}
 
 	/** 

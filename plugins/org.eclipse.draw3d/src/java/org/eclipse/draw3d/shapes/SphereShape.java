@@ -111,7 +111,7 @@ public class SphereShape extends PositionableShape {
 	/**
 	 * Contains a matrix that rotates 90 degress about the Z axis.
 	 */
-	private static final IPosition3D ROTATE_Z90;
+	static final IPosition3D ROTATE_Z90;
 
 	/**
 	 * Caches the stripes across multiple instances since they never change.
@@ -375,7 +375,7 @@ public class SphereShape extends PositionableShape {
 		}
 	}
 
-	private void renderFill(Graphics3D i_g3d) {
+	void renderFill(Graphics3D i_g3d) {
 
 		i_g3d.glColor4f(0, 0, 1, 0.5f);
 		i_g3d.glPolygonMode(Graphics3DDraw.GL_FRONT_AND_BACK,
@@ -404,7 +404,7 @@ public class SphereShape extends PositionableShape {
 		}
 	}
 
-	private void renderOutline(Graphics3D i_g3d) {
+	void renderOutline(Graphics3D i_g3d) {
 
 		i_g3d.glColor4f(1, 0, 0, 0.5f);
 

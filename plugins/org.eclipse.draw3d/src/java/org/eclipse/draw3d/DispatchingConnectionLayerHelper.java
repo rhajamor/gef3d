@@ -12,7 +12,6 @@ package org.eclipse.draw3d;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -241,10 +240,10 @@ public class DispatchingConnectionLayerHelper {
 	 */
 	public void paintChildren(Graphics i_graphics) {
 
-		List children = host.getChildren();
+		@SuppressWarnings("unchecked")
+		List<IFigure> children = host.getChildren();
 		Rectangle clip = Rectangle.SINGLETON;
-		for (Iterator iter = children.iterator(); iter.hasNext();) {
-			IFigure child = (IFigure) iter.next();
+		for (IFigure child: children) {
 			if (!(child instanceof ConnectionLayer) // if child is a connection,
 				// is it painted by its 3D host figure
 				&& child.isVisible() // only paint if visible

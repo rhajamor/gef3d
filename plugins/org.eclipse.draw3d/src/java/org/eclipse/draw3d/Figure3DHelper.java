@@ -13,7 +13,6 @@ package org.eclipse.draw3d;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -186,7 +185,7 @@ public class Figure3DHelper {
 	/**
 	 * Logger for this class
 	 */
-	@SuppressWarnings("unused")
+	// @SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(Figure3DHelper.class
 		.getName());
 
@@ -382,13 +381,13 @@ public class Figure3DHelper {
 	}
 
 	private void doGetDescendants3D(List<IFigure3D> o_list, IFigure i_fig) {
-
-		for (Iterator iter = i_fig.getChildren().iterator(); iter.hasNext();) {
-			Object child = iter.next();
+		@SuppressWarnings("unchecked")
+		List<IFigure> children = i_fig.getChildren();
+		for (IFigure child: children) {
 			if (child instanceof IFigure3D)
 				o_list.add((IFigure3D) child);
 			else
-				doGetDescendants3D(o_list, (IFigure) child);
+				doGetDescendants3D(o_list, child);
 		}
 	}
 
@@ -717,7 +716,6 @@ public class Figure3DHelper {
 	 * 
 	 * @param i_figureBounds the paraxial bounding box of this figure
 	 */
-	@SuppressWarnings("unchecked")
 	public void unionWithChildParaxialBounds(ParaxialBoundingBox i_figureBounds) {
 
 		ParaxialBoundingBox tmp = Draw3DCache.getParaxialBoundingBox();

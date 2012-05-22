@@ -11,6 +11,7 @@
 package org.eclipse.draw3d;
 
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import org.eclipse.draw2d.FreeformFigure;
 import org.eclipse.draw2d.FreeformLayer;
@@ -31,6 +32,13 @@ import org.eclipse.draw3d.shapes.Shape;
  */
 public class FreeFormPanel3D extends ShapeFigure3D implements FreeformFigure {
 
+	/**
+	 * Logger for this class
+	 */
+	static final Logger log = Logger.getLogger(FreeFormPanel3D.class
+		.getName());
+
+	
 	/**
 	 * <p>
 	 * Copied and modified from {@link FreeformLayer}. This is not the original

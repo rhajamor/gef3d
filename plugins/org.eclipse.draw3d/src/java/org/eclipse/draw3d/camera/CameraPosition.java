@@ -138,7 +138,8 @@ public class CameraPosition extends AbstractCameraPosition {
 	 * @param rightVector, stores the result, may be null
 	 * @return
 	 */
-	public IVector3f getRightVector(Vector3f rightVector) {
+	public IVector3f getRightVector(Vector3f o_result) {
+		Vector3f rightVector = o_result;
 		if (rightVector == null) {
 			rightVector = new Vector3fImpl();
 		}

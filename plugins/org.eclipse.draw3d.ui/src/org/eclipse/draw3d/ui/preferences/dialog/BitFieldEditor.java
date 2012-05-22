@@ -40,9 +40,9 @@ import org.eclipse.swt.widgets.Group;
  */
 public class BitFieldEditor extends FieldEditor {
 
-	private Button[] checkboxes;
+	Button[] checkboxes;
 
-	private Composite groupBox;
+	Composite groupBox;
 
 	private int indent = HORIZONTAL_GAP;
 
@@ -52,7 +52,7 @@ public class BitFieldEditor extends FieldEditor {
 
 	private boolean useGroup;
 
-	private int value;
+	int value;
 
 	private int[] values;
 

@@ -327,10 +327,11 @@ public class PolylineConnection3D extends Polyline3D implements Connection3D,
 	 * Sets the connection router which handles the layout of this polyline.
 	 * Generally set by the parent handling the polyline connection.
 	 * 
-	 * @param cr the connection router
+	 * @param cr the connection router, may be null
 	 * @see PolylineConnection#setConnectionRouter(ConnectionRouter)
 	 */
-	public void setConnectionRouter(ConnectionRouter cr) {
+	public void setConnectionRouter(ConnectionRouter i_cr) {
+		ConnectionRouter cr = i_cr;
 		if (cr == null) {
 			cr = ConnectionRouter3D.NULL;
 		}

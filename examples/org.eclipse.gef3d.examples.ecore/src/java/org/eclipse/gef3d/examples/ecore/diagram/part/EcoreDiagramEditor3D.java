@@ -67,14 +67,15 @@ import org.eclipse.ui.IEditorSite;
  * @version $Revision$
  * @since 01.12.2008
  */
+@SuppressWarnings({ "restriction" })
 public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 		INestableEditorWithEditingDomain {
 
 	/**
 	 * Logger for this class
 	 */
-	private static final Logger log =
-		Logger.getLogger(EcoreDiagramEditor3D.class.getName());
+	private static final Logger log = Logger
+		.getLogger(EcoreDiagramEditor3D.class.getName());
 
 	/**
 	 * Reference to viewer of nesting multi editor, set in
@@ -278,13 +279,8 @@ public class EcoreDiagramEditor3D extends EcoreDiagramEditor implements
 			return (DiagramEditPart) getDiagramGraphicalViewer().getContents();
 		}
 		if (isNested()) {
-			IMultiEditor multiEditor =
-				(IMultiEditor) multiEditorViewer.getProperty(IMultiEditor.class
-					.getName());
-			if (multiEditor != null) {
-				EditPart part = multiEditor.findNestedEditorContent(this);
-				return (DiagramEditPart) part;
-			}
+			EditPart part = multiEditor.findNestedEditorContent(this);
+			return (DiagramEditPart) part;
 		}
 		return null;
 	}

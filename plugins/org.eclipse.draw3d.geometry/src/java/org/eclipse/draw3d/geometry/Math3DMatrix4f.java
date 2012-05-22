@@ -330,7 +330,7 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 	 * </p>
 	 * 
 	 * @param i_source must not be null
-	 * @param o_result may be null, if matrix cannot be inverted 
+	 * @param o_result may be null, if matrix cannot be inverted
 	 * @return o_result (if not null), or a new instance
 	 * @see http://en.wikipedia.org/wiki/Invertible_matrix
 	 */
@@ -415,84 +415,6 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 	}
 
 	/**
-	 * Generic method if block wise invertation cannot be applied.
-	 * 
-	 * @param det
-	 * @param m
-	 * @param r
-	 * @todo replace with Gauß-Jordan algorithm
-	 */
-	private static void invert2(float det, Matrix4fImpl m, Matrix4fImpl r) {
-
-		r.a11 =
-			m.a23 * m.a34 * m.a42 - m.a24 * m.a33 * m.a42 + m.a24 * m.a32
-				* m.a43 - m.a22 * m.a34 * m.a43 - m.a23 * m.a32 * m.a44 + m.a22
-				* m.a33 * m.a44;
-		r.a12 =
-			m.a14 * m.a33 * m.a42 - m.a13 * m.a34 * m.a42 - m.a14 * m.a32
-				* m.a43 + m.a12 * m.a34 * m.a43 + m.a13 * m.a32 * m.a44 - m.a12
-				* m.a33 * m.a44;
-		r.a13 =
-			m.a13 * m.a24 * m.a42 - m.a14 * m.a23 * m.a42 + m.a14 * m.a22
-				* m.a43 - m.a12 * m.a24 * m.a43 - m.a13 * m.a22 * m.a44 + m.a12
-				* m.a23 * m.a44;
-		r.a14 =
-			m.a14 * m.a23 * m.a32 - m.a13 * m.a24 * m.a32 - m.a14 * m.a22
-				* m.a33 + m.a12 * m.a24 * m.a33 + m.a13 * m.a22 * m.a34 - m.a12
-				* m.a23 * m.a34;
-		r.a21 =
-			m.a24 * m.a33 * m.a41 - m.a23 * m.a34 * m.a41 - m.a24 * m.a31
-				* m.a43 + m.a21 * m.a34 * m.a43 + m.a23 * m.a31 * m.a44 - m.a21
-				* m.a33 * m.a44;
-		r.a22 =
-			m.a13 * m.a34 * m.a41 - m.a14 * m.a33 * m.a41 + m.a14 * m.a31
-				* m.a43 - m.a11 * m.a34 * m.a43 - m.a13 * m.a31 * m.a44 + m.a11
-				* m.a33 * m.a44;
-		r.a23 =
-			m.a14 * m.a23 * m.a41 - m.a13 * m.a24 * m.a41 - m.a14 * m.a21
-				* m.a43 + m.a11 * m.a24 * m.a43 + m.a13 * m.a21 * m.a44 - m.a11
-				* m.a23 * m.a44;
-		r.a24 =
-			m.a13 * m.a24 * m.a31 - m.a14 * m.a23 * m.a31 + m.a14 * m.a21
-				* m.a33 - m.a11 * m.a24 * m.a33 - m.a13 * m.a21 * m.a34 + m.a11
-				* m.a23 * m.a34;
-		r.a31 =
-			m.a22 * m.a34 * m.a41 - m.a24 * m.a32 * m.a41 + m.a24 * m.a31
-				* m.a42 - m.a21 * m.a34 * m.a42 - m.a22 * m.a31 * m.a44 + m.a21
-				* m.a32 * m.a44;
-		r.a32 =
-			m.a14 * m.a32 * m.a41 - m.a12 * m.a34 * m.a41 - m.a14 * m.a31
-				* m.a42 + m.a11 * m.a34 * m.a42 + m.a12 * m.a31 * m.a44 - m.a11
-				* m.a32 * m.a44;
-		r.a33 =
-			m.a12 * m.a24 * m.a41 - m.a14 * m.a22 * m.a41 + m.a14 * m.a21
-				* m.a42 - m.a11 * m.a24 * m.a42 - m.a12 * m.a21 * m.a44 + m.a11
-				* m.a22 * m.a44;
-		r.a34 =
-			m.a14 * m.a22 * m.a31 - m.a12 * m.a24 * m.a31 - m.a14 * m.a21
-				* m.a32 + m.a11 * m.a24 * m.a32 + m.a12 * m.a21 * m.a34 - m.a11
-				* m.a22 * m.a34;
-		r.a41 =
-			m.a23 * m.a32 * m.a41 - m.a22 * m.a33 * m.a41 - m.a23 * m.a31
-				* m.a42 + m.a21 * m.a33 * m.a42 + m.a22 * m.a31 * m.a43 - m.a21
-				* m.a32 * m.a43;
-		r.a42 =
-			m.a12 * m.a33 * m.a41 - m.a13 * m.a32 * m.a41 + m.a13 * m.a31
-				* m.a42 - m.a11 * m.a33 * m.a42 - m.a12 * m.a31 * m.a43 + m.a11
-				* m.a32 * m.a43;
-		r.a43 =
-			m.a13 * m.a22 * m.a41 - m.a12 * m.a23 * m.a41 - m.a13 * m.a21
-				* m.a42 + m.a11 * m.a23 * m.a42 + m.a12 * m.a21 * m.a43 - m.a11
-				* m.a22 * m.a43;
-		r.a44 =
-			m.a12 * m.a23 * m.a31 - m.a13 * m.a22 * m.a31 + m.a13 * m.a21
-				* m.a32 - m.a11 * m.a23 * m.a32 - m.a12 * m.a21 * m.a33 + m.a11
-				* m.a22 * m.a33;
-
-		mul(1 / det, r, r);
-	}
-
-	/**
 	 * Negates a matrix. If the result parameter is null, a new matrix will be
 	 * created on the fly.
 	 * 
@@ -505,7 +427,6 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 		Matrix4fImpl result;
 		if (o_result == null) {
 			result = new Matrix4fImpl();
-			o_result = result;
 		} else {
 			result = Matrix4fImpl.cast(o_result);
 		}
@@ -530,10 +451,10 @@ public class Math3DMatrix4f extends Math3DMatrix3f {
 		result.a43 = -m.a43;
 		result.a44 = -m.a44;
 
-		if (o_result != result)
+		if (o_result != result && o_result != null)
 			o_result.set(result);
 
-		return o_result;
+		return result;
 	}
 
 	/**

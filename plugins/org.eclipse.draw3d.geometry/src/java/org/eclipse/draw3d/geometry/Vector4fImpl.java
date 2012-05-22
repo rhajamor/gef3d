@@ -137,8 +137,8 @@ public final class Vector4fImpl implements Vector4f, Serializable, Cloneable {
 	 * @param i_iOffset Get the array elements starting from this offset.
 	 */
 	public Vector4fImpl(final float[] i_arrayOfFloat, int i_iOffset) {
-		this(i_arrayOfFloat[i_iOffset++], i_arrayOfFloat[i_iOffset++],
-				i_arrayOfFloat[i_iOffset++], i_arrayOfFloat[i_iOffset]);
+		this(i_arrayOfFloat[i_iOffset], i_arrayOfFloat[i_iOffset+1],
+				i_arrayOfFloat[i_iOffset+2], i_arrayOfFloat[i_iOffset+3]);
 	}
 	
 	/** 
@@ -305,10 +305,10 @@ public final class Vector4fImpl implements Vector4f, Serializable, Cloneable {
 	 * @see org.eclipse.draw3d.geometry.IVector4f#toArray(float[], int)
 	 */
 	public void toArray(final float[] o_arrayOfFloat, int i_iOffset) {
-		o_arrayOfFloat[i_iOffset++] = this.x;
-		o_arrayOfFloat[i_iOffset++] = this.y;
-		o_arrayOfFloat[i_iOffset++] = this.z;
-		o_arrayOfFloat[i_iOffset] = this.w;
+		o_arrayOfFloat[i_iOffset] = this.x;
+		o_arrayOfFloat[i_iOffset+1] = this.y;
+		o_arrayOfFloat[i_iOffset+2] = this.z;
+		o_arrayOfFloat[i_iOffset+3] = this.w;
 	}
 
 	/**

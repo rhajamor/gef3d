@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.picking;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -210,11 +209,8 @@ public class Query {
 		}
 
 		HitImpl hit = null;
-		List children = i_figure.getChildren();
-
-		for (Iterator iter = children.iterator(); iter.hasNext();) {
-			IFigure child = (IFigure) iter.next();
-
+		List<IFigure> children = i_figure.getChildren();
+		for (IFigure child: children) {
 			if (!prune(child, m_search)) {
 				float childDistance;
 				if (child instanceof IFigure3D)
@@ -239,7 +235,6 @@ public class Query {
 	 *            nature of this method.
 	 * @return a hit or <code>null</code> if no acceptable figure was hit
 	 */
-	@SuppressWarnings("unchecked")
 	public Hit execute() {
 
 		if (prune(m_rootFigure, m_search))

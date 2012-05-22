@@ -55,7 +55,7 @@ import org.lwjgl.opengl.GL11;
  */
 public class LwjglFont {
 
-	@SuppressWarnings("unused")
+	// @SuppressWarnings("unused")
 	private static final Logger log =
 		Logger.getLogger(LwjglFont.class.getName());
 

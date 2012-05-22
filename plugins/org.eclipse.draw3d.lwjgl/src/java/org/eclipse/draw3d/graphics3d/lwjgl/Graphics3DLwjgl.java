@@ -10,16 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl;
 
-import static java.awt.geom.PathIterator.SEG_CLOSE;
-import static java.awt.geom.PathIterator.SEG_LINETO;
-import static java.awt.geom.PathIterator.SEG_MOVETO;
-
-import java.awt.Font;
-import java.awt.Shape;
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.PathIterator;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
@@ -31,8 +21,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Graphics;
-import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw3d.geometry.IMatrix3f;
 import org.eclipse.draw3d.geometry.IMatrix4f;
 import org.eclipse.draw3d.geometry.IPosition3D;
 import org.eclipse.draw3d.geometry.IVector2f;
@@ -75,12 +63,10 @@ import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.draw3d.util.LogGraphics;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.glu.GLUtessellator;
@@ -315,16 +301,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		}
 	}
 
-	/**
-	 * Indicates which attribute groups must be saved prior to using this.
-	 */
-	private static final int ATTRIB_MASK =
-		GL11.GL_LIGHTING_BIT | GL11.GL_CURRENT_BIT | GL11.GL_TRANSFORM_BIT
-			| GL11.GL_LINE_BIT | GL11.GL_POLYGON_BIT | GL11.GL_TEXTURE_BIT
-			| GL11.GL_VIEWPORT_BIT | GL11.GL_DEPTH_BUFFER_BIT
-			| GL11.GL_COLOR_BUFFER_BIT | GL13.GL_MULTISAMPLE_BIT
-			| GL11.GL_ENABLE_BIT;
-
+	
 	/**
 	 * Logger for this class
 	 */
@@ -531,10 +508,6 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 	 * @see org.eclipse.draw3d.graphics3d.Graphics3D#deactivateGraphics2D()
 	 */
 	public RenderImage deactivateGraphics2D() {
-
-		final IPosition3D pos2d = m_current2DPosition;
-
-		// log.info("deactivating 2D graphics");
 		if (m_activeGraphics instanceof RecordingGraphics) {
 			RecordingGraphics og = (RecordingGraphics) m_activeGraphics;
 			List<PrimitiveSet> primiveSets = og.getPrimiveSets();
@@ -668,105 +641,7 @@ public class Graphics3DLwjgl extends AbstractGraphics3DDraw implements
 		}
 	}
 
-	private void generateVectorText(PrimitiveSet i_set, List<RenderImage> i_vbos) {
-
-		if (m_tesselator == null)
-			m_tesselator = GLU.gluNewTess();
-
-		PolygonTesselator callback =
-			new PolygonTesselator(i_set.getPrimitiveClass().getRenderRule());
-
-		// bug in LWJGL, must set edge flag callback to null before setting
-		// begin callback
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_EDGE_FLAG_DATA, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN, callback);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_BEGIN_DATA, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX, callback);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_VERTEX_DATA, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE, callback);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_COMBINE_DATA, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_END, callback);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_END_DATA, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR, null);
-		m_tesselator.gluTessCallback(GLU.GLU_TESS_ERROR_DATA, callback);
-
-		m_tesselator.gluTessProperty(GLU.GLU_TESS_TOLERANCE, 0);
-
-		m_tesselator.gluTessProperty(GLU.GLU_TESS_BOUNDARY_ONLY, 0);
-
-		for (Primitive primitive : i_set.getPrimitives()) {
-			TextPrimitive textPrimitive = (TextPrimitive) primitive;
-			TextRenderRule textRule = textPrimitive.getRenderRule().asText();
-
-			org.eclipse.swt.graphics.Font swtFont = textRule.getFont();
-			FontData fontData = swtFont.getFontData()[0];
-
-			String name = fontData.getName();
-			int size = fontData.getHeight();
-
-			int style = 0;
-			if ((fontData.getStyle() & SWT.BOLD) != 0)
-				style |= Font.BOLD;
-			if ((fontData.getStyle() & SWT.ITALIC) != 0)
-				style |= Font.ITALIC;
-
-			Font awtFont = new Font(name, style, size);
-
-			IMatrix3f t = textPrimitive.getTransformation();
-			AffineTransform af =
-				new AffineTransform(t.get(0, 0), t.get(0, 1), t.get(1, 0), t
-					.get(1, 1), t.get(2, 0), t.get(2, 1));
-
-			Point p = textPrimitive.getPosition();
-			af.translate(p.x, p.y + size);
-
-			String text = textPrimitive.getText();
-
-			FontRenderContext rc = new FontRenderContext(null, true, true);
-			GlyphVector glyphs = awtFont.createGlyphVector(rc, text);
-
-			Shape outline = glyphs.getOutline();
-			PathIterator path = outline.getPathIterator(af, 0.1d);
-
-			if (path.getWindingRule() == PathIterator.WIND_EVEN_ODD)
-				m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE,
-					GLU.GLU_TESS_WINDING_ODD);
-			else if (path.getWindingRule() == PathIterator.WIND_NON_ZERO)
-				m_tesselator.gluTessProperty(GLU.GLU_TESS_WINDING_RULE,
-					GLU.GLU_TESS_WINDING_NONZERO);
-
-			double[] coords = new double[3];
-			coords[2] = 0;
-
-			m_tesselator.gluTessBeginPolygon(glyphs);
-			m_tesselator.gluTessNormal(0, 0, -1);
-
-			while (!path.isDone()) {
-				int type = path.currentSegment(coords);
-				switch (type) {
-				case SEG_MOVETO:
-					m_tesselator.gluTessBeginContour();
-					m_tesselator.gluTessVertex(coords, 0, new Vector2fImpl(
-						(float) coords[0], (float) coords[1]));
-					break;
-				case SEG_CLOSE:
-					m_tesselator.gluTessEndContour();
-					break;
-				case SEG_LINETO:
-					m_tesselator.gluTessVertex(coords, 0, new Vector2fImpl(
-						(float) coords[0], (float) coords[1]));
-					break;
-				}
-				path.next();
-			}
-
-			m_tesselator.gluTessEndPolygon();
-		}
-
-		callback.addVBOs(i_vbos);
-	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * 

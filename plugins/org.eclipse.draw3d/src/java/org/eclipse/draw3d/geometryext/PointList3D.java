@@ -21,7 +21,6 @@ import java.util.NoSuchElementException;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw3d.Polyline3D;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3fImpl;
@@ -132,7 +131,7 @@ public class PointList3D extends PointList implements List<IVector3f> {
 			PointList3D.this.set(pos, v);
 		}
 
-	};
+	}
 
 	/**
 	 * 
@@ -257,7 +256,7 @@ public class PointList3D extends PointList implements List<IVector3f> {
 	}
 
 	protected Point toPoint(IVector3f v) {
-		return new Point(v.getX(), v.getY());
+		return new Point((int) v.getX(), (int) v.getY());
 	}
 
 	protected void toPoint(IVector3f v, Point intoPoint) {

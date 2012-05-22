@@ -31,7 +31,7 @@ import org.eclipse.draw3d.util.Draw3DCache;
  */
 public class GeometryPicker implements Picker {
 
-	@SuppressWarnings("unused")
+	// @SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(GeometryPicker.class
 		.getName());
 

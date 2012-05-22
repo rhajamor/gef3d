@@ -58,7 +58,7 @@ public class CuboidShape extends PositionableShape {
 	 * </ol>
 	 * The vertices of each face are wound in counter-clockwise order.
 	 */
-	private static final int[][] FACES = new int[6][4];
+	static final int[][] FACES = new int[6][4];
 
 	@SuppressWarnings("unused")
 	private static final Logger log =
@@ -68,12 +68,12 @@ public class CuboidShape extends PositionableShape {
 	 * Contains the normal vectors of the faces in the same order as the faces
 	 * are in the {@link #FACES} array.
 	 */
-	private static final IVector3f[] NORMALS = new IVector3f[6];
+	static final IVector3f[] NORMALS = new IVector3f[6];
 
 	/**
 	 * Contains the texture coords for the face Z=0.
 	 */
-	private static final IVector2f[] TEX_COORDS = new IVector2f[4];
+	static final IVector2f[] TEX_COORDS = new IVector2f[4];
 
 	/**
 	 * Contains the vertices of a unit cube. The position <code>i</code> of a
@@ -81,7 +81,7 @@ public class CuboidShape extends PositionableShape {
 	 * equals xyz. So if a vector is at position 3, which is 011 in binary, its
 	 * X component is 0 and its Y and Z component is 1.
 	 */
-	private static final IVector3f[] VERTICES = new IVector3f[8];
+	static final IVector3f[] VERTICES = new IVector3f[8];
 
 	static {
 		for (int i = 0; i < 8; i++) {

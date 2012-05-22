@@ -11,7 +11,6 @@
 package org.eclipse.draw3d.camera;
 
 import org.eclipse.draw3d.geometry.IVector3f;
-import org.eclipse.draw3d.geometry.Vector3f;
 
 /**
  * AbstractCameraPosition There should really be more documentation here.

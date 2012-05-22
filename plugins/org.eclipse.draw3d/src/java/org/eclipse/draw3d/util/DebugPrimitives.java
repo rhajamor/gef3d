@@ -167,12 +167,12 @@ public class DebugPrimitives implements Renderable {
 	 * 
 	 * @see org.eclipse.draw3d.Renderable#prerender(org.eclipse.draw3d.RenderContext)
 	 */
-	public void prerender(RenderContext i_renderContext) {
+	public void prerender(@SuppressWarnings("unused") RenderContext i_renderContext) {
 
 		// nothing to do
 	}
 
-	@SuppressWarnings("unused")
+	// @SuppressWarnings("unused")
 	private static Logger log =
 		Logger.getLogger(DebugPrimitives.class.getName());
 

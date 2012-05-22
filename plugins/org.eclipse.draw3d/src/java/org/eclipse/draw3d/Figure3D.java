@@ -13,7 +13,6 @@ package org.eclipse.draw3d;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.Figure;
@@ -51,12 +50,7 @@ import org.eclipse.swt.graphics.Font;
  */
 public class Figure3D extends Figure implements IFigure3D {
 
-	/**
-	 * Logger for this class
-	 */
-	protected static final Logger log = Logger.getLogger(Figure3D.class
-		.getName());
-
+	
 	/**
 	 * The texture needs to be invalidated every time a child is moved so that
 	 * the changes are drawn on the screen.
@@ -149,6 +143,7 @@ public class Figure3D extends Figure implements IFigure3D {
 		position3D = createPosition3D();
 		friend = new Figure3DFriend(this) {
 
+			@SuppressWarnings("synthetic-access")
 			@Override
 			public Font getLocalFont() {
 
@@ -186,8 +181,8 @@ public class Figure3D extends Figure implements IFigure3D {
 	 * a different {@link Figure3DHelper} is required.
 	 * @return
 	 */
-	protected Figure3DHelper createFigure3DHelper(Figure3DFriend friend) {
-		return new Figure3DHelper(friend);
+	protected Figure3DHelper createFigure3DHelper(Figure3DFriend i_friend) {
+		return new Figure3DHelper(i_friend);
 	}
 
 

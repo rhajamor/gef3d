@@ -10,10 +10,8 @@
  ******************************************************************************/
 package org.eclipse.draw3d.camera.tracking;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 import org.eclipse.draw3d.camera.CameraPosition;
 import org.eclipse.draw3d.camera.ICamera;
@@ -28,7 +26,7 @@ public class TrackingShot extends TimerTask {
 	/**
 	 * Logger for this class
 	 */
-	// @SuppressWarnings("unused") //$NON-NLS-1$
+	@SuppressWarnings("unused") //$NON-NLS-1$
 	private static final Logger log = Logger.getLogger(TrackingShot.class.getName());
 
 	/**

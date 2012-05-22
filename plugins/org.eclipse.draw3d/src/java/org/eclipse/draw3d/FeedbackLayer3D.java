@@ -10,9 +10,7 @@
  ******************************************************************************/
 package org.eclipse.draw3d;
 
-import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.FreeformLayer;
-import org.eclipse.draw2d.IFigure;
 
 /**
  * FeedbackLayer3D

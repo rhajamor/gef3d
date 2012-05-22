@@ -166,21 +166,21 @@ public final class Matrix2fImpl implements Matrix2f, Serializable, Cloneable {
 	 *            true
 	 * @param i_bColumnMajor the matrix is stored in column major (OpenGL)
 	 *            format
-	 * @param i_iOffset the first index to be used in array
+	 * @param offset the first index to be used in array
 	 */
 	public Matrix2fImpl(final float[] i_floats, boolean i_bColumnMajor,
-			int i_iOffset) {
-
+			int i_offset) {
+		int offset = i_offset;
 		if (!i_bColumnMajor) { // as we learned it in school:
-			a11 = i_floats[i_iOffset++];
-			a12 = i_floats[i_iOffset++];
-			a21 = i_floats[i_iOffset++];
-			a22 = i_floats[i_iOffset];
+			a11 = i_floats[offset++];
+			a12 = i_floats[offset++];
+			a21 = i_floats[offset++];
+			a22 = i_floats[offset];
 		} else { // OpenGL:
-			a11 = i_floats[i_iOffset++];
-			a21 = i_floats[i_iOffset++];
-			a12 = i_floats[i_iOffset++];
-			a22 = i_floats[i_iOffset];
+			a11 = i_floats[offset++];
+			a21 = i_floats[offset++];
+			a12 = i_floats[offset++];
+			a22 = i_floats[offset];
 		}
 	}
 
@@ -449,12 +449,12 @@ public final class Matrix2fImpl implements Matrix2f, Serializable, Cloneable {
 	 * @see org.eclipse.draw3d.geometry.IMatrix2f#toArrayColumnMajor(float[],
 	 *      int)
 	 */
-	public void toArrayColumnMajor(final float[] o_arrayOfFloat, int i_iOffset) {
-
-		o_arrayOfFloat[i_iOffset++] = a11;
-		o_arrayOfFloat[i_iOffset++] = a21;
-		o_arrayOfFloat[i_iOffset++] = a12;
-		o_arrayOfFloat[i_iOffset] = a22;
+	public void toArrayColumnMajor(final float[] o_arrayOfFloat, int i_offset) {
+		int offset = i_offset;
+		o_arrayOfFloat[offset++] = a11;
+		o_arrayOfFloat[offset++] = a21;
+		o_arrayOfFloat[offset++] = a12;
+		o_arrayOfFloat[offset] = a22;
 	}
 
 	/**
@@ -475,12 +475,12 @@ public final class Matrix2fImpl implements Matrix2f, Serializable, Cloneable {
 	 * 
 	 * @see org.eclipse.draw3d.geometry.IMatrix2f#toArrayRowMajor(float[], int)
 	 */
-	public void toArrayRowMajor(final float[] o_arrayOfFloat, int i_iOffset) {
-
-		o_arrayOfFloat[i_iOffset++] = a11;
-		o_arrayOfFloat[i_iOffset++] = a12;
-		o_arrayOfFloat[i_iOffset++] = a21;
-		o_arrayOfFloat[i_iOffset] = a22;
+	public void toArrayRowMajor(final float[] o_arrayOfFloat, int i_offset) {
+		int offset = i_offset;
+		o_arrayOfFloat[offset++] = a11;
+		o_arrayOfFloat[offset++] = a12;
+		o_arrayOfFloat[offset++] = a21;
+		o_arrayOfFloat[offset] = a22;
 	}
 
 	/**

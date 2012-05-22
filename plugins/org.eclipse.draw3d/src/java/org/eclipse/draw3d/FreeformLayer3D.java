@@ -124,9 +124,10 @@ public class FreeformLayer3D extends Figure3D implements FreeformFigure {
 	 * @see FreeformFigure#fireExtentChanged()
 	 */
 	public void fireExtentChanged() {
-		Iterator iter = getListeners(FreeformListener.class);
+		@SuppressWarnings("unchecked")
+		Iterator<FreeformListener> iter = getListeners(FreeformListener.class);
 		while (iter.hasNext())
-			((FreeformListener) iter.next()).notifyFreeformExtentChanged();
+			iter.next().notifyFreeformExtentChanged();
 	}
 
 	/**

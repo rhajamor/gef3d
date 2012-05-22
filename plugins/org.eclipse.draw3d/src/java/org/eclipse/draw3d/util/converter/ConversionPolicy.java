@@ -17,7 +17,6 @@ import java.util.List;
 import org.eclipse.draw3d.util.BufferUtils;
 import org.eclipse.draw3d.util.converter.ConversionPolicySpecs.ConversionDirection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 
 /**
@@ -251,9 +250,5 @@ public abstract class ConversionPolicy {
 	 */
 	protected abstract byte[] toBytes(int i_x, int i_y, ImageData i_imageData);
 
-	public Image toImage(ImageInfo i_imageInfo, ByteBuffer i_buffer,
-			ColorBufferInfo i_bufferInfo) {
 
-		return null;
-	}
 }

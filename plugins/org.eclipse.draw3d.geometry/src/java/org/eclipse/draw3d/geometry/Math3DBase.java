@@ -616,7 +616,7 @@ public class Math3DBase {
 	 * {@link #rayIntersectsPolygon(IVector3f, IVector3f, IVector3f[], IVector3f)}
 	 * , so there is no need to calculate it again.
 	 */
-	private static float rayIntersectsPlane(IVector3f i_rayOrigin,
+	private static float rayIntersectsPlane(IVector3f i_rayOrigin, 
 		IVector3f i_rayDirection, IVector3f i_planePoint,
 		IVector3f i_planeNormal, float i_denominator) {
 

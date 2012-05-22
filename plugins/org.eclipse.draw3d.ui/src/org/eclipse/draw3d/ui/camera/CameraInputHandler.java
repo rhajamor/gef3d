@@ -60,7 +60,7 @@ public class CameraInputHandler {
 	 */
 	private final static float FACTOR_ORBIT = 0.0009f;
 
-	@SuppressWarnings("unused")
+	// @SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(CameraInputHandler.class
 		.getName());
 

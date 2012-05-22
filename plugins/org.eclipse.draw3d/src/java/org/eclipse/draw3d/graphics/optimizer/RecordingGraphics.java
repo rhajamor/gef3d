@@ -506,7 +506,7 @@ public class RecordingGraphics extends StatefulGraphics {
 	 * 
 	 * @see org.eclipse.draw2d.Graphics#clipPath(org.eclipse.swt.graphics.Path)
 	 */
-	// @Override -- is a new method, may not be present in elder GEF versions
+	@Override
 	public void clipPath(Path i_path) {
 		if (i_path == null) // parameter precondition
 			throw new NullPointerException("i_path must not be null");
@@ -572,36 +572,37 @@ public class RecordingGraphics extends StatefulGraphics {
 		// TODO style is ignored at the moment
 
 		String s = i_layout.getText();
-		i_selectionEnd = Math.min(s.length(), i_selectionEnd);
+		int adjustedX = i_x;
+		int adjustedSelectionEnd = Math.min(s.length(), i_selectionEnd);
 		if (i_selectionStart > 0) {
 			String s0 = s.substring(0, i_selectionStart);
 
 			TextPrimitive p0 =
-				new TextPrimitive(getState(), s0, false, new Point(i_x, i_y));
+				new TextPrimitive(getState(), s0, false, new Point(adjustedX, i_y));
 			addPrimitive(p0);
-			i_x += p0.getExtent().width;
+			adjustedX += p0.getExtent().width;
 		}
 
-		if (i_selectionStart < i_selectionEnd) {
+		if (i_selectionStart < adjustedSelectionEnd) {
 			Color background = getBackgroundColor();
 			Color foreground = getForegroundColor();
 			setBackgroundColor(i_selectionBackground);
 			setForegroundColor(i_selectionForeground);
 
-			String s1 = s.substring(i_selectionStart, i_selectionEnd);
+			String s1 = s.substring(i_selectionStart, adjustedSelectionEnd);
 			TextPrimitive p1 =
-				new TextPrimitive(getState(), s1, false, new Point(i_x, i_y));
+				new TextPrimitive(getState(), s1, false, new Point(adjustedX, i_y));
 			addPrimitive(p1);
-			i_x += p1.getExtent().width;
+			adjustedX += p1.getExtent().width;
 
 			setBackgroundColor(background);
 			setForegroundColor(foreground);
 		}
 
-		if (i_selectionEnd < s.length()) {
-			String s2 = s.substring(i_selectionStart, i_selectionEnd);
+		if (adjustedSelectionEnd < s.length()) {
+			String s2 = s.substring(i_selectionStart, adjustedSelectionEnd);
 			TextPrimitive p2 =
-				new TextPrimitive(getState(), s2, false, new Point(i_x, i_y));
+				new TextPrimitive(getState(), s2, false, new Point(adjustedX, i_y));
 			addPrimitive(p2);
 			// i_x += p2.getExtent().width;
 		}

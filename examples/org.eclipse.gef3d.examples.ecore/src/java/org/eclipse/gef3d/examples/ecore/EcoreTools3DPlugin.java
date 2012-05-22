@@ -10,9 +10,6 @@
  ******************************************************************************/
 package org.eclipse.gef3d.examples.ecore;
 
-import java.io.InputStream;
-import java.util.logging.LogManager;
-
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 

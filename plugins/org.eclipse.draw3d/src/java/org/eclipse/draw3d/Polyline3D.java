@@ -13,6 +13,7 @@
 package org.eclipse.draw3d;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.Figure;
@@ -33,6 +34,12 @@ import org.eclipse.draw3d.shapes.Shape;
  * @since 26.11.2007
  */
 public class Polyline3D extends ShapeFigure3D {
+	
+	/**
+	 * Logger for this class
+	 */
+	private static final Logger log = Logger.getLogger(Polyline3D.class
+		.getName());
 
 	/**
 	 * The width of this poly line.

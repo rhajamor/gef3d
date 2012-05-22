@@ -10,9 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.texture;
 
-import org.eclipse.draw2d.Graphics;
-import org.eclipse.draw3d.graphics3d.lwjgl.graphics.LwjglGraphics;
-import org.eclipse.swt.graphics.Color;
 
 /**
  * AbstractLwjglTexture

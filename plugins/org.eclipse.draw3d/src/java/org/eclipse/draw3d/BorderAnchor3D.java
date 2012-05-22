@@ -135,8 +135,7 @@ public class BorderAnchor3D extends AbstractConnectionAnchor3D {
 		return new Point(Math.round(centerX), Math.round(centerY));
 	}
 
-	private Vector3f doGetReferencePoint3D(IFigure3D i_owner3D,
-		Vector3f io_result) {
+	private Vector3f doGetReferencePoint3D(Vector3f io_result) {
 
 		Vector3f result = io_result;
 		if (result == null)
@@ -257,7 +256,7 @@ public class BorderAnchor3D extends AbstractConnectionAnchor3D {
 		try {
 			if (getOwner() instanceof IFigure3D) {
 				IFigure3D owner3D = (IFigure3D) getOwner();
-				doGetReferencePoint3D(owner3D, localReference);
+				doGetReferencePoint3D(localReference);
 
 				Math3D.sub(localReference, i_reference, rayDirection);
 				Math3D.normalise(rayDirection, rayDirection);
@@ -314,7 +313,7 @@ public class BorderAnchor3D extends AbstractConnectionAnchor3D {
 			result = new Vector3fImpl();
 
 		if (owner instanceof IFigure3D) {
-			doGetReferencePoint3D((IFigure3D) owner, result);
+			doGetReferencePoint3D(result);
 		} else {
 			Point ref2D = getReferencePoint();
 

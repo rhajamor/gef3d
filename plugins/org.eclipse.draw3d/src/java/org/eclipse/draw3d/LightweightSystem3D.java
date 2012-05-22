@@ -11,7 +11,6 @@
 package org.eclipse.draw3d;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +34,7 @@ import org.eclipse.draw3d.camera.ICamera;
 import org.eclipse.draw3d.camera.ICameraListener;
 import org.eclipse.draw3d.geometry.IBoundingBox;
 import org.eclipse.draw3d.geometry.IHost3D;
+import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.NullPosition3D;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
@@ -43,7 +43,6 @@ import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DImpl;
 import org.eclipse.draw3d.geometry.Transformable;
 import org.eclipse.draw3d.geometry.Vector3f;
-import org.eclipse.draw3d.geometry.IPosition3D.PositionHint;
 import org.eclipse.draw3d.graphics3d.DisplayListManager;
 import org.eclipse.draw3d.graphics3d.Graphics3D;
 import org.eclipse.draw3d.graphics3d.Graphics3DDraw;
@@ -104,9 +103,9 @@ public class LightweightSystem3D extends LightweightSystem implements
 		RootFigure3D() {
 			helper = new Figure3DHelper(new Figure3DFriend(this) {
 
+				@SuppressWarnings("synthetic-access")
 				@Override
 				public Font getLocalFont() {
-
 					return RootFigure3D.this.getLocalFont();
 				}
 
@@ -245,6 +244,7 @@ public class LightweightSystem3D extends LightweightSystem implements
 		 * 
 		 * @see org.eclipse.draw2d.Figure#getChildren()
 		 */
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public List getChildren() {
 
@@ -634,28 +634,28 @@ public class LightweightSystem3D extends LightweightSystem implements
 	/**
 	 * Logger for this class
 	 */
-	@SuppressWarnings("unused")
-	private static final Logger log = Logger
+	// @SuppressWarnings("unused")
+	static final Logger log = Logger
 		.getLogger(LightweightSystem3D.class.getName());
 
-	private ICamera m_camera;
+	ICamera m_camera;
 
 	/**
 	 * cached field (since super field is private)
 	 */
 	protected GLCanvas m_canvas;
 
-	private final float[] m_clearColor = new float[] { 0.6f, 0.6f, 0.6f, 1 };
+	final float[] m_clearColor = new float[] { 0.6f, 0.6f, 0.6f, 1 };
 
 	private boolean m_debug = false;
 
-	private Set<IFigure3D> m_debugFigures = new HashSet<IFigure3D>();
+	Set<IFigure3D> m_debugFigures = new HashSet<IFigure3D>();
 
-	private boolean m_drawAxes;
+	boolean m_drawAxes;
 
-	private List<ISceneListener> m_listeners;
+	List<ISceneListener> m_listeners;
 
-	private RenderContext m_renderContext;
+	RenderContext m_renderContext;
 
 	/**
 	 * {@inheritDoc}
@@ -719,12 +719,12 @@ public class LightweightSystem3D extends LightweightSystem implements
 			/**
 			 * @see org.eclipse.draw2d.LayoutManager#layout(IFigure)
 			 */
+			@Override
 			public void layout(IFigure figure) {
 				org.eclipse.draw2d.geometry.Rectangle r = figure.getClientArea();
-				List children = figure.getChildren();
-				IFigure child;
-				for (int i = 0; i < children.size(); i++) {
-					child = (IFigure) children.get(i);
+				@SuppressWarnings("unchecked")
+				List<IFigure> children = figure.getChildren();
+				for (IFigure child: children) {
 					if (! m_debugFigures.contains(child))
 						child.setBounds(r);
 				}

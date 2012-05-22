@@ -47,7 +47,7 @@ public class LwjglFontManager {
 		m_displayListManager = i_displayListManager;
 	}
 
-	@SuppressWarnings("unused")
+	// @SuppressWarnings("unused")
 	private static final Logger log =
 		Logger.getLogger(LwjglFontManager.class.getName());
 

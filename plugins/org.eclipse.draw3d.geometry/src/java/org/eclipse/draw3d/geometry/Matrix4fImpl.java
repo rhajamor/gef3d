@@ -151,45 +151,45 @@ public final class Matrix4fImpl implements Matrix4f, Serializable, Cloneable {
 	 * @param i_arrayOfFloat Values are read from this array
 	 * @param i_bColumnMajor the matrix is stored in column major (OpenGL)
 	 *            format
-	 * @param i_iOffset Get values from array with this offset.
+	 * @param i_offset Get values from array with this offset.
 	 */
 	public Matrix4fImpl(final float[] i_arrayOfFloat,
-			final boolean i_bColumnMajor, int i_iOffset) {
-
+			final boolean i_bColumnMajor, int i_offset) {
+		int offset = i_offset;
 		if (i_bColumnMajor) {
-			this.a11 = i_arrayOfFloat[i_iOffset++];
-			this.a21 = i_arrayOfFloat[i_iOffset++];
-			this.a31 = i_arrayOfFloat[i_iOffset++];
-			this.a41 = i_arrayOfFloat[i_iOffset++];
-			this.a12 = i_arrayOfFloat[i_iOffset++];
-			this.a22 = i_arrayOfFloat[i_iOffset++];
-			this.a32 = i_arrayOfFloat[i_iOffset++];
-			this.a42 = i_arrayOfFloat[i_iOffset++];
-			this.a13 = i_arrayOfFloat[i_iOffset++];
-			this.a23 = i_arrayOfFloat[i_iOffset++];
-			this.a33 = i_arrayOfFloat[i_iOffset++];
-			this.a43 = i_arrayOfFloat[i_iOffset++];
-			this.a14 = i_arrayOfFloat[i_iOffset++];
-			this.a24 = i_arrayOfFloat[i_iOffset++];
-			this.a34 = i_arrayOfFloat[i_iOffset++];
-			this.a44 = i_arrayOfFloat[i_iOffset];
+			this.a11 = i_arrayOfFloat[offset++];
+			this.a21 = i_arrayOfFloat[offset++];
+			this.a31 = i_arrayOfFloat[offset++];
+			this.a41 = i_arrayOfFloat[offset++];
+			this.a12 = i_arrayOfFloat[offset++];
+			this.a22 = i_arrayOfFloat[offset++];
+			this.a32 = i_arrayOfFloat[offset++];
+			this.a42 = i_arrayOfFloat[offset++];
+			this.a13 = i_arrayOfFloat[offset++];
+			this.a23 = i_arrayOfFloat[offset++];
+			this.a33 = i_arrayOfFloat[offset++];
+			this.a43 = i_arrayOfFloat[offset++];
+			this.a14 = i_arrayOfFloat[offset++];
+			this.a24 = i_arrayOfFloat[offset++];
+			this.a34 = i_arrayOfFloat[offset++];
+			this.a44 = i_arrayOfFloat[offset];
 		} else {
-			this.a11 = i_arrayOfFloat[i_iOffset++];
-			this.a12 = i_arrayOfFloat[i_iOffset++];
-			this.a13 = i_arrayOfFloat[i_iOffset++];
-			this.a14 = i_arrayOfFloat[i_iOffset++];
-			this.a21 = i_arrayOfFloat[i_iOffset++];
-			this.a22 = i_arrayOfFloat[i_iOffset++];
-			this.a23 = i_arrayOfFloat[i_iOffset++];
-			this.a24 = i_arrayOfFloat[i_iOffset++];
-			this.a31 = i_arrayOfFloat[i_iOffset++];
-			this.a32 = i_arrayOfFloat[i_iOffset++];
-			this.a33 = i_arrayOfFloat[i_iOffset++];
-			this.a34 = i_arrayOfFloat[i_iOffset++];
-			this.a41 = i_arrayOfFloat[i_iOffset++];
-			this.a42 = i_arrayOfFloat[i_iOffset++];
-			this.a43 = i_arrayOfFloat[i_iOffset++];
-			this.a44 = i_arrayOfFloat[i_iOffset];
+			this.a11 = i_arrayOfFloat[offset++];
+			this.a12 = i_arrayOfFloat[offset++];
+			this.a13 = i_arrayOfFloat[offset++];
+			this.a14 = i_arrayOfFloat[offset++];
+			this.a21 = i_arrayOfFloat[offset++];
+			this.a22 = i_arrayOfFloat[offset++];
+			this.a23 = i_arrayOfFloat[offset++];
+			this.a24 = i_arrayOfFloat[offset++];
+			this.a31 = i_arrayOfFloat[offset++];
+			this.a32 = i_arrayOfFloat[offset++];
+			this.a33 = i_arrayOfFloat[offset++];
+			this.a34 = i_arrayOfFloat[offset++];
+			this.a41 = i_arrayOfFloat[offset++];
+			this.a42 = i_arrayOfFloat[offset++];
+			this.a43 = i_arrayOfFloat[offset++];
+			this.a44 = i_arrayOfFloat[offset];
 		}
 	}
 
@@ -627,24 +627,24 @@ public final class Matrix4fImpl implements Matrix4f, Serializable, Cloneable {
 	 * @see org.eclipse.draw3d.geometry.IMatrix4f#toArrayColumnMajor(float[],
 	 *      int)
 	 */
-	public void toArrayColumnMajor(final float[] o_arrayOfFloat, int i_iOffset) {
-
-		o_arrayOfFloat[i_iOffset++] = a11;
-		o_arrayOfFloat[i_iOffset++] = a21;
-		o_arrayOfFloat[i_iOffset++] = a31;
-		o_arrayOfFloat[i_iOffset++] = a41;
-		o_arrayOfFloat[i_iOffset++] = a12;
-		o_arrayOfFloat[i_iOffset++] = a22;
-		o_arrayOfFloat[i_iOffset++] = a32;
-		o_arrayOfFloat[i_iOffset++] = a42;
-		o_arrayOfFloat[i_iOffset++] = a13;
-		o_arrayOfFloat[i_iOffset++] = a23;
-		o_arrayOfFloat[i_iOffset++] = a33;
-		o_arrayOfFloat[i_iOffset++] = a43;
-		o_arrayOfFloat[i_iOffset++] = a14;
-		o_arrayOfFloat[i_iOffset++] = a24;
-		o_arrayOfFloat[i_iOffset++] = a34;
-		o_arrayOfFloat[i_iOffset++] = a44;
+	public void toArrayColumnMajor(final float[] o_arrayOfFloat, int i_offset) {
+		int offset = i_offset;
+		o_arrayOfFloat[offset++] = a11;
+		o_arrayOfFloat[offset++] = a21;
+		o_arrayOfFloat[offset++] = a31;
+		o_arrayOfFloat[offset++] = a41;
+		o_arrayOfFloat[offset++] = a12;
+		o_arrayOfFloat[offset++] = a22;
+		o_arrayOfFloat[offset++] = a32;
+		o_arrayOfFloat[offset++] = a42;
+		o_arrayOfFloat[offset++] = a13;
+		o_arrayOfFloat[offset++] = a23;
+		o_arrayOfFloat[offset++] = a33;
+		o_arrayOfFloat[offset++] = a43;
+		o_arrayOfFloat[offset++] = a14;
+		o_arrayOfFloat[offset++] = a24;
+		o_arrayOfFloat[offset++] = a34;
+		o_arrayOfFloat[offset++] = a44;
 	}
 
 	/**
@@ -662,24 +662,24 @@ public final class Matrix4fImpl implements Matrix4f, Serializable, Cloneable {
 	 * 
 	 * @see org.eclipse.draw3d.geometry.IMatrix4f#toArrayRowMajor(float[], int)
 	 */
-	public void toArrayRowMajor(final float[] o_arrayOfFloat, int i_iOffset) {
-
-		o_arrayOfFloat[i_iOffset++] = a11;
-		o_arrayOfFloat[i_iOffset++] = a12;
-		o_arrayOfFloat[i_iOffset++] = a13;
-		o_arrayOfFloat[i_iOffset++] = a14;
-		o_arrayOfFloat[i_iOffset++] = a21;
-		o_arrayOfFloat[i_iOffset++] = a22;
-		o_arrayOfFloat[i_iOffset++] = a23;
-		o_arrayOfFloat[i_iOffset++] = a24;
-		o_arrayOfFloat[i_iOffset++] = a31;
-		o_arrayOfFloat[i_iOffset++] = a32;
-		o_arrayOfFloat[i_iOffset++] = a33;
-		o_arrayOfFloat[i_iOffset++] = a34;
-		o_arrayOfFloat[i_iOffset++] = a41;
-		o_arrayOfFloat[i_iOffset++] = a42;
-		o_arrayOfFloat[i_iOffset++] = a43;
-		o_arrayOfFloat[i_iOffset] = a44;
+	public void toArrayRowMajor(final float[] o_arrayOfFloat, int i_offset) {
+		int offset = i_offset;
+		o_arrayOfFloat[offset++] = a11;
+		o_arrayOfFloat[offset++] = a12;
+		o_arrayOfFloat[offset++] = a13;
+		o_arrayOfFloat[offset++] = a14;
+		o_arrayOfFloat[offset++] = a21;
+		o_arrayOfFloat[offset++] = a22;
+		o_arrayOfFloat[offset++] = a23;
+		o_arrayOfFloat[offset++] = a24;
+		o_arrayOfFloat[offset++] = a31;
+		o_arrayOfFloat[offset++] = a32;
+		o_arrayOfFloat[offset++] = a33;
+		o_arrayOfFloat[offset++] = a34;
+		o_arrayOfFloat[offset++] = a41;
+		o_arrayOfFloat[offset++] = a42;
+		o_arrayOfFloat[offset++] = a43;
+		o_arrayOfFloat[offset] = a44;
 	}
 
 	/**

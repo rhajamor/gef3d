@@ -10,10 +10,9 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d.lwjgl.font;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static java.awt.geom.PathIterator.*;
+import static java.awt.geom.PathIterator.SEG_CLOSE;
+import static java.awt.geom.PathIterator.SEG_LINETO;
+import static java.awt.geom.PathIterator.SEG_MOVETO;
 
 import java.awt.Font;
 import java.awt.Shape;
@@ -24,6 +23,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.logging.Logger;
 
 import org.eclipse.draw3d.geometry.IVector2f;
 import org.eclipse.draw3d.geometry.Vector2fImpl;
@@ -50,7 +50,7 @@ public class LwjglVectorFont {
 	/**
 	 * Logger for this class
 	 */
-	// @SuppressWarnings("unused") //$NON-NLS-1$
+	@SuppressWarnings("unused") //$NON-NLS-1$
 	private static final Logger log = Logger.getLogger(LwjglVectorFont.class.getName());
 
 	private static class FontCallback extends GLUtessellatorCallbackAdapter {
@@ -66,6 +66,12 @@ public class LwjglVectorFont {
 		private int[] m_types = new int[4];
 
 		private float[][] m_vertices = new float[4][];
+
+		/**
+		 * 
+		 */
+		public FontCallback() {
+		}
 
 		/**
 		 * {@inheritDoc}
@@ -180,58 +186,6 @@ public class LwjglVectorFont {
 			IVector2f vertex = (IVector2f) i_vertexData;
 			vertex.toArray(m_currentVertices, 2 * m_currentVertexCount++);
 		}
-	}
-
-	private static class VectorCharData {
-
-		private float m_advance;
-
-		private int[] m_types;
-
-		private float[][] m_vertices;
-
-		public VectorCharData(int[] i_types, float[][] i_vertices,
-				float i_advance) {
-
-			if (i_types == null)
-				throw new NullPointerException("i_types must not be null");
-
-			if (i_vertices == null)
-				throw new NullPointerException("i_vertices must not be null");
-
-			if (i_types.length != i_vertices.length)
-				throw new IllegalArgumentException();
-
-			m_types = i_types;
-			m_vertices = i_vertices;
-			m_advance = i_advance;
-		}
-
-		public float getAdvance() {
-			return m_advance;
-		}
-
-		public int getCount() {
-
-			return m_types.length;
-		}
-
-		public int getType(int i_index) {
-
-			if (i_index < 0 || i_index >= getCount())
-				throw new IndexOutOfBoundsException();
-
-			return m_types[i_index];
-		}
-
-		public float[] getVertices(int i_index) {
-
-			if (i_index < 0 || i_index >= getCount())
-				throw new IndexOutOfBoundsException();
-
-			return m_vertices[i_index];
-		}
-
 	}
 
 	private static int getAwtStyle(boolean i_bold, boolean i_italic) {

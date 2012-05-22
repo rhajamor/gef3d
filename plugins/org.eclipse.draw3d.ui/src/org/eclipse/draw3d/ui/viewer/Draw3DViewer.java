@@ -60,7 +60,7 @@ public abstract class Draw3DViewer extends EditorPart {
      */
     protected Collection<Export3DAction> m_export3DActions = new HashSet<Export3DAction>();
 
-    private CameraInputListener m_inputListener;
+    CameraInputListener m_inputListener;
 
     /**
      * The lightweight system.

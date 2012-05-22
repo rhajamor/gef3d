@@ -79,7 +79,7 @@ public class XYZAnchor extends XYAnchor implements ConnectionAnchor3D {
      */
     public XYZAnchor(Vector3fImpl i_location) {
 
-        super(new Point(i_location.getX(), i_location.getY()));
+        super(new Point((int)i_location.getX(),(int) i_location.getY()));
         // do not use setter here in order to enable immutable versions
         m_location3D.set(i_location);
     }

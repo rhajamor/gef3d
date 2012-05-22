@@ -35,7 +35,7 @@ public class ArcHelper implements Iterable<IVector2f> {
 
 		private int m_segment = 0;
 
-		private ArcIterator() {
+		ArcIterator() {
 
 			m_next.set(m_start);
 		}
@@ -91,17 +91,17 @@ public class ArcHelper implements Iterable<IVector2f> {
 
 	private static final float PI2 = (float) Math.PI * 2;
 
-	private IVector2f m_axes;
+	IVector2f m_axes;
 
-	private IVector2f m_center;
+	IVector2f m_center;
 
-	private float m_cos;
+	float m_cos;
 
-	private int m_numSegments;
+	int m_numSegments;
 
-	private float m_sin;
+	float m_sin;
 
-	private IVector2f m_start;
+	IVector2f m_start;
 
 	private boolean m_skipFinal;
 

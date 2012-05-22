@@ -16,7 +16,6 @@ import org.eclipse.draw3d.IFigure3D;
 import org.eclipse.draw3d.RenderContext;
 import org.eclipse.draw3d.geometry.IVector3f;
 import org.eclipse.draw3d.geometry.Math3D;
-import org.eclipse.draw3d.geometry.Math3DCache;
 import org.eclipse.draw3d.geometry.ParaxialBoundingBox;
 import org.eclipse.draw3d.geometry.Position3D;
 import org.eclipse.draw3d.geometry.Position3DUtil;

@@ -338,6 +338,7 @@ public class ImageConverter {
 	 * @return the result buffer
 	 * @deprecated use {@link ImageConverter}
 	 */
+	@Deprecated
 	public static ByteBuffer imageToColorBuffer(Image i_image,
 			ConversionSpecs i_specs, ByteBuffer io_buffer) {
 
@@ -376,7 +377,6 @@ public class ImageConverter {
 		Color trColor = i_specs.transparentColor;
 		Color bgColor = i_specs.backgroundColor;
 
-		int fgAlpha = i_specs.foregroundAlpha;
 		int bgAlpha = i_specs.backgroundAlpha;
 
 		ImageData imageData = i_image.getImageData();
@@ -400,7 +400,6 @@ public class ImageConverter {
 		final byte bgG = bgColor != null ? (byte) bgColor.getGreen() : 0;
 		final byte bgB = bgColor != null ? (byte) bgColor.getBlue() : 0;
 
-		final byte fgAlphaByte = (byte) fgAlpha;
 		final byte bgAlphaByte = (byte) bgAlpha;
 
 		for (int y = 0; y < tHeight; y++) {
@@ -459,6 +458,7 @@ public class ImageConverter {
 	 * @return the result buffer
 	 * @deprecated use {@link ImageConverter}
 	 */
+	@Deprecated
 	public static ByteBuffer imageToLuminanceAlphaBuffer(Image i_image,
 			ConversionSpecs i_specs, ByteBuffer io_buffer) {
 

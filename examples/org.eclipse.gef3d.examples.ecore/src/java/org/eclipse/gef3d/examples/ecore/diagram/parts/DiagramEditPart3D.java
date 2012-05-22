@@ -51,7 +51,6 @@ import org.eclipse.gef3d.gmf.runtime.diagram.ui.figures.DiagramFigure3D;
 import org.eclipse.gmf.runtime.diagram.core.util.ViewUtil;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart;
 import org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart;
-import org.eclipse.gmf.runtime.diagram.ui.internal.tools.RubberbandDragTracker;
 import org.eclipse.gmf.runtime.diagram.ui.requests.CreateConnectionViewRequest;
 import org.eclipse.gmf.runtime.diagram.ui.requests.RequestConstants;
 import org.eclipse.gmf.runtime.diagram.ui.tools.DragEditPartsTrackerEx;
@@ -77,6 +76,7 @@ import org.eclipse.swt.widgets.Display;
  * @version $Revision$
  * @since 02.09.2009
  */
+@SuppressWarnings({ "restriction", "unchecked", "rawtypes" })
 public class DiagramEditPart3D extends EPackageEditPart { // DiagramEditPart {
 
 	/**
@@ -94,10 +94,17 @@ public class DiagramEditPart3D extends EPackageEditPart { // DiagramEditPart {
 	private final class EPackageCanonicalEditPolicySemanticUpdater extends
 			EPackageCanonicalEditPolicy {
 		/**
+		 * 
+		 */
+		EPackageCanonicalEditPolicySemanticUpdater() {
+		}
+
+		/**
 		 * {@inheritDoc}
 		 * 
 		 * @see org.eclipse.emf.ecoretools.diagram.edit.policies.EPackageCanonicalEditPolicy#refreshSemantic()
 		 */
+		
 		@Override
 		protected void refreshSemantic() {
 			// delete orphans and update connections
@@ -109,12 +116,6 @@ public class DiagramEditPart3D extends EPackageEditPart { // DiagramEditPart {
 			List createdConnectionViews = new LinkedList();
 			createdConnectionViews.addAll(refreshSemanticConnections());
 			createdConnectionViews.addAll(refreshConnections());
-
-			
-			
-			
-			
-			
 			makeViewsImmutable(createdConnectionViews);
 			makeViewsImmutable(createdViews);
 		}
@@ -238,7 +239,8 @@ public class DiagramEditPart3D extends EPackageEditPart { // DiagramEditPart {
 				break;
 			}
 			}
-			for (Iterator children = view.getChildren().iterator(); children.hasNext();) {
+			for (@SuppressWarnings("hiding")
+			Iterator children = view.getChildren().iterator(); children.hasNext();) {
 				result.addAll(collectAllLinks((View) children.next(), domain2NotationMap));
 			}
 			for (Iterator edges = view.getSourceEdges().iterator(); edges.hasNext();) {
@@ -372,12 +374,10 @@ public class DiagramEditPart3D extends EPackageEditPart { // DiagramEditPart {
 
 					public void figureMoved(IFigure i_source) {
 						autoResize();
-
 					}
 				});
 			}
 		};
-		// Figure3D f = new ClassDiagramFigure3DEmbedded();
 
 		f.getPosition3D().setLocation3D(new Vector3fImpl(0, 0, 0));
 		f.getPosition3D().setSize3D(new Vector3fImpl(400, 400, 30));
@@ -389,7 +389,7 @@ public class DiagramEditPart3D extends EPackageEditPart { // DiagramEditPart {
 	}
 
 	/**
-	 * Replaces the {@link RubberbandDragTracker} with an old school
+	 * Replaces the <code>RubberbandDragTracker</code> with an old school
 	 * {@link DragEditPartsTrackerEx}, since the former performs a cast which
 	 * fails.
 	 * 
@@ -406,7 +406,7 @@ public class DiagramEditPart3D extends EPackageEditPart { // DiagramEditPart {
 	/**
 	 * 
 	 */
-	private void autoResize() {
+	void autoResize() {
 		int width = 400;
 		int height = 400;
 		int border = 30;

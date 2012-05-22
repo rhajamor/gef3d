@@ -43,9 +43,9 @@ public class DeferredUpdateManager3D extends DeferredUpdateManager {
 
 	public void dumpTree(IFigure fig, StringBuffer o_out, String level) {
 		o_out.append("\n").append(level).append("+" + fig);
-		level = level + "  ";
+		String indentLevel = level + "  ";
 		for (int i = 0; i < fig.getChildren().size(); i++) {
-			dumpTree((IFigure) fig.getChildren().get(i), o_out, level);
+			dumpTree((IFigure) fig.getChildren().get(i), o_out, indentLevel);
 		}
 	}
 

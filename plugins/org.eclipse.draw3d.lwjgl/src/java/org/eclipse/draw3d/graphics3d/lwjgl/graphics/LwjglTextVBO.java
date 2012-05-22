@@ -14,8 +14,6 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw3d.geometry.IMatrix3f;
 import org.eclipse.draw3d.graphics.optimizer.PrimitiveSet;
 import org.eclipse.draw3d.graphics.optimizer.classification.PrimitiveClass;
 import org.eclipse.draw3d.graphics.optimizer.primitive.Primitive;
@@ -229,15 +227,7 @@ public class LwjglTextVBO extends LwjglVBO {
 		byte[] c = new byte[4];
 		for (Primitive primitive : m_primitives.getPrimitives()) {
 			TextPrimitive textPrimitive = (TextPrimitive) primitive;
-			String text = textPrimitive.getText();
-			boolean expand = textPrimitive.isExpand();
-			Point position = textPrimitive.getPosition();
-			IMatrix3f transformation = textPrimitive.getTransformation();
-
-			// m_glFont.renderString(text, transformation, position.x,
-			// position.y,
-			// expand, m_vertexBuffer, m_texCoordBuffer);
-
+			
 			if (m_color == null) {
 				TextRenderRule textRenderRule =
 					textPrimitive.getRenderRule().asText();

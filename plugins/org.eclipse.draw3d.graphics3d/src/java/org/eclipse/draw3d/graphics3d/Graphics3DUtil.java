@@ -10,8 +10,6 @@
  ******************************************************************************/
 package org.eclipse.draw3d.graphics3d;
 
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 /**
  * Graphics3DUtil interface defines high-level 3D draw operations.

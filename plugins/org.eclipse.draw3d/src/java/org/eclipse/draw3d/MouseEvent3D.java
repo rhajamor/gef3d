@@ -159,12 +159,12 @@ public class MouseEvent3D extends MouseEvent {
 	 * event's surface is used.
 	 * 
 	 * @param screenLocation screen location to be converted
-	 * @param surface may be null
+	 * @param i_surface may be null
 	 * @return
 	 */
-	public Vector3f computeWorldLocation(Point screenLocation, ISurface surface) {
-		return screenToWorld(camera, surface == null ? getSurface() : surface,
-			screenLocation, null, null);
+	public Vector3f computeWorldLocation(Point i_screenLocation, ISurface i_surface) {
+		return screenToWorld(camera, i_surface == null ? getSurface() : i_surface,
+			i_screenLocation, null, null);
 	}
 
 	/**

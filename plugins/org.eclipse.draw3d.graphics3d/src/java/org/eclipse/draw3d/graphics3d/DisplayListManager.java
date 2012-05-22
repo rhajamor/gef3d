@@ -60,7 +60,7 @@ public class DisplayListManager {
 		}
 	}
 
-	@SuppressWarnings("unused")
+	// @SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(DisplayListManager.class
 		.getName());
 

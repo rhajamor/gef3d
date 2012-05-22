@@ -13,16 +13,13 @@ package org.eclipse.draw2d;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw3d.IScene;
 import org.eclipse.draw3d.ISurface;
 import org.eclipse.draw3d.MouseEvent3D;
 import org.eclipse.draw3d.PickingUpdateManager3D;
 import org.eclipse.draw3d.camera.ICamera;
-import org.eclipse.draw3d.geometry.Math3D;
 import org.eclipse.draw3d.geometry.Vector3f;
 import org.eclipse.draw3d.picking.Picker;
-import org.eclipse.draw3d.util.Draw3DCache;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseEvent;
@@ -49,7 +46,7 @@ import org.eclipse.swt.widgets.Event;
  */
 public class EventDispatcher3D extends EventDispatcher {
 
-	@SuppressWarnings("unused")
+	// @SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(EventDispatcher3D.class
 		.getName());
 

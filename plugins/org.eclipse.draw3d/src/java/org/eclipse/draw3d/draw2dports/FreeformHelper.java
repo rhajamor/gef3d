@@ -86,9 +86,9 @@ public class FreeformHelper implements FreeformListener {
 		if (freeformExtent != null)
 			return freeformExtent;
 		Rectangle r;
-		List children = host.getChildren();
-		for (int i = 0; i < children.size(); i++) {
-			IFigure child = (IFigure) children.get(i);
+		@SuppressWarnings("unchecked")
+		List<IFigure> children = host.getChildren();
+		for (IFigure child: children) {
 			if (child instanceof FreeformFigure)
 				r = ((FreeformFigure) child).getFreeformExtent();
 			else
@@ -156,13 +156,12 @@ public class FreeformHelper implements FreeformListener {
 	 * {@link org.eclipse.gef.FreeformHelper}.</p>
 	 * @param bounds
 	 */
-	public void setFreeformBounds(Rectangle bounds) {
-		// host.setBounds(bounds);
-		bounds = bounds.getCopy();
+	public void setFreeformBounds(Rectangle i_bounds) {
+		Rectangle bounds = i_bounds.getCopy();
 		host.translateFromParent(bounds);
-		List children = host.getChildren();
-		for (int i = 0; i < children.size(); i++) {
-			IFigure child = (IFigure) children.get(i);
+		@SuppressWarnings("unchecked")
+		List<IFigure> children = host.getChildren();
+		for (IFigure child: children) {
 			if (child instanceof FreeformFigure)
 				((FreeformFigure) child).setFreeformBounds(bounds);
 		}

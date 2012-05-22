@@ -11,7 +11,6 @@
 
 package org.eclipse.draw3d.geometry;
 
-import java.io.Serializable;
 import java.nio.FloatBuffer;
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -25,7 +24,7 @@ import java.util.Arrays;
  * @version $Revision$
  * @since Dec 16, 2008
  */
-public final class Vector3fImpl implements Vector3f, Cloneable, Serializable {
+public final class Vector3fImpl implements Vector3f /* includes Cloneable, Serializable */ {
 
 	/**
 	 * x attribute, made public for fast access. Usually, clients should use
@@ -141,8 +140,8 @@ public final class Vector3fImpl implements Vector3f, Cloneable, Serializable {
 	 * @param i_iOffset Get the array elements starting from this offset.
 	 */
 	public Vector3fImpl(final float[] i_arrayOfFloat, int i_iOffset) {
-		this(i_arrayOfFloat[i_iOffset++], i_arrayOfFloat[i_iOffset++],
-			i_arrayOfFloat[i_iOffset]);
+		this(i_arrayOfFloat[i_iOffset], i_arrayOfFloat[i_iOffset+1],
+			i_arrayOfFloat[i_iOffset+2]);
 	}
 
 	/**
@@ -308,9 +307,9 @@ public final class Vector3fImpl implements Vector3f, Cloneable, Serializable {
 	 * @see org.eclipse.draw3d.geometry.IVector3f#toArray(float[], int)
 	 */
 	public void toArray(final float[] o_arrayOfFloat, int i_iOffset) {
-		o_arrayOfFloat[i_iOffset++] = x;
-		o_arrayOfFloat[i_iOffset++] = y;
-		o_arrayOfFloat[i_iOffset] = z;
+		o_arrayOfFloat[i_iOffset] = x;
+		o_arrayOfFloat[i_iOffset+1] = y;
+		o_arrayOfFloat[i_iOffset+2] = z;
 	}
 
 	/**
